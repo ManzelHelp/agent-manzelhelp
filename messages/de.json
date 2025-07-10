@@ -1,0 +1,15 @@
+{
+    "homepage": {
+      "title": "Willkommen bei Manzel Help",
+      "description": "Ein freundlicher Ort, an dem Nutzer Dienstleistungen wie Haushaltshilfe, Nachhilfe, Tierbetreuung und mehr anbieten und anfragen können. Vernetzen, helfen und gemeinsam wachsen!",
+      "servicesOffered": "Angebotene Dienstleistungen",
+      "servicesOfferedPlaceholder": "Demnächst verfügbar: Durchstöbern Sie verfügbare Dienstleistungen",
+      "requestService": "Dienstleistung anfragen",
+      "requestServicePlaceholder": "Demnächst verfügbar: Stellen Sie Ihre Serviceanfrage ein",
+      "whyTitle": "Warum Manzel Help?",
+      "why1": "Vernetzen Sie sich mit vertrauenswürdigen lokalen Helfern",
+      "why2": "Bieten Sie Ihre Fähigkeiten an und verdienen Sie zusätzliches Einkommen",
+      "why3": "Einfach, freundlich und sicher"
+    }
+  }
+  

@@ -1,0 +1,15 @@
+{
+    "homepage": {
+      "title": "Welcome to Manzel Help",
+      "description": "A friendly place where users can offer and request services like housekeeping, tutoring, pet care, and more. Connect, help, and grow together!",
+      "servicesOffered": "Services Offered",
+      "servicesOfferedPlaceholder": "Coming soon: Browse available services",
+      "requestService": "Request a Service",
+      "requestServicePlaceholder": "Coming soon: Post your service needs",
+      "whyTitle": "Why Manzel Help?",
+      "why1": "Connect with trusted local helpers",
+      "why2": "Offer your skills and earn extra income",
+      "why3": "Easy, friendly, and secure"
+    }
+}
+  

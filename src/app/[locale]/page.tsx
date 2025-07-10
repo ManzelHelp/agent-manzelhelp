@@ -1,4 +1,9 @@
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+
 export default function Page() {
+  const t = useTranslations("homepage");
+
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)] flex flex-col items-center py-12 px-4">
       <section className="max-w-2xl w-full text-center mb-12">
@@ -6,15 +11,13 @@ export default function Page() {
           className="text-4xl font-bold mb-4"
           style={{ fontFamily: "var(--font-sans)" }}
         >
-          Welcome to Manzel Help
+          {t("title")}
         </h1>
         <p
           className="text-lg text-[var(--color-text-secondary)]"
           style={{ fontFamily: "var(--font-sans)" }}
         >
-          A friendly place where users can offer and request services like
-          housekeeping, tutoring, pet care, and more. Connect, help, and grow
-          together!
+          {t("description")}
         </p>
       </section>
 
@@ -25,11 +28,11 @@ export default function Page() {
             className="text-2xl font-semibold mb-2"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            Services Offered
+            {t("servicesOffered")}
           </h2>
           <div className="h-24 w-full flex items-center justify-center text-[var(--color-text-secondary)] border-2 border-dashed border-[var(--color-border)] rounded-lg">
             {/* Placeholder for service cards */}
-            <span>Coming soon: Browse available services</span>
+            <span>{t("servicesOfferedPlaceholder")}</span>
           </div>
         </section>
 
@@ -39,11 +42,11 @@ export default function Page() {
             className="text-2xl font-semibold mb-2"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            Request a Service
+            {t("requestService")}
           </h2>
           <div className="h-24 w-full flex items-center justify-center text-[var(--color-text-secondary)] border-2 border-dashed border-[var(--color-border)] rounded-lg">
             {/* Placeholder for request form */}
-            <span>Coming soon: Post your service needs</span>
+            <span>{t("requestServicePlaceholder")}</span>
           </div>
         </section>
       </div>
@@ -54,15 +57,15 @@ export default function Page() {
             className="text-xl font-semibold mb-2"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            Why Manzel Help?
+            {t("whyTitle")}
           </h3>
           <ul
             className="list-disc list-inside text-left mx-auto max-w-md"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            <li>Connect with trusted local helpers</li>
-            <li>Offer your skills and earn extra income</li>
-            <li>Easy, friendly, and secure</li>
+            <li>{t("why1")}</li>
+            <li>{t("why2")}</li>
+            <li>{t("why3")}</li>
           </ul>
         </div>
       </section>

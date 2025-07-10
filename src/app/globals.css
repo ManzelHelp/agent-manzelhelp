@@ -78,8 +78,8 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   /* Modern Friendly Color Scheme */
-  --color-primary: #4F8A8B; /* Teal Blue */
-  --color-secondary: #FBD46D; /* Warm Yellow */
+  --color-primary: #2E3B55; /* Dunkelblau */
+  --color-secondary: #53C3A1; /* Grün*/
   --color-accent: #F76B8A; /* Coral Pink */
   --color-bg: #F9F9F9; /* Very Light Gray */
   --color-surface: #FFFFFF; /* White */
@@ -121,8 +121,8 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   /* Modern Friendly Color Scheme - Dark Mode */
-  --color-primary: #4F8A8B;
-  --color-secondary: #FBD46D;
+  --color-primary: #2E3B55; /* Dunkelblau */
+  --color-secondary: #53C3A1; /* Grün*/
   --color-accent: #F76B8A;
   --color-bg: #222831; /* Use dark background for dark mode */
   --color-surface: #393E46; /* Slightly lighter for cards */

@@ -1,7 +1,5 @@
-import Header from "@/components/Header";
 import "./globals.css";
 import type { Metadata } from "next";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Manzel Help",
@@ -12,13 +10,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <body>
-        <Header />
-        {children}
-        <Footer />
-      </body>
-    </html>
-  );
+  return children; // Just pass through - no HTML structure here
 }
