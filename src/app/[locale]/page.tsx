@@ -1,7 +1,28 @@
+import { setRequestLocale } from "next-intl/server";
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-export default function Page() {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+
+  return {
+    title: t("title"),
+  };
+}
+
+export default function Page({ params }: { params: { locale: string } }) {
+  const locale = params.locale;
+
+  // Enable static rendering
+  setRequestLocale(locale);
+
+  // Once the request locale is set, you can call hooks from `next-intl`
   const t = useTranslations("homepage");
 
   return (
