@@ -9,6 +9,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { signUpAction } from "@/actions/users";
 
 function signUpForm() {
   const router = useRouter();
@@ -20,7 +21,16 @@ function signUpForm() {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
 
-      toast.success("signUp successful");
+      const errorMessage = (await signUpAction(email, password)).errorMessage;
+
+      if (!errorMessage) {
+        toast.success("sign up successful", {
+          description: "Please check your email for verification",
+        });
+        router.replace("/"); // redirect to waiting for verification later
+      } else {
+        toast.error(errorMessage);
+      }
     });
   };
 

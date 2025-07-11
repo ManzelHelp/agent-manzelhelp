@@ -9,6 +9,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { loginAction } from "@/actions/users";
 
 function loginForm() {
   const router = useRouter();
@@ -20,7 +21,14 @@ function loginForm() {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
 
-      toast.success("Login successful");
+      const errorMessage = (await loginAction(email, password)).errorMessage;
+
+      if (!errorMessage) {
+        toast.success("Login successful");
+        router.replace("/"); // redirect to dashboard later
+      } else {
+        toast.error(errorMessage);
+      }
     });
   };
 
