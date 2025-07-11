@@ -2,6 +2,11 @@
   "Metadata": {
     "title": "Manzel Help"
   },
+  "Header": {
+    "about": "Über uns",
+    "services": "Dienstleistungen",
+    "contact": "Kontakt"
+  },
     "homepage": {
       "title": "Willkommen bei Manzel Help",
       "description": "Ein freundlicher Ort, an dem Nutzer Dienstleistungen wie Haushaltshilfe, Nachhilfe, Tierbetreuung und mehr anbieten und anfragen können. Vernetzen, helfen und gemeinsam wachsen!",

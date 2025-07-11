@@ -1,7 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
   params,
@@ -16,14 +14,18 @@ export async function generateMetadata({
   };
 }
 
-export default function Page({ params }: { params: { locale: string } }) {
-  const locale = params.locale;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
 
   // Enable static rendering
   setRequestLocale(locale);
 
-  // Once the request locale is set, you can call hooks from `next-intl`
-  const t = useTranslations("homepage");
+  // Get translations for the page content
+  const t = await getTranslations({ locale, namespace: "homepage" });
 
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)] flex flex-col items-center py-12 px-4">

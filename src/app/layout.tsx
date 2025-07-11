@@ -10,5 +10,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children; // Just pass through - no HTML structure here
+  return children;
 }

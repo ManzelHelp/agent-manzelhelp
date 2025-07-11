@@ -2,6 +2,11 @@
   "Metadata": {
     "title": "Manzel Help"
   },
+  "Header": {
+    "about": "About Us",
+    "services": "Services",
+    "contact": "Contact"
+  },
     "homepage": {
       "title": "Welcome to Manzel Help",
       "description": "A friendly place where users can offer and request services like housekeeping, tutoring, pet care, and more. Connect, help, and grow together!",
