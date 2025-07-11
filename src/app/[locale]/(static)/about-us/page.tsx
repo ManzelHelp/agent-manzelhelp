@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "@/i18n/navigation";
 
 export default function AboutUsPage() {
   return (
@@ -105,12 +106,12 @@ export default function AboutUsPage() {
           Whether you want to offer your skills or need a helping hand, Manzel
           Help is your go-to platform for safe, reliable, and local services.
         </p>
-        <a
+        <Link
           href="/sign-up"
           className="inline-block bg-[var(--color-primary)] text-white font-bold py-3 px-8 rounded-lg shadow hover:bg-[var(--color-primary)]/90 transition"
         >
           Get Started
-        </a>
+        </Link>
       </section>
     </div>
   );

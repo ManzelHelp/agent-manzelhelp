@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { signUpAction } from "@/actions/users";
 
-function signUpForm() {
+function SignUpForm() {
   const router = useRouter();
 
   const [isPending, startTransition] = useTransition();
@@ -80,4 +80,4 @@ function signUpForm() {
   );
 }
 
-export default signUpForm;
+export default SignUpForm;

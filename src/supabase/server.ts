@@ -29,12 +29,17 @@ export async function createClient() {
 }
 
 export async function getUser() {
-  const supabase = await createClient();
-  const userObj = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const userObj = await supabase.auth.getUser();
 
-  if (userObj.error) {
-    console.error(userObj.error);
+    if (userObj.error) {
+      console.warn("Auth error in getUser:", userObj.error);
+      return null;
+    }
+    return userObj.data.user;
+  } catch (error) {
+    console.warn("Error getting user:", error);
     return null;
   }
-  return userObj.data.user;
 }

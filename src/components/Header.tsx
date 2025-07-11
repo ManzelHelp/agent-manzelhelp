@@ -6,9 +6,11 @@ import Image from "next/image";
 import DarkModeButton from "./buttons/darkModeButton";
 import LogOutButton from "./buttons/logOutButton";
 import LanguageDropDown from "./buttons/languageDropDown";
+import { getUser } from "@/supabase/server";
 
 async function Header() {
-  const user = 0;
+  const user = await getUser();
+
   const t = await getTranslations("Header");
 
   return (
