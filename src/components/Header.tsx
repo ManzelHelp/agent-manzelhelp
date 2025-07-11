@@ -3,8 +3,9 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
-import DarkModeButton from "./darkModeButton";
-import LogOutButton from "./logOutButton";
+import DarkModeButton from "./buttons/darkModeButton";
+import LogOutButton from "./buttons/logOutButton";
+import LanguageDropDown from "./buttons/languageDropDown";
 
 async function Header() {
   const user = 0;
@@ -82,6 +83,10 @@ async function Header() {
                 </Button>
               </>
             )}
+          </div>
+
+          <div className="ml-2">
+            <LanguageDropDown />
           </div>
 
           <div className="ml-2">
