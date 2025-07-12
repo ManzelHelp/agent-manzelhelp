@@ -1,0 +1,193 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id         String   @id @default(cuid())
+    email      String   @unique
+    name       String
+    phone      String?
+    avatar     String?
+    bio        String?
+    location   String?
+    hourlyRate Float?
+    isProvider Boolean  @default(false)
+    isVerified Boolean  @default(false)
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    // Relations
+    services           Service[]
+    bookingsAsClient   Booking[] @relation("ClientBookings")
+    bookingsAsProvider Booking[] @relation("ProviderBookings")
+    reviewsGiven       Review[]  @relation("Reviewer")
+    reviewsReceived    Review[]  @relation("ReviewedUser")
+    messagesSent       Message[] @relation("Sender")
+    messagesReceived   Message[] @relation("Receiver")
+
+    @@index([location])
+    @@index([isProvider])
+    @@index([isVerified])
+    @@index([createdAt])
+    @@map("users")
+}
+
+model Category {
+    id          String   @id @default(cuid())
+    name        String   @unique
+    description String?
+    icon        String?
+    isActive    Boolean  @default(true)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    // Relations
+    services Service[]
+
+    @@index([isActive])
+    @@map("categories")
+}
+
+model Service {
+    id          String    @id @default(cuid())
+    title       String
+    description String
+    price       Float
+    priceType   PriceType @default(HOURLY)
+    duration    Int? // in minutes
+    location    String?
+    isActive    Boolean   @default(true)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    // Relations
+    providerId String
+    provider   User           @relation(fields: [providerId], references: [id], onDelete: Cascade)
+    categoryId String
+    category   Category       @relation(fields: [categoryId], references: [id])
+    bookings   Booking[]
+    images     ServiceImage[]
+
+    @@index([providerId])
+    @@index([categoryId])
+    @@index([location])
+    @@index([price])
+    @@index([priceType])
+    @@index([isActive])
+    @@index([createdAt])
+    @@index([location, isActive])
+    @@index([categoryId, isActive])
+    @@index([price, isActive])
+    @@map("services")
+}
+
+model ServiceImage {
+    id        String   @id @default(cuid())
+    url       String
+    alt       String?
+    order     Int      @default(0)
+    createdAt DateTime @default(now())
+
+    // Relations
+    serviceId String
+    service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+    @@index([serviceId])
+    @@index([order])
+    @@map("service_images")
+}
+
+model Booking {
+    id          String        @id @default(cuid())
+    status      BookingStatus @default(PENDING)
+    scheduledAt DateTime
+    duration    Int // in minutes
+    totalPrice  Float
+    notes       String?
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+
+    // Relations
+    clientId   String
+    client     User    @relation("ClientBookings", fields: [clientId], references: [id])
+    providerId String
+    provider   User    @relation("ProviderBookings", fields: [providerId], references: [id])
+    serviceId  String
+    service    Service @relation(fields: [serviceId], references: [id])
+    review     Review?
+
+    @@index([clientId])
+    @@index([providerId])
+    @@index([serviceId])
+    @@index([status])
+    @@index([scheduledAt])
+    @@index([createdAt])
+    @@index([clientId, status])
+    @@index([providerId, status])
+    @@index([scheduledAt, status])
+    @@map("bookings")
+}
+
+model Review {
+    id        String   @id @default(cuid())
+    rating    Int // 1-5 stars
+    comment   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    reviewerId     String
+    reviewer       User    @relation("Reviewer", fields: [reviewerId], references: [id])
+    reviewedUserId String
+    reviewedUser   User    @relation("ReviewedUser", fields: [reviewedUserId], references: [id])
+    bookingId      String  @unique
+    booking        Booking @relation(fields: [bookingId], references: [id])
+
+    @@index([reviewerId])
+    @@index([reviewedUserId])
+    @@index([rating])
+    @@index([createdAt])
+    @@index([reviewedUserId, rating])
+    @@map("reviews")
+}
+
+model Message {
+    id        String   @id @default(cuid())
+    content   String
+    isRead    Boolean  @default(false)
+    createdAt DateTime @default(now())
+
+    // Relations
+    senderId   String
+    sender     User   @relation("Sender", fields: [senderId], references: [id])
+    receiverId String
+    receiver   User   @relation("Receiver", fields: [receiverId], references: [id])
+
+    @@index([senderId])
+    @@index([receiverId])
+    @@index([isRead])
+    @@index([createdAt])
+    @@index([senderId, receiverId])
+    @@index([receiverId, isRead])
+    @@map("messages")
+}
+
+enum PriceType {
+    HOURLY
+    FIXED
+    NEGOTIABLE
+}
+
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+    DISPUTED
+}
