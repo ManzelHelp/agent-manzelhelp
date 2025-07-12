@@ -3,7 +3,7 @@ import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 function Footer() {
   return (
-    <footer className="w-full bg-[var(--color-surface)] border-t border-[var(--color-border)] mt-12 py-8 px-4 text-[var(--color-text-secondary)]">
+    <footer className="w-full bg-[var(--color-surface)] border-t border-[var(--color-border)] py-8 px-4 text-[var(--color-text-secondary)]">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* About Us */}
         <div>

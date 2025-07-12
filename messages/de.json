@@ -7,17 +7,136 @@
     "services": "Dienstleistungen",
     "contact": "Kontakt"
   },
-    "homepage": {
-      "title": "Willkommen bei Manzel Help",
-      "description": "Ein freundlicher Ort, an dem Nutzer Dienstleistungen wie Haushaltshilfe, Nachhilfe, Tierbetreuung und mehr anbieten und anfragen können. Vernetzen, helfen und gemeinsam wachsen!",
+  "homepage": {
+    "title": "Willkommen bei Manzel Help",
+    "description": "Ein freundlicher Ort, an dem Nutzer Dienstleistungen wie Haushaltshilfe, Nachhilfe, Tierbetreuung und mehr anbieten und anfragen können. Vernetzen, helfen und gemeinsam wachsen!",
+    "servicesOffered": "Angebotene Dienstleistungen",
+    "servicesOfferedPlaceholder": "Demnächst verfügbar: Durchstöbern Sie verfügbare Dienstleistungen",
+    "requestService": "Dienstleistung anfragen",
+    "requestServicePlaceholder": "Demnächst verfügbar: Stellen Sie Ihre Serviceanfrage ein",
+    "whyTitle": "Warum Manzel Help?",
+    "why1": "Vernetzen Sie sich mit vertrauenswürdigen lokalen Helfern",
+    "why2": "Bieten Sie Ihre Fähigkeiten an und verdienen Sie zusätzliches Einkommen",
+    "why3": "Einfach, freundlich und sicher"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Willkommen zurück",
+    "overview": "Übersicht",
+    "recentActivity": "Letzte Aktivität",
+    "quickActions": "Schnellaktionen",
+    "stats": {
       "servicesOffered": "Angebotene Dienstleistungen",
-      "servicesOfferedPlaceholder": "Demnächst verfügbar: Durchstöbern Sie verfügbare Dienstleistungen",
+      "servicesRequested": "Angefragte Dienstleistungen",
+      "totalEarnings": "Gesamteinnahmen",
+      "completedTasks": "Abgeschlossene Aufgaben"
+    },
+    "actions": {
+      "offerService": "Dienstleistung anbieten",
       "requestService": "Dienstleistung anfragen",
-      "requestServicePlaceholder": "Demnächst verfügbar: Stellen Sie Ihre Serviceanfrage ein",
-      "whyTitle": "Warum Manzel Help?",
-      "why1": "Vernetzen Sie sich mit vertrauenswürdigen lokalen Helfern",
-      "why2": "Bieten Sie Ihre Fähigkeiten an und verdienen Sie zusätzliches Einkommen",
-      "why3": "Einfach, freundlich und sicher"
+      "viewProfile": "Profil anzeigen",
+      "editSettings": "Einstellungen bearbeiten"
+    },
+    "activity": {
+      "noActivity": "Keine kürzliche Aktivität",
+      "serviceCompleted": "Dienstleistung abgeschlossen",
+      "newRequest": "Neue Serviceanfrage",
+      "paymentReceived": "Zahlung erhalten"
+    },
+    "placeholder": {
+      "comingSoon": "Demnächst verfügbar",
+      "featureDescription": "Diese Funktion wird derzeit entwickelt"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "description": "Verwalten Sie Ihre Kontoeinstellungen und Präferenzen",
+    "sections": {
+      "profile": "Profil",
+      "account": "Konto",
+      "notifications": "Benachrichtigungen",
+      "privacy": "Datenschutz & Sicherheit",
+      "preferences": "Präferenzen"
+    },
+    "profile": {
+      "title": "Profilinformationen",
+      "description": "Aktualisieren Sie Ihre persönlichen Informationen und Profildetails",
+      "fields": {
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "email": "E-Mail",
+        "phone": "Telefonnummer",
+        "bio": "Biografie",
+        "location": "Standort",
+        "avatar": "Profilbild"
+      },
+      "placeholder": {
+        "firstName": "Geben Sie Ihren Vornamen ein",
+        "lastName": "Geben Sie Ihren Nachnamen ein",
+        "email": "Geben Sie Ihre E-Mail-Adresse ein",
+        "phone": "Geben Sie Ihre Telefonnummer ein",
+        "bio": "Erzählen Sie uns von sich",
+        "location": "Geben Sie Ihren Standort ein"
+      }
+    },
+    "account": {
+      "title": "Kontoeinstellungen",
+      "description": "Verwalten Sie Ihre Kontosicherheit und Präferenzen",
+      "fields": {
+        "password": "Passwort",
+        "language": "Sprache",
+        "timezone": "Zeitzone",
+        "currency": "Währung"
+      },
+      "actions": {
+        "changePassword": "Passwort ändern",
+        "deleteAccount": "Konto löschen"
+      }
+    },
+    "notifications": {
+      "title": "Benachrichtigungseinstellungen",
+      "description": "Wählen Sie, wie Sie über Aktivitäten benachrichtigt werden möchten",
+      "types": {
+        "email": "E-Mail-Benachrichtigungen",
+        "push": "Push-Benachrichtigungen",
+        "sms": "SMS-Benachrichtigungen"
+      },
+      "events": {
+        "newRequests": "Neue Serviceanfragen",
+        "messages": "Neue Nachrichten",
+        "payments": "Zahlungsaktualisierungen",
+        "reminders": "Service-Erinnerungen"
+      }
+    },
+    "privacy": {
+      "title": "Datenschutz & Sicherheit",
+      "description": "Steuern Sie Ihre Datenschutzeinstellungen und Kontosicherheit",
+      "options": {
+        "profileVisibility": "Profil-Sichtbarkeit",
+        "locationSharing": "Standortfreigabe",
+        "dataUsage": "Datennutzung",
+        "twoFactorAuth": "Zwei-Faktor-Authentifizierung"
+      }
+    },
+    "preferences": {
+      "title": "Präferenzen",
+      "description": "Passen Sie Ihre Erfahrung an",
+      "options": {
+        "theme": "Design",
+        "language": "Sprache",
+        "timezone": "Zeitzone"
+      }
+    },
+    "actions": {
+      "save": "Änderungen speichern",
+      "cancel": "Abbrechen",
+      "reset": "Auf Standard zurücksetzen"
+    },
+    "placeholder": {
+      "comingSoon": "Demnächst verfügbar",
+      "featureDescription": "Diese Funktion wird derzeit entwickelt",
+      "notImplemented": "Diese Einstellung wird bald verfügbar sein"
     }
   }
+}
   

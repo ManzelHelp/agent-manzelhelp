@@ -1,5 +1,6 @@
 "use server";
 
+import { prisma } from "@/db/prisma";
 import { handleError } from "@/lib/utils";
 import { createClient } from "@/supabase/server";
 
@@ -32,7 +33,16 @@ export const logOutAction = async () => {
   }
 };
 
-export const signUpAction = async (email: string, password: string) => {
+export const signUpAction = async (
+  email: string,
+  password: string,
+  userData?: {
+    name?: string;
+    phone?: string;
+    location?: string;
+    isProvider?: boolean;
+  }
+) => {
   try {
     const { auth } = await createClient();
 
@@ -45,12 +55,16 @@ export const signUpAction = async (email: string, password: string) => {
     const userId = data.user?.id;
     if (!userId) throw new Error("Error signing up");
 
-    // await prisma.user.create({
-    //   data: {
-    //     id: userId,
-    //     email,
-    //   },
-    // });
+    await prisma.user.create({
+      data: {
+        id: userId,
+        email,
+        name: userData?.name || "",
+        phone: userData?.phone || null,
+        location: userData?.location || null,
+        isProvider: userData?.isProvider || false,
+      },
+    });
 
     return { errorMessage: null };
   } catch (error) {

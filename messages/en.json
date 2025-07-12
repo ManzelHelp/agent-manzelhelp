@@ -7,17 +7,136 @@
     "services": "Services",
     "contact": "Contact"
   },
-    "homepage": {
-      "title": "Welcome to Manzel Help",
-      "description": "A friendly place where users can offer and request services like housekeeping, tutoring, pet care, and more. Connect, help, and grow together!",
+  "homepage": {
+    "title": "Welcome to Manzel Help",
+    "description": "A friendly place where users can offer and request services like housekeeping, tutoring, pet care, and more. Connect, help, and grow together!",
+    "servicesOffered": "Services Offered",
+    "servicesOfferedPlaceholder": "Coming soon: Browse available services",
+    "requestService": "Request a Service",
+    "requestServicePlaceholder": "Coming soon: Post your service needs",
+    "whyTitle": "Why Manzel Help?",
+    "why1": "Connect with trusted local helpers",
+    "why2": "Offer your skills and earn extra income",
+    "why3": "Easy, friendly, and secure"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "overview": "Overview",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "stats": {
       "servicesOffered": "Services Offered",
-      "servicesOfferedPlaceholder": "Coming soon: Browse available services",
+      "servicesRequested": "Services Requested",
+      "totalEarnings": "Total Earnings",
+      "completedTasks": "Completed Tasks"
+    },
+    "actions": {
+      "offerService": "Offer a Service",
       "requestService": "Request a Service",
-      "requestServicePlaceholder": "Coming soon: Post your service needs",
-      "whyTitle": "Why Manzel Help?",
-      "why1": "Connect with trusted local helpers",
-      "why2": "Offer your skills and earn extra income",
-      "why3": "Easy, friendly, and secure"
+      "viewProfile": "View Profile",
+      "editSettings": "Edit Settings"
+    },
+    "activity": {
+      "noActivity": "No recent activity",
+      "serviceCompleted": "Service completed",
+      "newRequest": "New service request",
+      "paymentReceived": "Payment received"
+    },
+    "placeholder": {
+      "comingSoon": "Coming Soon",
+      "featureDescription": "This feature is currently under development"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account settings and preferences",
+    "sections": {
+      "profile": "Profile",
+      "account": "Account",
+      "notifications": "Notifications",
+      "privacy": "Privacy & Security",
+      "preferences": "Preferences"
+    },
+    "profile": {
+      "title": "Profile Information",
+      "description": "Update your personal information and profile details",
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "phone": "Phone Number",
+        "bio": "Bio",
+        "location": "Location",
+        "avatar": "Profile Picture"
+      },
+      "placeholder": {
+        "firstName": "Enter your first name",
+        "lastName": "Enter your last name",
+        "email": "Enter your email address",
+        "phone": "Enter your phone number",
+        "bio": "Tell us about yourself",
+        "location": "Enter your location"
+      }
+    },
+    "account": {
+      "title": "Account Settings",
+      "description": "Manage your account security and preferences",
+      "fields": {
+        "password": "Password",
+        "language": "Language",
+        "timezone": "Timezone",
+        "currency": "Currency"
+      },
+      "actions": {
+        "changePassword": "Change Password",
+        "deleteAccount": "Delete Account"
+      }
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "description": "Choose how you want to be notified about activities",
+      "types": {
+        "email": "Email Notifications",
+        "push": "Push Notifications",
+        "sms": "SMS Notifications"
+      },
+      "events": {
+        "newRequests": "New service requests",
+        "messages": "New messages",
+        "payments": "Payment updates",
+        "reminders": "Service reminders"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & Security",
+      "description": "Control your privacy settings and account security",
+      "options": {
+        "profileVisibility": "Profile Visibility",
+        "locationSharing": "Location Sharing",
+        "dataUsage": "Data Usage",
+        "twoFactorAuth": "Two-Factor Authentication"
+      }
+    },
+    "preferences": {
+      "title": "Preferences",
+      "description": "Customize your experience",
+      "options": {
+        "theme": "Theme",
+        "language": "Language",
+        "timezone": "Timezone"
+      }
+    },
+    "actions": {
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "reset": "Reset to Defaults"
+    },
+    "placeholder": {
+      "comingSoon": "Coming Soon",
+      "featureDescription": "This feature is currently under development",
+      "notImplemented": "This setting will be available soon"
+    }
+  }
 }
   

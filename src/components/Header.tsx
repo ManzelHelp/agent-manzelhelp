@@ -1,17 +1,17 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { getTranslations } from "next-intl/server";
+//import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import DarkModeButton from "./buttons/darkModeButton";
-import LogOutButton from "./buttons/logOutButton";
 import LanguageDropDown from "./buttons/languageDropDown";
 import { getUser } from "@/supabase/server";
+import ProfileDropDown from "./buttons/profileDropDown";
 
 async function Header() {
   const user = await getUser();
 
-  const t = await getTranslations("Header");
+  //const t = await getTranslations("Header");
 
   return (
     <header className="w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50">
@@ -59,7 +59,7 @@ async function Header() {
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
             {user ? (
-              <LogOutButton />
+              <ProfileDropDown />
             ) : (
               <>
                 <Button
