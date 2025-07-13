@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { CardContent, CardFooter } from "./ui/card";
