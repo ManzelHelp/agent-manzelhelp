@@ -8,16 +8,12 @@ const intlMiddleware = createMiddleware(routing);
 export async function middleware(request: NextRequest) {
   const intlResponse = intlMiddleware(request);
 
-  // if (intlResponse && intlResponse.status !== 200) {
-  //   return intlResponse;
-  // }
-
   // If next-intl wants to redirect (e.g., for locale detection), respect that
   if (intlResponse && intlResponse.status >= 300 && intlResponse.status < 400) {
     return intlResponse;
   }
 
-  return await updateSession(request, intlResponse || undefined);
+  return await updateSession(request, intlResponse);
 }
 
 export const config = {

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { routing } from "@/i18n/routing";
 
 export async function updateSession(
   request: NextRequest,
@@ -47,23 +48,15 @@ export async function updateSession(
   const protectedRoutes = ["/dashboard", "/settings"];
   const guestOnlyRoutes = ["/login", "/sign-up"];
 
-  const originalPathname = request.nextUrl.pathname;
-  const pathname = originalPathname.replace(/^\/[a-z]{2}(?=\/|$)/, "");
-  const localeMatch = originalPathname.match(/^\/([a-z]{2})(?=\/|$)/);
-  const locale = localeMatch ? localeMatch[1] : null;
+  // Extract locale and pathname using next-intl routing config
+  const { locale, pathname } = getLocaleInfo(request);
 
-  // Check if user is trying to access protected routes without authentication
   if (!user && protectedRoutes.some((route) => pathname.startsWith(route))) {
-    const url = request.nextUrl.clone();
-    url.pathname = locale ? `/${locale}/login` : "/login";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
-  // Check if authenticated user is trying to access guest-only routes
   if (user && guestOnlyRoutes.some((route) => pathname.startsWith(route))) {
-    const url = request.nextUrl.clone();
-    url.pathname = locale ? `/${locale}/dashboard` : "/dashboard";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
@@ -80,4 +73,22 @@ export async function updateSession(
   // of sync and terminate the user's session prematurely!
 
   return supabaseResponse;
+}
+
+// Helper function to extract locale and clean pathname using next-intl config
+function getLocaleInfo(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Find the locale in the pathname using your routing config
+  const locale =
+    routing.locales.find(
+      (loc) => pathname.startsWith(`/${loc}/`) || pathname === `/${loc}`
+    ) || routing.defaultLocale;
+
+  // Remove locale from pathname
+  const cleanPathname = pathname.startsWith(`/${locale}`)
+    ? pathname.slice(`/${locale}`.length) || "/"
+    : pathname;
+
+  return { locale, pathname: cleanPathname };
 }
