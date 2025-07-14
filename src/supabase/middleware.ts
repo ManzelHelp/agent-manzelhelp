@@ -40,17 +40,17 @@ export async function updateSession(
   // issues with users being randomly logged out.
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
-
   const {
     data: { user },
-  } = await supabase.auth.getUser(); // move user and func to if loop!!!
-
-  const protectedRoutes = ["/dashboard", "/settings"];
-  const guestOnlyRoutes = ["/login", "/sign-up"];
+  } = await supabase.auth.getUser();
 
   // Extract locale and pathname using next-intl routing config
   const { locale, pathname } = getLocaleInfo(request);
 
+  const protectedRoutes = ["/dashboard", "/settings"];
+  const guestOnlyRoutes = ["/login", "/sign-up"];
+
+  // Only perform redirects for routes that need authentication checks
   if (!user && protectedRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
