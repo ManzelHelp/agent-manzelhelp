@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
-import LogOutButton from "./logOutButton";
+import LogOutButton from "./LogOutButton";
 
 function ProfileDropDown() {
   return (
