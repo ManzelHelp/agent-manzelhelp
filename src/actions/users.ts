@@ -36,12 +36,7 @@ export const logOutAction = async () => {
 export const signUpAction = async (
   email: string,
   password: string,
-  userData?: {
-    name?: string;
-    phone?: string;
-    location?: string;
-    isProvider?: boolean;
-  }
+  isProvider: boolean
 ) => {
   try {
     const { auth } = await createClient();
@@ -59,10 +54,7 @@ export const signUpAction = async (
       data: {
         id: userId,
         email,
-        name: userData?.name || "",
-        phone: userData?.phone || null,
-        location: userData?.location || null,
-        isProvider: userData?.isProvider || false,
+        isProvider,
       },
     });
 

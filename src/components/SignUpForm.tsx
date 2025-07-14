@@ -20,19 +20,10 @@ function SignUpForm() {
     startTransition(async () => {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
-      const name = formData.get("name") as string;
-      const phone = formData.get("phone") as string;
-      const location = formData.get("location") as string;
       const isProvider = formData.get("isProvider") === "on";
 
-      const errorMessage = (
-        await signUpAction(email, password, {
-          name,
-          phone,
-          location,
-          isProvider,
-        })
-      ).errorMessage;
+      const errorMessage = (await signUpAction(email, password, isProvider))
+        .errorMessage;
 
       if (!errorMessage) {
         toast.success("sign up successful", {
@@ -48,17 +39,6 @@ function SignUpForm() {
   return (
     <form action={handleSubmit}>
       <CardContent className="grid w-full items-center gap-4">
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="name">Full Name</Label>
-          <Input
-            id="name"
-            name="name"
-            placeholder="Enter your full name"
-            type="text"
-            required
-            disabled={isPending}
-          />
-        </div>
         <div className="flex flex-col space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -81,26 +61,6 @@ function SignUpForm() {
             disabled={isPending}
           />
         </div>
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input
-            id="phone"
-            name="phone"
-            placeholder="Enter your phone number"
-            type="tel"
-            disabled={isPending}
-          />
-        </div>
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="location">Location</Label>
-          <Input
-            id="location"
-            name="location"
-            placeholder="Enter your city/location"
-            type="text"
-            disabled={isPending}
-          />
-        </div>
         <div className="flex items-center space-x-2">
           <input
             id="isProvider"
@@ -110,7 +70,7 @@ function SignUpForm() {
             disabled={isPending}
           />
           <Label htmlFor="isProvider" className="text-sm">
-            I want to offer services as a provider
+            I want to offer services as a Helper
           </Label>
         </div>
       </CardContent>
