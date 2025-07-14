@@ -56,6 +56,16 @@ async function Header() {
             </Link>
           </div>
 
+          <div className="hidden md:flex items-center gap-6">
+            <Link
+              href="/become-a-helper"
+              className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200 font-medium"
+              style={{ fontFamily: "var(--font-sans)" }}
+            >
+              Become a Helper
+            </Link>
+          </div>
+
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
             {user ? (

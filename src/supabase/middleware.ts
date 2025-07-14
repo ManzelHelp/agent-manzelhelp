@@ -43,7 +43,7 @@ export async function updateSession(
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser(); // move user and func to if loop!!!
 
   const protectedRoutes = ["/dashboard", "/settings"];
   const guestOnlyRoutes = ["/login", "/sign-up"];

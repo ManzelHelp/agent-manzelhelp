@@ -1,3 +1,4 @@
+import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 
@@ -43,6 +44,8 @@ export default async function Page({
           {t("description")}
         </p>
       </section>
+
+      <ServiceSearchBar />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         {/* Services Offered Section */}
