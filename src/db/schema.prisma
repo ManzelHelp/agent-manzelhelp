@@ -8,18 +8,17 @@ generator client {
 }
 
 model User {
-    id         String   @id @default(cuid())
-    email      String   @unique
-    name       String?
-    phone      String?
-    avatar     String?
-    bio        String?
-    location   String?
-    hourlyRate Float?
-    isProvider Boolean  @default(false)
-    isVerified Boolean  @default(false)
-    createdAt  DateTime @default(now())
-    updatedAt  DateTime @updatedAt
+    id             String   @id @default(cuid())
+    email          String   @unique
+    name           String?
+    phone          String?
+    profilePicture String?
+    bio            String?
+    location       String?
+    isProvider     Boolean  @default(false)
+    isVerified     Boolean  @default(false)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
 
     // Relations
     services           Service[]

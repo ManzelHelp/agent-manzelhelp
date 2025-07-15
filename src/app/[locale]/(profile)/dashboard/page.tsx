@@ -1,4 +1,9 @@
-import { getTranslations } from "next-intl/server";
+"use client";
+
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+//import { getTranslations } from "next-intl/server";
 import {
   Card,
   CardContent,
@@ -20,15 +25,24 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-export default async function DashboardPage() {
-  const t = await getTranslations("dashboard");
+export default function DashboardPage() {
+  //const t = await getTranslations("dashboard");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("signedUp")) {
+      toast.success("Signed up successfully! Welcome to your dashboard.");
+    }
+  }, [searchParams]);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-lg">{t("welcome")}</p>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground text-lg">
+          Welcome to your dashboard!
+        </p>
       </div>
 
       {/* Stats Overview */}
@@ -36,60 +50,52 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t("stats.servicesOffered")}
+              Services Offered
             </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              {t("placeholder.comingSoon")}
-            </p>
+            <p className="text-xs text-muted-foreground">Coming soon</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t("stats.servicesRequested")}
+              Services Requested
             </CardTitle>
             <Search className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              {t("placeholder.comingSoon")}
-            </p>
+            <p className="text-xs text-muted-foreground">Coming soon</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t("stats.totalEarnings")}
+              Total Earnings
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$0</div>
-            <p className="text-xs text-muted-foreground">
-              {t("placeholder.comingSoon")}
-            </p>
+            <p className="text-xs text-muted-foreground">Coming soon</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t("stats.completedTasks")}
+              Completed Tasks
             </CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              {t("placeholder.comingSoon")}
-            </p>
+            <p className="text-xs text-muted-foreground">Coming soon</p>
           </CardContent>
         </Card>
       </div>
@@ -101,28 +107,26 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              {t("quickActions")}
+              Quick Actions
             </CardTitle>
-            <CardDescription>
-              {t("placeholder.featureDescription")}
-            </CardDescription>
+            <CardDescription>Feature coming soon</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button className="w-full justify-start" variant="outline">
               <Plus className="mr-2 h-4 w-4" />
-              {t("actions.offerService")}
+              Offer Service
             </Button>
             <Button className="w-full justify-start" variant="outline">
               <Search className="mr-2 h-4 w-4" />
-              {t("actions.requestService")}
+              Request Service
             </Button>
             <Button className="w-full justify-start" variant="outline">
               <User className="mr-2 h-4 w-4" />
-              {t("actions.viewProfile")}
+              View Profile
             </Button>
             <Button className="w-full justify-start" variant="outline">
               <Settings className="mr-2 h-4 w-4" />
-              {t("actions.editSettings")}
+              Edit Settings
             </Button>
           </CardContent>
         </Card>
@@ -132,11 +136,9 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              {t("recentActivity")}
+              Recent Activity
             </CardTitle>
-            <CardDescription>
-              {t("placeholder.featureDescription")}
-            </CardDescription>
+            <CardDescription>Feature coming soon</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -145,9 +147,7 @@ export default async function DashboardPage() {
                   <CheckCircle className="h-5 w-5 text-green-600" />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">
-                    {t("activity.serviceCompleted")}
-                  </p>
+                  <p className="text-sm font-medium">Service completed</p>
                   <p className="text-xs text-muted-foreground">2 hours ago</p>
                 </div>
                 <div className="text-sm text-muted-foreground">$25.00</div>
@@ -158,9 +158,7 @@ export default async function DashboardPage() {
                   <Search className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">
-                    {t("activity.newRequest")}
-                  </p>
+                  <p className="text-sm font-medium">New request</p>
                   <p className="text-xs text-muted-foreground">1 day ago</p>
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -173,19 +171,15 @@ export default async function DashboardPage() {
                   <DollarSign className="h-5 w-5 text-green-600" />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">
-                    {t("activity.paymentReceived")}
-                  </p>
+                  <p className="text-sm font-medium">Payment received</p>
                   <p className="text-xs text-muted-foreground">3 days ago</p>
                 </div>
                 <div className="text-sm text-muted-foreground">$50.00</div>
               </div>
 
               <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">{t("activity.noActivity")}</p>
-                <p className="text-xs mt-1">
-                  {t("placeholder.featureDescription")}
-                </p>
+                <p className="text-sm">No recent activity</p>
+                <p className="text-xs mt-1">Feature coming soon</p>
               </div>
             </div>
           </CardContent>
@@ -197,11 +191,9 @@ export default async function DashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            {t("placeholder.comingSoon")}
+            Coming soon
           </CardTitle>
-          <CardDescription>
-            {t("placeholder.featureDescription")}
-          </CardDescription>
+          <CardDescription>Feature coming soon</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
