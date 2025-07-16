@@ -44,14 +44,14 @@ export async function getUser() {
   }
 }
 
-// export async function userIsHelper() {
-//   const user = await getUser(); // uses Supabase Auth
-//   if (!user) return null;
+export async function getUserRole() {
+  const user = await getUser();
+  if (!user) return null;
 
-//   const dbUser = await prisma.user.findUnique({
-//     where: { id: user.id },
-//     select: { role: true },
-//   });
+  const choosenUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { role: true },
+  });
 
-//   return dbUser?.role === "helper";
-// }
+  return choosenUser?.role;
+}
