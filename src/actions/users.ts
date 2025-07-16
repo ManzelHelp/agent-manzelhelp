@@ -35,12 +35,12 @@ export const logOutAction = async () => {
 export const signUpAction = async (
   email: string,
   password: string,
-  isProvider: boolean
+  userRole: string
 ) => {
   try {
-    const { auth } = await createClient();
+    const supabase = await createClient();
 
-    const { data, error } = await auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
@@ -49,15 +49,14 @@ export const signUpAction = async (
     const userId = data.user?.id;
     if (!userId) throw new Error("Error signing up");
 
-    // Insert additional user data into the user table using Supabase
-    const supabase = await createClient();
     const { error: dbError } = await supabase
-      .from("user")
-      .insert([{ id: userId, email, isProvider }]);
+      .from("users")
+      .insert([{ id: userId, email, role: userRole }]);
     if (dbError) throw dbError;
 
     return { errorMessage: null };
   } catch (error) {
+    console.log(JSON.stringify(error, null, 2));
     return handleError(error);
   }
 };

@@ -20,9 +20,9 @@ function SignUpForm() {
     startTransition(async () => {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
-      const isProvider = formData.get("isProvider") === "helper";
+      const userRole = formData.get("userRole") as string;
 
-      const errorMessage = (await signUpAction(email, password, isProvider))
+      const errorMessage = (await signUpAction(email, password, userRole))
         .errorMessage;
 
       if (!errorMessage) {
@@ -62,36 +62,21 @@ function SignUpForm() {
           />
         </div>
         <div className="flex flex-col space-y-1.5">
-          <Label>I want to:</Label>
-          <div className="flex gap-6">
-            <div className="flex items-center space-x-2">
-              <input
-                id="find-help"
-                name="isProvider"
-                type="radio"
-                value="seeker"
-                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                disabled={isPending}
-                required
-              />
-              <Label htmlFor="find-help" className="text-sm font-medium">
-                Find Help
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                id="helper"
-                name="isProvider"
-                type="radio"
-                value="helper"
-                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                disabled={isPending}
-              />
-              <Label htmlFor="helper" className="text-sm font-medium">
-                Become a Helper
-              </Label>
-            </div>
-          </div>
+          <Label htmlFor="userRole">I want to:</Label>
+          <select
+            id="userRole"
+            name="userRole"
+            className="h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            disabled={isPending}
+            required
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Select an option
+            </option>
+            <option value="customer">Find Help</option>
+            <option value="tasker">Become a Helper</option>
+          </select>
         </div>
       </CardContent>
       <CardFooter className="mt-4 flex flex-col gap-6">
