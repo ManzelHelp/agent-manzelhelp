@@ -1,4 +1,3 @@
-import { prisma } from "@/db/prisma";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -48,10 +47,17 @@ export async function getUserRole() {
   const user = await getUser();
   if (!user) return null;
 
-  const choosenUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { role: true },
-  });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("user")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
-  return choosenUser?.role;
+  if (error) {
+    console.warn("Error fetching user role:", error);
+    return null;
+  }
+
+  return data?.role;
 }
