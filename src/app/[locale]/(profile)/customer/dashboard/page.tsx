@@ -1,8 +1,3 @@
-"use client";
-
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 //import { getTranslations } from "next-intl/server";
 import {
   Card,
@@ -27,13 +22,6 @@ import {
 
 export default function DashboardPage() {
   //const t = await getTranslations("dashboard");
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.get("signedUp")) {
-      toast.success("Signed up successfully! Welcome to your dashboard.");
-    }
-  }, [searchParams]);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">

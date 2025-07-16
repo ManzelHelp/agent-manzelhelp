@@ -1,3 +1,4 @@
+import { prisma } from "@/db/prisma";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -34,7 +35,6 @@ export async function getUser() {
     const userObj = await supabase.auth.getUser();
 
     if (userObj.error) {
-      console.warn("Auth error in getUser:", userObj.error);
       return null;
     }
     return userObj.data.user;
@@ -43,3 +43,15 @@ export async function getUser() {
     return null;
   }
 }
+
+// export async function userIsHelper() {
+//   const user = await getUser(); // uses Supabase Auth
+//   if (!user) return null;
+
+//   const dbUser = await prisma.user.findUnique({
+//     where: { id: user.id },
+//     select: { role: true },
+//   });
+
+//   return dbUser?.role === "helper";
+// }
