@@ -56,22 +56,61 @@ async function Header() {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-6">
-            <Link
-              href="/become-a-helper"
-              className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200 font-medium"
-              style={{ fontFamily: "var(--font-sans)" }}
-            >
-              Become a Helper
-            </Link>
-          </div>
-
-          {/* Auth Buttons */}
           <div className="flex items-center gap-3">
             {user ? (
-              <ProfileDropDown />
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="hidden md:inline-flex"
+                >
+                  <Link
+                    href="/tasker/tasker-offer"
+                    style={{ fontFamily: "var(--font-sans)" }}
+                  >
+                    Offer a Service
+                  </Link>
+                </Button>
+
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="hidden md:inline-flex"
+                >
+                  <Link
+                    href="/customer/customer-offer"
+                    style={{ fontFamily: "var(--font-sans)" }}
+                  >
+                    Find a Helper
+                  </Link>
+                </Button>
+
+                <ProfileDropDown />
+              </>
             ) : (
               <>
+                <div className="hidden md:flex items-center gap-6">
+                  <Link
+                    href="/become-a-helper"
+                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200 font-medium"
+                    style={{ fontFamily: "var(--font-sans)" }}
+                  >
+                    Become a Helper
+                  </Link>
+                </div>
+
+                <div className="hidden md:flex items-center gap-6">
+                  <Link
+                    href="/find-a-helper"
+                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200 font-medium"
+                    style={{ fontFamily: "var(--font-sans)" }}
+                  >
+                    Find a Helper
+                  </Link>
+                </div>
+
                 <Button
                   asChild
                   variant="ghost"
