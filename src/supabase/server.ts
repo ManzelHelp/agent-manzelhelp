@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 export async function createClient() {
@@ -44,20 +45,52 @@ export async function getUser() {
 }
 
 export async function getUserRole() {
-  const user = await getUser();
-  if (!user) return null;
+  try {
+    const supabase = await createClient();
+    const userObj = await supabase.auth.getUser();
+    if (userObj.error || !userObj.data.user) return null;
+    const user = userObj.data.user;
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+    const { data, error } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-  if (error) {
-    console.warn("Error fetching user role:", error);
+    if (error) {
+      console.warn("Error fetching user role:", error);
+      return null;
+    }
+
+    return data?.role;
+  } catch (error) {
+    console.warn("Error in getUserRole:", error);
     return null;
   }
+}
 
-  return data?.role;
+export async function getProfile(user?: User | null) {
+  if (!user) {
+    user = await getUser();
+    if (!user) return null;
+  }
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      console.warn("Error fetching user profile:", error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.warn("Error in getProfile:", error);
+    return null;
+  }
 }

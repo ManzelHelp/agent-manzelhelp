@@ -88,7 +88,7 @@ async function Header() {
                   </Link>
                 </Button>
 
-                <ProfileDropDown userRole={userRole} />
+                <ProfileDropDown user={user} userRole={userRole} />
               </>
             ) : (
               <>

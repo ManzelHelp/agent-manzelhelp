@@ -1,5 +1,3 @@
-"use client";
-
 export default function WaitForConfirmation() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">

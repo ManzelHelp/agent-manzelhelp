@@ -1,6 +1,11 @@
 "use client";
 
-import { User, Settings, LogOut, LayoutDashboard } from "lucide-react";
+import {
+  User as UserIcon,
+  Settings,
+  LogOut,
+  LayoutDashboard,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -12,31 +17,34 @@ import {
 } from "../ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
 import LogOutButton from "./LogOutButton";
+import type { User } from "@supabase/supabase-js";
 
 type props = {
+  user: User;
   userRole: "customer" | "tasker" | "both" | "admin";
 };
 
-function ProfileDropDown({ userRole }: props) {
+function ProfileDropDown({ user, userRole }: props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-primary-foreground)]">
-            <User className="h-4 w-4" />
+            <UserIcon className="h-4 w-4" />
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
+        <DropdownMenuLabel>{userRole}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <Link
             href={
               userRole === "customer"
                 ? "/customer/dashboard"
-                : "/tasker-dashboard"
+                : "/tasker/dashboard"
             }
             className="flex items-center"
           >
@@ -49,7 +57,7 @@ function ProfileDropDown({ userRole }: props) {
             href={
               userRole === "customer"
                 ? "/customer/dashboard/settings"
-                : "/tasker-dashboard/settings"
+                : "/tasker/dashboard/settings"
             }
             className="flex items-center"
           >

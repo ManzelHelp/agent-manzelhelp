@@ -56,7 +56,6 @@ export const signUpAction = async (
 
     return { errorMessage: null };
   } catch (error) {
-    console.log(JSON.stringify(error, null, 2));
     return handleError(error);
   }
 };
