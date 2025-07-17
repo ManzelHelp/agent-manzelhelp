@@ -19,10 +19,11 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-      if (getUserRole() === "helper") {
-        redirect("/dashboard?signedUp=true");
+      const role = await getUserRole();
+      if (role === "helper") {
+        redirect("/tasker/dashboard");
       } else {
-        redirect("/dashboard?signedUp=true");
+        redirect("/customer/dashboard");
       }
     }
   }
