@@ -6,13 +6,18 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
 import LogOutButton from "./LogOutButton";
 
-function ProfileDropDown() {
+type props = {
+  userRole: "customer" | "tasker" | "both" | "admin";
+};
+
+function ProfileDropDown({ userRole }: props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,14 +28,31 @@ function ProfileDropDown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem asChild>
-          <Link href="/dashboard" className="flex items-center">
+          <Link
+            href={
+              userRole === "customer"
+                ? "/customer/dashboard"
+                : "/tasker-dashboard"
+            }
+            className="flex items-center"
+          >
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>user-name</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex items-center">
+          <Link
+            href={
+              userRole === "customer"
+                ? "/customer/dashboard/settings"
+                : "/tasker-dashboard/settings"
+            }
+            className="flex items-center"
+          >
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </Link>

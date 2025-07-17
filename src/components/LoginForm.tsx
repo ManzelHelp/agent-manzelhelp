@@ -10,6 +10,7 @@ import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { loginAction } from "@/actions/users";
+import { getUserRole } from "@/supabase/client";
 
 function LoginForm() {
   const router = useRouter();
@@ -24,8 +25,11 @@ function LoginForm() {
       const errorMessage = (await loginAction(email, password)).errorMessage;
 
       if (!errorMessage) {
+        const userRole = await getUserRole();
         toast.success("Login successful");
-        router.replace("/"); // redirect to dashboard later
+        router.replace(
+          userRole === "customer" ? "/customer/dashboard" : "/tasker/dashboard"
+        );
       } else {
         toast.error(errorMessage);
       }

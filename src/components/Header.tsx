@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import DarkModeButton from "./buttons/DarkModeButton";
 import LanguageDropDown from "./buttons/LanguageDropDown";
-import { getUser } from "@/supabase/server";
+import { getUser, getUserRole } from "@/supabase/server";
 import ProfileDropDown from "./buttons/ProfileDropDown";
 
 async function Header() {
   const user = await getUser();
 
   //const t = await getTranslations("Header");
+  const userRole = await getUserRole();
 
   return (
     <header className="w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50">
@@ -87,7 +88,7 @@ async function Header() {
                   </Link>
                 </Button>
 
-                <ProfileDropDown />
+                <ProfileDropDown userRole={userRole} />
               </>
             ) : (
               <>

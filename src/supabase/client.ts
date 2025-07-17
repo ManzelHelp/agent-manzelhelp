@@ -9,7 +9,7 @@ export function createClient() {
 
 export async function getUser() {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
     const userObj = await supabase.auth.getUser();
 
     if (userObj.error) {
@@ -26,7 +26,7 @@ export async function getUserRole() {
   const user = await getUser();
   if (!user) return null;
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("users")
     .select("role")
