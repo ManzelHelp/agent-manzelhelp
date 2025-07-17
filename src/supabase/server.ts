@@ -49,7 +49,7 @@ export async function getUserRole() {
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("user")
+    .from("users")
     .select("role")
     .eq("id", user.id)
     .single();
