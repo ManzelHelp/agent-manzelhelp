@@ -1,4 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { User } from "@supabase/supabase-js";
 
 export function createClient() {
   return createBrowserClient(
@@ -7,68 +8,43 @@ export function createClient() {
   );
 }
 
-// export async function getUser() {
-//   try {
-//     const supabase = createClient();
-//     const userObj = await supabase.auth.getUser();
+export async function getUser() {
+  try {
+    const supabase = createClient();
+    const userObj = await supabase.auth.getUser();
 
-//     if (userObj.error) {
-//       return null;
-//     }
-//     return userObj.data.user;
-//   } catch (error) {
-//     console.warn("Error getting user:", error);
-//     return null;
-//   }
-// }
+    if (userObj.error) {
+      return null;
+    }
+    return userObj.data.user;
+  } catch (error) {
+    console.warn("Error getting user:", error);
+    return null;
+  }
+}
 
-// export async function getUserRole() {
-//   try {
-//     const supabase = createClient();
-//     const userObj = await supabase.auth.getUser();
-//     if (userObj.error || !userObj.data.user) return null;
-//     const user = userObj.data.user;
+export async function getProfile(user?: User | null) {
+  if (!user) {
+    user = await getUser();
+    if (!user) return null;
+  }
+  try {
+    const supabase = createClient();
 
-//     const { data, error } = await supabase
-//       .from("users")
-//       .select("role")
-//       .eq("id", user.id)
-//       .single();
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
-//     if (error) {
-//       console.warn("Error fetching user role:", error);
-//       return null;
-//     }
+    if (error) {
+      console.warn("Error fetching user profile:", error);
+      return null;
+    }
 
-//     return data?.role;
-//   } catch (error) {
-//     console.warn("Error in getUserRole:", error);
-//     return null;
-//   }
-// }
-
-// export async function getProfile(user?: User | null) {
-//   if (!user) {
-//     user = await getUser();
-//     if (!user) return null;
-//   }
-//   try {
-//     const supabase = createClient();
-
-//     const { data, error } = await supabase
-//       .from("users")
-//       .select("*")
-//       .eq("id", user.id)
-//       .single();
-
-//     if (error) {
-//       console.warn("Error fetching user profile:", error);
-//       return null;
-//     }
-
-//     return data;
-//   } catch (error) {
-//     console.warn("Error in getProfile:", error);
-//     return null;
-//   }
-// }
+    return data;
+  } catch (error) {
+    console.warn("Error in getProfile:", error);
+    return null;
+  }
+}

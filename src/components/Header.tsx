@@ -8,14 +8,9 @@ import LanguageDropDown from "./buttons/LanguageDropDown";
 import ProfileDropDown from "./buttons/ProfileDropDown";
 // import { getUserWithProfile } from "@/supabase/server";
 import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
-import type { User as DBUser } from "@/types/supabase";
 
 // Accept user as a prop
-function Header({
-  user,
-}: {
-  user: (SupabaseAuthUser & { profile: DBUser | null }) | null;
-}) {
+function Header({ user }: { user: SupabaseAuthUser | null }) {
   //const t = await getTranslations("Header");
   return (
     <header className="w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50">
@@ -91,10 +86,7 @@ function Header({
                   </Link>
                 </Button>
 
-                <ProfileDropDown
-                  user={user}
-                  userRole={user.profile?.role ?? "customer"}
-                />
+                <ProfileDropDown user={user} />
               </>
             ) : (
               <>

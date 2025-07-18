@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
-import type { User as DBUser } from "@/types/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -30,28 +29,68 @@ export async function createClient() {
   );
 }
 
-// Unified function to get the authenticated user and their profile from the users table
-export async function getUserWithProfile(): Promise<
-  (SupabaseAuthUser & { profile: DBUser | null }) | null
-> {
+// export async function getUserWithProfile(): Promise<
+//   (SupabaseAuthUser & { profile: DBUser | null }) | null
+// > {
+//   try {
+//     const supabase = await createClient();
+//     const { data: authData, error: authError } = await supabase.auth.getUser();
+//     if (authError || !authData.user) {
+//       return null;
+//     }
+//     // Fetch user profile from your own users table
+//     const { data: userProfile, error: profileError } = await supabase
+//       .from("users")
+//       .select("*")
+//       .eq("id", authData.user.id)
+//       .single();
+//     if (profileError) {
+//       return { ...authData.user, profile: null };
+//     }
+//     return { ...authData.user, profile: userProfile };
+//   } catch (error) {
+//     console.warn("Error getting user with profile:", error);
+//     return null;
+//   }
+// }
+
+export async function getUser() {
   try {
     const supabase = await createClient();
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError || !authData.user) {
+    const userObj = await supabase.auth.getUser();
+
+    if (userObj.error) {
       return null;
     }
-    // Fetch user profile from your own users table
-    const { data: userProfile, error: profileError } = await supabase
+    return userObj.data.user;
+  } catch (error) {
+    console.warn("Error getting user:", error);
+    return null;
+  }
+}
+
+export async function getProfile(user?: User | null) {
+  if (!user) {
+    user = await getUser();
+    if (!user) return null;
+  }
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
       .from("users")
       .select("*")
-      .eq("id", authData.user.id)
+      .eq("id", user.id)
       .single();
-    if (profileError) {
-      return { ...authData.user, profile: null };
+
+    if (error) {
+      console.warn("Error fetching user profile:", error);
+      return null;
     }
-    return { ...authData.user, profile: userProfile };
+
+    return data;
   } catch (error) {
-    console.warn("Error getting user with profile:", error);
+    console.warn("Error in getProfile:", error);
     return null;
   }
 }

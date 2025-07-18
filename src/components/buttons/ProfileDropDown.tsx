@@ -21,10 +21,10 @@ import type { User } from "@supabase/supabase-js";
 
 type props = {
   user: User;
-  userRole: "customer" | "tasker" | "both" | "admin";
 };
 
-function ProfileDropDown({ user, userRole }: props) {
+function ProfileDropDown({ user }: props) {
+  const userRole = "customer"; // Default or derive from user metadata if available
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

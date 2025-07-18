@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
-import { getUserWithProfile } from "@/supabase/server";
+import { getUser } from "@/supabase/server";
 import { UserProvider } from "@/context/UserContext";
 
 export function generateStaticParams() {
@@ -27,7 +27,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const user = await getUserWithProfile();
+  const user = await getUser();
 
   return (
     <html lang={locale} suppressHydrationWarning>
