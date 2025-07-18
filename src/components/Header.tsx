@@ -5,15 +5,18 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import DarkModeButton from "./buttons/DarkModeButton";
 import LanguageDropDown from "./buttons/LanguageDropDown";
-import { getUser, getUserRole } from "@/supabase/server";
 import ProfileDropDown from "./buttons/ProfileDropDown";
+// import { getUserWithProfile } from "@/supabase/server";
+import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
+import type { User as DBUser } from "@/types/supabase";
 
-async function Header() {
-  const user = await getUser();
-
+// Accept user as a prop
+function Header({
+  user,
+}: {
+  user: (SupabaseAuthUser & { profile: DBUser | null }) | null;
+}) {
   //const t = await getTranslations("Header");
-  const userRole = await getUserRole();
-
   return (
     <header className="w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 md:py-5">
@@ -88,7 +91,10 @@ async function Header() {
                   </Link>
                 </Button>
 
-                <ProfileDropDown user={user} userRole={userRole} />
+                <ProfileDropDown
+                  user={user}
+                  userRole={user.profile?.role ?? "customer"}
+                />
               </>
             ) : (
               <>

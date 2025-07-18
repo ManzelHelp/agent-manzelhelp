@@ -10,9 +10,14 @@ import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { loginAction } from "@/actions/users";
-import { getUserRole } from "@/supabase/client";
+import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
+import type { User as DBUser } from "@/types/supabase";
 
-function LoginForm() {
+type UserWithProfile = (SupabaseAuthUser & { profile: DBUser | null }) | null;
+
+function LoginForm({ user }: { user?: UserWithProfile }) {
+  // 'user' is received from server for future use (e.g., redirect if already logged in)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
   const [isPending, startTransition] = useTransition();
@@ -25,7 +30,7 @@ function LoginForm() {
       const errorMessage = (await loginAction(email, password)).errorMessage;
 
       if (!errorMessage) {
-        const userRole = await getUserRole();
+        const userRole = user?.profile?.role;
         toast.success("Login successful");
         router.replace(
           userRole === "customer" ? "/customer/dashboard" : "/tasker/dashboard"
