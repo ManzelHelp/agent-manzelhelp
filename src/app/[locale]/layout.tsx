@@ -7,7 +7,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { getUser } from "@/supabase/server";
-import { UserProvider } from "@/context/UserContext";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -34,12 +33,10 @@ export default async function LocaleLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextIntlClientProvider messages={messages}>
-            <UserProvider user={user}>
-              <Header user={user} />
-              {children}
-              <Footer />
-              <Toaster />
-            </UserProvider>
+            <Header user={user} />
+            {children}
+            <Footer />
+            <Toaster />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

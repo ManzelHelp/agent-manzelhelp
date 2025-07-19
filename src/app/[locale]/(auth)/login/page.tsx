@@ -1,8 +1,8 @@
-import { getUserWithProfile } from "@/supabase/server";
+import { getUser } from "@/supabase/server";
 import LoginForm from "@/components/LoginForm";
 
 export default async function LoginPage() {
-  const user = await getUserWithProfile();
+  const user = await getUser();
 
   // Optionally, redirect if already logged in
   // if (user) redirect("/dashboard");
