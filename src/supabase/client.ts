@@ -24,13 +24,15 @@ export async function getUser() {
 }
 
 export async function getProfile(user?: User | null) {
+  const supabase = createClient();
+
   if (!user) {
     user = await getUser();
+    user = (await supabase.auth.getUser()).data.user;
+
     if (!user) return null;
   }
   try {
-    const supabase = createClient();
-
     const { data, error } = await supabase
       .from("users")
       .select("*")
