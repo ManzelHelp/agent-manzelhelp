@@ -1,11 +1,14 @@
 import LoginForm from "@/components/LoginForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { hasSignedUp?: string };
+  searchParams: Promise<{ hasSignedUp?: string; emailConfirmed?: string }>;
 }) {
+  const resolvedSearchParams = await searchParams;
+  const emailConfirmed = resolvedSearchParams.emailConfirmed === "true";
+
   return (
     <div className="mt-20 flex flex-1 flex-col items-center">
       <Card className="w-full max-w-md">
@@ -13,7 +16,7 @@ export default function LoginPage({
           <CardTitle className="text-center text-3xl">Sign Up</CardTitle>
         </CardHeader>
         <CardContent>
-          <LoginForm showToast={searchParams.hasSignedUp === "true"} />
+          <LoginForm showToast={emailConfirmed} />
         </CardContent>
       </Card>
     </div>

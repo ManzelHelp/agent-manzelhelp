@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "@/i18n/navigation";
-import { useTransition } from "react";
+import { useParams } from "next/navigation";
+import { useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { CardContent, CardFooter } from "./ui/card";
 import { Label } from "./ui/label";
@@ -14,15 +15,20 @@ import { useUserStore } from "@/stores/userStore";
 
 function SignUpForm() {
   const router = useRouter();
+  const params = useParams();
   const user = useUserStore((state) => state.user);
 
   const [isPending, startTransition] = useTransition();
 
+  // Get the current locale from URL params
+  const locale = (params.locale as string) || "en";
+
   // Redirect if user already exists
-  if (user) {
-    router.replace(`/${user.role}/dashboard`);
-    return null; // Don't render the form
-  }
+  useEffect(() => {
+    if (user) {
+      router.replace(`/${user.role}/dashboard`);
+    }
+  }, [user, router]);
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
@@ -30,16 +36,31 @@ function SignUpForm() {
       const password = formData.get("password") as string;
       const userRole = formData.get("userRole") as string;
 
-      const errorMessage = (await signUpAction(email, password, userRole))
-        .errorMessage;
+      // Validate inputs
+      if (!email || !password || !userRole) {
+        toast.error("Please fill in all fields");
+        return;
+      }
 
-      if (!errorMessage) {
-        toast.success("sign up successful", {
-          description: "Please check your email for verification",
-        });
-        router.replace("/wait-for-confirmation");
-      } else {
-        toast.error(errorMessage);
+      if (password.length < 6) {
+        toast.error("Password must be at least 6 characters long");
+        return;
+      }
+
+      try {
+        const result = await signUpAction(email, password, userRole, locale);
+
+        if (!result.errorMessage) {
+          toast.success("Sign up successful", {
+            description: "Please check your email for verification",
+          });
+          router.replace("/wait-for-confirmation");
+        } else {
+          toast.error(result.errorMessage);
+        }
+      } catch (error) {
+        console.error("Signup error:", error);
+        toast.error("An unexpected error occurred. Please try again.");
       }
     });
   };
@@ -56,6 +77,7 @@ function SignUpForm() {
             type="email"
             required
             disabled={isPending}
+            autoComplete="email"
           />
         </div>
         <div className="flex flex-col space-y-1.5">
@@ -63,10 +85,12 @@ function SignUpForm() {
           <Input
             id="password"
             name="password"
-            placeholder="Enter your password"
+            placeholder="Enter your password (min. 6 characters)"
             type="password"
             required
             disabled={isPending}
+            minLength={6}
+            autoComplete="new-password"
           />
         </div>
         <div className="flex flex-col space-y-1.5">
@@ -88,11 +112,11 @@ function SignUpForm() {
         </div>
       </CardContent>
       <CardFooter className="mt-4 flex flex-col gap-6">
-        <Button className="w-full">
-          {isPending ? <Loader2 className="animate-spin" /> : "signUp"}
+        <Button className="w-full" disabled={isPending}>
+          {isPending ? <Loader2 className="animate-spin" /> : "Sign Up"}
         </Button>
         <p className="text-xs">
-          already have an account?
+          Already have an account?{" "}
           <Link
             href="/login"
             className={`text-blue-500 underline ${

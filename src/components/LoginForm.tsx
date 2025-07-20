@@ -27,10 +27,11 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
   }, [showToast]);
 
   // Redirect if user already exists
-  if (user) {
-    router.replace(`/${user.role}/dashboard`);
-    return null; // Don't render the form
-  }
+  useEffect(() => {
+    if (user) {
+      router.replace(`/${user.role}/dashboard`);
+    }
+  }, [user, router]);
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
