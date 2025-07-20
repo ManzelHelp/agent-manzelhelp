@@ -17,14 +17,11 @@ import {
 } from "../ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
 import LogOutButton from "./LogOutButton";
-import type { User } from "@supabase/supabase-js";
+import { useUserStore } from "@/stores/userStore";
 
-type props = {
-  user: User;
-};
+function ProfileDropDown() {
+  const { user } = useUserStore();
 
-function ProfileDropDown({ user }: props) {
-  const userRole = "customer"; // Default or derive from user metadata if available
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,17 +32,13 @@ function ProfileDropDown({ user }: props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuLabel>{userRole}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user?.role}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <Link
-            href={
-              userRole === "customer"
-                ? "/customer/dashboard"
-                : "/tasker/dashboard"
-            }
+            href={`/${user?.role}/dashboard` || "/customer/dashboard"}
             className="flex items-center"
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -55,9 +48,8 @@ function ProfileDropDown({ user }: props) {
         <DropdownMenuItem asChild>
           <Link
             href={
-              userRole === "customer"
-                ? "/customer/dashboard/settings"
-                : "/tasker/dashboard/settings"
+              `/${user?.role}/dashboard/settings` ||
+              "/customer/dashboard/settings"
             }
             className="flex items-center"
           >

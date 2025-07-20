@@ -6,9 +6,11 @@ import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { logOutAction } from "@/actions/users";
+import { useUserStore } from "@/stores/userStore";
 
 function LogOutButton() {
   const router = useRouter();
+  const setUser = useUserStore((state) => state.setUser);
 
   const [loading, setLoading] = useState(false);
 
@@ -17,6 +19,7 @@ function LogOutButton() {
 
     const { errorMessage } = await logOutAction();
     if (!errorMessage) {
+      setUser(null);
       toast("Logged out successfully");
       router.push("/");
     } else {

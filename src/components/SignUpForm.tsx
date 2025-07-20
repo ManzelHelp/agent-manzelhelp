@@ -10,11 +10,19 @@ import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { signUpAction } from "@/actions/users";
+import { useUserStore } from "@/stores/userStore";
 
 function SignUpForm() {
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
 
   const [isPending, startTransition] = useTransition();
+
+  // Redirect if user already exists
+  if (user) {
+    router.replace(`/${user.role}/dashboard`);
+    return null; // Don't render the form
+  }
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {

@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
-import { getUser } from "@/supabase/server";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -26,14 +25,13 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const user = await getUser();
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextIntlClientProvider messages={messages}>
-            <Header user={user} />
+            <Header />
             {children}
             <Footer />
             <Toaster />

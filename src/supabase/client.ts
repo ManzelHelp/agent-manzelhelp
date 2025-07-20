@@ -1,5 +1,4 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { User } from "@supabase/supabase-js";
 
 export function createClient() {
   return createBrowserClient(
@@ -23,16 +22,12 @@ export async function getUser() {
   }
 }
 
-export async function getProfile(user?: User | null) {
-  const supabase = createClient();
-
-  if (!user) {
-    user = await getUser();
-    user = (await supabase.auth.getUser()).data.user;
-
-    if (!user) return null;
-  }
+export async function getProfile() {
   try {
+    const supabase = createClient();
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user) return null;
+
     const { data, error } = await supabase
       .from("users")
       .select("*")

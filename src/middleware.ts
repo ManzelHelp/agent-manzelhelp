@@ -1,28 +1,3 @@
-// import { type NextRequest } from "next/server";
-// import createMiddleware from "next-intl/middleware";
-// import { updateSession } from "@/supabase/middleware";
-// import { routing } from "./i18n/routing";
-
-// const intlMiddleware = createMiddleware(routing);
-
-// export async function middleware(request: NextRequest) {
-//   const intlResponse = intlMiddleware(request);
-
-//   // If next-intl wants to redirect (e.g., for locale detection), respect that
-//   if (intlResponse && intlResponse.status >= 300 && intlResponse.status < 400) {
-//     return intlResponse;
-//   }
-
-//   return await updateSession(request, intlResponse);
-// }
-
-// export const config = {
-//   matcher: [
-//     "/((?!api|trpc|_next|_vercel|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
-//   ],
-// };
-
-// middleware.ts
 import { type NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { updateSession } from "@/supabase/middleware";
@@ -43,7 +18,6 @@ const PUBLIC_ROUTES = [
 
 // Routes that need auth checks
 const PROTECTED_ROUTES = ["/dashboard", "/settings", "/profile", "/admin"];
-const GUEST_ONLY_ROUTES = ["/login", "/sign-up", "/forgot-password"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -65,9 +39,9 @@ export async function middleware(request: NextRequest) {
   const { locale, pathname: cleanPathname } = getLocaleInfo(request);
 
   // Only run auth checks for routes that actually need them
-  const needsAuthCheck =
-    PROTECTED_ROUTES.some((route) => cleanPathname.startsWith(route)) ||
-    GUEST_ONLY_ROUTES.some((route) => cleanPathname.startsWith(route));
+  const needsAuthCheck = PROTECTED_ROUTES.some((route) =>
+    cleanPathname.startsWith(route)
+  );
 
   if (!needsAuthCheck) {
     return intlResponse || NextResponse.next();
@@ -78,7 +52,6 @@ export async function middleware(request: NextRequest) {
     locale,
     pathname: cleanPathname,
     protectedRoutes: PROTECTED_ROUTES,
-    guestOnlyRoutes: GUEST_ONLY_ROUTES,
   });
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "@/i18n/navigation";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { toast } from "sonner";
 import { CardContent, CardFooter } from "./ui/card";
 import { Label } from "./ui/label";
@@ -10,17 +10,27 @@ import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { loginAction } from "@/actions/users";
-import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
-import type { User as DBUser } from "@/types/supabase";
+import { getProfile } from "@/supabase/client";
+import { useUserStore } from "@/stores/userStore";
 
-type UserWithProfile = (SupabaseAuthUser & { profile: DBUser | null }) | null;
-
-function LoginForm({ user }: { user?: UserWithProfile }) {
-  // 'user' is received from server for future use (e.g., redirect if already logged in)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+function LoginForm({ showToast }: { showToast?: boolean }) {
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
 
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (showToast) {
+      toast.success("Account created! You can now log in.");
+    }
+  }, [showToast]);
+
+  // Redirect if user already exists
+  if (user) {
+    router.replace(`/${user.role}/dashboard`);
+    return null; // Don't render the form
+  }
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
@@ -30,11 +40,14 @@ function LoginForm({ user }: { user?: UserWithProfile }) {
       const errorMessage = (await loginAction(email, password)).errorMessage;
 
       if (!errorMessage) {
-        const userRole = user?.profile?.role;
+        const user = await getProfile();
+
+        if (user) {
+          setUser(user);
+        }
+
         toast.success("Login successful");
-        router.replace(
-          userRole === "customer" ? "/customer/dashboard" : "/tasker/dashboard"
-        );
+        router.replace(`/${user?.role}/dashboard`);
       } else {
         toast.error(errorMessage);
       }

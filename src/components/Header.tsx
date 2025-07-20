@@ -1,17 +1,17 @@
+"use client";
+
 import React from "react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-//import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import DarkModeButton from "./buttons/DarkModeButton";
 import LanguageDropDown from "./buttons/LanguageDropDown";
 import ProfileDropDown from "./buttons/ProfileDropDown";
-// import { getUserWithProfile } from "@/supabase/server";
-import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
+import { useUserStore } from "@/stores/userStore";
 
-// Accept user as a prop
-function Header({ user }: { user: SupabaseAuthUser | null }) {
-  //const t = await getTranslations("Header");
+function Header() {
+  const { user } = useUserStore();
+
   return (
     <header className="w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 md:py-5">
@@ -86,7 +86,7 @@ function Header({ user }: { user: SupabaseAuthUser | null }) {
                   </Link>
                 </Button>
 
-                <ProfileDropDown user={user} />
+                <ProfileDropDown />
               </>
             ) : (
               <>
