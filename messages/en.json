@@ -141,7 +141,11 @@
       "sms": "SMS Notifications",
       "smsDescription": "Receive notifications via text message",
       "marketing": "Marketing Emails",
-      "marketingDescription": "Receive promotional offers and updates"
+      "marketingDescription": "Receive promotional offers and updates",
+      "unread": "Unread",
+      "seen": "Seen",
+      "empty": "No notifications",
+      "emptyDescription": "You have no notifications at this time."
     },
     "preferences": {
       "description": "Customize your app experience",
@@ -264,6 +268,7 @@
     },
     "verification": {
       "description": "Verify your identity to build trust and unlock all features",
+      "identity": "Identity Verification",
       "email": "Email Address",
       "phone": "Phone Number",
       "phoneNotAdded": "No phone number added",
@@ -336,7 +341,11 @@
       "marketing": "Marketing Emails",
       "marketingDescription": "Receive promotional offers and platform updates",
       "jobAlerts": "Job Alerts",
-      "jobAlertsDescription": "Get notified when new jobs match your skills"
+      "jobAlertsDescription": "Get notified when new jobs match your skills",
+      "unread": "Unread",
+      "seen": "Seen",
+      "empty": "No notifications",
+      "emptyDescription": "You have no notifications at this time."
     },
     "preferences": {
       "description": "Customize your tasker experience",

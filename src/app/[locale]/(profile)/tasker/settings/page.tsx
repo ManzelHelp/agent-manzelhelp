@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+"use client";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -7,414 +8,265 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  User,
-  Shield,
-  Bell,
-  Settings as SettingsIcon,
-  Palette,
-  Camera,
-  Mail,
-  Phone,
-  Eye,
-  Trash2,
-  Save,
-  X,
-  RotateCcw,
-} from "lucide-react";
+import { Shield, Bell, Palette, Mail, CheckCircle } from "lucide-react";
+import { useState } from "react";
 
-export default async function SettingsPage() {
-  const t = await getTranslations("settings");
+export default function SettingsPage() {
+  const t = useTranslations("taskerProfile");
+  const [activeSection, setActiveSection] = useState("security");
+  type NotificationKey = "email" | "push" | "sms" | "marketing" | "jobAlerts";
+  const [notifications, setNotifications] = useState<
+    Record<NotificationKey, boolean>
+  >({
+    email: true,
+    push: false,
+    sms: false,
+    marketing: false,
+    jobAlerts: true,
+  });
+
+  const handleToggle = (key: NotificationKey) => {
+    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const sections = [
+    { id: "security", title: t("sections.security") },
+    { id: "notifications", title: t("sections.notifications") },
+    { id: "preferences", title: t("sections.preferences") },
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <SettingsIcon className="h-8 w-8" />
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground text-lg">{t("description")}</p>
-      </div>
-
-      {/* Settings Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Profile Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              {t("profile.title")}
-            </CardTitle>
-            <CardDescription>{t("profile.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                  <User className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="absolute -bottom-1 -right-1 h-6 w-6 p-0"
-                >
-                  <Camera className="h-3 w-3" />
-                </Button>
-              </div>
-              <div className="flex-1">
-                <Label className="text-sm font-medium">
-                  {t("profile.fields.avatar")}
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  {t("placeholder.notImplemented")}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">
-                  {t("profile.fields.firstName")}
-                </Label>
-                <Input
-                  id="firstName"
-                  placeholder={t("profile.placeholder.firstName")}
-                  disabled
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">{t("profile.fields.lastName")}</Label>
-                <Input
-                  id="lastName"
-                  placeholder={t("profile.placeholder.lastName")}
-                  disabled
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("profile.fields.email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t("profile.placeholder.email")}
-                disabled
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">{t("profile.fields.phone")}</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder={t("profile.placeholder.phone")}
-                disabled
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="location">{t("profile.fields.location")}</Label>
-              <Input
-                id="location"
-                placeholder={t("profile.placeholder.location")}
-                disabled
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio">{t("profile.fields.bio")}</Label>
-              <textarea
-                id="bio"
-                className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder={t("profile.placeholder.bio")}
-                disabled
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Account Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              {t("account.title")}
-            </CardTitle>
-            <CardDescription>{t("account.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">{t("account.fields.password")}</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  disabled
-                  className="flex-1"
-                />
-                <Button variant="outline" size="sm" disabled>
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
-              <Button variant="outline" size="sm" className="mt-2" disabled>
-                {t("account.actions.changePassword")}
-              </Button>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="language">{t("account.fields.language")}</Label>
-                <select
-                  id="language"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled
-                >
-                  <option value="en">English</option>
-                  <option value="de">Deutsch</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="timezone">{t("account.fields.timezone")}</Label>
-                <select
-                  id="timezone"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled
-                >
-                  <option value="UTC">UTC</option>
-                  <option value="Europe/Berlin">Europe/Berlin</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency">{t("account.fields.currency")}</Label>
-              <select
-                id="currency"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled
+    <div className="max-w-5xl mx-auto p-6 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar Navigation */}
+        <aside className="lg:w-1/4">
+          <nav className="space-y-1">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`w-full flex items-center gap-3 px-6 py-3 text-left text-sm font-medium transition-colors hover:bg-accent rounded-lg ${
+                  activeSection === section.id
+                    ? "bg-primary/10 text-primary border-r-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-              </select>
-            </div>
-
-            <div className="pt-4 border-t">
-              <Button variant="destructive" size="sm" disabled>
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t("account.actions.deleteAccount")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Notification Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              {t("notifications.title")}
-            </CardTitle>
-            <CardDescription>{t("notifications.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">
-                    {t("notifications.types.email")}
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t("placeholder.notImplemented")}
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" disabled>
-                  <Mail className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">
-                    {t("notifications.types.push")}
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t("placeholder.notImplemented")}
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" disabled>
-                  <Bell className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">
-                    {t("notifications.types.sms")}
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t("placeholder.notImplemented")}
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" disabled>
-                  <Phone className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t space-y-2">
-              <h4 className="text-sm font-medium">Notification Events</h4>
-              <div className="space-y-2">
-                {Object.entries({
-                  newRequests: t("notifications.events.newRequests"),
-                  messages: t("notifications.events.messages"),
-                  payments: t("notifications.events.payments"),
-                  reminders: t("notifications.events.reminders"),
-                }).map(([key, label]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-sm">{label}</span>
-                    <div className="h-4 w-8 rounded-full bg-muted"></div>
+                {section.title}
+              </button>
+            ))}
+          </nav>
+        </aside>
+        {/* Main Content */}
+        <main className="flex-1 space-y-6">
+          {/* Security Section */}
+          {activeSection === "security" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  {t("sections.security")}
+                </CardTitle>
+                <CardDescription>{t("security.description")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Sign-in Methods */}
+                <div className="space-y-4">
+                  <h3 className="font-medium">{t("security.signInMethods")}</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">
+                            {t("security.emailPassword")}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            user@email.com
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <Button variant="outline" size="sm">
+                          {t("security.change")}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Privacy & Security */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              {t("privacy.title")}
-            </CardTitle>
-            <CardDescription>{t("privacy.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              {Object.entries({
-                profileVisibility: t("privacy.options.profileVisibility"),
-                locationSharing: t("privacy.options.locationSharing"),
-                dataUsage: t("privacy.options.dataUsage"),
-                twoFactorAuth: t("privacy.options.twoFactorAuth"),
-              }).map(([key, label]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label className="text-sm font-medium">{label}</Label>
-                    <p className="text-xs text-muted-foreground">
-                      {t("placeholder.notImplemented")}
-                    </p>
+                </div>
+                {/* Password */}
+                <div className="space-y-4">
+                  <h3 className="font-medium">{t("security.password")}</h3>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">
+                        {t("security.passwordTitle")}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("security.passwordDescription")}
+                      </p>
+                    </div>
+                    <Button variant="outline">
+                      {t("security.changePassword")}
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" disabled>
-                    <SettingsIcon className="h-4 w-4" />
-                  </Button>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Preferences */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              {t("preferences.title")}
-            </CardTitle>
-            <CardDescription>{t("preferences.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("preferences.options.theme")}
-                </Label>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" disabled>
-                    Light
-                  </Button>
-                  <Button variant="outline" size="sm" disabled>
-                    Dark
-                  </Button>
-                  <Button variant="outline" size="sm" disabled>
-                    Auto
-                  </Button>
+                {/* Account Deactivation */}
+                <div className="space-y-4">
+                  <h3 className="font-medium text-destructive">
+                    {t("security.dangerZone")}
+                  </h3>
+                  <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">
+                          {t("security.deactivateAccount")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t("security.deactivateDescription")}
+                        </p>
+                      </div>
+                      <Button variant="destructive" size="sm">
+                        {t("security.deactivate")}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("placeholder.notImplemented")}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("preferences.options.language")}
-                </Label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled
-                >
-                  <option value="en">English</option>
-                  <option value="de">Deutsch</option>
-                </select>
-                <p className="text-xs text-muted-foreground">
-                  {t("placeholder.notImplemented")}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("preferences.options.timezone")}
-                </Label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled
-                >
-                  <option value="UTC">UTC</option>
-                  <option value="Europe/Berlin">Europe/Berlin</option>
-                </select>
-                <p className="text-xs text-muted-foreground">
-                  {t("placeholder.notImplemented")}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+          {/* Notifications Section */}
+          {activeSection === "notifications" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  {t("sections.notifications")}
+                </CardTitle>
+                <CardDescription>
+                  {t("notifications.description")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  {(
+                    [
+                      {
+                        key: "email",
+                        title: t("notifications.email"),
+                        description: t("notifications.emailDescription"),
+                      },
+                      {
+                        key: "push",
+                        title: t("notifications.push"),
+                        description: t("notifications.pushDescription"),
+                      },
+                      {
+                        key: "sms",
+                        title: t("notifications.sms"),
+                        description: t("notifications.smsDescription"),
+                      },
+                      {
+                        key: "marketing",
+                        title: t("notifications.marketing"),
+                        description: t("notifications.marketingDescription"),
+                      },
+                      {
+                        key: "jobAlerts",
+                        title: t("notifications.jobAlerts"),
+                        description: t("notifications.jobAlertsDescription"),
+                      },
+                    ] as {
+                      key: NotificationKey;
+                      title: string;
+                      description: string;
+                    }[]
+                  ).map((notification) => (
+                    <div
+                      key={notification.key}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">{notification.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {notification.description}
+                        </p>
+                      </div>
+                      <button
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                          notifications[notification.key]
+                            ? "bg-primary"
+                            : "bg-muted"
+                        }`}
+                        onClick={() => handleToggle(notification.key)}
+                        aria-pressed={notifications[notification.key]}
+                        aria-label={`Toggle ${notification.title}`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                            notifications[notification.key]
+                              ? "translate-x-5"
+                              : "translate-x-0"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {/* Preferences Section */}
+          {activeSection === "preferences" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  {t("sections.preferences")}
+                </CardTitle>
+                <CardDescription>
+                  {t("preferences.description")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {t("preferences.language")}
+                    </Label>
+                    <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                      <option value="en">English</option>
+                      <option value="de">Deutsch</option>
+                      <option value="fr">Français</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {t("preferences.timezone")}
+                    </Label>
+                    <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                      <option value="GMT">GMT (Greenwich Mean Time)</option>
+                      <option value="CET">CET (Central European Time)</option>
+                      <option value="EST">EST (Eastern Standard Time)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {t("preferences.currency")}
+                    </Label>
+                    <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                      <option value="EUR">EUR (Euro)</option>
+                      <option value="USD">USD (US Dollar)</option>
+                      <option value="MAD">MAD (Moroccan Dirham)</option>
+                    </select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </main>
       </div>
-
-      {/* Action Buttons */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-3 justify-end">
-            <Button variant="outline" disabled>
-              <RotateCcw className="h-4 w-4 mr-2" />
-              {t("actions.reset")}
-            </Button>
-            <Button variant="outline" disabled>
-              <X className="h-4 w-4 mr-2" />
-              {t("actions.cancel")}
-            </Button>
-            <Button disabled>
-              <Save className="h-4 w-4 mr-2" />
-              {t("actions.save")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Coming Soon Notice */}
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="text-center space-y-2">
-            <h3 className="font-medium">{t("placeholder.comingSoon")}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t("placeholder.featureDescription")}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

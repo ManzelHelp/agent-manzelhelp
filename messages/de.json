@@ -141,7 +141,11 @@
       "sms": "SMS-Benachrichtigungen",
       "smsDescription": "Benachrichtigungen per SMS erhalten",
       "marketing": "Marketing-E-Mails",
-      "marketingDescription": "Werbeaktionen und Updates erhalten"
+      "marketingDescription": "Werbeaktionen und Updates erhalten",
+      "unread": "Ungelesen",
+      "seen": "Gesehen",
+      "empty": "Keine Benachrichtigungen",
+      "emptyDescription": "Sie haben derzeit keine Benachrichtigungen."
     },
     "preferences": {
       "description": "Passen Sie Ihr App-Erlebnis an",
@@ -264,6 +268,7 @@
     },
     "verification": {
       "description": "Verifizieren Sie Ihre Identität, um Vertrauen aufzubauen und alle Funktionen freizuschalten",
+      "identity": "Identitätsüberprüfung",
       "email": "E-Mail-Adresse",
       "phone": "Telefonnummer",
       "phoneNotAdded": "Keine Telefonnummer hinzugefügt",
@@ -336,7 +341,11 @@
       "marketing": "Marketing-E-Mails",
       "marketingDescription": "Werbeaktionen und Plattform-Updates erhalten",
       "jobAlerts": "Job-Benachrichtigungen",
-      "jobAlertsDescription": "Benachrichtigt werden, wenn neue Jobs Ihren Fähigkeiten entsprechen"
+      "jobAlertsDescription": "Benachrichtigt werden, wenn neue Jobs Ihren Fähigkeiten entsprechen",
+      "unread": "Ungelesen",
+      "seen": "Gesehen",
+      "empty": "Keine Benachrichtigungen",
+      "emptyDescription": "Sie haben derzeit keine Benachrichtigungen."
     },
     "preferences": {
       "description": "Passen Sie Ihr Tasker-Erlebnis an",
