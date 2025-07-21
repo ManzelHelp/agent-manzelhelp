@@ -3,140 +3,390 @@
     "title": "Manzel Help"
   },
   "Header": {
-    "about": "Über uns",
-    "services": "Dienstleistungen",
+    "about": "Über Uns",
+    "services": "Dienste",
     "contact": "Kontakt"
   },
   "homepage": {
     "title": "Willkommen bei Manzel Help",
-    "description": "Ein freundlicher Ort, an dem Nutzer Dienstleistungen wie Haushaltshilfe, Nachhilfe, Tierbetreuung und mehr anbieten und anfragen können. Vernetzen, helfen und gemeinsam wachsen!",
-    "servicesOffered": "Angebotene Dienstleistungen",
-    "servicesOfferedPlaceholder": "Demnächst verfügbar: Durchstöbern Sie verfügbare Dienstleistungen",
-    "requestService": "Dienstleistung anfragen",
-    "requestServicePlaceholder": "Demnächst verfügbar: Stellen Sie Ihre Serviceanfrage ein",
+    "description": "Ein freundlicher Ort, wo Nutzer Dienste wie Haushaltsführung, Nachhilfe, Tierpflege und mehr anbieten und anfragen können. Zusammen verbinden, helfen und wachsen!",
+    "servicesOffered": "Angebotene Dienste",
+    "servicesOfferedPlaceholder": "Bald verfügbar: Verfügbare Dienste durchsuchen",
+    "requestService": "Einen Dienst Anfragen",
+    "requestServicePlaceholder": "Bald verfügbar: Ihre Dienstleistungsbedürfnisse posten",
     "whyTitle": "Warum Manzel Help?",
-    "why1": "Vernetzen Sie sich mit vertrauenswürdigen lokalen Helfern",
-    "why2": "Bieten Sie Ihre Fähigkeiten an und verdienen Sie zusätzliches Einkommen",
+    "why1": "Verbindung zu vertrauenswürdigen lokalen Helfern",
+    "why2": "Ihre Fähigkeiten anbieten und zusätzliches Einkommen erzielen",
     "why3": "Einfach, freundlich und sicher"
   },
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Willkommen zurück",
     "overview": "Übersicht",
-    "recentActivity": "Letzte Aktivität",
+    "recentActivity": "Neueste Aktivitäten",
     "quickActions": "Schnellaktionen",
     "stats": {
-      "servicesOffered": "Angebotene Dienstleistungen",
-      "servicesRequested": "Angefragte Dienstleistungen",
-      "totalEarnings": "Gesamteinnahmen",
+      "servicesOffered": "Angebotene Dienste",
+      "servicesRequested": "Angefragte Dienste",
+      "totalEarnings": "Gesamteinkommen",
       "completedTasks": "Abgeschlossene Aufgaben"
     },
     "actions": {
-      "offerService": "Dienstleistung anbieten",
-      "requestService": "Dienstleistung anfragen",
-      "viewProfile": "Profil anzeigen",
-      "editSettings": "Einstellungen bearbeiten"
+      "offerService": "Einen Dienst Anbieten",
+      "requestService": "Einen Dienst Anfragen",
+      "viewProfile": "Profil Anzeigen",
+      "editSettings": "Einstellungen Bearbeiten"
     },
     "activity": {
-      "noActivity": "Keine kürzliche Aktivität",
-      "serviceCompleted": "Dienstleistung abgeschlossen",
-      "newRequest": "Neue Serviceanfrage",
+      "noActivity": "Keine neuesten Aktivitäten",
+      "serviceCompleted": "Dienst abgeschlossen",
+      "newRequest": "Neue Dienstanfrage",
       "paymentReceived": "Zahlung erhalten"
     },
     "placeholder": {
-      "comingSoon": "Demnächst verfügbar",
-      "featureDescription": "Diese Funktion wird derzeit entwickelt"
+      "comingSoon": "Bald Verfügbar",
+      "featureDescription": "Diese Funktion befindet sich derzeit in der Entwicklung"
     }
   },
-  "settings": {
-    "title": "Einstellungen",
-    "description": "Verwalten Sie Ihre Kontoeinstellungen und Präferenzen",
+  "profile": {
+    "title": "Profil",
+    "subtitle": "Verwalten Sie Ihre Kontoinformationen und Einstellungen",
+    "navigation": {
+      "title": "Profil-Einstellungen"
+    },
     "sections": {
-      "profile": "Profil",
-      "account": "Konto",
+      "personal": "Persönliche Informationen",
+      "addresses": "Adressen",
+      "security": "Sicherheit",
+      "payment": "Zahlungsmethoden",
       "notifications": "Benachrichtigungen",
-      "privacy": "Datenschutz & Sicherheit",
-      "preferences": "Präferenzen"
+      "preferences": "Einstellungen",
+      "verification": "Verifizierung"
     },
-    "profile": {
-      "title": "Profilinformationen",
-      "description": "Aktualisieren Sie Ihre persönlichen Informationen und Profildetails",
-      "fields": {
-        "firstName": "Vorname",
-        "lastName": "Nachname",
-        "email": "E-Mail",
-        "phone": "Telefonnummer",
-        "bio": "Biografie",
-        "location": "Standort",
-        "avatar": "Profilbild"
-      },
-      "placeholder": {
-        "firstName": "Geben Sie Ihren Vornamen ein",
-        "lastName": "Geben Sie Ihren Nachnamen ein",
-        "email": "Geben Sie Ihre E-Mail-Adresse ein",
-        "phone": "Geben Sie Ihre Telefonnummer ein",
-        "bio": "Erzählen Sie uns von sich",
-        "location": "Geben Sie Ihren Standort ein"
-      }
+    "completion": {
+      "title": "Vervollständigen Sie Ihr Profil",
+      "description": "Vervollständigen Sie Ihr Profil, um alle Funktionen freizuschalten und Vertrauen bei anderen Nutzern aufzubauen.",
+      "complete": "Profil Vollständig",
+      "basicInfo": "Grundinformationen",
+      "contactInfo": "Kontaktinformationen",
+      "profilePhoto": "Profilbild",
+      "address": "Heimadresse",
+      "emailVerified": "E-Mail Verifiziert",
+      "phoneVerified": "Telefon Verifiziert",
+      "required": "Erforderlich"
     },
-    "account": {
-      "title": "Kontoeinstellungen",
-      "description": "Verwalten Sie Ihre Kontosicherheit und Präferenzen",
-      "fields": {
-        "password": "Passwort",
-        "language": "Sprache",
-        "timezone": "Zeitzone",
-        "currency": "Währung"
-      },
-      "actions": {
-        "changePassword": "Passwort ändern",
-        "deleteAccount": "Konto löschen"
-      }
+    "personal": {
+      "description": "Aktualisieren Sie Ihre Grundinformationen und Ihr Profilbild",
+      "avatar": "Profilbild",
+      "avatarDescription": "Laden Sie ein Foto hoch, damit andere Sie erkennen können",
+      "firstName": "Vorname",
+      "firstNamePlaceholder": "Geben Sie Ihren Vornamen ein",
+      "lastName": "Nachname",
+      "lastNamePlaceholder": "Geben Sie Ihren Nachnamen ein",
+      "email": "E-Mail-Adresse",
+      "emailNote": "Kontaktieren Sie den Support, um Ihre E-Mail-Adresse zu ändern",
+      "phone": "Telefonnummer",
+      "phonePlaceholder": "+49 (555) 123-4567",
+      "birthDate": "Geburtsdatum"
+    },
+    "addresses": {
+      "description": "Verwalten Sie Ihre gespeicherten Adressen für schnellere Buchungen",
+      "add": "Adresse Hinzufügen",
+      "empty": "Keine Adressen gespeichert",
+      "emptyDescription": "Fügen Sie eine Adresse hinzu, um die Buchung von Diensten zu erleichtern",
+      "addFirst": "Ihre Erste Adresse Hinzufügen",
+      "newAddress": "Neue Adresse",
+      "label": "Bezeichnung",
+      "home": "Zuhause",
+      "work": "Arbeit",
+      "other": "Andere",
+      "country": "Land",
+      "street": "Straßenadresse",
+      "streetPlaceholder": "Musterstraße 123",
+      "city": "Stadt",
+      "cityPlaceholder": "Berlin",
+      "region": "Bundesland/Region",
+      "regionPlaceholder": "BE",
+      "postalCode": "Postleitzahl",
+      "postalCodePlaceholder": "10001",
+      "default": "Standard"
+    },
+    "security": {
+      "description": "Verwalten Sie Ihre Kontosicherheit und Anmeldeeinstellungen",
+      "signInMethods": "Anmeldemethoden",
+      "emailPassword": "E-Mail & Passwort",
+      "change": "Ändern",
+      "password": "Passwort",
+      "passwordTitle": "Passwort",
+      "passwordDescription": "Verwenden Sie ein starkes Passwort zum Schutz Ihres Kontos",
+      "changePassword": "Passwort Ändern",
+      "dangerZone": "Gefahrenbereich",
+      "deactivateAccount": "Konto Deaktivieren",
+      "deactivateDescription": "Dies wird Ihr Konto dauerhaft deaktivieren",
+      "deactivate": "Deaktivieren"
+    },
+    "payment": {
+      "description": "Verwalten Sie Ihre Zahlungsmethoden für einfache Transaktionen",
+      "addMethod": "Zahlungsmethode Hinzufügen",
+      "noMethods": "Keine Zahlungsmethoden",
+      "noMethodsDescription": "Fügen Sie eine Zahlungsmethode hinzu, um Transaktionen zu erleichtern",
+      "addFirst": "Zahlungsmethode Hinzufügen"
     },
     "notifications": {
-      "title": "Benachrichtigungseinstellungen",
-      "description": "Wählen Sie, wie Sie über Aktivitäten benachrichtigt werden möchten",
-      "types": {
-        "email": "E-Mail-Benachrichtigungen",
-        "push": "Push-Benachrichtigungen",
-        "sms": "SMS-Benachrichtigungen"
-      },
-      "events": {
-        "newRequests": "Neue Serviceanfragen",
-        "messages": "Neue Nachrichten",
-        "payments": "Zahlungsaktualisierungen",
-        "reminders": "Service-Erinnerungen"
-      }
-    },
-    "privacy": {
-      "title": "Datenschutz & Sicherheit",
-      "description": "Steuern Sie Ihre Datenschutzeinstellungen und Kontosicherheit",
-      "options": {
-        "profileVisibility": "Profil-Sichtbarkeit",
-        "locationSharing": "Standortfreigabe",
-        "dataUsage": "Datennutzung",
-        "twoFactorAuth": "Zwei-Faktor-Authentifizierung"
-      }
+      "description": "Wählen Sie, wie Sie benachrichtigt werden möchten",
+      "email": "E-Mail-Benachrichtigungen",
+      "emailDescription": "Benachrichtigungen per E-Mail erhalten",
+      "push": "Push-Benachrichtigungen",
+      "pushDescription": "Benachrichtigungen auf Ihrem Gerät erhalten",
+      "sms": "SMS-Benachrichtigungen",
+      "smsDescription": "Benachrichtigungen per SMS erhalten",
+      "marketing": "Marketing-E-Mails",
+      "marketingDescription": "Werbeaktionen und Updates erhalten"
     },
     "preferences": {
-      "title": "Präferenzen",
-      "description": "Passen Sie Ihre Erfahrung an",
-      "options": {
-        "theme": "Design",
-        "language": "Sprache",
-        "timezone": "Zeitzone"
-      }
+      "description": "Passen Sie Ihr App-Erlebnis an",
+      "language": "Sprache",
+      "timezone": "Zeitzone",
+      "currency": "Währung"
+    },
+    "verification": {
+      "description": "Verifizieren Sie Ihre Identität, um Vertrauen aufzubauen und Funktionen freizuschalten",
+      "email": "E-Mail-Adresse",
+      "phone": "Telefonnummer",
+      "phoneNotAdded": "Keine Telefonnummer hinzugefügt",
+      "verified": "Verifiziert",
+      "verify": "Verifizieren",
+      "identity": "Identitätsverifizierung",
+      "identityDescription": "Laden Sie einen Ausweis hoch, um Ihre Identität zu verifizieren",
+      "uploadDocument": "Dokument Hochladen"
     },
     "actions": {
-      "save": "Änderungen speichern",
+      "edit": "Bearbeiten",
       "cancel": "Abbrechen",
-      "reset": "Auf Standard zurücksetzen"
+      "save": "Änderungen Speichern",
+      "saving": "Speichern..."
     },
-    "placeholder": {
-      "comingSoon": "Demnächst verfügbar",
-      "featureDescription": "Diese Funktion wird derzeit entwickelt",
-      "notImplemented": "Diese Einstellung wird bald verfügbar sein"
+    "success": {
+      "profileUpdated": "Profil erfolgreich aktualisiert!",
+      "addressAdded": "Adresse erfolgreich hinzugefügt!",
+      "addressDeleted": "Adresse erfolgreich gelöscht!"
+    },
+    "errors": {
+      "notLoggedIn": "Nicht Angemeldet",
+      "loginRequired": "Bitte melden Sie sich an, um Ihr Profil anzuzeigen",
+      "updateProfile": "Profil konnte nicht aktualisiert werden",
+      "fetchAddresses": "Adressen konnten nicht geladen werden",
+      "addAddress": "Adresse konnte nicht hinzugefügt werden",
+      "deleteAddress": "Adresse konnte nicht gelöscht werden"
     }
+  },
+  "Footer": {
+    "rights": "© 2024 Manzel Help. Alle Rechte vorbehalten.",
+    "about": "Über",
+    "privacy": "Datenschutz",
+    "terms": "Bedingungen"
+  },
+  "taskerProfile": {
+    "title": "Tasker-Profil",
+    "subtitle": "Erstellen Sie Ihr professionelles Profil, um mehr Kunden anzuziehen",
+    "navigation": {
+      "title": "Profil-Einstellungen"
+    },
+    "sections": {
+      "personal": "Persönliche Informationen",
+      "bio": "Biografie & Erfahrung",
+      "skills": "Fähigkeiten & Dienste",
+      "availability": "Verfügbarkeit",
+      "verification": "Verifizierung",
+      "addresses": "Servicegebiete",
+      "security": "Sicherheit",
+      "payment": "Zahlungsmethoden",
+      "notifications": "Benachrichtigungen",
+      "preferences": "Einstellungen"
+    },
+    "completion": {
+      "title": "Vervollständigen Sie Ihr Tasker-Profil",
+      "description": "Vervollständigen Sie Ihr Profil, um Jobanfragen zu erhalten und Vertrauen bei Kunden aufzubauen.",
+      "complete": "Profil Vollständig",
+      "basicInfo": "Grundinformationen",
+      "profilePhoto": "Profilbild",
+      "bioExperience": "Biografie & Erfahrung",
+      "servicesSkills": "Dienste & Fähigkeiten",
+      "availability": "Verfügbarkeitsplan",
+      "address": "Servicegebiete",
+      "identityVerified": "Identität Verifiziert",
+      "emailVerified": "E-Mail Verifiziert",
+      "required": "Erforderlich"
+    },
+    "personal": {
+      "description": "Aktualisieren Sie Ihre Grundinformationen und Ihr professionelles Foto",
+      "avatar": "Profilbild",
+      "avatarDescription": "Laden Sie ein professionelles Foto hoch, um Vertrauen bei Kunden aufzubauen",
+      "firstName": "Vorname",
+      "firstNamePlaceholder": "Geben Sie Ihren Vornamen ein",
+      "lastName": "Nachname",
+      "lastNamePlaceholder": "Geben Sie Ihren Nachnamen ein",
+      "email": "E-Mail-Adresse",
+      "emailNote": "Kontaktieren Sie den Support, um Ihre E-Mail-Adresse zu ändern",
+      "phone": "Telefonnummer",
+      "phonePlaceholder": "+49 (555) 123-4567",
+      "birthDate": "Geburtsdatum"
+    },
+    "bio": {
+      "description": "Erzählen Sie Kunden von Ihrer Erfahrung und Expertise",
+      "bioTitle": "Über Sie",
+      "bioPlaceholder": "Beschreiben Sie Ihre Fähigkeiten, Erfahrungen und was Sie in dem, was Sie tun, großartig macht...",
+      "bioHint": "Teilen Sie Ihren Hintergrund, Ihre Spezialitäten und warum Kunden Sie wählen sollten",
+      "experienceLevel": "Erfahrungslevel",
+      "serviceRadius": "Service-Radius",
+      "serviceRadiusHint": "Wie weit sind Sie bereit, für Jobs zu reisen?",
+      "experienceLevels": {
+        "beginner": "Anfänger (0-1 Jahre)",
+        "intermediate": "Fortgeschritten (1-3 Jahre)",
+        "experienced": "Erfahren (3-5 Jahre)",
+        "expert": "Experte (5+ Jahre)"
+      }
+    },
+    "skills": {
+      "description": "Verwalten Sie die Dienste, die Sie Kunden anbieten",
+      "addService": "Service Hinzufügen",
+      "noServices": "Noch keine Services angeboten",
+      "noServicesDescription": "Fügen Sie Services hinzu, um Jobanfragen von Kunden zu erhalten",
+      "addFirstService": "Ihren Ersten Service Hinzufügen",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "availability": {
+      "description": "Legen Sie Ihre wöchentliche Verfügbarkeit für neue Jobs fest",
+      "unavailable": "Nicht verfügbar",
+      "quickBookingTitle": "Schnellbuchung",
+      "quickBookingDescription": "Kunden können Sie während Ihrer verfügbaren Stunden sofort für schnellere Jobs buchen"
+    },
+    "verification": {
+      "description": "Verifizieren Sie Ihre Identität, um Vertrauen aufzubauen und alle Funktionen freizuschalten",
+      "email": "E-Mail-Adresse",
+      "phone": "Telefonnummer",
+      "phoneNotAdded": "Keine Telefonnummer hinzugefügt",
+      "verified": "Verifiziert",
+      "verify": "Verifizieren",
+      "identityRequired": "Identitätsverifizierung Erforderlich",
+      "mandatory": "Pflicht",
+      "identityVerified": "Identität Verifiziert",
+      "identityPending": "Verifizierung Ausstehend",
+      "identityDescription": "Laden Sie einen amtlichen Ausweis hoch, um Ihre Identität zu verifizieren und Services anzubieten",
+      "uploadDocument": "Dokument Hochladen",
+      "acceptedDocuments": "Akzeptiert: Führerschein, Reisepass, Personalausweis",
+      "benefitsTitle": "Verifizierungsvorteile",
+      "benefit1": "Alle Tasker-Funktionen und Jobbewerbungen freischalten",
+      "benefit2": "Vertrauen bei Kunden durch verifizierten Status aufbauen",
+      "benefit3": "Priorität in Suchergebnissen erhalten",
+      "benefit4": "Zugang zu höherwertigen Jobmöglichkeiten"
+    },
+    "addresses": {
+      "description": "Fügen Sie die Gebiete hinzu, in denen Sie Services anbieten",
+      "add": "Servicegebiet Hinzufügen",
+      "empty": "Keine Servicegebiete hinzugefügt",
+      "emptyDescription": "Fügen Sie Servicegebiete hinzu, damit Kunden wissen, wo Sie arbeiten",
+      "addFirst": "Ihr Erstes Servicegebiet Hinzufügen",
+      "newAddress": "Neues Servicegebiet",
+      "label": "Bezeichnung",
+      "home": "Heimatbasis",
+      "work": "Arbeitsgebiet",
+      "other": "Andere",
+      "country": "Land",
+      "street": "Straßenadresse",
+      "streetPlaceholder": "Musterstraße 123",
+      "city": "Stadt",
+      "cityPlaceholder": "Berlin",
+      "region": "Bundesland/Region",
+      "regionPlaceholder": "BE",
+      "postalCode": "Postleitzahl",
+      "postalCodePlaceholder": "10001",
+      "default": "Primär"
+    },
+    "security": {
+      "description": "Verwalten Sie Ihre Kontosicherheit und Anmeldeeinstellungen",
+      "signInMethods": "Anmeldemethoden",
+      "emailPassword": "E-Mail & Passwort",
+      "change": "Ändern",
+      "password": "Passwort",
+      "passwordTitle": "Passwort",
+      "passwordDescription": "Verwenden Sie ein starkes Passwort zum Schutz Ihres Kontos",
+      "changePassword": "Passwort Ändern",
+      "dangerZone": "Gefahrenbereich",
+      "deactivateAccount": "Konto Deaktivieren",
+      "deactivateDescription": "Dies wird Ihr Tasker-Konto dauerhaft deaktivieren",
+      "deactivate": "Deaktivieren"
+    },
+    "payment": {
+      "description": "Verwalten Sie Ihre Zahlungsmethoden für den Erhalt von Einnahmen",
+      "addMethod": "Zahlungsmethode Hinzufügen",
+      "noMethods": "Keine Zahlungsmethoden",
+      "noMethodsDescription": "Fügen Sie eine Zahlungsmethode hinzu, um Einnahmen aus abgeschlossenen Jobs zu erhalten",
+      "addFirst": "Zahlungsmethode Hinzufügen"
+    },
+    "notifications": {
+      "description": "Wählen Sie, wie Sie über Jobs benachrichtigt werden möchten",
+      "email": "E-Mail-Benachrichtigungen",
+      "emailDescription": "Job-Benachrichtigungen und Updates per E-Mail erhalten",
+      "push": "Push-Benachrichtigungen",
+      "pushDescription": "Sofortige Benachrichtigungen auf Ihrem Gerät erhalten",
+      "sms": "SMS-Benachrichtigungen",
+      "smsDescription": "Dringende Job-Benachrichtigungen per SMS erhalten",
+      "marketing": "Marketing-E-Mails",
+      "marketingDescription": "Werbeaktionen und Plattform-Updates erhalten",
+      "jobAlerts": "Job-Benachrichtigungen",
+      "jobAlertsDescription": "Benachrichtigt werden, wenn neue Jobs Ihren Fähigkeiten entsprechen"
+    },
+    "preferences": {
+      "description": "Passen Sie Ihr Tasker-Erlebnis an",
+      "language": "Sprache",
+      "timezone": "Zeitzone",
+      "currency": "Währung"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "cancel": "Abbrechen",
+      "save": "Änderungen Speichern",
+      "saving": "Speichern..."
+    },
+    "success": {
+      "profileUpdated": "Profil erfolgreich aktualisiert!",
+      "bioUpdated": "Biografie erfolgreich aktualisiert!",
+      "serviceRemoved": "Service erfolgreich entfernt!",
+      "addressAdded": "Servicegebiet erfolgreich hinzugefügt!",
+      "addressDeleted": "Servicegebiet erfolgreich gelöscht!",
+      "availabilityUpdated": "Verfügbarkeit erfolgreich aktualisiert!"
+    },
+    "errors": {
+      "notLoggedIn": "Nicht Angemeldet",
+      "loginRequired": "Bitte melden Sie sich an, um Ihr Tasker-Profil anzuzeigen",
+      "updateProfile": "Profil konnte nicht aktualisiert werden",
+      "updateBio": "Biografie konnte nicht aktualisiert werden",
+      "removeService": "Service konnte nicht entfernt werden",
+      "fetchAddresses": "Servicegebiete konnten nicht geladen werden",
+      "addAddress": "Servicegebiet konnte nicht hinzugefügt werden",
+      "deleteAddress": "Servicegebiet konnte nicht gelöscht werden"
+    }
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "signup": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort Bestätigen",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "role": "Ich möchte",
+    "customer": "Dienste Anfragen",
+    "tasker": "Dienste Anbieten",
+    "both": "Beides",
+    "loginButton": "Anmelden",
+    "signupButton": "Konto Erstellen",
+    "switchToLogin": "Bereits ein Konto? Anmelden",
+    "switchToSignup": "Noch kein Konto? Registrieren",
+    "forgotPassword": "Passwort vergessen?"
   }
 }
   

@@ -48,95 +48,345 @@
       "featureDescription": "This feature is currently under development"
     }
   },
-  "settings": {
-    "title": "Settings",
-    "description": "Manage your account settings and preferences",
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account information and preferences",
+    "navigation": {
+      "title": "Profile Settings"
+    },
     "sections": {
-      "profile": "Profile",
-      "account": "Account",
+      "personal": "Personal Information",
+      "addresses": "Addresses",
+      "security": "Security",
+      "payment": "Payment Methods",
       "notifications": "Notifications",
-      "privacy": "Privacy & Security",
-      "preferences": "Preferences"
+      "preferences": "Preferences",
+      "verification": "Verification"
     },
-    "profile": {
-      "title": "Profile Information",
-      "description": "Update your personal information and profile details",
-      "fields": {
-        "firstName": "First Name",
-        "lastName": "Last Name",
-        "email": "Email",
-        "phone": "Phone Number",
-        "bio": "Bio",
-        "location": "Location",
-        "avatar": "Profile Picture"
-      },
-      "placeholder": {
-        "firstName": "Enter your first name",
-        "lastName": "Enter your last name",
-        "email": "Enter your email address",
-        "phone": "Enter your phone number",
-        "bio": "Tell us about yourself",
-        "location": "Enter your location"
-      }
+    "completion": {
+      "title": "Complete Your Profile",
+      "description": "Complete your profile to unlock all features and build trust with other users.",
+      "complete": "Profile Complete",
+      "basicInfo": "Basic Information",
+      "contactInfo": "Contact Information",
+      "profilePhoto": "Profile Photo",
+      "address": "Home Address",
+      "emailVerified": "Email Verified",
+      "phoneVerified": "Phone Verified",
+      "required": "Required"
     },
-    "account": {
-      "title": "Account Settings",
-      "description": "Manage your account security and preferences",
-      "fields": {
-        "password": "Password",
-        "language": "Language",
-        "timezone": "Timezone",
-        "currency": "Currency"
-      },
-      "actions": {
-        "changePassword": "Change Password",
-        "deleteAccount": "Delete Account"
-      }
+    "personal": {
+      "description": "Update your basic information and profile photo",
+      "avatar": "Profile Photo",
+      "avatarDescription": "Upload a photo to help others recognize you",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email Address",
+      "emailNote": "Contact support to change your email address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "birthDate": "Date of Birth"
+    },
+    "addresses": {
+      "description": "Manage your saved addresses for faster booking",
+      "add": "Add Address",
+      "empty": "No addresses saved",
+      "emptyDescription": "Add an address to make booking services easier",
+      "addFirst": "Add Your First Address",
+      "newAddress": "New Address",
+      "label": "Label",
+      "home": "Home",
+      "work": "Work",
+      "other": "Other",
+      "country": "Country",
+      "street": "Street Address",
+      "streetPlaceholder": "123 Main Street",
+      "city": "City",
+      "cityPlaceholder": "New York",
+      "region": "State/Region",
+      "regionPlaceholder": "NY",
+      "postalCode": "Postal Code",
+      "postalCodePlaceholder": "10001",
+      "default": "Default"
+    },
+    "security": {
+      "description": "Manage your account security and sign-in preferences",
+      "signInMethods": "Sign-in Methods",
+      "emailPassword": "Email & Password",
+      "change": "Change",
+      "password": "Password",
+      "passwordTitle": "Password",
+      "passwordDescription": "Use a strong password to protect your account",
+      "changePassword": "Change Password",
+      "dangerZone": "Danger Zone",
+      "deactivateAccount": "Deactivate Account",
+      "deactivateDescription": "This will permanently disable your account",
+      "deactivate": "Deactivate"
+    },
+    "payment": {
+      "description": "Manage your payment methods for easy transactions",
+      "addMethod": "Add Payment Method",
+      "noMethods": "No payment methods",
+      "noMethodsDescription": "Add a payment method to make transactions easier",
+      "addFirst": "Add Payment Method"
     },
     "notifications": {
-      "title": "Notification Preferences",
-      "description": "Choose how you want to be notified about activities",
-      "types": {
-        "email": "Email Notifications",
-        "push": "Push Notifications",
-        "sms": "SMS Notifications"
-      },
-      "events": {
-        "newRequests": "New service requests",
-        "messages": "New messages",
-        "payments": "Payment updates",
-        "reminders": "Service reminders"
-      }
-    },
-    "privacy": {
-      "title": "Privacy & Security",
-      "description": "Control your privacy settings and account security",
-      "options": {
-        "profileVisibility": "Profile Visibility",
-        "locationSharing": "Location Sharing",
-        "dataUsage": "Data Usage",
-        "twoFactorAuth": "Two-Factor Authentication"
-      }
+      "description": "Choose how you'd like to be notified",
+      "email": "Email Notifications",
+      "emailDescription": "Receive notifications via email",
+      "push": "Push Notifications",
+      "pushDescription": "Receive notifications on your device",
+      "sms": "SMS Notifications",
+      "smsDescription": "Receive notifications via text message",
+      "marketing": "Marketing Emails",
+      "marketingDescription": "Receive promotional offers and updates"
     },
     "preferences": {
-      "title": "Preferences",
-      "description": "Customize your experience",
-      "options": {
-        "theme": "Theme",
-        "language": "Language",
-        "timezone": "Timezone"
-      }
+      "description": "Customize your app experience",
+      "language": "Language",
+      "timezone": "Timezone",
+      "currency": "Currency"
+    },
+    "verification": {
+      "description": "Verify your identity to build trust and unlock features",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "phoneNotAdded": "No phone number added",
+      "verified": "Verified",
+      "verify": "Verify",
+      "identity": "Identity Verification",
+      "identityDescription": "Upload a government ID to verify your identity",
+      "uploadDocument": "Upload Document"
     },
     "actions": {
-      "save": "Save Changes",
+      "edit": "Edit",
       "cancel": "Cancel",
-      "reset": "Reset to Defaults"
+      "save": "Save Changes",
+      "saving": "Saving..."
     },
-    "placeholder": {
-      "comingSoon": "Coming Soon",
-      "featureDescription": "This feature is currently under development",
-      "notImplemented": "This setting will be available soon"
+    "success": {
+      "profileUpdated": "Profile updated successfully!",
+      "addressAdded": "Address added successfully!",
+      "addressDeleted": "Address deleted successfully!"
+    },
+    "errors": {
+      "notLoggedIn": "Not Logged In",
+      "loginRequired": "Please log in to view your profile",
+      "updateProfile": "Failed to update profile",
+      "fetchAddresses": "Failed to load addresses",
+      "addAddress": "Failed to add address",
+      "deleteAddress": "Failed to delete address"
     }
+  },
+  "Footer": {
+    "rights": "© 2024 Manzel Help. All rights reserved.",
+    "about": "About",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "taskerProfile": {
+    "title": "Tasker Profile",
+    "subtitle": "Build your professional profile to attract more clients",
+    "navigation": {
+      "title": "Profile Settings"
+    },
+    "sections": {
+      "personal": "Personal Information",
+      "bio": "Bio & Experience",
+      "skills": "Skills & Services",
+      "availability": "Availability",
+      "verification": "Verification",
+      "addresses": "Service Areas",
+      "security": "Security",
+      "payment": "Payment Methods",
+      "notifications": "Notifications",
+      "preferences": "Preferences"
+    },
+    "completion": {
+      "title": "Complete Your Tasker Profile",
+      "description": "Complete your profile to start receiving job requests and build trust with clients.",
+      "complete": "Profile Complete",
+      "basicInfo": "Basic Information",
+      "profilePhoto": "Profile Photo",
+      "bioExperience": "Bio & Experience",
+      "servicesSkills": "Services & Skills",
+      "availability": "Availability Schedule",
+      "address": "Service Areas",
+      "identityVerified": "Identity Verified",
+      "emailVerified": "Email Verified",
+      "required": "Required"
+    },
+    "personal": {
+      "description": "Update your basic information and professional photo",
+      "avatar": "Profile Photo",
+      "avatarDescription": "Upload a professional photo to build trust with clients",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email Address",
+      "emailNote": "Contact support to change your email address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "birthDate": "Date of Birth"
+    },
+    "bio": {
+      "description": "Tell clients about your experience and expertise",
+      "bioTitle": "About You",
+      "bioPlaceholder": "Describe your skills, experience, and what makes you great at what you do...",
+      "bioHint": "Share your background, specialties, and why clients should choose you",
+      "experienceLevel": "Experience Level",
+      "serviceRadius": "Service Radius",
+      "serviceRadiusHint": "How far are you willing to travel for jobs?",
+      "experienceLevels": {
+        "beginner": "Beginner (0-1 years)",
+        "intermediate": "Intermediate (1-3 years)",
+        "experienced": "Experienced (3-5 years)",
+        "expert": "Expert (5+ years)"
+      }
+    },
+    "skills": {
+      "description": "Manage the services you offer to clients",
+      "addService": "Add Service",
+      "noServices": "No services offered yet",
+      "noServicesDescription": "Add services to start receiving job requests from clients",
+      "addFirstService": "Add Your First Service",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "availability": {
+      "description": "Set your weekly availability for new jobs",
+      "unavailable": "Unavailable",
+      "quickBookingTitle": "Quick Booking",
+      "quickBookingDescription": "Clients can instantly book you during your available hours for faster jobs"
+    },
+    "verification": {
+      "description": "Verify your identity to build trust and unlock all features",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "phoneNotAdded": "No phone number added",
+      "verified": "Verified",
+      "verify": "Verify",
+      "identityRequired": "Identity Verification Required",
+      "mandatory": "Mandatory",
+      "identityVerified": "Identity Verified",
+      "identityPending": "Verification Pending",
+      "identityDescription": "Upload a government-issued ID to verify your identity and start offering services",
+      "uploadDocument": "Upload Document",
+      "acceptedDocuments": "Accepted: Driver's License, Passport, National ID Card",
+      "benefitsTitle": "Verification Benefits",
+      "benefit1": "Unlock all tasker features and job applications",
+      "benefit2": "Build trust with clients through verified status",
+      "benefit3": "Receive priority in search results",
+      "benefit4": "Access to higher-value job opportunities"
+    },
+    "addresses": {
+      "description": "Add the areas where you provide services",
+      "add": "Add Service Area",
+      "empty": "No service areas added",
+      "emptyDescription": "Add service areas to let clients know where you work",
+      "addFirst": "Add Your First Service Area",
+      "newAddress": "New Service Area",
+      "label": "Label",
+      "home": "Home Base",
+      "work": "Work Area",
+      "other": "Other",
+      "country": "Country",
+      "street": "Street Address",
+      "streetPlaceholder": "123 Main Street",
+      "city": "City",
+      "cityPlaceholder": "New York",
+      "region": "State/Region",
+      "regionPlaceholder": "NY",
+      "postalCode": "Postal Code",
+      "postalCodePlaceholder": "10001",
+      "default": "Primary"
+    },
+    "security": {
+      "description": "Manage your account security and sign-in preferences",
+      "signInMethods": "Sign-in Methods",
+      "emailPassword": "Email & Password",
+      "change": "Change",
+      "password": "Password",
+      "passwordTitle": "Password",
+      "passwordDescription": "Use a strong password to protect your account",
+      "changePassword": "Change Password",
+      "dangerZone": "Danger Zone",
+      "deactivateAccount": "Deactivate Account",
+      "deactivateDescription": "This will permanently disable your tasker account",
+      "deactivate": "Deactivate"
+    },
+    "payment": {
+      "description": "Manage your payment methods for receiving earnings",
+      "addMethod": "Add Payment Method",
+      "noMethods": "No payment methods",
+      "noMethodsDescription": "Add a payment method to receive earnings from completed jobs",
+      "addFirst": "Add Payment Method"
+    },
+    "notifications": {
+      "description": "Choose how you'd like to be notified about jobs",
+      "email": "Email Notifications",
+      "emailDescription": "Receive job alerts and updates via email",
+      "push": "Push Notifications",
+      "pushDescription": "Get instant notifications on your device",
+      "sms": "SMS Notifications",
+      "smsDescription": "Receive urgent job alerts via text message",
+      "marketing": "Marketing Emails",
+      "marketingDescription": "Receive promotional offers and platform updates",
+      "jobAlerts": "Job Alerts",
+      "jobAlertsDescription": "Get notified when new jobs match your skills"
+    },
+    "preferences": {
+      "description": "Customize your tasker experience",
+      "language": "Language",
+      "timezone": "Timezone",
+      "currency": "Currency"
+    },
+    "actions": {
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving..."
+    },
+    "success": {
+      "profileUpdated": "Profile updated successfully!",
+      "bioUpdated": "Bio updated successfully!",
+      "serviceRemoved": "Service removed successfully!",
+      "addressAdded": "Service area added successfully!",
+      "addressDeleted": "Service area deleted successfully!",
+      "availabilityUpdated": "Availability updated successfully!"
+    },
+    "errors": {
+      "notLoggedIn": "Not Logged In",
+      "loginRequired": "Please log in to view your tasker profile",
+      "updateProfile": "Failed to update profile",
+      "updateBio": "Failed to update bio",
+      "removeService": "Failed to remove service",
+      "fetchAddresses": "Failed to load service areas",
+      "addAddress": "Failed to add service area",
+      "deleteAddress": "Failed to delete service area"
+    }
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "role": "I want to",
+    "customer": "Request Services",
+    "tasker": "Offer Services",
+    "both": "Both",
+    "loginButton": "Sign In",
+    "signupButton": "Create Account",
+    "switchToLogin": "Already have an account? Sign in",
+    "switchToSignup": "Don't have an account? Sign up",
+    "forgotPassword": "Forgot your password?"
   }
 }
   

@@ -37,6 +37,12 @@ function ProfileDropDown() {
 
         <DropdownMenuLabel>{user?.role}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
+          <Link href={`/${user?.role}/profile`} className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link
             href={`/${user?.role}/dashboard` || "/customer/dashboard"}
             className="flex items-center"
