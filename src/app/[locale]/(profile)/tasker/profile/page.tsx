@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import type { AvailabilitySlot } from "@/types/supabase";
 import {
   Card,
   CardContent,
@@ -72,6 +73,7 @@ interface TaskerProfile {
   service_radius_km?: number;
   is_available?: boolean;
   updated_at?: string;
+  availability?: AvailabilitySlot[]; // Added for JSONB column
 }
 
 interface TaskerService {
@@ -94,13 +96,6 @@ interface TaskerService {
       name_ar: string;
     };
   };
-}
-
-interface AvailabilitySlot {
-  day: string;
-  enabled: boolean;
-  startTime: string;
-  endTime: string;
 }
 
 interface Address {
@@ -179,15 +174,20 @@ export default function TaskerProfilePage() {
     service_radius_km: 25,
   });
 
-  const [availability, setAvailability] = useState<AvailabilitySlot[]>([
-    { day: "monday", enabled: true, startTime: "09:00", endTime: "17:00" },
-    { day: "tuesday", enabled: true, startTime: "09:00", endTime: "17:00" },
-    { day: "wednesday", enabled: true, startTime: "09:00", endTime: "17:00" },
-    { day: "thursday", enabled: true, startTime: "09:00", endTime: "17:00" },
-    { day: "friday", enabled: true, startTime: "09:00", endTime: "17:00" },
-    { day: "saturday", enabled: false, startTime: "09:00", endTime: "17:00" },
-    { day: "sunday", enabled: false, startTime: "09:00", endTime: "17:00" },
-  ]);
+  const defaultAvailability = React.useMemo<AvailabilitySlot[]>(
+    () => [
+      { day: "monday", enabled: true, startTime: "09:00", endTime: "17:00" },
+      { day: "tuesday", enabled: true, startTime: "09:00", endTime: "17:00" },
+      { day: "wednesday", enabled: true, startTime: "09:00", endTime: "17:00" },
+      { day: "thursday", enabled: true, startTime: "09:00", endTime: "17:00" },
+      { day: "friday", enabled: true, startTime: "09:00", endTime: "17:00" },
+      { day: "saturday", enabled: false, startTime: "09:00", endTime: "17:00" },
+      { day: "sunday", enabled: false, startTime: "09:00", endTime: "17:00" },
+    ],
+    []
+  );
+  const [availability, setAvailability] =
+    useState<AvailabilitySlot[]>(defaultAvailability);
 
   const [newAddress, setNewAddress] = useState<Address>({
     label: "home",
@@ -285,6 +285,12 @@ export default function TaskerProfilePage() {
       console.error("Error fetching tasker profile:", profileError);
     } else if (profile) {
       setTaskerProfile(profile);
+      // Set availability from profile JSONB, fallback to default
+      setAvailability(
+        profile.availability && Array.isArray(profile.availability)
+          ? profile.availability
+          : defaultAvailability
+      );
     }
 
     // Fetch tasker services
@@ -306,7 +312,7 @@ export default function TaskerProfilePage() {
     } else {
       setTaskerServices(services || []);
     }
-  }, [user?.id]);
+  }, [user?.id, defaultAvailability]);
 
   const fetchAddresses = React.useCallback(async () => {
     if (!user?.id) return;
@@ -502,9 +508,23 @@ export default function TaskerProfilePage() {
   };
 
   const saveAvailability = async () => {
-    // For now, just show success - in real app, save to database
-    toast.success(t("success.availabilityUpdated"));
-    setIsEditing((prev) => ({ ...prev, availability: false }));
+    if (!user?.id) return;
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("tasker_profiles")
+      .update({ availability })
+      .eq("id", user.id);
+    if (error) {
+      toast.error(t("errors.updateProfile") || "Failed to update availability");
+      console.error("Error updating availability:", error);
+    } else {
+      toast.success(t("success.availabilityUpdated"));
+      // Optionally, refetch profile
+      fetchTaskerData();
+      setIsEditing((prev) => ({ ...prev, availability: false }));
+    }
+    setLoading(false);
   };
 
   const sectionIcons: Record<ProfileSection, React.ReactNode> = {

@@ -28,6 +28,8 @@ import {
   Mail,
   Trash2,
   Upload,
+  BadgeCheck,
+  BellDot,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { createClient } from "@/supabase/client";
@@ -93,6 +95,31 @@ export default function CustomerProfilePage() {
     country: "MA",
     is_default: false,
   });
+
+  // Add a mock notifications array and state
+  const [notifications] = useState([
+    {
+      id: 1,
+      title: "Welcome!",
+      body: "Thanks for joining.",
+      date: "2024-06-01",
+      read: false,
+    },
+    {
+      id: 2,
+      title: "Profile Updated",
+      body: "Your profile was updated.",
+      date: "2024-06-02",
+      read: true,
+    },
+    {
+      id: 3,
+      title: "New Message",
+      body: "You have a new message.",
+      date: "2024-06-03",
+      read: false,
+    },
+  ]);
 
   // Calculate profile completion
   const completionItems: ProfileCompletionItem[] = [
@@ -276,14 +303,12 @@ export default function CustomerProfilePage() {
   const sections = [
     { id: "personal" as ProfileSection, title: t("sections.personal") },
     { id: "addresses" as ProfileSection, title: t("sections.addresses") },
-    { id: "security" as ProfileSection, title: t("sections.security") },
-    { id: "payment" as ProfileSection, title: t("sections.payment") },
     {
       id: "notifications" as ProfileSection,
       title: t("sections.notifications"),
     },
+    { id: "payment" as ProfileSection, title: t("sections.payment") },
     { id: "preferences" as ProfileSection, title: t("sections.preferences") },
-    { id: "verification" as ProfileSection, title: t("sections.verification") },
   ];
 
   if (!user) {
@@ -393,11 +418,11 @@ export default function CustomerProfilePage() {
 
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-6">
-          {/* Personal Information Section */}
+          {/* Personal Information Section (now includes Verification) */}
           {activeSection === "personal" && (
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <User className="h-5 w-5" />
@@ -424,9 +449,9 @@ export default function CustomerProfilePage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-8">
                 {/* Profile Photo Section */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                   <div className="relative">
                     <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                       {user.avatar_url ? (
@@ -566,6 +591,94 @@ export default function CustomerProfilePage() {
                     </Button>
                   </div>
                 )}
+
+                {/* Verification Section (moved here) */}
+                <div className="mt-8">
+                  <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                    {t("sections.verification")}
+                  </h2>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* Email Verification */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">
+                            {t("verification.email")}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {user.email_verified ? (
+                          <div className="flex items-center gap-2 text-green-600">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm font-medium">
+                              {t("verification.verified")}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-destructive" />
+                            <Button size="sm">
+                              {t("verification.verify")}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Phone Verification */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">
+                            {t("verification.phone")}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.phone || t("verification.phoneNotAdded")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {user.phone_confirmed_at ? (
+                          <div className="flex items-center gap-2 text-green-600">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm font-medium">
+                              {t("verification.verified")}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-destructive" />
+                            <Button size="sm" disabled={!user.phone}>
+                              {t("verification.verify")}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Identity Verification */}
+                    <div className="p-4 border border-dashed rounded-lg bg-background md:col-span-2">
+                      <div className="text-center">
+                        <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                        <h3 className="font-medium mb-1">
+                          {t("verification.identity")}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {t("verification.identityDescription")}
+                        </p>
+                        <Button variant="outline" size="sm">
+                          <Upload className="h-4 w-4 mr-2" />
+                          {t("verification.uploadDocument")}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -797,90 +910,6 @@ export default function CustomerProfilePage() {
             </Card>
           )}
 
-          {/* Security Section */}
-          {activeSection === "security" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  {t("sections.security")}
-                </CardTitle>
-                <CardDescription>{t("security.description")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Sign-in Methods */}
-                <div className="space-y-4">
-                  <h3 className="font-medium">{t("security.signInMethods")}</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">
-                            {t("security.emailPassword")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {user.email_verified ? (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <AlertCircle className="h-4 w-4 text-destructive" />
-                        )}
-                        <Button variant="outline" size="sm">
-                          {t("security.change")}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="space-y-4">
-                  <h3 className="font-medium">{t("security.password")}</h3>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">
-                        {t("security.passwordTitle")}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {t("security.passwordDescription")}
-                      </p>
-                    </div>
-                    <Button variant="outline">
-                      {t("security.changePassword")}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Account Deactivation */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-destructive">
-                    {t("security.dangerZone")}
-                  </h3>
-                  <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">
-                          {t("security.deactivateAccount")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {t("security.deactivateDescription")}
-                        </p>
-                      </div>
-                      <Button variant="destructive" size="sm">
-                        {t("security.deactivate")}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Payment Methods Section */}
           {activeSection === "payment" && (
             <Card>
@@ -912,62 +941,6 @@ export default function CustomerProfilePage() {
                     <Plus className="h-4 w-4 mr-2" />
                     {t("payment.addFirst")}
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notifications Section */}
-          {activeSection === "notifications" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  {t("sections.notifications")}
-                </CardTitle>
-                <CardDescription>
-                  {t("notifications.description")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  {[
-                    {
-                      key: "email",
-                      title: t("notifications.email"),
-                      description: t("notifications.emailDescription"),
-                    },
-                    {
-                      key: "push",
-                      title: t("notifications.push"),
-                      description: t("notifications.pushDescription"),
-                    },
-                    {
-                      key: "sms",
-                      title: t("notifications.sms"),
-                      description: t("notifications.smsDescription"),
-                    },
-                    {
-                      key: "marketing",
-                      title: t("notifications.marketing"),
-                      description: t("notifications.marketingDescription"),
-                    },
-                  ].map((notification) => (
-                    <div
-                      key={notification.key}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{notification.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {notification.description}
-                        </p>
-                      </div>
-                      <button className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white">
-                        <span className="pointer-events-none inline-block h-5 w-5 translate-x-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out" />
-                      </button>
-                    </div>
-                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -1019,93 +992,66 @@ export default function CustomerProfilePage() {
             </Card>
           )}
 
-          {/* Verification Section */}
-          {activeSection === "verification" && (
+          {/* Notifications Section */}
+          {activeSection === "notifications" && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />
-                  {t("sections.verification")}
+                  <BellDot className="h-5 w-5" />
+                  {t("sections.notifications")}
                 </CardTitle>
                 <CardDescription>
-                  {t("verification.description")}
+                  {t("notifications.description")}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Email Verification */}
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{t("verification.email")}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {user.email_verified ? (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                          {t("verification.verified")}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                        <Button size="sm">{t("verification.verify")}</Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Phone Verification */}
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{t("verification.phone")}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.phone || t("verification.phoneNotAdded")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {user.phone_confirmed_at ? (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                          {t("verification.verified")}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                        <Button size="sm" disabled={!user.phone}>
-                          {t("verification.verify")}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Identity Verification */}
-                <div className="p-4 border border-dashed rounded-lg">
-                  <div className="text-center">
-                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <h3 className="font-medium mb-1">
-                      {t("verification.identity")}
+              <CardContent className="space-y-4">
+                {notifications.length === 0 ? (
+                  <div className="text-center py-8">
+                    <BellDot className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-medium mb-2">
+                      {t("notifications.empty")}
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {t("verification.identityDescription")}
+                    <p className="text-muted-foreground mb-4">
+                      {t("notifications.emptyDescription")}
                     </p>
-                    <Button variant="outline" size="sm">
-                      <Upload className="h-4 w-4 mr-2" />
-                      {t("verification.uploadDocument")}
-                    </Button>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    {notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg bg-background ${
+                          !notif.read ? "border-primary/40" : ""
+                        }`}
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{notif.title}</span>
+                            {!notif.read && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+                                {t("notifications.unread")}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {notif.body}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                          <span className="text-xs text-muted-foreground">
+                            {notif.date}
+                          </span>
+                          {notif.read && (
+                            <BadgeCheck
+                              className="h-4 w-4 text-green-500"
+                              aria-label={t("notifications.seen") || "Seen"}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

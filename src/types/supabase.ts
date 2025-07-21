@@ -132,6 +132,7 @@ export interface TaskerProfile {
   service_radius_km?: number; // default: 50
   is_available?: boolean; // default: true
   updated_at?: string; // timestamp
+  availability?: AvailabilitySlot[] | null; // JSONB column for operation hours
 }
 
 export interface TaskerService {
@@ -292,6 +293,14 @@ export interface UserStats {
   jobs_posted?: number; // default: 0
   total_spent?: number; // default: 0.00
   updated_at?: string; // timestamp
+}
+
+// Add the AvailabilitySlot type for clarity
+export interface AvailabilitySlot {
+  day: string;
+  enabled: boolean;
+  startTime: string;
+  endTime: string;
 }
 
 // Database type with all tables
