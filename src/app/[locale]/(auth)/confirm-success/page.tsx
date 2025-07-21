@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
 import { getProfile } from "@/supabase/client";
 import { toast } from "sonner";
@@ -10,10 +10,7 @@ import { Loader2, CheckCircle } from "lucide-react";
 
 export default function ConfirmSuccessPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const setUser = useUserStore((state) => state.setUser);
-
-  const userRole = searchParams.get("userRole");
 
   useEffect(() => {
     const handleConfirmation = async () => {
@@ -28,8 +25,8 @@ export default function ConfirmSuccessPage() {
           // Show success message
           toast.success("Email confirmed successfully! Welcome!");
 
-          // Redirect to appropriate dashboard based on role
-          const role = user.role || userRole || "customer";
+          // Redirect to appropriate dashboard based on role from user object
+          const role = user.role || "customer";
 
           // Small delay for better UX
           setTimeout(() => {
@@ -40,7 +37,7 @@ export default function ConfirmSuccessPage() {
           toast.success("Email confirmed successfully!");
 
           setTimeout(() => {
-            router.replace(`/${userRole || "customer"}/dashboard`);
+            router.replace("/customer/dashboard");
           }, 1500);
         }
       } catch (error) {
@@ -54,7 +51,7 @@ export default function ConfirmSuccessPage() {
     };
 
     handleConfirmation();
-  }, [router, setUser, userRole]);
+  }, [router, setUser]);
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">

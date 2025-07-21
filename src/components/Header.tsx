@@ -65,24 +65,10 @@ function Header() {
                   className="hidden md:inline-flex"
                 >
                   <Link
-                    href="/tasker/tasker-offer"
+                    href={`/${user.role}/create-offer`}
                     style={{ fontFamily: "var(--font-sans)" }}
                   >
-                    Offer a Service
-                  </Link>
-                </Button>
-
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="sm"
-                  className="hidden md:inline-flex"
-                >
-                  <Link
-                    href="/customer/customer-offer"
-                    style={{ fontFamily: "var(--font-sans)" }}
-                  >
-                    Find a Helper
+                    Create new Offer
                   </Link>
                 </Button>
 

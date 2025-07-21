@@ -1,15 +1,15 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest } from "next/server";
 import { createClient } from "@/supabase/server";
+import { getLocale } from "next-intl/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
 
-  // Extract locale from the URL path (e.g., /de/confirm or /en/confirm)
-  const pathname = request.nextUrl.pathname;
-  const locale = pathname.split("/")[1] || "en"; // fallback to 'en' if no locale found
+  // Use next-intl's built-in locale detection
+  const locale = await getLocale();
 
   // Clean up the redirect URL by removing auth flow parameters
   const redirectTo = new URL(request.url);
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
           // Redirect to a client component that will handle Zustand store update
           // and then redirect to the appropriate dashboard
           redirectTo.pathname = `/${locale}/confirm-success`;
-          redirectTo.searchParams.set("userRole", profile.role || "customer");
+          // Remove the userRole parameter - we don't need it
           redirectTo.searchParams.delete("next");
 
           return Response.redirect(redirectTo.toString());
