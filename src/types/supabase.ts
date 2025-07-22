@@ -1,10 +1,11 @@
-// AUTO-GENERATED: Supabase schema types (2024-06)
+// AUTO-GENERATED: Supabase schema types (2024-12)
 // This file reflects the current database schema. Edit with caution.
 
 // User-defined types (enums) from Supabase
 export type UserRole = "customer" | "tasker" | "both" | "admin";
 export type VerificationStatus = "pending" | "verified" | "rejected";
 export type PricingType = "fixed" | "hourly" | "per_item";
+export type ExperienceLevel = "beginner" | "intermediate" | "expert";
 export type JobStatus =
   | "pending"
   | "active"
@@ -32,7 +33,7 @@ export type NotificationType =
   | "payment_received"
   | "message_received";
 
-// USERS TABLE (includes auth fields)
+// USERS TABLE
 export interface User {
   id: string; // uuid
   email: string;
@@ -48,35 +49,6 @@ export interface User {
   created_at?: string; // timestamp
   updated_at?: string; // timestamp
   last_login?: string; // timestamp
-  instance_id?: string; // uuid
-  aud?: string;
-  encrypted_password?: string;
-  email_confirmed_at?: string; // timestamp
-  invited_at?: string; // timestamp
-  confirmation_token?: string;
-  confirmation_sent_at?: string; // timestamp
-  recovery_token?: string;
-  recovery_sent_at?: string; // timestamp
-  email_change_token_new?: string;
-  email_change?: string;
-  email_change_sent_at?: string; // timestamp
-  last_sign_in_at?: string; // timestamp
-  raw_app_meta_data?: Record<string, unknown>;
-  raw_user_meta_data?: Record<string, unknown>;
-  is_super_admin?: boolean;
-  phone_confirmed_at?: string; // timestamp
-  phone_change?: string;
-  phone_change_token?: string;
-  phone_change_sent_at?: string; // timestamp
-  confirmed_at?: string; // timestamp
-  email_change_token_current?: string;
-  email_change_confirm_status?: number; // smallint
-  banned_until?: string; // timestamp
-  reauthentication_token?: string;
-  reauthentication_sent_at?: string; // timestamp
-  is_sso_user: boolean; // default: false
-  deleted_at?: string; // timestamp
-  is_anonymous: boolean; // default: false
 }
 
 export interface Address {
@@ -88,7 +60,7 @@ export interface Address {
   region: string;
   postal_code?: string;
   country?: string; // default: 'MA'
-  location?: object; // PostGIS geometry
+  location?: object; // PostGIS geography
   is_default?: boolean; // default: false
   created_at?: string; // timestamp
   updated_at?: string; // timestamp
@@ -125,14 +97,15 @@ export interface Service {
 
 export interface TaskerProfile {
   id: string; // uuid
-  experience_level?: string; // user-defined
+  experience_level?: ExperienceLevel;
   bio?: string;
   identity_document_url?: string;
   verification_status?: VerificationStatus; // default: 'pending'
   service_radius_km?: number; // default: 50
   is_available?: boolean; // default: true
   updated_at?: string; // timestamp
-  availability?: AvailabilitySlot[] | null; // JSONB column for operation hours
+  operation_hours?: OperationHours[] | null; // JSONB column for operation hours
+  company_id?: string; // uuid
 }
 
 export interface TaskerService {
@@ -210,14 +183,6 @@ export interface Message {
   attachment_url?: string;
   is_read?: boolean; // default: false
   created_at?: string; // timestamp
-  topic: string;
-  extension: string;
-  payload?: unknown;
-  event?: string;
-  private?: boolean; // default: false
-  updated_at: string; // timestamp (no tz)
-  inserted_at: string; // timestamp (no tz)
-  uuid?: string; // gen_random_uuid()
 }
 
 export interface Transaction {
@@ -280,6 +245,8 @@ export interface Promotion {
   is_active?: boolean; // default: true
   created_at?: string; // timestamp
   updated_at?: string; // timestamp
+  company_id?: string; // uuid
+  tasker_profile_id?: string; // uuid
 }
 
 export interface UserStats {
@@ -295,13 +262,71 @@ export interface UserStats {
   updated_at?: string; // timestamp
 }
 
-// Add the AvailabilitySlot type for clarity
-export interface AvailabilitySlot {
+// New: Companies table
+export interface Company {
+  id: string; // uuid
+  company_name: string;
+  company_registration_number?: string;
+  tax_id?: string;
+  website?: string;
+  description?: string;
+  founded_year?: number;
+  number_of_employees?: number;
+  street_address?: string;
+  city?: string;
+  region?: string;
+  postal_code?: string;
+  country?: string; // default: 'MA'
+  location?: object; // PostGIS geography
+  company_email?: string;
+  company_phone?: string;
+  logo_url?: string;
+  cover_image_url?: string;
+  is_active?: boolean; // default: true
+  verification_status?: VerificationStatus; // default: 'pending'
+  verification_document_url?: string;
+  created_at?: string; // timestamp
+  updated_at?: string; // timestamp
+}
+
+// New: Company promotion profiles
+export interface CompanyPromotionProfile {
+  id: number;
+  company_id: string; // uuid
+  is_promoted?: boolean; // default: false
+  promotion_expires_at?: string; // timestamp
+  promotion_boost_score?: number; // default: 0
+  promotion_badge_type?: string;
+  priority_in_search?: boolean; // default: false
+  featured_on_homepage?: boolean; // default: false
+  highlighted_badge?: boolean; // default: false
+  created_at?: string; // timestamp
+  updated_at?: string; // timestamp
+}
+
+// New: Company stats
+export interface CompanyStats {
+  id: string; // uuid
+  company_rating?: number; // default: 0.00
+  total_reviews?: number; // default: 0
+  completed_jobs?: number; // default: 0
+  total_earnings?: number; // default: 0.00
+  active_taskers?: number; // default: 0
+  average_response_time_hours?: number; // default: 0
+  cancellation_rate?: number; // default: 0.00
+  updated_at?: string; // timestamp
+}
+
+// Operation hours for tasker profiles (JSONB structure)
+export interface OperationHours {
   day: string;
   enabled: boolean;
   startTime: string;
   endTime: string;
 }
+
+// Legacy alias for backwards compatibility
+export type AvailabilitySlot = OperationHours;
 
 // Database type with all tables
 export interface Database {
@@ -320,4 +345,7 @@ export interface Database {
   promotion_packages: PromotionPackage;
   promotions: Promotion;
   user_stats: UserStats;
+  companies: Company;
+  company_promotion_profiles: CompanyPromotionProfile;
+  company_stats: CompanyStats;
 }

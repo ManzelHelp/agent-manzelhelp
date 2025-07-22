@@ -162,7 +162,7 @@ export default function CustomerProfilePage() {
       id: "phone_verified",
       section: "verification",
       title: t("completion.phoneVerified"),
-      completed: !!user?.phone_confirmed_at,
+      completed: !!user?.phone,
       required: false,
     },
   ];
@@ -644,7 +644,7 @@ export default function CustomerProfilePage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {user.phone_confirmed_at ? (
+                        {user.phone ? (
                           <div className="flex items-center gap-2 text-green-600">
                             <CheckCircle className="h-4 w-4" />
                             <span className="text-sm font-medium">

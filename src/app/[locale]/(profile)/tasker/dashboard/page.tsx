@@ -264,7 +264,7 @@ export default function DashboardPage() {
               Manage your services and bookings
             </p>
           </div>
-          <Link href="/tasker/tasker-offer">
+          <Link href="/tasker/create-offer">
             <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add New Service

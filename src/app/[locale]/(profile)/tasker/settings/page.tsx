@@ -9,8 +9,40 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Shield, Bell, Palette, Mail, CheckCircle } from "lucide-react";
+import {
+  Shield,
+  Bell,
+  Palette,
+  Mail,
+  CheckCircle,
+  Clock,
+  Edit,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { createClient } from "@/supabase/client";
+import { useUserStore } from "@/stores/userStore";
+import type { OperationHours } from "@/types/supabase";
+import { toast } from "sonner";
+
+const WEEKDAYS = [
+  { key: "monday", label: "Monday" },
+  { key: "tuesday", label: "Tuesday" },
+  { key: "wednesday", label: "Wednesday" },
+  { key: "thursday", label: "Thursday" },
+  { key: "friday", label: "Friday" },
+  { key: "saturday", label: "Saturday" },
+  { key: "sunday", label: "Sunday" },
+];
+
+const defaultAvailability: OperationHours[] = WEEKDAYS.map((d) => ({
+  day: d.key,
+  enabled: false,
+  startTime: "09:00",
+  endTime: "17:00",
+}));
 
 export default function SettingsPage() {
   const t = useTranslations("taskerProfile");
@@ -26,6 +58,76 @@ export default function SettingsPage() {
     jobAlerts: true,
   });
 
+  const { user } = useUserStore();
+  const [availability, setAvailability] =
+    useState<OperationHours[]>(defaultAvailability);
+  const [isEditingAvailability, setIsEditingAvailability] = useState(false);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+
+  // Store the original availability for canceling edits
+  const [originalAvailability, setOriginalAvailability] =
+    useState<OperationHours[]>(defaultAvailability);
+
+  // Fetch availability from profile
+  React.useEffect(() => {
+    async function fetchAvailability() {
+      if (!user?.id) return;
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("tasker_profiles")
+        .select("operation_hours")
+        .eq("id", user.id)
+        .single();
+
+      if (
+        !error &&
+        data?.operation_hours &&
+        Array.isArray(data.operation_hours)
+      ) {
+        setAvailability(data.operation_hours);
+        setOriginalAvailability(data.operation_hours);
+      }
+    }
+    fetchAvailability();
+  }, [user?.id]);
+
+  const updateAvailability = (
+    dayIndex: number,
+    field: keyof OperationHours,
+    value: string | boolean
+  ) => {
+    setAvailability((prev) =>
+      prev.map((slot, index) =>
+        index === dayIndex ? { ...slot, [field]: value } : slot
+      )
+    );
+  };
+
+  const saveAvailability = async () => {
+    if (!user?.id) return;
+    setLoadingAvailability(true);
+    const supabase = createClient();
+
+    const { error } = await supabase.from("tasker_profiles").upsert({
+      id: user.id,
+      operation_hours: availability,
+      updated_at: new Date().toISOString(),
+    });
+
+    setLoadingAvailability(false);
+
+    if (!error) {
+      toast.success(
+        t("success.availabilityUpdated") || "Availability updated successfully"
+      );
+      setOriginalAvailability(availability); // Update the original state
+      setIsEditingAvailability(false);
+    } else {
+      toast.error(t("errors.updateProfile") || "Failed to update availability");
+      console.error("Error updating availability:", error);
+    }
+  };
+
   const handleToggle = (key: NotificationKey) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -34,6 +136,7 @@ export default function SettingsPage() {
     { id: "security", title: t("sections.security") },
     { id: "notifications", title: t("sections.notifications") },
     { id: "preferences", title: t("sections.preferences") },
+    { id: "availability", title: t("sections.availability") },
   ];
 
   return (
@@ -262,6 +365,140 @@ export default function SettingsPage() {
                     </select>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+          {/* Availability Section */}
+          {activeSection === "availability" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      {t("sections.availability")}
+                    </CardTitle>
+                    <CardDescription>
+                      {t("availability.description") ||
+                        "Set your weekly working hours for bookings."}
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingAvailability((v) => !v)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {isEditingAvailability
+                      ? t("actions.cancel")
+                      : t("actions.edit")}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  {WEEKDAYS.map((day, index) => {
+                    const slot = availability[index];
+                    return (
+                      <div
+                        key={day.key}
+                        className="flex items-center gap-4 p-4 border rounded-lg"
+                      >
+                        <div className="w-24">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={slot.enabled}
+                              onChange={(e) =>
+                                updateAvailability(
+                                  index,
+                                  "enabled",
+                                  e.target.checked
+                                )
+                              }
+                              disabled={!isEditingAvailability}
+                              className="rounded"
+                            />
+                            <span className="font-medium text-sm">
+                              {day.label}
+                            </span>
+                          </label>
+                        </div>
+                        {slot.enabled && (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="time"
+                              value={slot.startTime}
+                              onChange={(e) =>
+                                updateAvailability(
+                                  index,
+                                  "startTime",
+                                  e.target.value
+                                )
+                              }
+                              disabled={!isEditingAvailability}
+                              className="w-32"
+                            />
+                            <span className="text-muted-foreground">to</span>
+                            <Input
+                              type="time"
+                              value={slot.endTime}
+                              onChange={(e) =>
+                                updateAvailability(
+                                  index,
+                                  "endTime",
+                                  e.target.value
+                                )
+                              }
+                              disabled={!isEditingAvailability}
+                              className="w-32"
+                            />
+                          </div>
+                        )}
+                        {!slot.enabled && (
+                          <span className="text-muted-foreground text-sm">
+                            {t("availability.unavailable") || "Unavailable"}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start gap-2">
+                    <Zap className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-blue-900">
+                        {t("availability.quickBookingTitle") || "Quick Booking"}
+                      </h4>
+                      <p className="text-sm text-blue-800">
+                        {t("availability.quickBookingDescription") ||
+                          "Set your hours for faster bookings."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {isEditingAvailability && (
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      onClick={saveAvailability}
+                      disabled={loadingAvailability}
+                    >
+                      {loadingAvailability
+                        ? t("actions.saving")
+                        : t("actions.save")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setAvailability(originalAvailability);
+                        setIsEditingAvailability(false);
+                      }}
+                    >
+                      {t("actions.cancel")}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

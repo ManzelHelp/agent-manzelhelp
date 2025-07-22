@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import type { AvailabilitySlot } from "@/types/supabase";
+import type { OperationHours } from "@/types/supabase";
 import {
   Card,
   CardContent,
@@ -44,6 +44,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 type ProfileSection =
   | "personal"
@@ -74,7 +75,7 @@ interface TaskerProfile {
   service_radius_km?: number;
   is_available?: boolean;
   updated_at?: string;
-  availability?: AvailabilitySlot[]; // Added for JSONB column
+  operation_hours?: OperationHours[] | null; // JSONB column for operation hours
 }
 
 interface TaskerService {
@@ -146,6 +147,20 @@ const WEEKDAYS = [
 export default function TaskerProfilePage() {
   const { user, setUser } = useUserStore();
   const t = useTranslations("taskerProfile");
+  const searchParams = useSearchParams();
+
+  const validSections: ProfileSection[] = [
+    "personal",
+    "skills",
+    "availability",
+    "verification",
+    "bio",
+    "addresses",
+    "security",
+    "payment",
+    "notifications",
+    "preferences",
+  ];
 
   const [activeSection, setActiveSection] =
     useState<ProfileSection>("personal");
@@ -175,7 +190,7 @@ export default function TaskerProfilePage() {
     service_radius_km: 25,
   });
 
-  const defaultAvailability = React.useMemo<AvailabilitySlot[]>(
+  const defaultAvailability = React.useMemo<OperationHours[]>(
     () => [
       { day: "monday", enabled: true, startTime: "09:00", endTime: "17:00" },
       { day: "tuesday", enabled: true, startTime: "09:00", endTime: "17:00" },
@@ -188,7 +203,9 @@ export default function TaskerProfilePage() {
     []
   );
   const [availability, setAvailability] =
-    useState<AvailabilitySlot[]>(defaultAvailability);
+    useState<OperationHours[]>(defaultAvailability);
+  const [originalAvailability, setOriginalAvailability] =
+    useState<OperationHours[]>(defaultAvailability);
 
   const [newAddress, setNewAddress] = useState<Address>({
     label: "home",
@@ -226,6 +243,9 @@ export default function TaskerProfilePage() {
       read: false,
     },
   ]);
+
+  // Add state for profile photo upload near other states
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Calculate profile completion
   const completionItems: ProfileCompletionItem[] = [
@@ -312,11 +332,12 @@ export default function TaskerProfilePage() {
     } else if (profile) {
       setTaskerProfile(profile);
       // Set availability from profile JSONB, fallback to default
-      setAvailability(
-        profile.availability && Array.isArray(profile.availability)
-          ? profile.availability
-          : defaultAvailability
-      );
+      const availabilityData =
+        profile.operation_hours && Array.isArray(profile.operation_hours)
+          ? profile.operation_hours
+          : defaultAvailability;
+      setAvailability(availabilityData);
+      setOriginalAvailability(availabilityData);
     }
 
     // Fetch tasker services
@@ -374,6 +395,17 @@ export default function TaskerProfilePage() {
       });
     }
   }, [taskerProfile]);
+
+  // Set section from query param on mount and when it changes
+  useEffect(() => {
+    const sectionParam = searchParams.get("section");
+    if (
+      sectionParam &&
+      validSections.includes(sectionParam as ProfileSection)
+    ) {
+      setActiveSection(sectionParam as ProfileSection);
+    }
+  }, [searchParams]);
 
   const updatePersonalInfo = async () => {
     if (!user?.id) return;
@@ -464,24 +496,108 @@ export default function TaskerProfilePage() {
     setLoading(false);
   };
 
+  // Add profile photo upload function
+  const handlePhotoUpload = async (file: File) => {
+    if (!user?.id) return;
+
+    setUploadingPhoto(true);
+    try {
+      const supabase = createClient();
+
+      // Create unique file path
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("user-uploads")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("user-uploads").getPublicUrl(filePath);
+
+      if (!publicUrl) throw new Error("Failed to get public URL");
+
+      // Update user profile
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setUser({
+        ...user,
+        avatar_url: publicUrl,
+        updated_at: new Date().toISOString(),
+      });
+      setPersonalInfo((prev) => ({
+        ...prev,
+        avatar_url: publicUrl,
+      }));
+
+      toast.success(
+        t("success.profilePhotoUpdated") || "Profile photo updated successfully"
+      );
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to upload photo";
+      toast.error(t("errors.profilePhotoUpload") || errorMessage);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  // Add optimized addAddress function with better error handling
   const addAddress = async () => {
-    if (!user?.id || !newAddress.street_address || !newAddress.city) return;
+    if (
+      !user?.id ||
+      !newAddress.street_address.trim() ||
+      !newAddress.city.trim()
+    ) {
+      toast.error(
+        t("errors.requiredFields") || "Please fill in all required fields"
+      );
+      return;
+    }
 
     setLoading(true);
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    const { error } = await supabase.from("addresses").insert([
-      {
-        ...newAddress,
-        user_id: user.id,
-      },
-    ]);
+      const { error } = await supabase.from("addresses").insert([
+        {
+          ...newAddress,
+          user_id: user.id,
+          street_address: newAddress.street_address.trim(),
+          city: newAddress.city.trim(),
+          region: newAddress.region.trim(),
+          postal_code: newAddress.postal_code?.trim() || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
 
-    if (error) {
-      toast.error(t("errors.addAddress"));
-      console.error("Error adding address:", error);
-    } else {
-      toast.success(t("success.addressAdded"));
+      if (error) throw error;
+
+      toast.success(
+        t("success.addressAdded") || "Service location added successfully"
+      );
+
+      // Reset form
       setNewAddress({
         label: "home",
         street_address: "",
@@ -492,10 +608,19 @@ export default function TaskerProfilePage() {
         is_default: false,
       });
       setShowNewAddressForm(false);
-      fetchAddresses();
-    }
 
-    setLoading(false);
+      // Refresh addresses
+      await fetchAddresses();
+    } catch (error) {
+      console.error("Error adding address:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to add service location";
+      toast.error(t("errors.addAddress") || errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteAddress = async (addressId: number) => {
@@ -523,7 +648,7 @@ export default function TaskerProfilePage() {
 
   const updateAvailability = (
     dayIndex: number,
-    field: keyof AvailabilitySlot,
+    field: keyof OperationHours,
     value: string | boolean
   ) => {
     setAvailability((prev) =>
@@ -537,17 +662,28 @@ export default function TaskerProfilePage() {
     if (!user?.id) return;
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase
-      .from("tasker_profiles")
-      .update({ availability })
-      .eq("id", user.id);
+
+    const { error } = await supabase.from("tasker_profiles").upsert({
+      id: user.id,
+      operation_hours: availability,
+      updated_at: new Date().toISOString(),
+    });
+
     if (error) {
       toast.error(t("errors.updateProfile") || "Failed to update availability");
       console.error("Error updating availability:", error);
     } else {
-      toast.success(t("success.availabilityUpdated"));
-      // Optionally, refetch profile
-      fetchTaskerData();
+      toast.success(
+        t("success.availabilityUpdated") || "Availability updated successfully"
+      );
+      // Update the local profile state
+      setTaskerProfile((prev) => ({
+        ...prev,
+        id: user.id,
+        operation_hours: availability,
+        updated_at: new Date().toISOString(),
+      }));
+      setOriginalAvailability(availability); // Update the original state
       setIsEditing((prev) => ({ ...prev, availability: false }));
     }
     setLoading(false);
@@ -737,18 +873,45 @@ export default function TaskerProfilePage() {
                         <User className="h-8 w-8 text-muted-foreground" />
                       )}
                     </div>
-                    {isEditing.personal && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full p-0"
-                      >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handlePhotoUpload(file);
+                      }}
+                      className="hidden"
+                      id="photo-upload"
+                      disabled={uploadingPhoto}
+                    />
+                    <label
+                      htmlFor="photo-upload"
+                      className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer flex items-center justify-center transition-colors disabled:opacity-50"
+                    >
+                      {uploadingPhoto ? (
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
                         <Camera className="h-3 w-3" />
-                      </Button>
-                    )}
+                      )}
+                    </label>
                   </div>
-                  <div>
-                    <h3 className="font-medium">{t("personal.avatar")}</h3>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium">{t("personal.avatar")}</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          document.getElementById("photo-upload")?.click()
+                        }
+                        disabled={uploadingPhoto}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {uploadingPhoto
+                          ? t("actions.uploading") || "Uploading..."
+                          : t("personal.uploadPhoto") || "Upload Photo"}
+                      </Button>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {t("personal.avatarDescription")}
                     </p>
@@ -935,7 +1098,7 @@ export default function TaskerProfilePage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {user.phone_confirmed_at ? (
+                        {user.phone ? (
                           <BadgeCheck
                             className="h-4 w-4 text-green-600"
                             aria-label={
@@ -1299,6 +1462,7 @@ export default function TaskerProfilePage() {
                       variant="outline"
                       onClick={() => {
                         // Reset to original state
+                        setAvailability(originalAvailability);
                         setIsEditing((prev) => ({
                           ...prev,
                           availability: false,
@@ -1321,10 +1485,11 @@ export default function TaskerProfilePage() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
-                      {t("sections.addresses")}
+                      {t("sections.serviceLocations") || "Service Locations"}
                     </CardTitle>
                     <CardDescription>
-                      {t("addresses.description")}
+                      {t("serviceLocations.description") ||
+                        "Manage where you provide your services."}
                     </CardDescription>
                   </div>
                   <Button
@@ -1333,7 +1498,8 @@ export default function TaskerProfilePage() {
                     onClick={() => setShowNewAddressForm(true)}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    {t("addresses.add")}
+                    {t("serviceLocations.addLocation") ||
+                      "Add Service Location"}
                   </Button>
                 </div>
               </CardHeader>
