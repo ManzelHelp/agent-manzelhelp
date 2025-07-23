@@ -9,8 +9,16 @@ import LanguageDropDown from "./buttons/LanguageDropDown";
 import ProfileDropDown from "./buttons/ProfileDropDown";
 import { useUserStore } from "@/stores/userStore";
 import { useTranslations } from "next-intl";
-import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
+import {
+  Menu as MenuIcon,
+  X as CloseIcon,
+  Settings,
+  LogOut,
+  LayoutDashboard,
+  User as UserIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import LogOutButton from "./buttons/LogOutButton";
 
 function Header() {
   const { user } = useUserStore();
@@ -41,20 +49,38 @@ function Header() {
 
         {/* Desktop Navigation - Right */}
         <div className="hidden lg:flex items-center justify-end space-x-8 flex-1 px-8">
-          <Link
-            href="/services"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
-          >
-            {t("services")}
-            <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-          </Link>
-          <Link
-            href="/about-us"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
-          >
-            {t("about_us")}
-            <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-          </Link>
+          {user?.role === "tasker" && (
+            <>
+              <Link
+                href="/tasker/bookings"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("bookings")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+              <Link
+                href="/tasker/finance"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("finance")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+              <Link
+                href="/tasker/messages"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("messages")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+              <Link
+                href="/tasker/reviews"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("reviews")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+            </>
+          )}
           {!user && (
             <>
               <Link
@@ -157,22 +183,83 @@ function Header() {
         )}
       >
         <div className="px-4 py-6 space-y-6">
+          {/* User Profile Section - Only show if logged in */}
+          {user && (
+            <div className="mb-6 pb-6 border-b border-[var(--color-border)]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[var(--color-primary-foreground)]">
+                  <UserIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="font-medium">{user.email}</div>
+                  <div className="text-sm text-muted-foreground capitalize">
+                    {user.role}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Link
+                  href={`/${user.role}/profile`}
+                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <UserIcon className="h-4 w-4" />
+                  Profile
+                </Link>
+                <Link
+                  href={`/${user.role}/dashboard`}
+                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard
+                </Link>
+                <Link
+                  href={`/${user.role}/settings`}
+                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* Mobile Navigation Links */}
           <div className="space-y-4">
-            <Link
-              href="/services"
-              className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t("services")}
-            </Link>
-            <Link
-              href="/about-us"
-              className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t("about_us")}
-            </Link>
+            {user?.role === "tasker" && (
+              <>
+                <Link
+                  href="/tasker/bookings"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("bookings")}
+                </Link>
+                <Link
+                  href="/tasker/finance"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("finance")}
+                </Link>
+                <Link
+                  href="/tasker/messages"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("messages")}
+                </Link>
+                <Link
+                  href="/tasker/reviews"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("reviews")}
+                </Link>
+              </>
+            )}
             {!user && (
               <>
                 <Link
@@ -197,19 +284,20 @@ function Header() {
           <div className="pt-4 border-t border-[var(--color-border)]">
             {user ? (
               <>
-                <div className="mb-4">
-                  <ProfileDropDown />
-                </div>
                 <Button
                   asChild
                   variant="default"
-                  className="w-full justify-center font-medium"
+                  className="w-full justify-center font-medium mb-3"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Link href={`/${user.role}/create-offer`}>
                     {t("create_offer")}
                   </Link>
                 </Button>
+                <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200">
+                  <LogOut className="h-4 w-4" />
+                  <LogOutButton />
+                </div>
               </>
             ) : (
               <div className="space-y-3">

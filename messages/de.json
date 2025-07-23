@@ -3,16 +3,19 @@
     "title": "Manzel Help"
   },
   "Header": {
-    "about_us": "Über Uns",
-    "services": "Dienste",
-    "contact": "Kontakt",
+    "services": "Dienstleistungen",
+    "about_us": "Über uns",
     "become_helper": "Helfer werden",
     "find_helper": "Helfer finden",
-    "create_offer": "Neues Angebot erstellen",
     "sign_up": "Registrieren",
     "login": "Anmelden",
+    "create_offer": "Angebot erstellen",
+    "close_menu": "Menü schließen",
     "open_menu": "Menü öffnen",
-    "close_menu": "Menü schließen"
+    "bookings": "Buchungen",
+    "finance": "Finanzen",
+    "messages": "Nachrichten",
+    "reviews": "Bewertungen"
   },
   "homepage": {
     "title": "Willkommen bei Manzel Help",
@@ -192,8 +195,24 @@
     }
   },
   "Footer": {
+    "about": "Über uns",
+    "aboutDescription": "Manzel Help verbindet Menschen, die Dienstleistungen benötigen, mit denen, die sie anbieten können. Unsere Mission ist es, Hilfe zugänglich, freundlich und sicher für alle zu machen.",
+    "company": "Unternehmen",
+    "aboutUs": "Über uns",
+    "services": "Dienstleistungen",
+    "careers": "Karriere",
+    "contact": "Kontakt",
+    "joinUs": "Mitmachen",
+    "signUp": "Registrieren",
+    "becomeHelper": "Helfer werden",
+    "newsletter": "Newsletter",
+    "popularServices": "Beliebte Dienstleistungen",
+    "housekeeping": "Haushaltsführung",
+    "tutoring": "Nachhilfe",
+    "petCare": "Tierpflege",
+    "gardening": "Gartenarbeit",
+    "handyman": "Handwerker",
     "rights": "© 2024 Manzel Help. Alle Rechte vorbehalten.",
-    "about": "Über",
     "privacy": "Datenschutz",
     "terms": "Bedingungen"
   },

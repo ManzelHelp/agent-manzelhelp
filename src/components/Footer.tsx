@@ -1,7 +1,13 @@
+"use client";
+
 import React from "react";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 function Footer() {
+  const t = useTranslations("Footer");
+
   return (
     <footer className="w-full bg-[var(--color-surface)] border-t border-[var(--color-border)] py-8 px-4 text-[var(--color-text-secondary)]">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -11,13 +17,9 @@ function Footer() {
             className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            About Us
+            {t("about")}
           </h3>
-          <p className="text-sm">
-            Manzel Help connects people who need services with those who can
-            provide them. Our mission is to make help accessible, friendly, and
-            secure for everyone.
-          </p>
+          <p className="text-sm">{t("aboutDescription")}</p>
         </div>
         {/* Company */}
         <div>
@@ -25,32 +27,40 @@ function Footer() {
             className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            Company
+            {t("company")}
           </h3>
           <ul className="space-y-1 text-sm">
             <li>
-              <a
-                href="#about"
+              <Link
+                href="/about-us"
                 className="hover:text-[var(--color-primary)] transition-colors"
               >
-                About
-              </a>
+                {t("aboutUs")}
+              </Link>
             </li>
             <li>
-              <a
-                href="#careers"
+              <Link
+                href="/services"
                 className="hover:text-[var(--color-primary)] transition-colors"
               >
-                Careers
-              </a>
+                {t("services")}
+              </Link>
             </li>
             <li>
-              <a
-                href="#contact"
+              <Link
+                href="/careers"
                 className="hover:text-[var(--color-primary)] transition-colors"
               >
-                Contact
-              </a>
+                {t("careers")}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/contact"
+                className="hover:text-[var(--color-primary)] transition-colors"
+              >
+                {t("contact")}
+              </Link>
             </li>
           </ul>
         </div>
@@ -60,32 +70,32 @@ function Footer() {
             className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            Join Us
+            {t("joinUs")}
           </h3>
           <ul className="space-y-1 text-sm">
             <li>
-              <a
-                href="#signup"
+              <Link
+                href="/sign-up"
                 className="hover:text-[var(--color-primary)] transition-colors"
               >
-                Sign Up
-              </a>
+                {t("signUp")}
+              </Link>
             </li>
             <li>
-              <a
-                href="#become-helper"
+              <Link
+                href="/become-a-helper"
                 className="hover:text-[var(--color-primary)] transition-colors"
               >
-                Become a Helper
-              </a>
+                {t("becomeHelper")}
+              </Link>
             </li>
             <li>
-              <a
-                href="#newsletter"
+              <Link
+                href="/newsletter"
                 className="hover:text-[var(--color-primary)] transition-colors"
               >
-                Newsletter
-              </a>
+                {t("newsletter")}
+              </Link>
             </li>
           </ul>
         </div>
@@ -95,14 +105,14 @@ function Footer() {
             className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            Most Used Services
+            {t("popularServices")}
           </h3>
           <ul className="space-y-1 text-sm">
-            <li>Housekeeping</li>
-            <li>Tutoring</li>
-            <li>Pet Care</li>
-            <li>Gardening</li>
-            <li>Handyman</li>
+            <li>{t("housekeeping")}</li>
+            <li>{t("tutoring")}</li>
+            <li>{t("petCare")}</li>
+            <li>{t("gardening")}</li>
+            <li>{t("handyman")}</li>
           </ul>
         </div>
       </div>

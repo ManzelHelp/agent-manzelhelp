@@ -3,16 +3,19 @@
     "title": "Manzel Help"
   },
   "Header": {
-    "about_us": "About Us",
     "services": "Services",
-    "contact": "Contact",
+    "about_us": "About Us",
     "become_helper": "Become a Helper",
     "find_helper": "Find a Helper",
-    "create_offer": "Create new Offer",
     "sign_up": "Sign Up",
     "login": "Login",
-    "open_menu": "Open menu",
-    "close_menu": "Close menu"
+    "create_offer": "Create Offer",
+    "close_menu": "Close Menu",
+    "open_menu": "Open Menu",
+    "bookings": "Bookings",
+    "finance": "Finance",
+    "messages": "Messages",
+    "reviews": "Reviews"
   },
   "homepage": {
     "title": "Welcome to Manzel Help",
@@ -192,8 +195,24 @@
     }
   },
   "Footer": {
+    "about": "About Us",
+    "aboutDescription": "Manzel Help connects people who need services with those who can provide them. Our mission is to make help accessible, friendly, and secure for everyone.",
+    "company": "Company",
+    "aboutUs": "About Us",
+    "services": "Services",
+    "careers": "Careers",
+    "contact": "Contact",
+    "joinUs": "Join Us",
+    "signUp": "Sign Up",
+    "becomeHelper": "Become a Helper",
+    "newsletter": "Newsletter",
+    "popularServices": "Most Used Services",
+    "housekeeping": "Housekeeping",
+    "tutoring": "Tutoring",
+    "petCare": "Pet Care",
+    "gardening": "Gardening",
+    "handyman": "Handyman",
     "rights": "© 2024 Manzel Help. All rights reserved.",
-    "about": "About",
     "privacy": "Privacy",
     "terms": "Terms"
   },
