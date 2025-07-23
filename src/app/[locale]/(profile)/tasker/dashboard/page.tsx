@@ -11,48 +11,23 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   BarChart3,
-  Calendar,
   DollarSign,
   CheckCircle,
   Plus,
   MessageSquare,
   Star,
-  User,
   Clock,
   AlertCircle,
   Eye,
   ChevronRight,
-  MapPin,
-  Briefcase,
   Activity,
 } from "lucide-react";
 import Link from "next/link";
 
-type TabType =
-  | "overview"
-  | "tasks"
-  | "earnings"
-  | "bookings"
-  | "messages"
-  | "reviews";
-type TaskStatus = "requests" | "pending" | "active" | "completed";
-
-interface Task {
-  id: number;
-  title: string;
-  client: string;
-  price: number;
-  location: string;
-  date: string;
-  urgent?: boolean;
-  status?: string;
-  progress?: number;
-  rating?: number;
-}
+type TabType = "overview" | "earnings" | "messages" | "reviews";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
-  const [taskFilter, setTaskFilter] = useState<TaskStatus>("requests");
 
   // Mock data - replace with real data fetching
   const profileCompleteness = 65;
@@ -69,110 +44,6 @@ export default function DashboardPage() {
     avgRating: 4.8,
     responseTime: "2h",
   };
-
-  const tasks = {
-    requests: [
-      {
-        id: 1,
-        title: "House Cleaning",
-        client: "Sarah M.",
-        price: 80,
-        location: "Downtown",
-        date: "2024-01-15",
-        urgent: true,
-      },
-      {
-        id: 2,
-        title: "Furniture Assembly",
-        client: "John D.",
-        price: 60,
-        location: "Westside",
-        date: "2024-01-16",
-        urgent: false,
-      },
-      {
-        id: 3,
-        title: "Garden Maintenance",
-        client: "Lisa K.",
-        price: 45,
-        location: "Suburbs",
-        date: "2024-01-17",
-        urgent: false,
-      },
-    ],
-    pending: [
-      {
-        id: 4,
-        title: "Moving Help",
-        client: "Mike R.",
-        price: 120,
-        location: "Eastside",
-        date: "2024-01-18",
-        status: "awaiting_approval",
-      },
-    ],
-    active: [
-      {
-        id: 5,
-        title: "Office Cleaning",
-        client: "Tech Corp",
-        price: 200,
-        location: "Business District",
-        date: "2024-01-14",
-        progress: 75,
-      },
-      {
-        id: 6,
-        title: "Pet Sitting",
-        client: "Emma T.",
-        price: 35,
-        location: "Midtown",
-        date: "2024-01-13",
-        progress: 50,
-      },
-    ],
-    completed: [
-      {
-        id: 7,
-        title: "Kitchen Deep Clean",
-        client: "Robert S.",
-        price: 95,
-        location: "Downtown",
-        date: "2024-01-12",
-        rating: 5,
-      },
-      {
-        id: 8,
-        title: "Plumbing Fix",
-        client: "Anna L.",
-        price: 75,
-        location: "Suburbs",
-        date: "2024-01-10",
-        rating: 4,
-      },
-    ],
-  };
-
-  const upcomingBookings = [
-    {
-      id: 1,
-      service: "House Cleaning",
-      client: "Sarah M.",
-      date: "2024-01-16",
-      time: "09:00",
-      duration: "3h",
-      price: 80,
-    },
-    {
-      id: 2,
-      service: "Furniture Assembly",
-      client: "John D.",
-      date: "2024-01-17",
-      time: "14:00",
-      duration: "2h",
-      price: 60,
-    },
-  ];
 
   const messages = [
     {
@@ -264,12 +135,6 @@ export default function DashboardPage() {
               Manage your services and bookings
             </p>
           </div>
-          <Link href="/tasker/create-offer">
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add New Service
-            </Button>
-          </Link>
         </div>
 
         {/* Profile Completeness Bar */}
@@ -311,17 +176,9 @@ export default function DashboardPage() {
           <Activity className="h-4 w-4" />
           Overview
         </TabButton>
-        <TabButton tab="tasks" count={tasks.requests.length}>
-          <Briefcase className="h-4 w-4" />
-          Tasks
-        </TabButton>
         <TabButton tab="earnings">
           <DollarSign className="h-4 w-4" />
           Earnings
-        </TabButton>
-        <TabButton tab="bookings">
-          <Calendar className="h-4 w-4" />
-          Bookings
         </TabButton>
         <TabButton
           tab="messages"
@@ -346,7 +203,7 @@ export default function DashboardPage() {
                 <CardTitle className="text-sm font-medium">
                   Active Jobs
                 </CardTitle>
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.activeJobs}</div>
@@ -394,161 +251,54 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Recent Activity & Quick Actions */}
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {tasks.requests.slice(0, 3).map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{task.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {task.client} • {task.location}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">${task.price}</p>
-                        {task.urgent && (
-                          <span className="text-xs text-red-600">Urgent</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  className="w-full justify-between"
-                  variant="outline"
-                  onClick={() => setActiveTab("tasks")}
-                >
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link href="/tasker/create-offer" className="block">
+                <Button className="w-full justify-between" variant="default">
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add New Service
+                  </div>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/tasker/bookings" className="block">
+                <Button className="w-full justify-between" variant="outline">
                   <div className="flex items-center gap-2">
                     <Eye className="h-4 w-4" />
-                    View New Requests
+                    View Tasks & Bookings
                   </div>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button
-                  className="w-full justify-between"
-                  variant="outline"
-                  onClick={() => setActiveTab("messages")}
-                >
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Check Messages
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  className="w-full justify-between"
-                  variant="outline"
-                  onClick={() => setActiveTab("earnings")}
-                >
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    View Earnings
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "tasks" && (
-        <div className="space-y-6">
-          <div className="flex flex-wrap gap-2">
-            {(
-              ["requests", "pending", "active", "completed"] as TaskStatus[]
-            ).map((status) => (
-              <button
-                key={status}
-                onClick={() => setTaskFilter(status)}
-                className={`px-4 py-2 rounded-lg capitalize transition-colors ${
-                  taskFilter === status
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
+              </Link>
+              <Button
+                className="w-full justify-between"
+                variant="outline"
+                onClick={() => setActiveTab("messages")}
               >
-                {status} ({tasks[status].length})
-              </button>
-            ))}
-          </div>
-
-          <div className="grid gap-4">
-            {tasks[taskFilter].map((task: Task) => (
-              <Card key={task.id}>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{task.title}</h3>
-                        {task.urgent && (
-                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                            Urgent
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {task.client}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {task.location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {task.date}
-                        </span>
-                      </div>
-                      {task.progress && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs">Progress:</span>
-                          <div className="w-32 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-green-600 h-2 rounded-full"
-                              style={{ width: `${task.progress}%` }}
-                            />
-                          </div>
-                          <span className="text-xs">{task.progress}%</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">${task.price}</p>
-                        {task.rating && (
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm">{task.rating}</span>
-                          </div>
-                        )}
-                      </div>
-                      <Button size="sm">
-                        {taskFilter === "requests" ? "Accept" : "View Details"}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Check Messages
+                </div>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                className="w-full justify-between"
+                variant="outline"
+                onClick={() => setActiveTab("earnings")}
+              >
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  View Earnings
+                </div>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -596,80 +346,6 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Payments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {tasks.completed.slice(0, 5).map((task: Task) => (
-                  <div
-                    key={task.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{task.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {task.client} • {task.date}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-green-600">
-                        +${task.price}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Completed</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {activeTab === "bookings" && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Bookings</CardTitle>
-              <CardDescription>Your scheduled appointments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {upcomingBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div className="space-y-1">
-                      <h3 className="font-semibold">{booking.service}</h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {booking.client}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {booking.date}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {booking.time} ({booking.duration})
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold">${booking.price}</p>
-                      <Button size="sm" variant="outline">
-                        Contact Client
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
       )}
 

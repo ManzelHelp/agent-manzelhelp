@@ -3,9 +3,16 @@
     "title": "Manzel Help"
   },
   "Header": {
-    "about": "About Us",
+    "about_us": "About Us",
     "services": "Services",
-    "contact": "Contact"
+    "contact": "Contact",
+    "become_helper": "Become a Helper",
+    "find_helper": "Find a Helper",
+    "create_offer": "Create new Offer",
+    "sign_up": "Sign Up",
+    "login": "Login",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu"
   },
   "homepage": {
     "title": "Welcome to Manzel Help",

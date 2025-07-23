@@ -53,10 +53,7 @@ function ProfileDropDown() {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
-            href={
-              `/${user?.role}/dashboard/settings` ||
-              "/customer/dashboard/settings"
-            }
+            href={`/${user?.role}/settings` || "/customer/settings"}
             className="flex items-center"
           >
             <Settings className="mr-2 h-4 w-4" />
