@@ -52,6 +52,7 @@ interface BasicInfoData {
   serviceId: number;
   selectedAddressId: number;
   selectedWorkingHours: string[]; // array of day keys (e.g., ['monday', 'tuesday'])
+  serviceArea?: string; // Added to match schema
 }
 
 interface PricingData {
@@ -76,6 +77,7 @@ const INITIAL_BASIC_INFO: BasicInfoData = {
   serviceId: 0,
   selectedAddressId: 0,
   selectedWorkingHours: [],
+  serviceArea: "",
 };
 
 const INITIAL_PRICING_DATA: PricingData = {
@@ -320,28 +322,66 @@ export default function CreateOfferPage() {
     const supabase = createClient();
 
     try {
-      const submitData = {
-        tasker_id: user.id,
-        service_id: formData.basicInfo.serviceId,
-        pricing_type: formData.pricing.pricingType,
-        base_price:
-          formData.pricing.pricingType === "fixed"
-            ? formData.pricing.basePrice
-            : formData.pricing.hourlyRate,
-        hourly_rate:
-          formData.pricing.pricingType === "hourly"
-            ? formData.pricing.hourlyRate
-            : null,
-        is_available: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+      // Get the selected address
+      const selectedAddress = addresses.find(
+        (a) => a.id === formData.basicInfo.selectedAddressId
+      );
 
-      const { error } = await supabase
+      if (!selectedAddress) {
+        throw new Error("Selected address not found");
+      }
+
+      // Create the tasker service entry
+      const { error: serviceError } = await supabase
         .from("tasker_services")
-        .insert(submitData);
+        .insert({
+          tasker_id: user.id,
+          service_id: formData.basicInfo.serviceId,
+          title: formData.basicInfo.title,
+          description: formData.basicInfo.description,
+          pricing_type: formData.pricing.pricingType,
+          base_price:
+            formData.pricing.pricingType === "fixed"
+              ? formData.pricing.basePrice
+              : null,
+          hourly_rate:
+            formData.pricing.pricingType === "hourly"
+              ? formData.pricing.hourlyRate
+              : null,
+          minimum_duration: formData.pricing.minimumBookingHours,
+          service_area: `${selectedAddress.city}, ${selectedAddress.region}`,
+          is_available: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          portfolio_images: null, // We can add image upload functionality later
+        });
 
-      if (error) throw error;
+      if (serviceError) throw serviceError;
+
+      // Only update tasker profile if they haven't set their availability yet
+      if (
+        !taskerProfile?.operation_hours &&
+        formData.basicInfo.selectedWorkingHours.length > 0
+      ) {
+        // Use the existing availability from the profile if it exists
+        const existingAvailability = availability.filter((slot) =>
+          formData.basicInfo.selectedWorkingHours.includes(slot.day)
+        );
+
+        const { error: profileError } = await supabase
+          .from("tasker_profiles")
+          .update({
+            operation_hours: existingAvailability,
+            is_available: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+
+        if (profileError) {
+          console.error("Error updating operation hours:", profileError);
+          // Don't throw here as the main service was created successfully
+        }
+      }
 
       toast.success("Service offer created successfully!");
       router.push("/tasker/dashboard");

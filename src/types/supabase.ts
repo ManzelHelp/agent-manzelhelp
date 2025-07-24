@@ -1,7 +1,7 @@
 // AUTO-GENERATED: Supabase schema types (2024-12)
-// This file reflects the current database schema. Edit with caution.
+// This file is generated from the live Supabase schema. Do not edit manually.
 
-// User-defined types (enums) from Supabase
+// ENUMS FROM SUPABASE
 export type UserRole = "customer" | "tasker" | "both" | "admin";
 export type VerificationStatus = "pending" | "verified" | "rejected";
 export type PricingType = "fixed" | "hourly" | "per_item";
@@ -33,37 +33,36 @@ export type NotificationType =
   | "payment_received"
   | "message_received";
 
-// USERS TABLE
 export interface User {
-  id: string; // uuid
+  id: string;
   email: string;
   phone?: string;
   role?: UserRole;
-  is_active?: boolean; // default: true
-  email_verified?: boolean; // default: false
+  is_active?: boolean;
+  email_verified?: boolean;
   first_name?: string;
   last_name?: string;
   avatar_url?: string;
-  date_of_birth?: string; // date
-  preferred_language?: string; // default: 'fr'
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
-  last_login?: string; // timestamp
+  date_of_birth?: string;
+  preferred_language?: string;
+  created_at?: string;
+  updated_at?: string;
+  last_login?: string;
 }
 
 export interface Address {
   id: number;
-  user_id: string; // uuid
-  label?: string; // default: 'home'
+  user_id: string;
+  label?: string;
   street_address: string;
   city: string;
   region: string;
   postal_code?: string;
-  country?: string; // default: 'MA'
-  location?: object; // PostGIS geography
-  is_default?: boolean; // default: false
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
+  country?: string;
+  location?: object | null;
+  is_default?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ServiceCategory {
@@ -75,9 +74,9 @@ export interface ServiceCategory {
   description_fr?: string;
   description_ar?: string;
   icon_url?: string;
-  is_active?: boolean; // default: true
-  sort_order?: number; // default: 0
-  created_at?: string; // timestamp
+  is_active?: boolean;
+  sort_order?: number;
+  created_at?: string;
 }
 
 export interface Service {
@@ -90,127 +89,135 @@ export interface Service {
   description_fr?: string;
   description_ar?: string;
   icon_url?: string;
-  is_active?: boolean; // default: true
-  sort_order?: number; // default: 0
-  created_at?: string; // timestamp
+  is_active?: boolean;
+  sort_order?: number;
+  created_at?: string;
 }
 
 export interface TaskerProfile {
-  id: string; // uuid
+  id: string;
   experience_level?: ExperienceLevel;
   bio?: string;
   identity_document_url?: string;
-  verification_status?: VerificationStatus; // default: 'pending'
-  service_radius_km?: number; // default: 50
-  is_available?: boolean; // default: true
-  updated_at?: string; // timestamp
-  operation_hours?: OperationHours[] | null; // JSONB column for operation hours
-  company_id?: string; // uuid
+  verification_status?: VerificationStatus;
+  service_radius_km?: number;
+  is_available?: boolean;
+  updated_at?: string;
+  operation_hours?: AvailabilitySlot[] | null;
+  company_id?: string;
 }
 
 export interface TaskerService {
   id: number;
-  tasker_id: string; // uuid
+  tasker_id: string;
   service_id: number;
-  pricing_type?: PricingType; // default: 'fixed'
+  pricing_type?: PricingType;
   base_price: number;
   hourly_rate?: number;
-  is_available?: boolean; // default: true
-  is_promoted?: boolean; // default: false
-  promotion_expires_at?: string; // timestamp
-  promotion_boost_score?: number; // default: 0
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
+  is_available?: boolean;
+  is_promoted?: boolean;
+  promotion_expires_at?: string;
+  promotion_boost_score?: number;
+  created_at?: string;
+  updated_at?: string;
+  title?: string;
+  description?: string;
+  portfolio_images?: object | null;
+  minimum_duration?: number;
+  service_area?: string;
 }
 
 export interface Job {
-  id: string; // uuid
-  customer_id: string; // uuid
+  id: string;
+  customer_id: string;
   service_id: number;
   address_id: number;
   title: string;
   description: string;
-  preferred_date: string; // date
-  preferred_time_start?: string; // time
-  preferred_time_end?: string; // time
-  is_flexible?: boolean; // default: false
+  preferred_date: string;
+  preferred_time_start?: string;
+  preferred_time_end?: string;
+  is_flexible?: boolean;
   estimated_duration?: number;
   customer_budget?: number;
   final_price?: number;
-  is_promoted?: boolean; // default: false
-  promotion_expires_at?: string; // timestamp
-  promotion_boost_score?: number; // default: 0
-  status?: JobStatus; // default: 'pending'
-  assigned_tasker_id?: string; // uuid
-  started_at?: string; // timestamp
-  completed_at?: string; // timestamp
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
+  is_promoted?: boolean;
+  promotion_expires_at?: string;
+  promotion_boost_score?: number;
+  status?: JobStatus;
+  assigned_tasker_id?: string;
+  started_at?: string;
+  completed_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  images?: object | null;
+  requirements?: string;
+  currency?: string;
 }
 
 export interface JobApplication {
   id: number;
-  job_id: string; // uuid
-  tasker_id: string; // uuid
+  job_id: string;
+  tasker_id: string;
   proposed_price: number;
   estimated_duration?: number;
   message?: string;
-  status?: ApplicationStatus; // default: 'pending'
-  is_premium?: boolean; // default: false
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
+  status?: ApplicationStatus;
+  is_premium?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Review {
   id: number;
-  job_id: string; // uuid
-  reviewer_id: string; // uuid
-  reviewee_id: string; // uuid
+  job_id: string;
+  reviewer_id: string;
+  reviewee_id: string;
   overall_rating: number;
   quality_rating?: number;
   communication_rating?: number;
   timeliness_rating?: number;
   comment?: string;
-  created_at?: string; // timestamp
+  created_at?: string;
 }
 
 export interface Message {
   id: number;
-  job_id: string; // uuid
-  sender_id: string; // uuid
-  receiver_id: string; // uuid
+  job_id: string;
+  sender_id: string;
+  receiver_id: string;
   content: string;
   attachment_url?: string;
-  is_read?: boolean; // default: false
-  created_at?: string; // timestamp
+  is_read?: boolean;
+  created_at?: string;
 }
 
 export interface Transaction {
   id: number;
-  job_id: string; // uuid
-  payer_id: string; // uuid
-  payee_id: string; // uuid
+  job_id: string;
+  payer_id: string;
+  payee_id: string;
   transaction_type: TransactionType;
   amount: number;
-  platform_fee?: number; // default: 0
-  payment_status?: PaymentStatus; // default: 'pending'
+  platform_fee?: number;
+  payment_status?: PaymentStatus;
   payment_method?: string;
   external_payment_id?: string;
-  processed_at?: string; // timestamp
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
+  processed_at?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Notification {
   id: number;
-  user_id: string; // uuid
+  user_id: string;
   type: NotificationType;
   title: string;
   message: string;
-  related_job_id?: string; // uuid
-  related_user_id?: string; // uuid
-  is_read?: boolean; // default: false
-  created_at?: string; // timestamp
+  related_job_id?: string;
+  related_user_id?: string;
+  is_read?: boolean;
+  created_at?: string;
 }
 
 export interface PromotionPackage {
@@ -224,47 +231,46 @@ export interface PromotionPackage {
   price: number;
   duration_days: number;
   boost_score: number;
-  priority_listing?: boolean; // default: false
-  featured_badge?: boolean; // default: false
-  social_media_promotion?: boolean; // default: false
-  email_promotion?: boolean; // default: false
-  is_active?: boolean; // default: true
-  created_at?: string; // timestamp
+  priority_listing?: boolean;
+  featured_badge?: boolean;
+  social_media_promotion?: boolean;
+  email_promotion?: boolean;
+  is_active?: boolean;
+  created_at?: string;
 }
 
 export interface Promotion {
   id: number;
   package_id: number;
-  user_id: string; // uuid
-  job_id?: string; // uuid
+  user_id: string;
+  job_id?: string;
   tasker_service_id?: number;
   amount_paid: number;
   boost_score: number;
-  starts_at?: string; // timestamp
-  expires_at: string; // timestamp
-  is_active?: boolean; // default: true
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
-  company_id?: string; // uuid
-  tasker_profile_id?: string; // uuid
+  starts_at?: string;
+  expires_at: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  company_id?: string;
+  tasker_profile_id?: string;
 }
 
 export interface UserStats {
-  id: string; // uuid
-  tasker_rating?: number; // default: 0.00
-  total_reviews?: number; // default: 0
-  completed_jobs?: number; // default: 0
-  total_earnings?: number; // default: 0.00
-  response_time_hours?: number; // default: 0
-  cancellation_rate?: number; // default: 0.00
-  jobs_posted?: number; // default: 0
-  total_spent?: number; // default: 0.00
-  updated_at?: string; // timestamp
+  id: string;
+  tasker_rating?: number;
+  total_reviews?: number;
+  completed_jobs?: number;
+  total_earnings?: number;
+  response_time_hours?: number;
+  cancellation_rate?: number;
+  jobs_posted?: number;
+  total_spent?: number;
+  updated_at?: string;
 }
 
-// New: Companies table
 export interface Company {
-  id: string; // uuid
+  id: string;
   company_name: string;
   company_registration_number?: string;
   tax_id?: string;
@@ -276,59 +282,95 @@ export interface Company {
   city?: string;
   region?: string;
   postal_code?: string;
-  country?: string; // default: 'MA'
-  location?: object; // PostGIS geography
+  country?: string;
+  location?: object | null;
   company_email?: string;
   company_phone?: string;
   logo_url?: string;
   cover_image_url?: string;
-  is_active?: boolean; // default: true
-  verification_status?: VerificationStatus; // default: 'pending'
+  is_active?: boolean;
+  verification_status?: string;
   verification_document_url?: string;
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
+  created_at?: string;
+  updated_at?: string;
 }
 
-// New: Company promotion profiles
 export interface CompanyPromotionProfile {
   id: number;
-  company_id: string; // uuid
-  is_promoted?: boolean; // default: false
-  promotion_expires_at?: string; // timestamp
-  promotion_boost_score?: number; // default: 0
+  company_id: string;
+  is_promoted?: boolean;
+  promotion_expires_at?: string;
+  promotion_boost_score?: number;
   promotion_badge_type?: string;
-  priority_in_search?: boolean; // default: false
-  featured_on_homepage?: boolean; // default: false
-  highlighted_badge?: boolean; // default: false
-  created_at?: string; // timestamp
-  updated_at?: string; // timestamp
+  priority_in_search?: boolean;
+  featured_on_homepage?: boolean;
+  highlighted_badge?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
-// New: Company stats
 export interface CompanyStats {
-  id: string; // uuid
-  company_rating?: number; // default: 0.00
-  total_reviews?: number; // default: 0
-  completed_jobs?: number; // default: 0
-  total_earnings?: number; // default: 0.00
-  active_taskers?: number; // default: 0
-  average_response_time_hours?: number; // default: 0
-  cancellation_rate?: number; // default: 0.00
-  updated_at?: string; // timestamp
+  id: string;
+  company_rating?: number;
+  total_reviews?: number;
+  completed_jobs?: number;
+  total_earnings?: number;
+  active_taskers?: number;
+  average_response_time_hours?: number;
+  cancellation_rate?: number;
+  updated_at?: string;
 }
 
-// Operation hours for tasker profiles (JSONB structure)
-export interface OperationHours {
+export interface TaskerPromotionProfile {
+  id: number;
+  tasker_id: string;
+  is_promoted?: boolean;
+  promotion_expires_at?: string;
+  promotion_boost_score?: number;
+  promotion_badge_type?: string;
+  priority_in_search?: boolean;
+  featured_on_homepage?: boolean;
+  highlighted_badge?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UserFavorite {
+  id: number;
+  user_id: string;
+  tasker_id: string;
+  created_at?: string;
+}
+
+export interface TaskerAvailability {
+  id: number;
+  tasker_id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_active?: boolean;
+  created_at?: string;
+}
+
+export interface TaskerBlockedDate {
+  id: number;
+  tasker_id: string;
+  blocked_date: string;
+  reason?: string;
+  is_full_day?: boolean;
+  start_time?: string;
+  end_time?: string;
+  created_at?: string;
+}
+
+// Custom type for operation hours
+export interface AvailabilitySlot {
   day: string;
   enabled: boolean;
   startTime: string;
   endTime: string;
 }
 
-// Legacy alias for backwards compatibility
-export type AvailabilitySlot = OperationHours;
-
-// Database type with all tables
 export interface Database {
   users: User;
   addresses: Address;
@@ -348,4 +390,8 @@ export interface Database {
   companies: Company;
   company_promotion_profiles: CompanyPromotionProfile;
   company_stats: CompanyStats;
+  tasker_promotion_profiles: TaskerPromotionProfile;
+  user_favorites: UserFavorite;
+  tasker_availability: TaskerAvailability;
+  tasker_blocked_dates: TaskerBlockedDate;
 }
