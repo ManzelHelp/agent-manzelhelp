@@ -18,6 +18,7 @@ interface ServiceWithTasker extends TaskerService {
 }
 
 async function SearchPage({ searchParams }: SearchPageProps) {
+  const resolvedSearchParams = await searchParams;
   const supabase = await createClient();
   const t = await getTranslations("search");
 
@@ -38,8 +39,8 @@ async function SearchPage({ searchParams }: SearchPageProps) {
     )
     .eq("is_available", true);
 
-  if (searchParams.q) {
-    query = query.ilike("title", `%${searchParams.q}%`);
+  if (resolvedSearchParams.q) {
+    query = query.ilike("title", `%${resolvedSearchParams.q}%`);
   }
 
   const { data: services, error } = await query;
@@ -56,7 +57,7 @@ async function SearchPage({ searchParams }: SearchPageProps) {
       {/* Search Header */}
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] py-6">
         <div className="container mx-auto px-4">
-          <ServiceSearchBar defaultValue={searchParams.q} />
+          <ServiceSearchBar defaultValue={resolvedSearchParams.q} />
         </div>
       </div>
 
@@ -112,8 +113,8 @@ async function SearchPage({ searchParams }: SearchPageProps) {
           <section className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-semibold">
-                {searchParams.q
-                  ? t("searchResults", { query: searchParams.q })
+                {resolvedSearchParams.q
+                  ? t("searchResults", { query: resolvedSearchParams.q })
                   : t("allServices")}
               </h1>
               <span className="text-[var(--color-text-secondary)]">
@@ -146,5 +147,4 @@ async function SearchPage({ searchParams }: SearchPageProps) {
     </main>
   );
 }
-
 export default SearchPage;

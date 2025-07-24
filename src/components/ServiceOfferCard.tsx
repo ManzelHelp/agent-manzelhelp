@@ -1,8 +1,10 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { User, TaskerService } from "@/types/supabase";
 import { Card } from "./ui/card";
 import { MapPin } from "lucide-react";
+import { useLocale } from "next-intl";
 
 interface ServiceOfferCardProps {
   service: TaskerService;
@@ -10,6 +12,8 @@ interface ServiceOfferCardProps {
 }
 
 function ServiceOfferCard({ service, tasker }: ServiceOfferCardProps) {
+  const locale = useLocale();
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <div className="relative flex flex-col h-full">
@@ -58,9 +62,12 @@ function ServiceOfferCard({ service, tasker }: ServiceOfferCardProps) {
                 </span>
               )}
             </div>
-            <button className="px-4 py-2 bg-[var(--color-accent)] text-white rounded-md hover:opacity-90 transition-opacity">
+            <Link
+              href={`/${locale}/taskerOffer/${service.id}`}
+              className="px-4 py-2 bg-[var(--color-accent)] text-white rounded-md hover:opacity-90 transition-opacity"
+            >
               View Details
-            </button>
+            </Link>
           </div>
         </div>
       </div>
