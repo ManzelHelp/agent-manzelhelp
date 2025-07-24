@@ -427,14 +427,16 @@
     "filters": "Filter",
     "priceRange": "Preisbereich",
     "location": "Standort",
-    "enterLocation": "Standort eingeben...",
+    "enterLocation": "Standort eingeben",
     "rating": "Bewertung",
     "applyFilters": "Filter anwenden",
+    "categories": "Kategorien",
+    "allCategories": "Alle Kategorien",
     "searchResults": "Suchergebnisse für \"{query}\"",
     "allServices": "Alle Dienstleistungen",
     "resultsFound": "Ergebnisse gefunden",
     "noResults": "Keine Ergebnisse gefunden",
-    "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchbegriffe anzupassen"
+    "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen"
   }
 }
   

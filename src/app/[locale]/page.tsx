@@ -3,6 +3,8 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
 import { User, TaskerService } from "@/types/supabase";
+import PopularServices from "@/components/PopularServices";
+import { createClient } from "@/supabase/server";
 
 // Sample data for demonstration
 const sampleOffers: { service: TaskerService; tasker: User }[] = [
@@ -87,12 +89,20 @@ export default async function Page({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const supabase = await createClient();
 
   // Enable static rendering
   setRequestLocale(locale);
 
   // Get translations for the page content
   const t = await getTranslations({ locale, namespace: "homepage" });
+
+  // Fetch service categories
+  const { data: categories } = await supabase
+    .from("service_categories")
+    .select("id, name_en, name_fr, name_ar")
+    .eq("is_active", true)
+    .order("sort_order");
 
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)] flex flex-col items-center py-12 px-4">
@@ -112,6 +122,11 @@ export default async function Page({
       </section>
 
       <ServiceSearchBar />
+
+      {/* Add Popular Services section */}
+      {categories && (
+        <PopularServices categories={categories} locale={locale} />
+      )}
 
       <div className="w-full max-w-7xl mt-12">
         {/* Services Offered Section */}

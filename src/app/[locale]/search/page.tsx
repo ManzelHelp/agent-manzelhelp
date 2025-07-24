@@ -2,27 +2,44 @@ import React from "react";
 import { createClient } from "@/supabase/server";
 import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import SearchFilters from "@/components/filters/SearchFilters";
 import { getTranslations } from "next-intl/server";
 import { TaskerService, User } from "@/types/supabase";
 
 interface SearchPageProps {
-  searchParams: { q?: string };
+  searchParams: {
+    q?: string;
+    category?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    location?: string;
+    ratings?: string;
+  };
+  params: {
+    locale: string;
+  };
 }
 
 interface ServiceWithTasker extends TaskerService {
   tasker: User;
 }
 
-async function SearchPage({ searchParams }: SearchPageProps) {
+async function SearchPage({
+  searchParams,
+  params: { locale },
+}: SearchPageProps) {
   const resolvedSearchParams = await searchParams;
   const supabase = await createClient();
   const t = await getTranslations("search");
 
-  // Fetch services based on search query
+  // Fetch categories for the filter
+  const { data: categories } = await supabase
+    .from("service_categories")
+    .select("id, name_en, name_fr, name_ar")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  // Fetch services based on search query and filters
   let query = supabase
     .from("tasker_services")
     .select(
@@ -39,8 +56,25 @@ async function SearchPage({ searchParams }: SearchPageProps) {
     )
     .eq("is_available", true);
 
+  // Apply filters
   if (resolvedSearchParams.q) {
     query = query.ilike("title", `%${resolvedSearchParams.q}%`);
+  }
+
+  if (resolvedSearchParams.category) {
+    query = query.eq("service_id", parseInt(resolvedSearchParams.category));
+  }
+
+  if (resolvedSearchParams.minPrice) {
+    query = query.gte("base_price", parseFloat(resolvedSearchParams.minPrice));
+  }
+
+  if (resolvedSearchParams.maxPrice) {
+    query = query.lte("base_price", parseFloat(resolvedSearchParams.maxPrice));
+  }
+
+  if (resolvedSearchParams.location) {
+    query = query.ilike("service_area", `%${resolvedSearchParams.location}%`);
   }
 
   const { data: services, error } = await query;
@@ -51,6 +85,14 @@ async function SearchPage({ searchParams }: SearchPageProps) {
   }
 
   const typedServices = (services || []) as ServiceWithTasker[];
+
+  // Filter by ratings if specified
+  let filteredServices = typedServices;
+  if (resolvedSearchParams.ratings) {
+    // Note: In a real app, you would join with a reviews table and calculate average ratings
+    // This is just a placeholder for the filter UI
+    filteredServices = typedServices;
+  }
 
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
@@ -65,48 +107,22 @@ async function SearchPage({ searchParams }: SearchPageProps) {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar */}
           <aside className="w-full lg:w-64 flex-shrink-0">
-            <Card className="p-4 sticky top-4">
-              <h2 className="text-xl font-semibold mb-4">{t("filters")}</h2>
-
-              {/* Price Range */}
-              <div className="space-y-4 mb-6">
-                <Label>{t("priceRange")}</Label>
-                <div className="space-y-2">
-                  <div className="flex gap-4">
-                    <div className="flex-1">
-                      <Input type="number" placeholder="Min" />
-                    </div>
-                    <div className="flex-1">
-                      <Input type="number" placeholder="Max" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Service Area */}
-              <div className="space-y-4 mb-6">
-                <Label>{t("location")}</Label>
-                <Input placeholder={t("enterLocation")} />
-              </div>
-
-              {/* Rating Filter */}
-              <div className="space-y-4 mb-6">
-                <Label>{t("rating")}</Label>
-                <div className="space-y-2">
-                  {[5, 4, 3, 2, 1].map((rating) => (
-                    <label key={rating} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        className="rounded border-[var(--color-border)]"
-                      />
-                      <span>{"★".repeat(rating)} & up</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <Button className="w-full">{t("applyFilters")}</Button>
-            </Card>
+            {categories && (
+              <SearchFilters
+                categories={categories}
+                locale={locale}
+                translations={{
+                  filters: t("filters"),
+                  priceRange: t("priceRange"),
+                  location: t("location"),
+                  enterLocation: t("enterLocation"),
+                  rating: t("rating"),
+                  applyFilters: t("applyFilters"),
+                  categories: t("categories"),
+                  allCategories: t("allCategories"),
+                }}
+              />
+            )}
           </aside>
 
           {/* Results Section */}
@@ -118,13 +134,13 @@ async function SearchPage({ searchParams }: SearchPageProps) {
                   : t("allServices")}
               </h1>
               <span className="text-[var(--color-text-secondary)]">
-                {typedServices.length} {t("resultsFound")}
+                {filteredServices.length} {t("resultsFound")}
               </span>
             </div>
 
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {typedServices.map((service) => (
+              {filteredServices.map((service) => (
                 <ServiceOfferCard
                   key={service.id}
                   service={service}
@@ -133,7 +149,7 @@ async function SearchPage({ searchParams }: SearchPageProps) {
               ))}
             </div>
 
-            {typedServices.length === 0 && (
+            {filteredServices.length === 0 && (
               <div className="text-center py-12">
                 <h3 className="text-xl font-semibold mb-2">{t("noResults")}</h3>
                 <p className="text-[var(--color-text-secondary)]">
@@ -147,4 +163,5 @@ async function SearchPage({ searchParams }: SearchPageProps) {
     </main>
   );
 }
+
 export default SearchPage;

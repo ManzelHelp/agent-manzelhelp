@@ -427,14 +427,16 @@
     "filters": "Filters",
     "priceRange": "Price Range",
     "location": "Location",
-    "enterLocation": "Enter location...",
+    "enterLocation": "Enter location",
     "rating": "Rating",
     "applyFilters": "Apply Filters",
+    "categories": "Categories",
+    "allCategories": "All Categories",
     "searchResults": "Search Results for \"{query}\"",
     "allServices": "All Services",
     "resultsFound": "results found",
     "noResults": "No Results Found",
-    "tryAdjustingFilters": "Try adjusting your filters or search terms"
+    "tryAdjustingFilters": "Try adjusting your filters or search criteria"
   }
 }
   
