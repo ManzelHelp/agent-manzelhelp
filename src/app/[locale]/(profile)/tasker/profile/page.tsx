@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import type { OperationHours } from "@/types/supabase";
+import type { AvailabilitySlot } from "@/types/supabase";
 import {
   Card,
   CardContent,
@@ -75,7 +75,7 @@ interface TaskerProfile {
   service_radius_km?: number;
   is_available?: boolean;
   updated_at?: string;
-  operation_hours?: OperationHours[] | null; // JSONB column for operation hours
+  operation_hours?: AvailabilitySlot[] | null; // JSONB column for operation hours
 }
 
 interface TaskerService {
@@ -190,7 +190,7 @@ export default function TaskerProfilePage() {
     service_radius_km: 25,
   });
 
-  const defaultAvailability = React.useMemo<OperationHours[]>(
+  const defaultAvailability = React.useMemo<AvailabilitySlot[]>(
     () => [
       { day: "monday", enabled: true, startTime: "09:00", endTime: "17:00" },
       { day: "tuesday", enabled: true, startTime: "09:00", endTime: "17:00" },
@@ -203,9 +203,9 @@ export default function TaskerProfilePage() {
     []
   );
   const [availability, setAvailability] =
-    useState<OperationHours[]>(defaultAvailability);
+    useState<AvailabilitySlot[]>(defaultAvailability);
   const [originalAvailability, setOriginalAvailability] =
-    useState<OperationHours[]>(defaultAvailability);
+    useState<AvailabilitySlot[]>(defaultAvailability);
 
   const [newAddress, setNewAddress] = useState<Address>({
     label: "home",
@@ -648,7 +648,7 @@ export default function TaskerProfilePage() {
 
   const updateAvailability = (
     dayIndex: number,
-    field: keyof OperationHours,
+    field: keyof AvailabilitySlot,
     value: string | boolean
   ) => {
     setAvailability((prev) =>

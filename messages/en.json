@@ -422,6 +422,19 @@
     "switchToLogin": "Already have an account? Sign in",
     "switchToSignup": "Don't have an account? Sign up",
     "forgotPassword": "Forgot your password?"
+  },
+  "search": {
+    "filters": "Filters",
+    "priceRange": "Price Range",
+    "location": "Location",
+    "enterLocation": "Enter location...",
+    "rating": "Rating",
+    "applyFilters": "Apply Filters",
+    "searchResults": "Search Results for \"{query}\"",
+    "allServices": "All Services",
+    "resultsFound": "results found",
+    "noResults": "No Results Found",
+    "tryAdjustingFilters": "Try adjusting your filters or search terms"
   }
 }
   

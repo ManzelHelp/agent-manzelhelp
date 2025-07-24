@@ -422,6 +422,19 @@
     "switchToLogin": "Bereits ein Konto? Anmelden",
     "switchToSignup": "Noch kein Konto? Registrieren",
     "forgotPassword": "Passwort vergessen?"
+  },
+  "search": {
+    "filters": "Filter",
+    "priceRange": "Preisbereich",
+    "location": "Standort",
+    "enterLocation": "Standort eingeben...",
+    "rating": "Bewertung",
+    "applyFilters": "Filter anwenden",
+    "searchResults": "Suchergebnisse für \"{query}\"",
+    "allServices": "Alle Dienstleistungen",
+    "resultsFound": "Ergebnisse gefunden",
+    "noResults": "Keine Ergebnisse gefunden",
+    "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchbegriffe anzupassen"
   }
 }
   
