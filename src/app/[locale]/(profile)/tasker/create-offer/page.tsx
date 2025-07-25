@@ -32,6 +32,7 @@ import {
   X,
   ChevronDown,
   AlertCircle,
+  Edit,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { createClient } from "@/supabase/client";
@@ -729,42 +730,16 @@ export default function CreateOfferPage() {
                       {availability
                         .filter((slot) => slot.enabled)
                         .map((slot) => (
-                          <label
+                          <div
                             key={slot.day}
-                            className="flex items-center space-x-2 p-3 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={formData.basicInfo.selectedWorkingHours.includes(
+                            className={`flex items-center space-x-2 p-3 rounded-lg border ${
+                              formData.basicInfo.selectedWorkingHours.includes(
                                 slot.day
-                              )}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    basicInfo: {
-                                      ...prev.basicInfo,
-                                      selectedWorkingHours: [
-                                        ...prev.basicInfo.selectedWorkingHours,
-                                        slot.day,
-                                      ],
-                                    },
-                                  }));
-                                } else {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    basicInfo: {
-                                      ...prev.basicInfo,
-                                      selectedWorkingHours:
-                                        prev.basicInfo.selectedWorkingHours.filter(
-                                          (d) => d !== slot.day
-                                        ),
-                                    },
-                                  }));
-                                }
-                              }}
-                              className="rounded border-gray-300"
-                            />
+                              )
+                                ? "bg-primary/5 border-primary/20"
+                                : "bg-muted"
+                            }`}
+                          >
                             <div className="flex-1">
                               <div className="font-medium capitalize text-sm">
                                 {slot.day}
@@ -773,19 +748,25 @@ export default function CreateOfferPage() {
                                 {slot.startTime} - {slot.endTime}
                               </div>
                             </div>
-                          </label>
+                          </div>
                         ))}
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-fit mt-2"
-                      onClick={() =>
-                        router.push("/tasker/profile?section=availability")
-                      }
-                    >
-                      Edit Working Hours
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-fit"
+                        onClick={() =>
+                          router.push("/tasker/profile?section=availability")
+                        }
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Working Hours
+                      </Button>
+                      <p className="text-sm text-muted-foreground">
+                        Your working hours are managed in your profile settings
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 border border-dashed rounded-lg text-center">
@@ -798,12 +779,17 @@ export default function CreateOfferPage() {
                       size="sm"
                       className="mt-2"
                       onClick={() =>
-                        router.push("/tasker/settings?section=availability")
+                        router.push("/tasker/profile?section=availability")
                       }
                     >
                       Add Working Hours
                     </Button>
                   </div>
+                )}
+                {errors.workingHours && (
+                  <p className="text-sm text-destructive">
+                    {errors.workingHours}
+                  </p>
                 )}
               </div>
             </CardContent>

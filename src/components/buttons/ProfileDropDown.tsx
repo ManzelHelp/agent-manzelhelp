@@ -53,6 +53,15 @@ function ProfileDropDown() {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
+            href={`/${user?.role}/notifications` || "/customer/notifications"}
+            className="flex items-center"
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Notifications</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
             href={`/${user?.role}/settings` || "/customer/settings"}
             className="flex items-center"
           >

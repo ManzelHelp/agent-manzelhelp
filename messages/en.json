@@ -437,6 +437,41 @@
     "resultsFound": "results found",
     "noResults": "No Results Found",
     "tryAdjustingFilters": "Try adjusting your filters or search criteria"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Stay updated with your latest activities and updates",
+    "empty": {
+      "title": "No notifications yet",
+      "description": "When you receive notifications, they will appear here"
+    },
+    "filters": {
+      "all": "All notifications",
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "actions": {
+      "markAllRead": "Mark all as read",
+      "viewJob": "View job details",
+      "viewProfile": "View profile",
+      "view": "View"
+    },
+    "badges": {
+      "new": "New"
+    },
+    "errors": {
+      "notLoggedIn": "Not logged in",
+      "loginRequired": "Please log in to view your notifications",
+      "fetchFailed": "Failed to load notifications",
+      "markReadFailed": "Failed to mark notification as read",
+      "markAllReadFailed": "Failed to mark all notifications as read",
+      "deleteFailed": "Failed to delete notification"
+    },
+    "success": {
+      "markedAsRead": "Notification marked as read",
+      "allMarkedAsRead": "All notifications marked as read",
+      "deleted": "Notification deleted"
+    }
   }
 }
   

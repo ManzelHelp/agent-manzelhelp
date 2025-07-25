@@ -17,7 +17,6 @@ import {
   MapPin,
   Shield,
   CreditCard,
-  Bell,
   Globe,
   CheckCircle,
   AlertCircle,
@@ -36,7 +35,6 @@ import {
   Zap,
   BadgeCheck,
   MapPinIcon,
-  BellDot,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { createClient } from "@/supabase/client";
@@ -55,7 +53,6 @@ type ProfileSection =
   | "addresses"
   | "security"
   | "payment"
-  | "notifications"
   | "preferences";
 
 interface ProfileCompletionItem {
@@ -158,7 +155,6 @@ export default function TaskerProfilePage() {
     "addresses",
     "security",
     "payment",
-    "notifications",
     "preferences",
   ];
 
@@ -218,31 +214,6 @@ export default function TaskerProfilePage() {
   });
 
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
-
-  // Add a mock notifications array and state
-  const [notifications] = useState([
-    {
-      id: 1,
-      title: "Welcome to Manzel Help!",
-      body: "Your tasker profile is live.",
-      date: "2024-06-01",
-      read: false,
-    },
-    {
-      id: 2,
-      title: "Profile Verified",
-      body: "Your identity has been verified.",
-      date: "2024-06-02",
-      read: true,
-    },
-    {
-      id: 3,
-      title: "New Job Alert",
-      body: "You have a new job request.",
-      date: "2024-06-03",
-      read: false,
-    },
-  ]);
 
   // Add state for profile photo upload near other states
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -698,7 +669,6 @@ export default function TaskerProfilePage() {
     addresses: <MapPin className="h-4 w-4" />,
     security: <Shield className="h-4 w-4" />,
     payment: <CreditCard className="h-4 w-4" />,
-    notifications: <Bell className="h-4 w-4" />,
     preferences: <Globe className="h-4 w-4" />,
   };
 
@@ -708,10 +678,6 @@ export default function TaskerProfilePage() {
     { id: "skills" as ProfileSection, title: t("sections.skills") },
     { id: "availability" as ProfileSection, title: t("sections.availability") },
     { id: "addresses" as ProfileSection, title: t("sections.addresses") },
-    {
-      id: "notifications" as ProfileSection,
-      title: t("sections.notifications"),
-    },
     { id: "payment" as ProfileSection, title: t("sections.payment") },
     { id: "preferences" as ProfileSection, title: t("sections.preferences") },
   ];
@@ -1738,70 +1704,6 @@ export default function TaskerProfilePage() {
                     {t("payment.addFirst")}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notifications Section - Same as customer */}
-          {activeSection === "notifications" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BellDot className="h-5 w-5" />
-                  {t("sections.notifications")}
-                </CardTitle>
-                <CardDescription>
-                  {t("notifications.description")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {notifications.length === 0 ? (
-                  <div className="text-center py-8">
-                    <BellDot className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-medium mb-2">
-                      {t("notifications.empty")}
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      {t("notifications.emptyDescription")}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg bg-background ${
-                          !notif.read ? "border-primary/40" : ""
-                        }`}
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{notif.title}</span>
-                            {!notif.read && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                                {t("notifications.unread")}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {notif.body}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                          <span className="text-xs text-muted-foreground">
-                            {notif.date}
-                          </span>
-                          {notif.read && (
-                            <BadgeCheck
-                              className="h-4 w-4 text-green-500"
-                              aria-label={t("notifications.seen") || "Seen"}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}

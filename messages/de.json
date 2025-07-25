@@ -437,6 +437,41 @@
     "resultsFound": "Ergebnisse gefunden",
     "noResults": "Keine Ergebnisse gefunden",
     "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "description": "Bleiben Sie über Ihre neuesten Aktivitäten und Updates informiert",
+    "empty": {
+      "title": "Noch keine Benachrichtigungen",
+      "description": "Wenn Sie Benachrichtigungen erhalten, werden sie hier angezeigt"
+    },
+    "filters": {
+      "all": "Alle Benachrichtigungen",
+      "unread": "Ungelesen",
+      "read": "Gelesen"
+    },
+    "actions": {
+      "markAllRead": "Alle als gelesen markieren",
+      "viewJob": "Jobdetails anzeigen",
+      "viewProfile": "Profil anzeigen",
+      "view": "Anzeigen"
+    },
+    "badges": {
+      "new": "Neu"
+    },
+    "errors": {
+      "notLoggedIn": "Nicht eingeloggt",
+      "loginRequired": "Bitte melden Sie sich an, um Ihre Benachrichtigungen zu sehen",
+      "fetchFailed": "Benachrichtigungen konnten nicht geladen werden",
+      "markReadFailed": "Benachrichtigung konnte nicht als gelesen markiert werden",
+      "markAllReadFailed": "Alle Benachrichtigungen konnten nicht als gelesen markiert werden",
+      "deleteFailed": "Benachrichtigung konnte nicht gelöscht werden"
+    },
+    "success": {
+      "markedAsRead": "Benachrichtigung als gelesen markiert",
+      "allMarkedAsRead": "Alle Benachrichtigungen als gelesen markiert",
+      "deleted": "Benachrichtigung gelöscht"
+    }
   }
 }
   
