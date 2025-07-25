@@ -36,12 +36,17 @@ export const logOutAction = async () => {
 export const signUpAction = async (
   email: string,
   password: string,
-  userRole: string,
-  locale: string = "en"
+  userRole: string
 ) => {
   try {
     const supabase = await createClient();
     const headersList = await headers();
+
+    // Validate user role
+    const validRoles = ["customer", "tasker", "both", "admin"];
+    if (!validRoles.includes(userRole)) {
+      throw new Error(`Invalid role. Must be one of: ${validRoles.join(", ")}`);
+    }
 
     // Get the origin from headers or use environment variable
     const origin =
@@ -53,36 +58,21 @@ export const signUpAction = async (
     // Ensure origin has protocol
     const baseUrl = origin.startsWith("http") ? origin : `https://${origin}`;
 
-    // Construct the confirmation URL with proper locale
-    const emailRedirectTo = `${baseUrl}/${locale}/confirm`;
+    // Construct the confirmation URL with role - next-intl middleware will handle locale
+    const emailRedirectTo = `${baseUrl}/confirm?userRole=${userRole}`;
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo,
-        data: {
-          role: userRole,
-        },
       },
     });
     if (error) throw error;
 
-    const userId = data.user?.id;
-    if (!userId) throw new Error("Error signing up");
-
-    const { error: dbError } = await supabase.from("users").insert([
-      {
-        id: userId,
-        email,
-        role: userRole,
-        email_verified: false, // Will be updated to true after email confirmation
-      },
-    ]);
-    if (dbError) throw dbError;
-
     return { errorMessage: null };
   } catch (error) {
+    console.error("Sign up error:", error);
     return handleError(error);
   }
 };

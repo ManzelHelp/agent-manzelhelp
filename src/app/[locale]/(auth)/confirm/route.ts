@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
+  const userRole = searchParams.get("userRole");
 
   // Use next-intl's built-in locale detection
   const locale = await getLocale();
@@ -15,6 +16,7 @@ export async function GET(request: NextRequest) {
   const redirectTo = new URL(request.url);
   redirectTo.searchParams.delete("token_hash");
   redirectTo.searchParams.delete("type");
+  redirectTo.searchParams.delete("userRole");
 
   if (token_hash && type) {
     const supabase = await createClient();
@@ -26,24 +28,27 @@ export async function GET(request: NextRequest) {
 
     if (!error && data.session && data.user) {
       try {
-        // Update user's email_verified status in the database
-        const { error: updateError } = await supabase
-          .from("users")
-          .update({
+        // Create the user record in the database
+        const { error: insertError } = await supabase.from("users").insert([
+          {
+            id: data.user.id,
+            email: data.user.email,
+            role: userRole as "customer" | "tasker" | "both" | "admin",
             email_verified: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", data.user.id);
+            is_active: true,
+            created_at: new Date().toISOString(),
+            preferred_language: locale,
+          },
+        ]);
 
-        if (updateError) {
-          console.error(
-            "Failed to update email verification status:",
-            updateError
-          );
-          // Don't fail the entire process for this, but log it
+        if (insertError) {
+          console.error("Failed to create user record:", insertError);
+          // If user creation fails, redirect to error page
+          redirectTo.pathname = `/${locale}/error`;
+          return Response.redirect(redirectTo.toString());
         }
 
-        // User is now authenticated, get their profile data
+        // User is now authenticated and created, get their profile data
         const { data: profile, error: profileError } = await supabase
           .from("users")
           .select("*")
@@ -54,24 +59,17 @@ export async function GET(request: NextRequest) {
           // Redirect to a client component that will handle Zustand store update
           // and then redirect to the appropriate dashboard
           redirectTo.pathname = `/${locale}/confirm-success`;
-          // Remove the userRole parameter - we don't need it
-          redirectTo.searchParams.delete("next");
-
           return Response.redirect(redirectTo.toString());
         } else {
           // Profile fetch failed but user is authenticated
           // Redirect to a generic dashboard
           redirectTo.pathname = `/${locale}/customer/dashboard`;
-          redirectTo.searchParams.delete("next");
-
           return Response.redirect(redirectTo.toString());
         }
       } catch (dbError) {
         console.error("Database operation failed:", dbError);
-        // Still redirect to success since auth worked
-        redirectTo.pathname = `/${locale}/customer/dashboard`;
-        redirectTo.searchParams.delete("next");
-
+        // Database operation failed - redirect to error page
+        redirectTo.pathname = `/${locale}/error`;
         return Response.redirect(redirectTo.toString());
       }
     }
@@ -79,7 +77,5 @@ export async function GET(request: NextRequest) {
 
   // Verification failed - redirect to error page with locale
   redirectTo.pathname = `/${locale}/error`;
-  redirectTo.searchParams.delete("next");
-
   return Response.redirect(redirectTo.toString());
 }
