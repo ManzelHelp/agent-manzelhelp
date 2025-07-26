@@ -71,7 +71,6 @@ interface Address {
 
 export default function CustomerDashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
-  const [taskFilter, setTaskFilter] = useState<TaskStatus>("active");
 
   // Mock data - replace with real data fetching
   const profileCompleteness = 70;
@@ -368,21 +367,6 @@ export default function CustomerDashboardPage() {
           <Activity className="h-4 w-4" />
           Overview
         </TabButton>
-        <TabButton tab="tasks" count={jobs.pending.length}>
-          <Briefcase className="h-4 w-4" />
-          My Jobs
-        </TabButton>
-        <TabButton tab="payments">
-          <CreditCard className="h-4 w-4" />
-          Payments
-        </TabButton>
-        <TabButton
-          tab="messages"
-          count={messages.filter((m) => m.unread).length}
-        >
-          <MessageSquare className="h-4 w-4" />
-          Messages
-        </TabButton>
         <TabButton tab="reviews">
           <Star className="h-4 w-4" />
           Reviews
@@ -498,17 +482,33 @@ export default function CustomerDashboardPage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button
-                  className="w-full justify-between"
-                  variant="outline"
-                  onClick={() => setActiveTab("tasks")}
-                >
-                  <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4" />
-                    View All Jobs
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                <Link href="/customer/bookings" className="block">
+                  <Button className="w-full justify-between" variant="outline">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      View Bookings
+                    </div>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/customer/finance" className="block">
+                  <Button className="w-full justify-between" variant="outline">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Finance
+                    </div>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/customer/messages" className="block">
+                  <Button className="w-full justify-between" variant="outline">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Messages
+                    </div>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <Link href="/customer/customer-offer">
                   <Button className="w-full justify-between" variant="outline">
                     <div className="flex items-center gap-2">
@@ -518,119 +518,8 @@ export default function CustomerDashboardPage() {
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Button
-                  className="w-full justify-between"
-                  variant="outline"
-                  onClick={() => setActiveTab("messages")}
-                >
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Check Messages
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  className="w-full justify-between"
-                  variant="outline"
-                  onClick={() => setActiveTab("payments")}
-                >
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    View Payments
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "tasks" && (
-        <div className="space-y-6">
-          <div className="flex flex-wrap gap-2">
-            {(
-              ["active", "pending", "completed", "cancelled"] as TaskStatus[]
-            ).map((status) => (
-              <button
-                key={status}
-                onClick={() => setTaskFilter(status)}
-                className={`px-4 py-2 rounded-lg capitalize transition-colors ${
-                  taskFilter === status
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {status} ({jobs[status].length})
-              </button>
-            ))}
-          </div>
-
-          <div className="grid gap-4">
-            {jobs[taskFilter].map((job) => (
-              <Card key={job.id}>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{job.title}</h3>
-                        {job.urgent && (
-                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                            Urgent
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {job.tasker}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {job.location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {job.date} {job.time && `at ${job.time}`}
-                        </span>
-                      </div>
-                      {typeof job.progress === "number" && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs">Progress:</span>
-                          <div className="w-32 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${job.progress}%` }}
-                            />
-                          </div>
-                          <span className="text-xs">{job.progress}%</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">${job.price}</p>
-                        {typeof job.rating === "number" && (
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm">{job.rating}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        {taskFilter === "active" && (
-                          <Button size="sm" variant="outline">
-                            <MessageSquare className="h-3 w-3 mr-1" />
-                            Message
-                          </Button>
-                        )}
-                        <Button size="sm">View Details</Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         </div>
       )}
