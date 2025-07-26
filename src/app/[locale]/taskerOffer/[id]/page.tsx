@@ -4,6 +4,7 @@ import React from "react";
 import { createClient } from "@/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -13,15 +14,24 @@ import type {
   TaskerProfile,
   UserStats,
 } from "@/types/supabase";
-import { MessageSquare, MapPin, Star, Clock, Calendar } from "lucide-react";
+import {
+  MessageSquare,
+  MapPin,
+  Star,
+  Clock,
+  Calendar,
+  AlertCircle,
+  Euro,
+  User as UserIcon,
+  Award,
+  Clock as ClockIcon,
+} from "lucide-react";
 import { format } from "date-fns";
 
 interface TaskerOfferData {
-  service: TaskerService & {
-    portfolio_images: string[] | null;
-  };
+  taskerService: TaskerService;
   tasker: User & { profile: TaskerProfile };
-  stats: UserStats;
+  stats: UserStats | null;
 }
 
 export default function TaskerOfferPage() {
@@ -32,14 +42,21 @@ export default function TaskerOfferPage() {
 
   useEffect(() => {
     const fetchTaskerOffer = async () => {
+      if (!params.id || typeof params.id !== "string") {
+        setError("Invalid service ID");
+        setLoading(false);
+        return;
+      }
+
       try {
         const supabase = createClient();
 
-        // Fetch tasker service and related data
-        const { data: serviceData, error: serviceError } = await supabase
-          .from("tasker_services")
-          .select(
-            `
+        // Fetch tasker service with related data
+        const { data: taskerServiceData, error: taskerServiceError } =
+          await supabase
+            .from("tasker_services")
+            .select(
+              `
             *,
             tasker:tasker_id (
               *,
@@ -47,30 +64,46 @@ export default function TaskerOfferPage() {
             ),
             service:service_id (*)
           `
-          )
-          .eq("id", params.id)
-          .single();
+            )
+            .eq("id", params.id)
+            .single();
 
-        if (serviceError) throw serviceError;
-        if (!serviceData) throw new Error("Service not found");
+        if (taskerServiceError) {
+          console.error("Tasker service error:", taskerServiceError);
+          if (taskerServiceError.code === "PGRST116") {
+            throw new Error("Service not found");
+          }
+          throw taskerServiceError;
+        }
+
+        if (!taskerServiceData) {
+          throw new Error("Service not found");
+        }
 
         // Fetch tasker stats
         const { data: statsData, error: statsError } = await supabase
           .from("user_stats")
           .select("*")
-          .eq("id", serviceData.tasker_id)
+          .eq("id", taskerServiceData.tasker_id)
           .single();
 
-        if (statsError) throw statsError;
+        // Stats error is not critical, we can continue without stats
+        if (statsError && statsError.code !== "PGRST116") {
+          console.warn("Failed to fetch user stats:", statsError);
+        }
 
         setData({
-          service: serviceData,
-          tasker: serviceData.tasker,
-          stats: statsData || {},
+          taskerService: taskerServiceData,
+          tasker: taskerServiceData.tasker,
+          stats: statsData || null,
         });
       } catch (err) {
         console.error("Error fetching tasker offer:", err);
-        setError("Failed to load the service offer. Please try again later.");
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Failed to load the service offer. Please try again later.");
+        }
       } finally {
         setLoading(false);
       }
@@ -81,19 +114,37 @@ export default function TaskerOfferPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-            </div>
-            <div className="space-y-4">
-              <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="animate-pulse space-y-6">
+            {/* Service Card Skeleton */}
+            <Card className="overflow-hidden">
+              <div className="h-64 bg-muted"></div>
+              <CardContent className="p-6 space-y-4">
+                <div className="h-8 bg-muted rounded w-3/4"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-2/3"></div>
+                <div className="flex gap-4">
+                  <div className="h-6 bg-muted rounded w-20"></div>
+                  <div className="h-6 bg-muted rounded w-32"></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasker Card Skeleton */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-16 w-16 bg-muted rounded-full"></div>
+                  <div className="space-y-2">
+                    <div className="h-6 bg-muted rounded w-32"></div>
+                    <div className="h-4 bg-muted rounded w-24"></div>
+                  </div>
+                </div>
+                <div className="h-4 bg-muted rounded w-full mb-4"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -102,142 +153,290 @@ export default function TaskerOfferPage() {
 
   if (error || !data) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="text-center p-8">
-          <CardContent>
-            <h2 className="text-2xl font-semibold mb-4">Oops!</h2>
-            <p className="text-muted-foreground mb-6">
-              {error || "Service not found"}
-            </p>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
+        <div className="container mx-auto px-4 max-w-md">
+          <Card className="text-center p-8">
+            <CardContent className="space-y-6">
+              <div className="flex justify-center">
+                <AlertCircle className="h-16 w-16 text-destructive" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold">Oops!</h2>
+                <p className="text-muted-foreground">
+                  {error || "Service not found"}
+                </p>
+              </div>
+              <Button
+                onClick={() => window.location.reload()}
+                className="w-full"
+              >
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
-  const { service, tasker, stats } = data;
+  const { taskerService, tasker, stats } = data;
+
+  const getPricingDisplay = () => {
+    if (taskerService.pricing_type === "hourly") {
+      return `€${taskerService.hourly_rate}/hr`;
+    } else if (taskerService.pricing_type === "per_item") {
+      return `€${taskerService.base_price}/item`;
+    } else {
+      return `€${taskerService.base_price}`;
+    }
+  };
+
+  const getExperienceLevelColor = (level?: string) => {
+    switch (level) {
+      case "expert":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "intermediate":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "beginner":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Service Details Section */}
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold">{service.title}</h1>
-
-          {/* Service Images */}
-          {service.portfolio_images && service.portfolio_images.length > 0 && (
-            <div className="relative h-64 rounded-lg overflow-hidden">
-              <Image
-                src={service.portfolio_images[0] || "/placeholder-service.jpg"}
-                alt={service.title || "Service image"}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-
-          {/* Service Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>About This Service</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{service.description}</p>
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{service.service_area}</span>
+          {/* Service Details Card */}
+          <Card className="overflow-hidden shadow-lg border-0">
+            {/* Service Image */}
+            {taskerService.portfolio_images &&
+              Array.isArray(taskerService.portfolio_images) &&
+              taskerService.portfolio_images.length > 0 && (
+                <div className="relative h-64 md:h-80 w-full">
+                  <Image
+                    src={
+                      taskerService.portfolio_images[0] ||
+                      "/placeholder-service.jpg"
+                    }
+                    alt={taskerService.title || "Service image"}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Listed on{" "}
-                    {format(new Date(service.created_at!), "MMMM d, yyyy")}
-                  </span>
+              )}
+
+            <CardContent className="p-6 md:p-8">
+              {/* Header with Title and Price */}
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                <div className="space-y-2">
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                    {taskerService.title}
+                  </h1>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span className="text-sm">
+                      Listed on{" "}
+                      {format(
+                        new Date(taskerService.created_at!),
+                        "MMMM d, yyyy"
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-center gap-2">
+                    <Euro className="h-5 w-5 text-primary" />
+                    <span className="text-2xl md:text-3xl font-bold text-primary">
+                      {getPricingDisplay()}
+                    </span>
+                  </div>
+                  {taskerService.minimum_duration && (
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <ClockIcon className="h-4 w-4" />
+                      <span>Min. {taskerService.minimum_duration}h</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-3">
+                  About this service
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {taskerService.description || "No description available"}
+                </p>
+              </div>
+
+              {/* Service Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {taskerService.service_area && (
+                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                    <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">Service Area</p>
+                      <p className="text-sm text-muted-foreground">
+                        {taskerService.service_area}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Pricing Type</p>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {taskerService.pricing_type || "Fixed"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Tasker Profile and Booking Section */}
-        <div className="space-y-6">
           {/* Tasker Profile Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 rounded-full overflow-hidden">
+          <Card className="shadow-lg border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2">
+                <UserIcon className="h-5 w-5" />
+                About the Tasker
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="p-6 md:p-8">
+              {/* Tasker Header */}
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
+                {/* Profile Picture */}
+                <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-primary/10 flex-shrink-0">
                   <Image
                     src={tasker.avatar_url || "/placeholder-avatar.jpg"}
-                    alt={`${tasker.first_name} ${tasker.last_name}`}
+                    alt={`${tasker.first_name || "Tasker"} ${
+                      tasker.last_name || ""
+                    }`}
                     fill
                     className="object-cover"
                   />
                 </div>
-                <div>
-                  <CardTitle>{`${tasker.first_name} ${tasker.last_name}`}</CardTitle>
-                  <p className="text-muted-foreground">
-                    {tasker.profile.experience_level}
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-400" />
-                    <span className="font-semibold">
-                      {stats.tasker_rating?.toFixed(1) || "New"}
-                    </span>
+
+                {/* Tasker Info */}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h2 className="text-xl font-bold">
+                      {`${tasker.first_name || "Tasker"} ${
+                        tasker.last_name || ""
+                      }`}
+                    </h2>
+                    {tasker.profile?.experience_level && (
+                      <Badge
+                        className={`mt-2 ${getExperienceLevelColor(
+                          tasker.profile.experience_level
+                        )}`}
+                      >
+                        <Award className="h-3 w-3 mr-1" />
+                        {tasker.profile.experience_level
+                          .charAt(0)
+                          .toUpperCase() +
+                          tasker.profile.experience_level.slice(1)}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">Rating</p>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold">
-                    {stats.completed_jobs || 0}
+
+                  {/* Rating and Stats */}
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        <span className="ml-1 font-semibold">
+                          {stats?.tasker_rating
+                            ? stats.tasker_rating.toFixed(1)
+                            : "New"}
+                        </span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        Rating
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">
+                        {stats?.completed_jobs || 0}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        Jobs completed
+                      </span>
+                    </div>
+
+                    {stats?.response_time_hours && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {stats.response_time_hours}h avg response
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Jobs Completed
-                  </p>
                 </div>
               </div>
 
-              <p className="mb-6">{tasker.profile.bio}</p>
-
-              {/* Pricing Section */}
-              <div className="border-t pt-4">
-                <h3 className="font-semibold mb-2">Pricing</h3>
-                <div className="flex justify-between items-center mb-4">
-                  <span>
-                    {service.pricing_type === "hourly"
-                      ? "Hourly Rate"
-                      : "Fixed Price"}
-                  </span>
-                  <span className="text-xl font-bold">
-                    €
-                    {service.pricing_type === "hourly"
-                      ? service.hourly_rate
-                      : service.base_price}
-                    {service.pricing_type === "hourly" && "/hr"}
-                  </span>
+              {/* Bio */}
+              {tasker.profile?.bio && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3">About</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {tasker.profile.bio}
+                  </p>
                 </div>
-                {service.minimum_duration && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      Minimum duration: {service.minimum_duration} hours
-                    </span>
+              )}
+
+              {/* Tasker Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {stats?.completed_jobs || 0}
                   </div>
-                )}
+                  <p className="text-xs text-muted-foreground">Jobs</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {stats?.total_reviews || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Reviews</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {stats?.tasker_rating
+                      ? `${stats.tasker_rating.toFixed(1)}★`
+                      : "New"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Rating</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {tasker.created_at
+                      ? format(new Date(tasker.created_at), "MMM 'yy")
+                      : "N/A"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Member since</p>
+                </div>
               </div>
 
               {/* Contact Button */}
-              <Button className="w-full mt-6" size="lg">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Contact Tasker
-              </Button>
+              <div className="mt-6">
+                <Button className="w-full h-12 text-lg font-semibold" size="lg">
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  Contact Tasker
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -108,7 +108,7 @@ export interface TaskerProfile {
 }
 
 export interface TaskerService {
-  id: number;
+  id: string;
   tasker_id: string;
   service_id: number;
   pricing_type?: PricingType;
@@ -120,7 +120,7 @@ export interface TaskerService {
   promotion_boost_score?: number;
   created_at?: string;
   updated_at?: string;
-  title?: string;
+  title: string;
   description?: string;
   portfolio_images?: object | null;
   minimum_duration?: number;
@@ -156,7 +156,7 @@ export interface Job {
 }
 
 export interface JobApplication {
-  id: number;
+  id: string;
   job_id: string;
   tasker_id: string;
   proposed_price: number;
@@ -169,7 +169,7 @@ export interface JobApplication {
 }
 
 export interface Review {
-  id: number;
+  id: string;
   job_id: string;
   reviewer_id: string;
   reviewee_id: string;
@@ -182,7 +182,7 @@ export interface Review {
 }
 
 export interface Message {
-  id: number;
+  id: string;
   job_id: string;
   sender_id: string;
   receiver_id: string;
@@ -193,7 +193,7 @@ export interface Message {
 }
 
 export interface Transaction {
-  id: number;
+  id: string;
   job_id: string;
   payer_id: string;
   payee_id: string;
@@ -209,7 +209,7 @@ export interface Transaction {
 }
 
 export interface Notification {
-  id: number;
+  id: string;
   user_id: string;
   type: NotificationType;
   title: string;
@@ -343,7 +343,7 @@ export interface UserFavorite {
 }
 
 export interface TaskerAvailability {
-  id: number;
+  id: string;
   tasker_id: string;
   day_of_week: number;
   start_time: string;
@@ -353,7 +353,7 @@ export interface TaskerAvailability {
 }
 
 export interface TaskerBlockedDate {
-  id: number;
+  id: string;
   tasker_id: string;
   blocked_date: string;
   reason?: string;

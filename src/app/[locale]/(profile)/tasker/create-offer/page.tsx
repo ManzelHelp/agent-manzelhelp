@@ -52,8 +52,7 @@ interface BasicInfoData {
   categoryId: number;
   serviceId: number;
   selectedAddressId: number;
-  selectedWorkingHours: string[]; // array of day keys (e.g., ['monday', 'tuesday'])
-  serviceArea?: string; // Added to match schema
+  serviceArea?: string;
 }
 
 interface PricingData {
@@ -77,7 +76,6 @@ const INITIAL_BASIC_INFO: BasicInfoData = {
   categoryId: 0,
   serviceId: 0,
   selectedAddressId: 0,
-  selectedWorkingHours: [],
   serviceArea: "",
 };
 
@@ -177,6 +175,17 @@ export default function CreateOfferPage() {
       if (addressesError) throw addressesError;
       setAddresses(addressesData || []);
 
+      // Auto-select the first address if available
+      if (addressesData && addressesData.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          basicInfo: {
+            ...prev.basicInfo,
+            selectedAddressId: addressesData[0].id || 0,
+          },
+        }));
+      }
+
       // Fetch user availability from tasker profile
       const { data: profileData, error: profileError } = await supabase
         .from("tasker_profiles")
@@ -238,9 +247,6 @@ export default function CreateOfferPage() {
     }
     if (!formData.basicInfo.selectedAddressId && addresses.length === 0) {
       newErrors.address = "Please add an address in your profile first";
-    }
-    if (formData.basicInfo.selectedWorkingHours.length === 0) {
-      newErrors.workingHours = "Please select at least one working hour";
     }
 
     setErrors(newErrors);
@@ -358,31 +364,6 @@ export default function CreateOfferPage() {
         });
 
       if (serviceError) throw serviceError;
-
-      // Only update tasker profile if they haven't set their availability yet
-      if (
-        !taskerProfile?.operation_hours &&
-        formData.basicInfo.selectedWorkingHours.length > 0
-      ) {
-        // Use the existing availability from the profile if it exists
-        const existingAvailability = availability.filter((slot) =>
-          formData.basicInfo.selectedWorkingHours.includes(slot.day)
-        );
-
-        const { error: profileError } = await supabase
-          .from("tasker_profiles")
-          .update({
-            operation_hours: existingAvailability,
-            is_available: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", user.id);
-
-        if (profileError) {
-          console.error("Error updating operation hours:", profileError);
-          // Don't throw here as the main service was created successfully
-        }
-      }
 
       toast.success("Service offer created successfully!");
       router.push("/tasker/dashboard");
@@ -721,9 +702,9 @@ export default function CreateOfferPage() {
                 )}
               </div>
 
-              {/* Working Hours Selection */}
+              {/* Working Hours Display */}
               <div className="space-y-2">
-                <Label>Working Hours</Label>
+                <Label>Your Working Hours</Label>
                 {availability.length > 0 ? (
                   <div className="flex flex-col gap-2">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -732,13 +713,7 @@ export default function CreateOfferPage() {
                         .map((slot) => (
                           <div
                             key={slot.day}
-                            className={`flex items-center space-x-2 p-3 rounded-lg border ${
-                              formData.basicInfo.selectedWorkingHours.includes(
-                                slot.day
-                              )
-                                ? "bg-primary/5 border-primary/20"
-                                : "bg-muted"
-                            }`}
+                            className="flex items-center space-x-2 p-3 rounded-lg border bg-muted/30"
                           >
                             <div className="flex-1">
                               <div className="font-medium capitalize text-sm">
@@ -785,11 +760,6 @@ export default function CreateOfferPage() {
                       Add Working Hours
                     </Button>
                   </div>
-                )}
-                {errors.workingHours && (
-                  <p className="text-sm text-destructive">
-                    {errors.workingHours}
-                  </p>
                 )}
               </div>
             </CardContent>
@@ -1209,14 +1179,18 @@ export default function CreateOfferPage() {
                 <div className="border rounded-lg p-6">
                   <h3 className="font-semibold text-lg mb-4">Availability</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {availability.map((slot) => (
-                      <div key={slot.day} className="text-sm">
-                        <div className="font-medium capitalize">{slot.day}</div>
-                        <div className="text-muted-foreground">
-                          {slot.startTime} - {slot.endTime}
+                    {availability
+                      .filter((slot) => slot.enabled)
+                      .map((slot) => (
+                        <div key={slot.day} className="text-sm">
+                          <div className="font-medium capitalize">
+                            {slot.day}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {slot.startTime} - {slot.endTime}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               )}
