@@ -81,6 +81,31 @@ function Header() {
               </Link>
             </>
           )}
+          {user?.role === "customer" && (
+            <>
+              <Link
+                href="/customer/bookings"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("bookings")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+              <Link
+                href="/customer/finance"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("finance")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+              <Link
+                href="/customer/messages"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("messages")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+            </>
+          )}
           {!user && (
             <>
               <Link
@@ -257,6 +282,31 @@ function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {t("reviews")}
+                </Link>
+              </>
+            )}
+            {user?.role === "customer" && (
+              <>
+                <Link
+                  href="/customer/bookings"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("bookings")}
+                </Link>
+                <Link
+                  href="/customer/finance"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("finance")}
+                </Link>
+                <Link
+                  href="/customer/messages"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("messages")}
                 </Link>
               </>
             )}
