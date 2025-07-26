@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "title": "Manzel Help"
+    "title": "ManzelHelp"
   },
   "Header": {
     "services": "Services",
@@ -18,13 +18,13 @@
     "reviews": "Reviews"
   },
   "homepage": {
-    "title": "Welcome to Manzel Help",
+    "title": "Welcome to ManzelHelp",
     "description": "A friendly place where users can offer and request services like housekeeping, tutoring, pet care, and more. Connect, help, and grow together!",
     "servicesOffered": "Services Offered",
     "servicesOfferedPlaceholder": "Coming soon: Browse available services",
     "requestService": "Request a Service",
     "requestServicePlaceholder": "Coming soon: Post your service needs",
-    "whyTitle": "Why Manzel Help?",
+    "whyTitle": "Why ManzelHelp?",
     "why1": "Connect with trusted local helpers",
     "why2": "Offer your skills and earn extra income",
     "why3": "Easy, friendly, and secure"
@@ -124,7 +124,7 @@
     "security": {
       "description": "Manage your account security and sign-in preferences",
       "signInMethods": "Sign-in Methods",
-      "emailPassword": "Email & Password",
+      "emailPassword": "Email",
       "change": "Change",
       "password": "Password",
       "passwordTitle": "Password",
@@ -196,7 +196,7 @@
   },
   "Footer": {
     "about": "About Us",
-    "aboutDescription": "Manzel Help connects people who need services with those who can provide them. Our mission is to make help accessible, friendly, and secure for everyone.",
+    "aboutDescription": "ManzelHelp connects people who need services with those who can provide them. Our mission is to make help accessible, friendly, and secure for everyone.",
     "company": "Company",
     "aboutUs": "About Us",
     "services": "Services",
@@ -212,7 +212,7 @@
     "petCare": "Pet Care",
     "gardening": "Gardening",
     "handyman": "Handyman",
-    "rights": "© 2024 Manzel Help. All rights reserved.",
+    "rights": "© 2024 ManzelHelp. All rights reserved.",
     "privacy": "Privacy",
     "terms": "Terms"
   },
@@ -338,7 +338,7 @@
     "security": {
       "description": "Manage your account security and sign-in preferences",
       "signInMethods": "Sign-in Methods",
-      "emailPassword": "Email & Password",
+      "emailPassword": "Email",
       "change": "Change",
       "password": "Password",
       "passwordTitle": "Password",

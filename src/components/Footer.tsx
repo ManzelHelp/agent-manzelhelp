@@ -157,7 +157,7 @@ function Footer() {
           </a>
         </div>
         <div className="text-xs">
-          &copy; {new Date().getFullYear()} Manzel Help. All rights reserved.
+          &copy; {new Date().getFullYear()} ManzelHelp. All rights reserved.
         </div>
       </div>
     </footer>

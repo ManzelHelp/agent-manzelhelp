@@ -5,19 +5,19 @@ export default function AboutUsPage() {
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
       <h1 className="text-4xl font-bold mb-6 text-center">
-        Why Choose Manzel Help?
+        Why Choose ManzelHelp?
       </h1>
       <p className="text-lg text-gray-700 dark:text-gray-200 mb-8 text-center">
-        Manzel Help is your trusted platform to connect with local helpers for
+        ManzelHelp is your trusted platform to connect with local helpers for
         all your home and daily needs. Whether you need furniture assembled, a
-        room cleaned, or a hand with moving, Manzel Help brings people
+        room cleaned, or a hand with moving, ManzelHelp brings people
         together—just like Taskrabbit or Homeservice24, but with a focus on your
         community.
       </p>
 
       <section className="mb-10">
         <h2 className="text-2xl font-semibold mb-3">
-          What Makes Manzel Help Special?
+          What Makes ManzelHelp Special?
         </h2>
         <ul className="list-disc pl-6 space-y-2 text-gray-800 dark:text-gray-100">
           <li>
@@ -101,7 +101,7 @@ export default function AboutUsPage() {
       </section>
 
       <section className="text-center mt-12">
-        <h2 className="text-2xl font-semibold mb-3">Join Manzel Help Today</h2>
+        <h2 className="text-2xl font-semibold mb-3">Join ManzelHelp Today</h2>
         <p className="text-lg text-gray-700 dark:text-gray-200 mb-6">
           Whether you want to offer your skills or need a helping hand, Manzel
           Help is your go-to platform for safe, reliable, and local services.

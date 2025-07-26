@@ -10,7 +10,7 @@ export default function BecomeAHelperPage() {
       </h1>
       <p className="text-lg text-gray-700 dark:text-gray-200 mb-8 text-center">
         Ready to earn money, help your community, and share your skills? Join
-        Manzel Help as a helper and connect with people who need your expertise.
+        ManzelHelp as a helper and connect with people who need your expertise.
         Whether you clean, fix, tutor, or assist in any way, you can make a
         difference and get paid for it!
       </p>

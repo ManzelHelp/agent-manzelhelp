@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "title": "Manzel Help"
+    "title": "ManzelHelp"
   },
   "Header": {
     "services": "Dienstleistungen",
@@ -18,13 +18,13 @@
     "reviews": "Bewertungen"
   },
   "homepage": {
-    "title": "Willkommen bei Manzel Help",
+    "title": "Willkommen bei ManzelHelp",
     "description": "Ein freundlicher Ort, wo Nutzer Dienste wie Haushaltsführung, Nachhilfe, Tierpflege und mehr anbieten und anfragen können. Zusammen verbinden, helfen und wachsen!",
     "servicesOffered": "Angebotene Dienste",
     "servicesOfferedPlaceholder": "Bald verfügbar: Verfügbare Dienste durchsuchen",
     "requestService": "Einen Dienst Anfragen",
     "requestServicePlaceholder": "Bald verfügbar: Ihre Dienstleistungsbedürfnisse posten",
-    "whyTitle": "Warum Manzel Help?",
+    "whyTitle": "Warum ManzelHelp?",
     "why1": "Verbindung zu vertrauenswürdigen lokalen Helfern",
     "why2": "Ihre Fähigkeiten anbieten und zusätzliches Einkommen erzielen",
     "why3": "Einfach, freundlich und sicher"
@@ -124,7 +124,7 @@
     "security": {
       "description": "Verwalten Sie Ihre Kontosicherheit und Anmeldeeinstellungen",
       "signInMethods": "Anmeldemethoden",
-      "emailPassword": "E-Mail & Passwort",
+      "emailPassword": "E-Mail",
       "change": "Ändern",
       "password": "Passwort",
       "passwordTitle": "Passwort",
@@ -196,7 +196,7 @@
   },
   "Footer": {
     "about": "Über uns",
-    "aboutDescription": "Manzel Help verbindet Menschen, die Dienstleistungen benötigen, mit denen, die sie anbieten können. Unsere Mission ist es, Hilfe zugänglich, freundlich und sicher für alle zu machen.",
+    "aboutDescription": "ManzelHelp verbindet Menschen, die Dienstleistungen benötigen, mit denen, die sie anbieten können. Unsere Mission ist es, Hilfe zugänglich, freundlich und sicher für alle zu machen.",
     "company": "Unternehmen",
     "aboutUs": "Über uns",
     "services": "Dienstleistungen",
@@ -212,7 +212,7 @@
     "petCare": "Tierpflege",
     "gardening": "Gartenarbeit",
     "handyman": "Handwerker",
-    "rights": "© 2024 Manzel Help. Alle Rechte vorbehalten.",
+    "rights": "© 2024 ManzelHelp. Alle Rechte vorbehalten.",
     "privacy": "Datenschutz",
     "terms": "Bedingungen"
   },
@@ -338,7 +338,7 @@
     "security": {
       "description": "Verwalten Sie Ihre Kontosicherheit und Anmeldeeinstellungen",
       "signInMethods": "Anmeldemethoden",
-      "emailPassword": "E-Mail & Passwort",
+      "emailPassword": "E-Mail",
       "change": "Ändern",
       "password": "Passwort",
       "passwordTitle": "Passwort",

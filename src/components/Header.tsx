@@ -38,7 +38,7 @@ function Header() {
           <Link href="/" className="relative flex items-center">
             <Image
               src="/logo-manzil.webp"
-              alt="Manzel Help"
+              alt="ManzelHelp"
               width={120}
               height={100}
               priority
