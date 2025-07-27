@@ -16,6 +16,7 @@ import {
   LogOut,
   LayoutDashboard,
   User as UserIcon,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LogOutButton from "./buttons/LogOutButton";
@@ -238,6 +239,14 @@ function Header() {
                 >
                   <LayoutDashboard className="h-4 w-4" />
                   Dashboard
+                </Link>
+                <Link
+                  href={`/${user.role}/notifications`}
+                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Bell className="h-4 w-4" />
+                  Notifications
                 </Link>
                 <Link
                   href={`/${user.role}/settings`}

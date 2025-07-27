@@ -479,7 +479,13 @@
       "markAllRead": "Mark all as read",
       "viewJob": "View job details",
       "viewProfile": "View profile",
-      "view": "View"
+      "view": "View",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "retry": "Retry",
+      "markAsRead": "Mark as read",
+      "delete": "Delete",
+      "viewDetails": "View details"
     },
     "badges": {
       "new": "New"
@@ -496,6 +502,12 @@
       "markedAsRead": "Notification marked as read",
       "allMarkedAsRead": "All notifications marked as read",
       "deleted": "Notification deleted"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes} minutes ago",
+      "hoursAgo": "{hours} hours ago",
+      "daysAgo": "{days} days ago"
     }
   }
 }

@@ -11,6 +11,8 @@ import {
   MapPin,
   CheckCircle,
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 type TaskStatus = "requests" | "upcoming" | "active" | "completed";
@@ -32,6 +34,7 @@ interface Task {
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState<TaskStatus>("requests");
+  const [isNavExpanded, setIsNavExpanded] = useState(false);
 
   // Mock data - replace with real data fetching
   const tasks = {
@@ -156,6 +159,41 @@ export default function BookingsPage() {
     }
   };
 
+  const getStatusColor = (status: TaskStatus) => {
+    switch (status) {
+      case "requests":
+        return "text-color-warning";
+      case "upcoming":
+        return "text-color-info";
+      case "active":
+        return "text-color-success";
+      case "completed":
+        return "text-color-text-secondary";
+    }
+  };
+
+  const getStatusBgColor = (status: TaskStatus) => {
+    switch (status) {
+      case "requests":
+        return "bg-color-warning/10";
+      case "upcoming":
+        return "bg-color-info/10";
+      case "active":
+        return "bg-color-success/10";
+      case "completed":
+        return "bg-color-accent-light";
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const TabButton = ({
     status,
     count,
@@ -164,22 +202,35 @@ export default function BookingsPage() {
     count: number;
   }) => (
     <button
-      onClick={() => setActiveTab(status)}
-      className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-colors ${
+      onClick={() => {
+        setActiveTab(status);
+        setIsNavExpanded(false); // Close dropdown when tab is selected
+      }}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus shadow-sm ${
         activeTab === status
-          ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          ? "bg-color-primary text-color-surface shadow-md border-color-primary-dark"
+          : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light border-color-border"
       }`}
     >
-      {getStatusIcon(status)}
-      <span className="hidden sm:inline">{getStatusLabel(status)}</span>
-      <span className="inline sm:hidden">{status}</span>
+      <div
+        className={`${
+          activeTab === status ? "text-color-surface" : getStatusColor(status)
+        }`}
+      >
+        {getStatusIcon(status)}
+      </div>
+      <span className="text-sm font-medium hidden sm:inline mobile-text-base">
+        {getStatusLabel(status)}
+      </span>
+      <span className="text-xs font-medium sm:hidden mobile-text-sm">
+        {status}
+      </span>
       {count > 0 && (
         <span
-          className={`text-xs rounded-full px-2 py-0.5 ${
+          className={`text-xs rounded-full px-2 py-0.5 font-medium ${
             activeTab === status
-              ? "bg-primary-foreground/20 text-primary-foreground"
-              : "bg-muted-foreground/20"
+              ? "bg-color-surface/20 text-color-surface"
+              : "bg-color-accent text-color-text-secondary"
           }`}
         >
           {count}
@@ -188,134 +239,235 @@ export default function BookingsPage() {
     </button>
   );
 
+  const MobileNavDropdown = () => {
+    return (
+      <div className="sm:hidden">
+        <button
+          onClick={() => setIsNavExpanded(!isNavExpanded)}
+          className="flex items-center justify-between w-full p-3 bg-color-accent-light border border-color-border rounded-lg text-color-text-primary hover:bg-color-accent transition-all touch-target mobile-focus"
+        >
+          <div className="flex items-center gap-2">
+            <div className={`${getStatusColor(activeTab)}`}>
+              {getStatusIcon(activeTab)}
+            </div>
+            <span className="font-medium mobile-text-base">
+              {getStatusLabel(activeTab)}
+            </span>
+            <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium">
+              {tasks[activeTab].length}
+            </span>
+          </div>
+          {isNavExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </button>
+
+        {isNavExpanded && (
+          <div className="mt-2 p-2 bg-color-surface border border-color-border rounded-lg shadow-sm space-y-1">
+            {(
+              ["requests", "upcoming", "active", "completed"] as TaskStatus[]
+            ).map((status) => (
+              <button
+                key={status}
+                onClick={() => {
+                  setActiveTab(status);
+                  setIsNavExpanded(false);
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus ${
+                  activeTab === status
+                    ? "bg-color-primary text-color-surface"
+                    : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light"
+                }`}
+              >
+                <div
+                  className={`${
+                    activeTab === status
+                      ? "text-color-surface"
+                      : getStatusColor(status)
+                  }`}
+                >
+                  {getStatusIcon(status)}
+                </div>
+                <span className="text-sm font-medium mobile-text-base">
+                  {getStatusLabel(status)}
+                </span>
+                <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium ml-auto">
+                  {tasks[status].length}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Task Management</h1>
-        <p className="text-muted-foreground">
-          Manage your booking requests and ongoing tasks
-        </p>
+    <div className="min-h-screen bg-color-bg smooth-scroll">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-color-surface border-b border-color-border shadow-sm">
+        <div className="container mx-auto px-4 py-4 mobile-spacing">
+          <div>
+            <h1 className="text-2xl font-bold text-color-text-primary mobile-text-xl mobile-leading">
+              Task Management
+            </h1>
+            <p className="text-color-text-secondary text-sm mt-1 mobile-leading">
+              Manage your booking requests and ongoing tasks
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 bg-muted p-2 rounded-lg">
-        {(["requests", "upcoming", "active", "completed"] as TaskStatus[]).map(
-          (status) => (
+      <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
+        {/* Desktop Navigation Tabs */}
+        <div className="hidden sm:flex gap-1 bg-color-accent-light p-2 rounded-xl border border-color-border">
+          {(
+            ["requests", "upcoming", "active", "completed"] as TaskStatus[]
+          ).map((status) => (
             <TabButton
               key={status}
               status={status}
               count={tasks[status].length}
             />
-          )
-        )}
-      </div>
+          ))}
+        </div>
 
-      {/* Task Cards */}
-      <div className="grid gap-4">
-        {tasks[activeTab].map((task: Task) => (
-          <Card key={task.id}>
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{task.title}</h3>
-                    {task.urgent && (
-                      <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                        Urgent
-                      </span>
-                    )}
-                    {task.rating && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm">{task.rating}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      {task.client}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {task.location}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {task.date}
-                    </span>
-                    {task.time && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {task.time} ({task.duration})
-                      </span>
-                    )}
-                  </div>
-                  {task.progress !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">
-                            Progress
-                          </span>
-                          <span className="text-xs font-medium">
-                            {task.progress}%
+        {/* Mobile Navigation Dropdown */}
+        <MobileNavDropdown />
+
+        {/* Task Cards */}
+        <div className="space-y-4">
+          {tasks[activeTab].map((task: Task) => (
+            <Card
+              key={task.id}
+              className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
+            >
+              <CardContent className="p-4 mobile-spacing">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-3 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
+                        {task.title}
+                      </h3>
+                      {task.urgent && (
+                        <span className="bg-color-warning/10 text-color-warning text-xs px-2 py-1 rounded-full font-medium">
+                          Urgent
+                        </span>
+                      )}
+                      {task.rating && (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-color-warning text-color-warning" />
+                          <span className="text-sm text-color-text-primary mobile-text-sm">
+                            {task.rating}
                           </span>
                         </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all"
-                            style={{ width: `${task.progress}%` }}
-                          />
-                        </div>
-                      </div>
+                      )}
                     </div>
-                  )}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {task.client}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {task.location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {task.date}
+                      </span>
+                      {task.time && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {task.time} ({task.duration})
+                        </span>
+                      )}
+                    </div>
+                    {task.progress !== undefined && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-color-text-secondary mobile-text-sm">
+                              Progress
+                            </span>
+                            <span className="text-xs font-medium text-color-text-primary mobile-text-sm">
+                              {task.progress}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-color-accent rounded-full h-2">
+                            <div
+                              className="bg-color-success h-2 rounded-full transition-all"
+                              style={{ width: `${task.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-3 min-w-[120px]">
+                    <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
+                      {formatCurrency(task.price)}
+                    </p>
+                    <Button
+                      size="sm"
+                      className={`touch-target mobile-focus shadow-sm transition-all duration-200 ${
+                        activeTab === "requests"
+                          ? "bg-color-secondary text-color-surface hover:bg-color-secondary-dark border-color-secondary-dark"
+                          : activeTab === "completed"
+                          ? "bg-color-success text-color-surface hover:bg-color-success-dark border-color-success-dark"
+                          : activeTab === "active"
+                          ? "bg-color-info text-color-surface hover:bg-color-info-dark border-color-info-dark"
+                          : "bg-color-primary text-color-surface hover:bg-color-primary-dark border-color-primary-dark"
+                      }`}
+                    >
+                      {activeTab === "requests"
+                        ? "Accept Request"
+                        : activeTab === "completed"
+                        ? "View Details"
+                        : activeTab === "active"
+                        ? "Update Progress"
+                        : "Start Task"}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex flex-row md:flex-col items-center md:items-end gap-4 md:min-w-[140px]">
-                  <p className="text-2xl font-bold">${task.price}</p>
-                  <Button
-                    size="sm"
-                    variant={activeTab === "requests" ? "default" : "outline"}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {tasks[activeTab].length === 0 && (
+          <Card className="border-color-border bg-color-surface shadow-sm">
+            <CardContent className="py-8 mobile-spacing">
+              <div className="text-center space-y-3">
+                <div className="flex justify-center">
+                  <div
+                    className={`p-3 rounded-full ${getStatusBgColor(
+                      activeTab
+                    )} ${getStatusColor(activeTab)}`}
                   >
-                    {activeTab === "requests"
-                      ? "Accept Request"
-                      : activeTab === "completed"
-                      ? "View Details"
-                      : "Manage Task"}
-                  </Button>
+                    {getStatusIcon(activeTab)}
+                  </div>
                 </div>
+                <h3 className="font-semibold text-color-text-primary mobile-text-lg mobile-leading">
+                  No {getStatusLabel(activeTab).toLowerCase()}
+                </h3>
+                <p className="text-sm text-color-text-secondary mobile-leading">
+                  {activeTab === "requests"
+                    ? "You have no new booking requests at the moment."
+                    : activeTab === "upcoming"
+                    ? "You have no upcoming tasks scheduled."
+                    : activeTab === "active"
+                    ? "You have no tasks currently in progress."
+                    : "You have no completed tasks yet."}
+                </p>
               </div>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
-
-      {/* Empty State */}
-      {tasks[activeTab].length === 0 && (
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center space-y-3">
-              <div className="flex justify-center">
-                {getStatusIcon(activeTab)}
-              </div>
-              <h3 className="font-semibold">
-                No {getStatusLabel(activeTab).toLowerCase()}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {activeTab === "requests"
-                  ? "You have no new booking requests at the moment."
-                  : activeTab === "upcoming"
-                  ? "You have no upcoming tasks scheduled."
-                  : activeTab === "active"
-                  ? "You have no tasks currently in progress."
-                  : "You have no completed tasks yet."}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

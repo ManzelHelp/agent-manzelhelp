@@ -120,18 +120,18 @@ export default function ReviewsPage() {
   }) => (
     <button
       onClick={() => setActiveFilter(filter)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+      className={`touch-target flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out mobile-focus ${
         activeFilter === filter
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground hover:text-foreground"
+          ? "bg-[var(--color-primary)] text-white shadow-md"
+          : "bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-accent-light)] border border-[var(--color-border)]"
       }`}
     >
-      <span>{label}</span>
+      <span className="mobile-text-sm font-medium">{label}</span>
       <span
-        className={`text-xs rounded-full px-2 py-0.5 ${
+        className={`text-xs rounded-full px-2 py-1 font-medium ${
           activeFilter === filter
-            ? "bg-primary-foreground/20 text-primary-foreground"
-            : "bg-muted-foreground/20"
+            ? "bg-white/20 text-white"
+            : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
         }`}
       >
         {count}
@@ -140,99 +140,117 @@ export default function ReviewsPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="mobile-spacing container mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Reviews</h1>
-        <p className="text-muted-foreground">
+      <div className="space-y-2">
+        <h1 className="mobile-text-xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
+          Reviews
+        </h1>
+        <p className="mobile-text-sm md:text-base text-[var(--color-text-secondary)] mobile-leading">
           Monitor and manage your client feedback
         </p>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
               Average Rating
             </CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
+            <Star className="h-4 w-4 text-[var(--color-secondary)]" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold">{stats.avgRating}</div>
-              <div className="flex -space-x-1">
+              <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
+                {stats.avgRating}
+              </div>
+              <div className="flex -space-x-0.5">
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <Star
                     key={rating}
-                    className={`h-4 w-4 ${
+                    className={`h-3 w-3 md:h-4 md:w-4 ${
                       rating <= Math.round(stats.avgRating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
+                        ? "fill-[var(--color-warning)] text-[var(--color-warning)]"
+                        : "text-[var(--color-accent)]"
                     }`}
                   />
                 ))}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
               Based on {stats.totalReviews} reviews
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
+        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
               5-Star Reviews
             </CardTitle>
-            <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+            <ThumbsUp className="h-4 w-4 text-[var(--color-success)]" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.fiveStarCount}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="space-y-2">
+            <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
+              {stats.fiveStarCount}
+            </div>
+            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
               {Math.round((stats.fiveStarCount / stats.totalReviews) * 100)}% of
               total
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Response Rate</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
+              Response Rate
+            </CardTitle>
+            <MessageSquare className="h-4 w-4 text-[var(--color-info)]" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.responseRate}%</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="space-y-2">
+            <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
+              {stats.responseRate}%
+            </div>
+            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
               Average response time
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
-            <Filter className="h-4 w-4 text-muted-foreground" />
+        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
+              Total Reviews
+            </CardTitle>
+            <Filter className="h-4 w-4 text-[var(--color-text-secondary)]" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalReviews}</div>
-            <p className="text-xs text-muted-foreground">All time</p>
+          <CardContent className="space-y-2">
+            <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
+              {stats.totalReviews}
+            </div>
+            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
+              All time
+            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Reviews Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <CardTitle>Client Reviews</CardTitle>
-              <CardDescription>
+      <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+            <div className="space-y-1">
+              <CardTitle className="mobile-text-lg md:text-xl text-[var(--color-text-primary)]">
+                Client Reviews
+              </CardTitle>
+              <CardDescription className="mobile-text-sm text-[var(--color-text-secondary)]">
                 {filteredReviews.length} review
                 {filteredReviews.length !== 1 && "s"}
               </CardDescription>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 scrollbar-hide overflow-x-auto pb-2 md:pb-0">
               <FilterButton
                 filter="all"
                 label="All Reviews"
@@ -259,12 +277,14 @@ export default function ReviewsPage() {
         <CardContent>
           <div className="space-y-6">
             {filteredReviews.length === 0 ? (
-              <div className="text-center py-8">
+              <div className="text-center py-12">
                 <div className="flex justify-center mb-4">
-                  <Star className="h-8 w-8 text-muted-foreground" />
+                  <Star className="h-12 w-12 text-[var(--color-text-secondary)]" />
                 </div>
-                <h3 className="font-semibold mb-1">No reviews found</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="mobile-text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
+                  No reviews found
+                </h3>
+                <p className="mobile-text-sm text-[var(--color-text-secondary)] mobile-leading">
                   {activeFilter === "no-response"
                     ? "You've responded to all reviews!"
                     : "No reviews match the selected filter."}
@@ -274,23 +294,25 @@ export default function ReviewsPage() {
               filteredReviews.map((review) => (
                 <div
                   key={review.id}
-                  className="space-y-4 pb-6 border-b last:border-b-0"
+                  className="space-y-4 pb-6 border-b border-[var(--color-border)] last:border-b-0"
                 >
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-muted-foreground/10 flex items-center justify-center">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex flex-col space-y-3 md:flex-row md:items-start md:justify-between md:space-y-0">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+                          <User className="h-5 w-5 text-[var(--color-primary)]" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold">{review.client}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="space-y-1">
+                          <h3 className="mobile-text-base font-semibold text-[var(--color-text-primary)]">
+                            {review.client}
+                          </h3>
+                          <div className="flex items-center gap-2 mobile-text-sm text-[var(--color-text-secondary)]">
                             <Calendar className="h-3 w-3" />
                             {review.date}
                           </div>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="mobile-text-sm text-[var(--color-text-secondary)] mobile-leading">
                         Service: {review.service}
                       </p>
                     </div>
@@ -298,32 +320,40 @@ export default function ReviewsPage() {
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
-                          className={`h-4 w-4 ${
+                          className={`h-4 w-4 md:h-5 md:w-5 ${
                             star <= review.rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
+                              ? "fill-[var(--color-warning)] text-[var(--color-warning)]"
+                              : "text-[var(--color-accent)]"
                           }`}
                         />
                       ))}
                     </div>
                   </div>
-                  <div className="pl-10 md:pl-12 space-y-3">
-                    <p className="text-sm">{review.comment}</p>
+                  <div className="pl-13 md:pl-14 space-y-3">
+                    <p className="mobile-text-sm mobile-leading text-[var(--color-text-primary)]">
+                      {review.comment}
+                    </p>
                     {review.helpful && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 mobile-text-sm text-[var(--color-text-secondary)]">
                         <ThumbsUp className="h-3 w-3" />
                         {review.helpful} found this helpful
                       </div>
                     )}
                     {review.response ? (
-                      <div className="bg-muted rounded-lg p-3 mt-3">
-                        <p className="text-sm font-medium mb-1">
+                      <div className="bg-[var(--color-accent-light)] rounded-lg p-4 mt-3 border border-[var(--color-border)]">
+                        <p className="mobile-text-sm font-medium mb-2 text-[var(--color-text-primary)]">
                           Your Response:
                         </p>
-                        <p className="text-sm">{review.response}</p>
+                        <p className="mobile-text-sm mobile-leading text-[var(--color-text-secondary)]">
+                          {review.response}
+                        </p>
                       </div>
                     ) : (
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="touch-target border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200"
+                      >
                         Reply to Review
                       </Button>
                     )}

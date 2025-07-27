@@ -479,7 +479,13 @@
       "markAllRead": "Alle als gelesen markieren",
       "viewJob": "Jobdetails anzeigen",
       "viewProfile": "Profil anzeigen",
-      "view": "Anzeigen"
+      "view": "Anzeigen",
+      "refresh": "Aktualisieren",
+      "refreshing": "Aktualisiere...",
+      "retry": "Wiederholen",
+      "markAsRead": "Als gelesen markieren",
+      "delete": "Löschen",
+      "viewDetails": "Details anzeigen"
     },
     "badges": {
       "new": "Neu"
@@ -496,6 +502,12 @@
       "markedAsRead": "Benachrichtigung als gelesen markiert",
       "allMarkedAsRead": "Alle Benachrichtigungen als gelesen markiert",
       "deleted": "Benachrichtigung gelöscht"
+    },
+    "time": {
+      "justNow": "Gerade eben",
+      "minutesAgo": "vor {minutes} Minuten",
+      "hoursAgo": "vor {hours} Stunden",
+      "daysAgo": "vor {days} Tagen"
     }
   }
 }

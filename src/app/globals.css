@@ -230,4 +230,56 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Safari and Chrome */
   }
-}
+
+
+  
+  /* troublesome Code*/
+
+  /* Notification-specific mobile optimizations */
+  .notification-card {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .notification-card:hover {
+    transform: translateY(-1px);
+    @apply shadow-lg;
+  }
+  
+  .notification-card:active {
+    transform: scale(0.98);
+  }
+  
+
+  
+  /* Improved button states for mobile */
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Enhanced focus states for accessibility */
+  .mobile-focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .mobile-focus-ring:focus {
+    --tw-ring-color: hsl(var(--primary) / 0.5);
+  }
+  
+  /* Better spacing for mobile notifications */
+  .notification-spacing {
+    @apply space-y-3 sm:space-y-4;
+  }
+  
+  /* Optimized text rendering for mobile */
+  .mobile-text-optimized {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  
+ 
+} 
