@@ -11,7 +11,9 @@ export type JobStatus =
   | "active"
   | "in_progress"
   | "completed"
-  | "cancelled";
+  | "cancelled"
+  | "assigned"
+  | "disputed";
 export type ApplicationStatus =
   | "pending"
   | "accepted"
@@ -24,14 +26,54 @@ export type TransactionType =
   | "premium_application"
   | "refund"
   | "job_promotion"
-  | "service_promotion";
+  | "service_promotion"
+  | "booking_payment"
+  | "service_payment"
+  | "cash_payment";
 export type NotificationType =
   | "job_created"
   | "application_received"
   | "application_accepted"
   | "job_completed"
   | "payment_received"
-  | "message_received";
+  | "message_received"
+  | "booking_created"
+  | "booking_accepted"
+  | "booking_confirmed"
+  | "booking_cancelled"
+  | "booking_completed"
+  | "booking_reminder"
+  | "service_created"
+  | "service_updated"
+  | "payment_confirmed"
+  | "payment_pending";
+export type BookingStatus =
+  | "pending"
+  | "accepted"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "disputed"
+  | "refunded";
+export type BookingType = "instant" | "scheduled" | "recurring";
+export type BookingPaymentMethod = "cash" | "online" | "wallet" | "pending";
+export type ServiceVerificationStatus =
+  | "pending"
+  | "verified"
+  | "rejected"
+  | "suspended";
+export type ServiceAvailabilityStatus =
+  | "available"
+  | "unavailable"
+  | "busy"
+  | "on_break";
+export type RatingCategory =
+  | "quality"
+  | "communication"
+  | "timeliness"
+  | "professionalism"
+  | "value";
 
 export interface User {
   id: string;
@@ -51,7 +93,7 @@ export interface User {
 }
 
 export interface Address {
-  id: number;
+  id: string;
   user_id: string;
   label?: string;
   street_address: string;
@@ -125,13 +167,15 @@ export interface TaskerService {
   portfolio_images?: object | null;
   minimum_duration?: number;
   service_area?: string;
+  verification_status?: ServiceVerificationStatus;
+  availability_status?: ServiceAvailabilityStatus;
 }
 
 export interface Job {
   id: string;
   customer_id: string;
   service_id: number;
-  address_id: number;
+  address_id: string;
   title: string;
   description: string;
   preferred_date: string;
@@ -153,6 +197,9 @@ export interface Job {
   images?: object | null;
   requirements?: string;
   currency?: string;
+  max_applications?: number;
+  premium_applications_purchased?: number;
+  current_applications?: number;
 }
 
 export interface JobApplication {
@@ -170,7 +217,7 @@ export interface JobApplication {
 
 export interface Review {
   id: string;
-  job_id: string;
+  job_id?: string;
   reviewer_id: string;
   reviewee_id: string;
   overall_rating: number;
@@ -179,17 +226,21 @@ export interface Review {
   timeliness_rating?: number;
   comment?: string;
   created_at?: string;
+  reply_comment?: string;
+  replied_at?: string;
+  booking_id?: string;
 }
 
 export interface Message {
   id: string;
-  job_id: string;
+  job_id?: string;
   sender_id: string;
   receiver_id: string;
   content: string;
   attachment_url?: string;
   is_read?: boolean;
   created_at?: string;
+  booking_id?: string;
 }
 
 export interface Transaction {
@@ -206,6 +257,9 @@ export interface Transaction {
   processed_at?: string;
   created_at?: string;
   updated_at?: string;
+  cash_payment_confirmed?: boolean;
+  cash_payment_confirmed_by?: string;
+  cash_payment_confirmed_at?: string;
 }
 
 export interface Notification {
@@ -218,6 +272,9 @@ export interface Notification {
   related_user_id?: string;
   is_read?: boolean;
   created_at?: string;
+  related_booking_id?: string;
+  related_service_id?: string;
+  action_url?: string;
 }
 
 export interface PromotionPackage {
@@ -363,6 +420,36 @@ export interface TaskerBlockedDate {
   created_at?: string;
 }
 
+export interface ServiceBooking {
+  id: string;
+  customer_id: string;
+  tasker_id: string;
+  tasker_service_id: string;
+  booking_type: BookingType;
+  scheduled_date?: string;
+  scheduled_time_start?: string;
+  scheduled_time_end?: string;
+  estimated_duration?: number;
+  address_id: string;
+  service_address?: string;
+  agreed_price: number;
+  currency?: string;
+  status: BookingStatus;
+  accepted_at?: string;
+  confirmed_at?: string;
+  started_at?: string;
+  completed_at?: string;
+  cancelled_at?: string;
+  cancelled_by?: string;
+  cancellation_reason?: string;
+  customer_requirements?: string;
+  tasker_notes?: string;
+  created_at?: string;
+  updated_at?: string;
+  payment_method?: BookingPaymentMethod;
+  cancellation_fee?: number;
+}
+
 // Custom type for operation hours
 export interface AvailabilitySlot {
   day: string;
@@ -394,4 +481,5 @@ export interface Database {
   user_favorites: UserFavorite;
   tasker_availability: TaskerAvailability;
   tasker_blocked_dates: TaskerBlockedDate;
+  service_bookings: ServiceBooking;
 }

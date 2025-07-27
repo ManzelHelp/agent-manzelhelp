@@ -77,15 +77,25 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  /* Modern Friendly Color Scheme */
-  --color-primary: #2E3B55; /* Dunkelblau */
-  --color-secondary: #53C3A1; /* Grün*/
-  --color-accent: #F76B8A; /* Coral Pink */
-  --color-bg: #F9F9F9; /* Very Light Gray */
+  /* Modern Color Scheme based on the three main colors */
+  --color-primary: #2D4A78; /* Dark Blue from image */
+  --color-primary-light: #3A5A8A; /* Lighter variant */
+  --color-primary-dark: #1E3245; /* Darker variant */
+  --color-secondary: #53BE9D; /* Teal/Green from image */
+  --color-secondary-light: #6BC8A8; /* Lighter variant */
+  --color-secondary-dark: #3A9A7A; /* Darker variant */
+  --color-accent: #CCCCCC; /* Light Gray from image */
+  --color-accent-light: #E0E0E0; /* Lighter variant */
+  --color-accent-dark: #B0B0B0; /* Darker variant */
+  --color-bg: #F8F9FA; /* Very Light Gray Background */
   --color-surface: #FFFFFF; /* White */
-  --color-text-primary: #222831; /* Dark Gray-Blue */
-  --color-text-secondary: #393E46; /* Medium Gray-Blue */
-  --color-border: #E0E0E0; /* Light Gray */
+  --color-text-primary: #2D4A78; /* Dark Blue for primary text */
+  --color-text-secondary: #6B7280; /* Medium Gray for secondary text */
+  --color-border: #E5E7EB; /* Light Gray Border */
+  --color-success: #53BE9D; /* Teal for success states */
+  --color-warning: #F59E0B; /* Amber for warnings */
+  --color-error: #EF4444; /* Red for errors */
+  --color-info: #3B82F6; /* Blue for info */
 }
 
 .dark {
@@ -120,15 +130,25 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  /* Modern Friendly Color Scheme - Dark Mode */
-  --color-primary: #2E3B55; /* Dunkelblau */
-  --color-secondary: #53C3A1; /* Grün*/
-  --color-accent: #F76B8A;
-  --color-bg: #222831; /* Use dark background for dark mode */
-  --color-surface: #393E46; /* Slightly lighter for cards */
-  --color-text-primary: #F9F9F9;
-  --color-text-secondary: #E0E0E0;
-  --color-border: #393E46;
+  /* Modern Color Scheme - Dark Mode */
+  --color-primary: #2D4A78; /* Dark Blue - same as light mode */
+  --color-primary-light: #3A5A8A; /* Lighter variant */
+  --color-primary-dark: #1E3245; /* Darker variant */
+  --color-secondary: #53BE9D; /* Teal/Green - same as light mode */
+  --color-secondary-light: #6BC8A8; /* Lighter variant */
+  --color-secondary-dark: #3A9A7A; /* Darker variant */
+  --color-accent: #CCCCCC; /* Light Gray - same as light mode */
+  --color-accent-light: #E0E0E0; /* Lighter variant */
+  --color-accent-dark: #B0B0B0; /* Darker variant */
+  --color-bg: #1A1A1A; /* Dark background */
+  --color-surface: #2D2D2D; /* Dark surface */
+  --color-text-primary: #FFFFFF; /* White text */
+  --color-text-secondary: #CCCCCC; /* Light gray text */
+  --color-border: #404040; /* Dark border */
+  --color-success: #53BE9D; /* Teal for success states */
+  --color-warning: #F59E0B; /* Amber for warnings */
+  --color-error: #EF4444; /* Red for errors */
+  --color-info: #3B82F6; /* Blue for info */
 }
 
 @layer base {

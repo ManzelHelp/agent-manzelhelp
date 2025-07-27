@@ -232,7 +232,8 @@
       "security": "Security",
       "payment": "Payment Methods",
       "notifications": "Notifications",
-      "preferences": "Preferences"
+      "preferences": "Preferences",
+      "serviceLocations": "Service Locations"
     },
     "completion": {
       "title": "Complete Your Tasker Profile",
@@ -252,6 +253,7 @@
       "description": "Update your basic information and professional photo",
       "avatar": "Profile Photo",
       "avatarDescription": "Upload a professional photo to build trust with clients",
+      "uploadPhoto": "Upload Photo",
       "firstName": "First Name",
       "firstNamePlaceholder": "Enter your first name",
       "lastName": "Last Name",
@@ -335,6 +337,10 @@
       "postalCodePlaceholder": "10001",
       "default": "Primary"
     },
+    "serviceLocations": {
+      "description": "Manage where you provide your services.",
+      "addLocation": "Add Service Location"
+    },
     "security": {
       "description": "Manage your account security and sign-in preferences",
       "signInMethods": "Sign-in Methods",
@@ -377,13 +383,29 @@
       "description": "Customize your tasker experience",
       "language": "Language",
       "timezone": "Timezone",
-      "currency": "Currency"
+      "currency": "Currency",
+      "languages": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français"
+      },
+      "timezones": {
+        "GMT": "GMT (Greenwich Mean Time)",
+        "CET": "CET (Central European Time)",
+        "EST": "EST (Eastern Standard Time)"
+      },
+      "currencies": {
+        "EUR": "EUR (Euro)",
+        "USD": "USD (US Dollar)",
+        "MAD": "MAD (Moroccan Dirham)"
+      }
     },
     "actions": {
       "edit": "Edit",
       "cancel": "Cancel",
       "save": "Save Changes",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "uploading": "Uploading..."
     },
     "success": {
       "profileUpdated": "Profile updated successfully!",
@@ -391,7 +413,8 @@
       "serviceRemoved": "Service removed successfully!",
       "addressAdded": "Service area added successfully!",
       "addressDeleted": "Service area deleted successfully!",
-      "availabilityUpdated": "Availability updated successfully!"
+      "availabilityUpdated": "Availability updated successfully!",
+      "profilePhotoUpdated": "Profile photo updated successfully!"
     },
     "errors": {
       "notLoggedIn": "Not Logged In",
@@ -401,7 +424,9 @@
       "removeService": "Failed to remove service",
       "fetchAddresses": "Failed to load service areas",
       "addAddress": "Failed to add service area",
-      "deleteAddress": "Failed to delete service area"
+      "deleteAddress": "Failed to delete service area",
+      "profilePhotoUpload": "Failed to upload profile photo",
+      "requiredFields": "Please fill in all required fields"
     }
   },
   "auth": {

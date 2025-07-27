@@ -232,7 +232,8 @@
       "security": "Sicherheit",
       "payment": "Zahlungsmethoden",
       "notifications": "Benachrichtigungen",
-      "preferences": "Einstellungen"
+      "preferences": "Einstellungen",
+      "serviceLocations": "Service-Standorte"
     },
     "completion": {
       "title": "Vervollständigen Sie Ihr Tasker-Profil",
@@ -252,6 +253,7 @@
       "description": "Aktualisieren Sie Ihre Grundinformationen und Ihr professionelles Foto",
       "avatar": "Profilbild",
       "avatarDescription": "Laden Sie ein professionelles Foto hoch, um Vertrauen bei Kunden aufzubauen",
+      "uploadPhoto": "Foto Hochladen",
       "firstName": "Vorname",
       "firstNamePlaceholder": "Geben Sie Ihren Vornamen ein",
       "lastName": "Nachname",
@@ -335,6 +337,10 @@
       "postalCodePlaceholder": "10001",
       "default": "Primär"
     },
+    "serviceLocations": {
+      "description": "Verwalten Sie, wo Sie Ihre Services anbieten.",
+      "addLocation": "Service-Standort Hinzufügen"
+    },
     "security": {
       "description": "Verwalten Sie Ihre Kontosicherheit und Anmeldeeinstellungen",
       "signInMethods": "Anmeldemethoden",
@@ -377,13 +383,29 @@
       "description": "Passen Sie Ihr Tasker-Erlebnis an",
       "language": "Sprache",
       "timezone": "Zeitzone",
-      "currency": "Währung"
+      "currency": "Währung",
+      "languages": {
+        "en": "Englisch",
+        "de": "Deutsch",
+        "fr": "Französisch"
+      },
+      "timezones": {
+        "GMT": "GMT (Greenwich Mean Time)",
+        "CET": "CET (Mitteleuropäische Zeit)",
+        "EST": "EST (Eastern Standard Time)"
+      },
+      "currencies": {
+        "EUR": "EUR (Euro)",
+        "USD": "USD (US-Dollar)",
+        "MAD": "MAD (Marokkanischer Dirham)"
+      }
     },
     "actions": {
       "edit": "Bearbeiten",
       "cancel": "Abbrechen",
       "save": "Änderungen Speichern",
-      "saving": "Speichern..."
+      "saving": "Speichern...",
+      "uploading": "Hochladen..."
     },
     "success": {
       "profileUpdated": "Profil erfolgreich aktualisiert!",
@@ -391,7 +413,8 @@
       "serviceRemoved": "Service erfolgreich entfernt!",
       "addressAdded": "Servicegebiet erfolgreich hinzugefügt!",
       "addressDeleted": "Servicegebiet erfolgreich gelöscht!",
-      "availabilityUpdated": "Verfügbarkeit erfolgreich aktualisiert!"
+      "availabilityUpdated": "Verfügbarkeit erfolgreich aktualisiert!",
+      "profilePhotoUpdated": "Profilbild erfolgreich aktualisiert!"
     },
     "errors": {
       "notLoggedIn": "Nicht Angemeldet",
@@ -401,7 +424,9 @@
       "removeService": "Service konnte nicht entfernt werden",
       "fetchAddresses": "Servicegebiete konnten nicht geladen werden",
       "addAddress": "Servicegebiet konnte nicht hinzugefügt werden",
-      "deleteAddress": "Servicegebiet konnte nicht gelöscht werden"
+      "deleteAddress": "Servicegebiet konnte nicht gelöscht werden",
+      "profilePhotoUpload": "Profilbild konnte nicht hochgeladen werden",
+      "requiredFields": "Bitte füllen Sie alle erforderlichen Felder aus"
     }
   },
   "auth": {
