@@ -1,27 +1,21 @@
 "use client";
 
 import { useRouter } from "@/i18n/navigation";
-import { useParams } from "next/navigation";
 import { useTransition, useEffect } from "react";
 import { toast } from "sonner";
-import { CardContent, CardFooter } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Lock, User } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { signUpAction } from "@/actions/users";
 import { useUserStore } from "@/stores/userStore";
 
 function SignUpForm() {
   const router = useRouter();
-  const params = useParams();
   const user = useUserStore((state) => state.user);
 
   const [isPending, startTransition] = useTransition();
-
-  // Get the current locale from URL params
-  const locale = (params.locale as string) || "en";
 
   // Redirect if user already exists
   useEffect(() => {
@@ -48,7 +42,7 @@ function SignUpForm() {
       }
 
       try {
-        const result = await signUpAction(email, password, userRole, locale);
+        const result = await signUpAction(email, password, userRole);
 
         if (!result.errorMessage) {
           toast.success("Sign up successful", {
@@ -66,67 +60,110 @@ function SignUpForm() {
   };
 
   return (
-    <form action={handleSubmit}>
-      <CardContent className="grid w-full items-center gap-4">
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            placeholder="Enter your email"
-            type="email"
-            required
-            disabled={isPending}
-            autoComplete="email"
-          />
-        </div>
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            name="password"
-            placeholder="Enter your password (min. 6 characters)"
-            type="password"
-            required
-            disabled={isPending}
-            minLength={6}
-            autoComplete="new-password"
-          />
-        </div>
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="userRole">I want to:</Label>
-          <select
-            id="userRole"
-            name="userRole"
-            className="h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            disabled={isPending}
-            required
-            defaultValue=""
+    <form action={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label
+            htmlFor="email"
+            className="text-sm font-medium text-[var(--color-text-primary)]"
           >
-            <option value="" disabled>
-              Select an option
-            </option>
-            <option value="customer">Find Help</option>
-            <option value="tasker">Become a Helper</option>
-          </select>
+            Email Address
+          </Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
+            <Input
+              id="email"
+              name="email"
+              placeholder="Enter your email"
+              type="email"
+              required
+              disabled={isPending}
+              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              autoComplete="email"
+            />
+          </div>
         </div>
-      </CardContent>
-      <CardFooter className="mt-4 flex flex-col gap-6">
-        <Button className="w-full" disabled={isPending}>
-          {isPending ? <Loader2 className="animate-spin" /> : "Sign Up"}
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="password"
+            className="text-sm font-medium text-[var(--color-text-primary)]"
+          >
+            Password
+          </Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
+            <Input
+              id="password"
+              name="password"
+              placeholder="Enter your password (min. 6 characters)"
+              type="password"
+              required
+              disabled={isPending}
+              minLength={6}
+              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              autoComplete="new-password"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="userRole"
+            className="text-sm font-medium text-[var(--color-text-primary)]"
+          >
+            I want to:
+          </Label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
+            <select
+              id="userRole"
+              name="userRole"
+              className="w-full h-12 pl-10 pr-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] disabled:opacity-50 text-base transition-all duration-200 bg-white"
+              disabled={isPending}
+              required
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Select an option
+              </option>
+              <option value="customer">Find Help</option>
+              <option value="tasker">Become a Helper</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="w-full h-12 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          {isPending ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Creating account...</span>
+            </div>
+          ) : (
+            "Create Account"
+          )}
         </Button>
-        <p className="text-xs">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className={`text-blue-500 underline ${
-              isPending ? "pointer-events-none opacity-50" : ""
-            }`}
-          >
-            Login
-          </Link>
-        </p>
-      </CardFooter>
+
+        <div className="text-center">
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className={`text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] font-medium transition-colors duration-200 ${
+                isPending ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              Sign in here
+            </Link>
+          </p>
+        </div>
+      </div>
     </form>
   );
 }

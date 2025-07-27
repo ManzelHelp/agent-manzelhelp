@@ -3,11 +3,11 @@
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useTransition } from "react";
 import { toast } from "sonner";
-import { CardContent, CardFooter } from "./ui/card";
+
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { loginAction } from "@/actions/users";
 import { getProfile } from "@/supabase/client";
@@ -56,47 +56,83 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
   };
 
   return (
-    <form action={handleSubmit}>
-      <CardContent className="grid w-full items-center gap-4">
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            placeholder="Enter your email"
-            type="email"
-            required
-            disabled={isPending}
-          />
-        </div>
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            name="password"
-            placeholder="Enter your password"
-            type="password"
-            required
-            disabled={isPending}
-          />
-        </div>
-      </CardContent>
-      <CardFooter className="mt-4 flex flex-col gap-6">
-        <Button className="w-full">
-          {isPending ? <Loader2 className="animate-spin" /> : "Login"}
-        </Button>
-        <p className="text-xs">
-          Don't have an account yet?
-          <Link
-            href="/sign-up"
-            className={`text-blue-500 underline ${
-              isPending ? "pointer-events-none opacity-50" : ""
-            }`}
+    <form action={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label
+            htmlFor="email"
+            className="text-sm font-medium text-[var(--color-text-primary)]"
           >
-            Sign Up
-          </Link>
-        </p>
-      </CardFooter>
+            Email Address
+          </Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
+            <Input
+              id="email"
+              name="email"
+              placeholder="Enter your email"
+              type="email"
+              required
+              disabled={isPending}
+              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              autoComplete="email"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="password"
+            className="text-sm font-medium text-[var(--color-text-primary)]"
+          >
+            Password
+          </Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
+            <Input
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              type="password"
+              required
+              disabled={isPending}
+              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              autoComplete="current-password"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="w-full h-12 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          {isPending ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Signing in...</span>
+            </div>
+          ) : (
+            "Sign In"
+          )}
+        </Button>
+
+        <div className="text-center">
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            Don't have an account?{" "}
+            <Link
+              href="/sign-up"
+              className={`text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] font-medium transition-colors duration-200 ${
+                isPending ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              Sign up here
+            </Link>
+          </p>
+        </div>
+      </div>
     </form>
   );
 }
