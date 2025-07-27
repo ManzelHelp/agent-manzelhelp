@@ -28,16 +28,20 @@ export default function ServiceSearchBar({
   return (
     <form
       onSubmit={handleSearch}
-      className="w-full max-w-md mx-auto mb-10 flex items-center gap-2"
+      className="w-full max-w-md mx-auto flex items-center gap-2 sm:gap-3"
     >
       <Input
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         placeholder="Search services..."
-        className="h-12 text-lg px-5 flex-1"
+        className="h-12 sm:h-14 text-base sm:text-lg px-4 sm:px-5 flex-1 rounded-lg sm:rounded-xl border-2 focus:border-[var(--color-secondary)] transition-all duration-200"
       />
-      <Button type="submit" size="lg" className="h-12 px-4">
-        <Search className="size-5" />
+      <Button
+        type="submit"
+        size="lg"
+        className="h-12 sm:h-14 px-4 sm:px-6 rounded-lg sm:rounded-xl bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] transition-all duration-200 min-w-[48px] sm:min-w-[56px]"
+      >
+        <Search className="size-5 sm:size-6" />
       </Button>
     </form>
   );
