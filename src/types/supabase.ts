@@ -7,12 +7,12 @@ export type VerificationStatus = "pending" | "verified" | "rejected";
 export type PricingType = "fixed" | "hourly" | "per_item";
 export type ExperienceLevel = "beginner" | "intermediate" | "expert";
 export type JobStatus =
-  | "pending"
+  | "under_review"
   | "active"
+  | "assigned"
   | "in_progress"
   | "completed"
   | "cancelled"
-  | "assigned"
   | "disputed";
 export type ApplicationStatus =
   | "pending"
@@ -60,6 +60,7 @@ export type BookingType = "instant" | "scheduled" | "recurring";
 export type BookingPaymentMethod = "cash" | "online" | "wallet" | "pending";
 export type ServiceVerificationStatus =
   | "pending"
+  | "under_review"
   | "verified"
   | "rejected"
   | "suspended";
@@ -450,6 +451,100 @@ export interface ServiceBooking {
   cancellation_fee?: number;
 }
 
+// NEW TABLES AND VIEWS
+
+export interface FAQ {
+  id: string;
+  role: string;
+  audience: string;
+  category: string;
+  question_en: string;
+  answer_en: string;
+  question_fr?: string;
+  answer_fr?: string;
+  question_ar?: string;
+  answer_ar?: string;
+  created_at?: string;
+}
+
+// VIEWS (for reference - these are read-only)
+export interface ServiceBookingSummary {
+  booking_id?: string;
+  status?: BookingStatus;
+  agreed_price?: number;
+  scheduled_date?: string;
+  scheduled_time_start?: string;
+  scheduled_time_end?: string;
+  customer_first_name?: string;
+  customer_last_name?: string;
+  customer_avatar?: string;
+  tasker_first_name?: string;
+  tasker_last_name?: string;
+  tasker_avatar?: string;
+  service_name?: string;
+  category_name?: string;
+  payment_status?: PaymentStatus;
+  payment_method?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ServiceBookingSummaryWithReviews {
+  booking_id?: string;
+  status?: BookingStatus;
+  agreed_price?: number;
+  scheduled_date?: string;
+  scheduled_time_start?: string;
+  scheduled_time_end?: string;
+  payment_method?: BookingPaymentMethod;
+  customer_first_name?: string;
+  customer_last_name?: string;
+  customer_avatar?: string;
+  tasker_first_name?: string;
+  tasker_last_name?: string;
+  tasker_avatar?: string;
+  service_name?: string;
+  category_name?: string;
+  payment_status?: PaymentStatus;
+  transaction_method?: string;
+  customer_rating?: number;
+  customer_quality_rating?: number;
+  customer_communication_rating?: number;
+  customer_timeliness_rating?: number;
+  customer_review?: string;
+  customer_review_date?: string;
+  tasker_rating?: number;
+  tasker_quality_rating?: number;
+  tasker_communication_rating?: number;
+  tasker_timeliness_rating?: number;
+  tasker_review?: string;
+  tasker_review_date?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TaskerServicePerformance {
+  service_id?: string;
+  tasker_id?: string;
+  title?: string;
+  pricing_type?: PricingType;
+  base_price?: number;
+  hourly_rate?: number;
+  verification_status?: ServiceVerificationStatus;
+  availability_status?: ServiceAvailabilityStatus;
+  service_name?: string;
+  category_name?: string;
+  tasker_first_name?: string;
+  tasker_last_name?: string;
+  tasker_avatar?: string;
+  tasker_rating?: number;
+  total_reviews?: number;
+  completed_jobs?: number;
+  total_earnings?: number;
+  response_time_hours?: number;
+  cancellation_rate?: number;
+}
+
 // Custom type for operation hours
 export interface AvailabilitySlot {
   day: string;
@@ -482,4 +577,5 @@ export interface Database {
   tasker_availability: TaskerAvailability;
   tasker_blocked_dates: TaskerBlockedDate;
   service_bookings: ServiceBooking;
+  faq: FAQ;
 }

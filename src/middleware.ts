@@ -17,7 +17,11 @@ const PUBLIC_ROUTES = [
 ];
 
 // Routes that need auth checks
-const PROTECTED_ROUTES = ["/dashboard", "/settings", "/profile", "/admin"];
+const PROTECTED_ROUTES = [
+  // "/admin",
+  "/customer",
+  "/tasker",
+];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
