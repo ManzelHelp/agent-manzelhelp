@@ -134,13 +134,11 @@ function Header() {
             {user ? (
               <Button
                 asChild
-                variant="ghost"
+                variant="default"
                 size="sm"
-                className="font-medium hover:bg-[var(--color-primary-light)] transition-colors duration-200"
+                className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <Link href={`/${user.role}/create-offer`}>
-                  {t("create_offer")}
-                </Link>
+                <Link href={`/${user.role}/my-services`}>My Services</Link>
               </Button>
             ) : (
               <>
@@ -346,12 +344,10 @@ function Header() {
                 <Button
                   asChild
                   variant="default"
-                  className="w-full justify-center font-medium mb-3"
+                  className="w-full justify-center font-medium mb-3 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Link href={`/${user.role}/create-offer`}>
-                    {t("create_offer")}
-                  </Link>
+                  <Link href={`/${user.role}/my-services`}>My Services</Link>
                 </Button>
                 <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200">
                   <LogOut className="h-4 w-4" />
