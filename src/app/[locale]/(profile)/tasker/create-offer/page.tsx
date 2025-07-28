@@ -51,7 +51,7 @@ interface BasicInfoData {
   description: string;
   categoryId: number;
   serviceId: number;
-  selectedAddressId: number;
+  selectedAddressId: string; // changed from number to string
   serviceArea?: string;
 }
 
@@ -75,7 +75,7 @@ const INITIAL_BASIC_INFO: BasicInfoData = {
   description: "",
   categoryId: 0,
   serviceId: 0,
-  selectedAddressId: 0,
+  selectedAddressId: "", // changed from 0 to ""
   serviceArea: "",
 };
 
@@ -181,7 +181,7 @@ export default function CreateOfferPage() {
           ...prev,
           basicInfo: {
             ...prev.basicInfo,
-            selectedAddressId: addressesData[0].id || 0,
+            selectedAddressId: addressesData[0].id || "",
           },
         }));
       }
@@ -387,19 +387,21 @@ export default function CreateOfferPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="container mx-auto max-w-4xl px-1 sm:px-4 py-4 sm:py-8 bg-[var(--color-bg)] min-h-screen overflow-x-hidden w-full">
       {/* Progress Steps */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-row items-center justify-between gap-x-2 sm:gap-x-4 overflow-x-auto scrollbar-hide w-full px-1">
           {STEPS.map((step, index) => (
             <React.Fragment key={step.id}>
-              <div className="flex flex-col items-center flex-1">
+              <div className="flex flex-col items-center flex-1 min-w-0">
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                    currentStep >= step.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  }`}
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all shadow-md
+                    ${
+                      currentStep >= step.id
+                        ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
+                        : "bg-[var(--color-accent-light)] text-[var(--color-text-secondary)]"
+                    }
+                  `}
                 >
                   {currentStep > step.id ? (
                     <Check className="h-6 w-6" />
@@ -407,25 +409,27 @@ export default function CreateOfferPage() {
                     step.icon
                   )}
                 </div>
-                <div className="mt-3 text-center">
+                <div className="mt-2 sm:mt-3 text-center">
                   <h3
-                    className={`font-semibold text-sm ${
+                    className={`font-semibold text-xs sm:text-sm ${
                       currentStep >= step.id
-                        ? "text-primary"
-                        : "text-muted-foreground"
+                        ? "text-[var(--color-primary)]"
+                        : "text-[var(--color-text-secondary)]"
                     }`}
                   >
                     {step.title}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-1">
                     {step.description}
                   </p>
                 </div>
               </div>
               {index < STEPS.length - 1 && (
                 <div
-                  className={`flex-1 h-px mx-4 transition-all ${
-                    currentStep > step.id ? "bg-primary" : "bg-muted"
+                  className={`flex-1 h-px mx-1 sm:mx-4 transition-all min-w-[16px] ${
+                    currentStep > step.id
+                      ? "bg-[var(--color-primary)]"
+                      : "bg-[var(--color-accent)]"
                   }`}
                 />
               )}
@@ -435,22 +439,22 @@ export default function CreateOfferPage() {
       </div>
 
       {/* Form Content */}
-      <Card className="w-full">
+      <Card className="w-full max-w-full bg-[var(--color-surface)] shadow-lg rounded-xl p-2 sm:p-6">
         {/* Step 1: Basic Information */}
         {currentStep === 1 && (
           <>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
                 Basic Service Information
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[var(--color-text-secondary)]">
                 Tell us about the service you want to offer
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* User Avatar & Info */}
-              <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+              <div className="flex items-center gap-4 p-3 sm:p-4 bg-[var(--color-accent-light)] rounded-lg">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--color-accent-dark)] flex items-center justify-center overflow-hidden">
                   {user?.avatar_url ? (
                     <Image
                       src={user.avatar_url}
@@ -460,16 +464,18 @@ export default function CreateOfferPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="h-8 w-8 text-primary" />
+                    <User className="h-8 w-8 text-[var(--color-primary)]" />
                   )}
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold">
+                  <h4 className="font-semibold text-[var(--color-primary)]">
                     {user?.first_name} {user?.last_name}
                   </h4>
-                  <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    {user?.email}
+                  </p>
                   {!user?.avatar_url && (
-                    <p className="text-xs text-amber-600 mt-1">
+                    <p className="text-xs text-[var(--color-warning)] mt-1 flex items-center">
                       <AlertCircle className="h-3 w-3 inline mr-1" />
                       Add a profile photo in settings to build trust
                     </p>
@@ -662,7 +668,7 @@ export default function CreateOfferPage() {
                               ...prev,
                               basicInfo: {
                                 ...prev.basicInfo,
-                                selectedAddressId: address.id || 0,
+                                selectedAddressId: address.id,
                               },
                             }))
                           }
@@ -770,17 +776,17 @@ export default function CreateOfferPage() {
         {currentStep === 2 && (
           <>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
                 Pricing Details
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[var(--color-text-secondary)]">
                 Set your rates and booking policies
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Pricing Model */}
               <div className="space-y-4">
-                <Label className="text-base font-semibold">
+                <Label className="text-base font-semibold text-[var(--color-primary)]">
                   Pricing Model *
                 </Label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -944,7 +950,7 @@ export default function CreateOfferPage() {
 
               {/* Extras/Add-ons */}
               <div className="space-y-4">
-                <Label className="text-base font-semibold">
+                <Label className="text-base font-semibold text-[var(--color-primary)]">
                   Extras/Add-ons
                 </Label>
                 <div className="space-y-2">
@@ -1038,17 +1044,19 @@ export default function CreateOfferPage() {
         {currentStep === 3 && (
           <>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
                 Review Your Offer
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[var(--color-text-secondary)]">
                 Please review all details before publishing your service
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Service Overview */}
-              <div className="border rounded-lg p-6">
-                <h3 className="font-semibold text-lg mb-4">Service Overview</h3>
+              <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                  Service Overview
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Title:</span>
@@ -1103,8 +1111,10 @@ export default function CreateOfferPage() {
               </div>
 
               {/* Pricing Overview */}
-              <div className="border rounded-lg p-6">
-                <h3 className="font-semibold text-lg mb-4">Pricing Details</h3>
+              <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                  Pricing Details
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">
@@ -1176,8 +1186,10 @@ export default function CreateOfferPage() {
 
               {/* Availability Overview */}
               {availability.length > 0 && (
-                <div className="border rounded-lg p-6">
-                  <h3 className="font-semibold text-lg mb-4">Availability</h3>
+                <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                  <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                    Availability
+                  </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {availability
                       .filter((slot) => slot.enabled)
@@ -1195,8 +1207,10 @@ export default function CreateOfferPage() {
                 </div>
               )}
               {taskerProfile && (
-                <div className="border rounded-lg p-6">
-                  <h3 className="font-semibold text-lg mb-4">About You</h3>
+                <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                  <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                    About You
+                  </h3>
                   <div className="mb-2">
                     <span className="text-muted-foreground">Bio:</span>
                     <p className="font-medium">
@@ -1218,23 +1232,32 @@ export default function CreateOfferPage() {
         )}
 
         {/* Navigation Footer */}
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex flex-row gap-2 w-full px-0">
           <Button
             variant="outline"
             onClick={goToPreviousStep}
             disabled={currentStep === 1 || loading}
+            className="w-1/2 sm:w-auto bg-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-lg py-3 px-6 text-base font-semibold transition flex items-center justify-center"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Previous
           </Button>
 
           {currentStep < STEPS.length ? (
-            <Button onClick={goToNextStep} disabled={loading}>
+            <Button
+              onClick={goToNextStep}
+              disabled={loading}
+              className="w-1/2 sm:w-auto bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:bg-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-lg py-3 px-6 text-base font-semibold transition flex items-center justify-center"
+            >
               Next
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={loading}>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-1/2 sm:w-auto bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:bg-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-lg py-3 px-6 text-base font-semibold transition flex items-center justify-center"
+            >
               {loading ? (
                 <div className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full mr-2" />
               ) : null}

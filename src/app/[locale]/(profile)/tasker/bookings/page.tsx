@@ -15,7 +15,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-type TaskStatus = "requests" | "upcoming" | "active" | "completed";
+type TaskStatus = "all" | "requests" | "upcoming" | "active" | "completed";
 
 interface Task {
   id: number;
@@ -33,7 +33,7 @@ interface Task {
 }
 
 export default function BookingsPage() {
-  const [activeTab, setActiveTab] = useState<TaskStatus>("requests");
+  const [activeTab, setActiveTab] = useState<TaskStatus>("all");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
 
   // Mock data - replace with real data fetching
@@ -132,9 +132,20 @@ export default function BookingsPage() {
       },
     ],
   };
+  // Aggregate all tasks for the 'all' tab
+  const allTasks = [
+    ...tasks.requests,
+    ...tasks.upcoming,
+    ...tasks.active,
+    ...tasks.completed,
+  ];
+  // Add 'all' to tasks object for easier access
+  const tasksWithAll = { ...tasks, all: allTasks };
 
   const getStatusIcon = (status: TaskStatus) => {
     switch (status) {
+      case "all":
+        return <User className="h-4 w-4" />;
       case "requests":
         return <AlertCircle className="h-4 w-4" />;
       case "upcoming":
@@ -148,6 +159,8 @@ export default function BookingsPage() {
 
   const getStatusLabel = (status: TaskStatus) => {
     switch (status) {
+      case "all":
+        return "All Tasks";
       case "requests":
         return "Booking Requests";
       case "upcoming":
@@ -161,6 +174,8 @@ export default function BookingsPage() {
 
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
+      case "all":
+        return "text-color-primary";
       case "requests":
         return "text-color-warning";
       case "upcoming":
@@ -174,6 +189,8 @@ export default function BookingsPage() {
 
   const getStatusBgColor = (status: TaskStatus) => {
     switch (status) {
+      case "all":
+        return "bg-color-primary/10";
       case "requests":
         return "bg-color-warning/10";
       case "upcoming":
@@ -206,14 +223,18 @@ export default function BookingsPage() {
         setActiveTab(status);
         setIsNavExpanded(false); // Close dropdown when tab is selected
       }}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus shadow-sm ${
-        activeTab === status
-          ? "bg-color-primary text-color-surface shadow-md border-color-primary-dark"
-          : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light border-color-border"
-      }`}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus shadow-sm
+        ${
+          activeTab === status
+            ? "bg-color-primary text-color-surface shadow-md scale-105 z-10 ring-2 ring-color-primary-dark !border-none"
+            : "bg-transparent text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light !border-none"
+        }
+      `}
+      style={{ minWidth: 0 }}
+      aria-current={activeTab === status ? "page" : undefined}
     >
       <div
-        className={`${
+        className={`$ {
           activeTab === status ? "text-color-surface" : getStatusColor(status)
         }`}
       >
@@ -254,7 +275,7 @@ export default function BookingsPage() {
               {getStatusLabel(activeTab)}
             </span>
             <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium">
-              {tasks[activeTab].length}
+              {tasksWithAll[activeTab].length}
             </span>
           </div>
           {isNavExpanded ? (
@@ -263,11 +284,16 @@ export default function BookingsPage() {
             <ChevronDown className="h-4 w-4" />
           )}
         </button>
-
         {isNavExpanded && (
           <div className="mt-2 p-2 bg-color-surface border border-color-border rounded-lg shadow-sm space-y-1">
             {(
-              ["requests", "upcoming", "active", "completed"] as TaskStatus[]
+              [
+                "all",
+                "requests",
+                "upcoming",
+                "active",
+                "completed",
+              ] as TaskStatus[]
             ).map((status) => (
               <button
                 key={status}
@@ -294,7 +320,7 @@ export default function BookingsPage() {
                   {getStatusLabel(status)}
                 </span>
                 <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium ml-auto">
-                  {tasks[status].length}
+                  {tasksWithAll[status].length}
                 </span>
               </button>
             ))}
@@ -322,14 +348,20 @@ export default function BookingsPage() {
 
       <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
         {/* Desktop Navigation Tabs */}
-        <div className="hidden sm:flex gap-1 bg-color-accent-light p-2 rounded-xl border border-color-border">
+        <div className="hidden sm:flex gap-1 bg-color-accent-light p-2 rounded-xl">
           {(
-            ["requests", "upcoming", "active", "completed"] as TaskStatus[]
+            [
+              "all",
+              "requests",
+              "upcoming",
+              "active",
+              "completed",
+            ] as TaskStatus[]
           ).map((status) => (
             <TabButton
               key={status}
               status={status}
-              count={tasks[status].length}
+              count={tasksWithAll[status].length}
             />
           ))}
         </div>
@@ -339,7 +371,7 @@ export default function BookingsPage() {
 
         {/* Task Cards */}
         <div className="space-y-4">
-          {tasks[activeTab].map((task: Task) => (
+          {tasksWithAll[activeTab].map((task: Task) => (
             <Card
               key={task.id}
               className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
@@ -406,21 +438,23 @@ export default function BookingsPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-3 min-w-[120px]">
+                  <div className="flex flex-col items-end gap-3 min-w-[120px] w-full sm:w-auto">
                     <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
                       {formatCurrency(task.price)}
                     </p>
                     <Button
                       size="sm"
-                      className={`touch-target mobile-focus shadow-sm transition-all duration-200 ${
-                        activeTab === "requests"
-                          ? "bg-color-secondary text-color-surface hover:bg-color-secondary-dark border-color-secondary-dark"
-                          : activeTab === "completed"
-                          ? "bg-color-success text-color-surface hover:bg-color-success-dark border-color-success-dark"
-                          : activeTab === "active"
-                          ? "bg-color-info text-color-surface hover:bg-color-info-dark border-color-info-dark"
-                          : "bg-color-primary text-color-surface hover:bg-color-primary-dark border-color-primary-dark"
-                      }`}
+                      className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto
+                        ${
+                          activeTab === "requests"
+                            ? "bg-color-secondary text-color-surface hover:bg-color-secondary-dark border-color-secondary-dark"
+                            : activeTab === "completed"
+                            ? "bg-color-success text-color-surface hover:bg-color-success-dark border-color-success-dark"
+                            : activeTab === "active"
+                            ? "bg-color-info text-color-surface hover:bg-color-info-dark border-color-info-dark"
+                            : "bg-color-primary text-color-surface hover:bg-color-primary-dark border-color-primary-dark"
+                        }
+                      `}
                     >
                       {activeTab === "requests"
                         ? "Accept Request"
@@ -430,6 +464,13 @@ export default function BookingsPage() {
                         ? "Update Progress"
                         : "Start Task"}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="touch-target mobile-focus w-full sm:w-auto mt-1 sm:mt-0 border-color-primary text-color-primary hover:bg-color-primary/10"
+                    >
+                      View Task
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -438,7 +479,7 @@ export default function BookingsPage() {
         </div>
 
         {/* Empty State */}
-        {tasks[activeTab].length === 0 && (
+        {tasksWithAll[activeTab].length === 0 && (
           <Card className="border-color-border bg-color-surface shadow-sm">
             <CardContent className="py-8 mobile-spacing">
               <div className="text-center space-y-3">
@@ -452,10 +493,14 @@ export default function BookingsPage() {
                   </div>
                 </div>
                 <h3 className="font-semibold text-color-text-primary mobile-text-lg mobile-leading">
-                  No {getStatusLabel(activeTab).toLowerCase()}
+                  {activeTab === "all"
+                    ? "No tasks found"
+                    : `No ${getStatusLabel(activeTab).toLowerCase()}`}
                 </h3>
                 <p className="text-sm text-color-text-secondary mobile-leading">
-                  {activeTab === "requests"
+                  {activeTab === "all"
+                    ? "You have no tasks yet."
+                    : activeTab === "requests"
                     ? "You have no new booking requests at the moment."
                     : activeTab === "upcoming"
                     ? "You have no upcoming tasks scheduled."
