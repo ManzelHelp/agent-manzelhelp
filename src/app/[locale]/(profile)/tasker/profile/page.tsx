@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import type { AvailabilitySlot } from "@/types/supabase";
 import {
   Card,
@@ -13,43 +13,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   User,
   MapPin,
-  Shield,
   CreditCard,
   CheckCircle,
   AlertCircle,
   Edit,
   Plus,
-  X,
   Camera,
-  Phone,
   Mail,
   Trash2,
-  Upload,
   Clock,
   FileText,
-  Zap,
   BadgeCheck,
   MapPinIcon,
   ChevronDown,
   Menu,
+  AlertTriangle,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { createClient } from "@/supabase/client";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 
 type ProfileSection =
   | "personal"
-  | "availability"
-  | "verification"
   | "bio"
+  | "availability"
   | "addresses"
-  | "security"
   | "payment";
 
 interface TaskerProfile {
@@ -61,7 +61,7 @@ interface TaskerProfile {
   service_radius_km?: number;
   is_available?: boolean;
   updated_at?: string;
-  operation_hours?: AvailabilitySlot[] | null; // JSONB column for operation hours
+  operation_hours?: AvailabilitySlot[] | null;
 }
 
 interface Address {
@@ -75,27 +75,20 @@ interface Address {
   is_default: boolean;
 }
 
+interface MissingField {
+  id: string;
+  label: string;
+  section: ProfileSection;
+  icon: React.ReactNode;
+  description: string;
+  required: boolean;
+}
+
 const EXPERIENCE_LEVELS = [
-  {
-    value: "beginner",
-    label: "Beginner (0-1 years)",
-    labelKey: "bio.experienceLevels.beginner",
-  },
-  {
-    value: "intermediate",
-    label: "Intermediate (1-3 years)",
-    labelKey: "bio.experienceLevels.intermediate",
-  },
-  {
-    value: "experienced",
-    label: "Experienced (3-5 years)",
-    labelKey: "bio.experienceLevels.experienced",
-  },
-  {
-    value: "expert",
-    label: "Expert (5+ years)",
-    labelKey: "bio.experienceLevels.expert",
-  },
+  { value: "beginner", label: "Beginner (0-1 years)" },
+  { value: "intermediate", label: "Intermediate (1-3 years)" },
+  { value: "experienced", label: "Experienced (3-5 years)" },
+  { value: "expert", label: "Expert (5+ years)" },
 ];
 
 const WEEKDAYS = [
@@ -108,66 +101,64 @@ const WEEKDAYS = [
   { key: "sunday", label: "Sunday" },
 ];
 
+const SECTIONS = [
+  {
+    id: "personal" as ProfileSection,
+    title: "Personal Information",
+    icon: User,
+  },
+  { id: "bio" as ProfileSection, title: "Bio & Experience", icon: FileText },
+  { id: "availability" as ProfileSection, title: "Availability", icon: Clock },
+  {
+    id: "addresses" as ProfileSection,
+    title: "Service Locations",
+    icon: MapPin,
+  },
+  {
+    id: "payment" as ProfileSection,
+    title: "Payment Methods",
+    icon: CreditCard,
+  },
+];
+
 export default function TaskerProfilePage() {
   const { user, setUser } = useUserStore();
-  const t = useTranslations("taskerProfile");
-  const searchParams = useSearchParams();
 
-  const validSections: ProfileSection[] = [
-    "personal",
-    "availability",
-    "verification",
-    "bio",
-    "addresses",
-    "security",
-    "payment",
-  ];
-
+  // Core state
   const [activeSection, setActiveSection] =
     useState<ProfileSection>("personal");
-  const [isEditing, setIsEditing] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
-
-  // Data states
   const [taskerProfile, setTaskerProfile] = useState<TaskerProfile | null>(
     null
   );
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Dialog states
+  const [editPersonalOpen, setEditPersonalOpen] = useState(false);
+  const [editBioOpen, setEditBioOpen] = useState(false);
+  const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
+  const [addAddressOpen, setAddAddressOpen] = useState(false);
 
   // Form states
-  const [personalInfo, setPersonalInfo] = useState({
-    first_name: user?.first_name || "",
-    last_name: user?.last_name || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
-    date_of_birth: user?.date_of_birth || "",
-    avatar_url: user?.avatar_url || "",
+  const [personalForm, setPersonalForm] = useState({
+    first_name: "",
+    last_name: "",
+    phone: "",
+    date_of_birth: "",
   });
 
-  const [bioInfo, setBioInfo] = useState({
+  const [bioForm, setBioForm] = useState({
     bio: "",
     experience_level: "beginner",
     service_radius_km: 25,
   });
 
-  const defaultAvailability = React.useMemo<AvailabilitySlot[]>(
-    () => [
-      { day: "monday", enabled: true, startTime: "09:00", endTime: "17:00" },
-      { day: "tuesday", enabled: true, startTime: "09:00", endTime: "17:00" },
-      { day: "wednesday", enabled: true, startTime: "09:00", endTime: "17:00" },
-      { day: "thursday", enabled: true, startTime: "09:00", endTime: "17:00" },
-      { day: "friday", enabled: true, startTime: "09:00", endTime: "17:00" },
-      { day: "saturday", enabled: false, startTime: "09:00", endTime: "17:00" },
-      { day: "sunday", enabled: false, startTime: "09:00", endTime: "17:00" },
-    ],
+  const [availabilityForm, setAvailabilityForm] = useState<AvailabilitySlot[]>(
     []
   );
-  const [availability, setAvailability] =
-    useState<AvailabilitySlot[]>(defaultAvailability);
-  const [originalAvailability, setOriginalAvailability] =
-    useState<AvailabilitySlot[]>(defaultAvailability);
-
-  const [newAddress, setNewAddress] = useState<Address>({
+  const [newAddressForm, setNewAddressForm] = useState<Address>({
     label: "home",
     street_address: "",
     city: "",
@@ -177,42 +168,29 @@ export default function TaskerProfilePage() {
     is_default: false,
   });
 
-  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
-
-  // Add state for profile photo upload near other states
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-
-  // Mobile dropdown state
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Fetch data on component mount
-  const fetchTaskerData = React.useCallback(async () => {
+  // Data fetching
+  const fetchTaskerData = useCallback(async () => {
     if (!user?.id) return;
 
     const supabase = createClient();
-
-    // Fetch tasker profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error } = await supabase
       .from("tasker_profiles")
       .select("*")
       .eq("id", user.id)
       .single();
 
-    if (profileError && profileError.code !== "PGRST116") {
-      console.error("Error fetching tasker profile:", profileError);
-    } else if (profile) {
+    if (!error && profile) {
       setTaskerProfile(profile);
-      // Set availability from profile JSONB, fallback to default
-      const availabilityData =
-        profile.operation_hours && Array.isArray(profile.operation_hours)
-          ? profile.operation_hours
-          : defaultAvailability;
-      setAvailability(availabilityData);
-      setOriginalAvailability(availabilityData);
+      setBioForm({
+        bio: profile.bio || "",
+        experience_level: profile.experience_level || "beginner",
+        service_radius_km: profile.service_radius_km || 25,
+      });
+      setAvailabilityForm(profile.operation_hours || []);
     }
-  }, [user?.id, defaultAvailability]);
+  }, [user?.id]);
 
-  const fetchAddresses = React.useCallback(async () => {
+  const fetchAddresses = useCallback(async () => {
     if (!user?.id) return;
 
     const supabase = createClient();
@@ -222,14 +200,12 @@ export default function TaskerProfilePage() {
       .eq("user_id", user.id)
       .order("is_default", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching addresses:", error);
-      toast.error(t("errors.fetchAddresses"));
-    } else {
+    if (!error) {
       setAddresses(data || []);
     }
-  }, [user?.id, t]);
+  }, [user?.id]);
 
+  // Effects
   useEffect(() => {
     if (user?.id) {
       fetchTaskerData();
@@ -238,26 +214,17 @@ export default function TaskerProfilePage() {
   }, [user?.id, fetchTaskerData, fetchAddresses]);
 
   useEffect(() => {
-    if (taskerProfile) {
-      setBioInfo({
-        bio: taskerProfile.bio || "",
-        experience_level: taskerProfile.experience_level || "beginner",
-        service_radius_km: taskerProfile.service_radius_km || 25,
+    if (user) {
+      setPersonalForm({
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        phone: user.phone || "",
+        date_of_birth: user.date_of_birth || "",
       });
     }
-  }, [taskerProfile]);
+  }, [user]);
 
-  // Set section from query param on mount and when it changes
-  useEffect(() => {
-    const sectionParam = searchParams.get("section");
-    if (
-      sectionParam &&
-      validSections.includes(sectionParam as ProfileSection)
-    ) {
-      setActiveSection(sectionParam as ProfileSection);
-    }
-  }, [searchParams]);
-
+  // Update functions
   const updatePersonalInfo = async () => {
     if (!user?.id) return;
 
@@ -267,27 +234,21 @@ export default function TaskerProfilePage() {
     const { error } = await supabase
       .from("users")
       .update({
-        first_name: personalInfo.first_name,
-        last_name: personalInfo.last_name,
-        phone: personalInfo.phone,
-        date_of_birth: personalInfo.date_of_birth,
+        first_name: personalForm.first_name,
+        last_name: personalForm.last_name,
+        phone: personalForm.phone,
+        date_of_birth: personalForm.date_of_birth,
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id);
 
     if (error) {
-      toast.error(t("errors.updateProfile"));
-      console.error("Error updating profile:", error);
+      toast.error("Failed to update personal information");
     } else {
-      setUser({
-        ...user,
-        ...personalInfo,
-        updated_at: new Date().toISOString(),
-      });
-      toast.success(t("success.profileUpdated"));
-      setIsEditing((prev) => ({ ...prev, personal: false }));
+      setUser({ ...user, ...personalForm });
+      toast.success("Personal information updated successfully");
+      setEditPersonalOpen(false);
     }
-
     setLoading(false);
   };
 
@@ -299,62 +260,71 @@ export default function TaskerProfilePage() {
 
     const { error } = await supabase.from("tasker_profiles").upsert({
       id: user.id,
-      bio: bioInfo.bio,
-      experience_level: bioInfo.experience_level,
-      service_radius_km: bioInfo.service_radius_km,
+      bio: bioForm.bio,
+      experience_level: bioForm.experience_level,
+      service_radius_km: bioForm.service_radius_km,
       updated_at: new Date().toISOString(),
     });
 
     if (error) {
-      toast.error(t("errors.updateBio"));
-      console.error("Error updating bio:", error);
+      toast.error("Failed to update bio information");
     } else {
-      setTaskerProfile((prev) => ({
-        ...prev,
-        id: user.id,
-        bio: bioInfo.bio,
-        experience_level: bioInfo.experience_level,
-        service_radius_km: bioInfo.service_radius_km,
-        updated_at: new Date().toISOString(),
-      }));
-      toast.success(t("success.bioUpdated"));
-      setIsEditing((prev) => ({ ...prev, bio: false }));
+      setTaskerProfile((prev) => (prev ? { ...prev, ...bioForm } : null));
+      toast.success("Bio information updated successfully");
+      setEditBioOpen(false);
     }
-
     setLoading(false);
   };
 
-  // Add profile photo upload function
+  const updateAvailability = async () => {
+    if (!user?.id) return;
+
+    setLoading(true);
+    const supabase = createClient();
+
+    const { error } = await supabase.from("tasker_profiles").upsert({
+      id: user.id,
+      operation_hours: availabilityForm,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      toast.error("Failed to update availability");
+    } else {
+      setTaskerProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              operation_hours: availabilityForm,
+            }
+          : null
+      );
+      toast.success("Availability updated successfully");
+      setEditAvailabilityOpen(false);
+    }
+    setLoading(false);
+  };
+
   const handlePhotoUpload = async (file: File) => {
     if (!user?.id) return;
 
     setUploadingPhoto(true);
     try {
       const supabase = createClient();
-
-      // Create unique file path
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}_${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("user-uploads")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
+        .upload(filePath, file, { cacheControl: "3600", upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const {
         data: { publicUrl },
       } = supabase.storage.from("user-uploads").getPublicUrl(filePath);
 
-      if (!publicUrl) throw new Error("Failed to get public URL");
-
-      // Update user profile
       const { error: updateError } = await supabase
         .from("users")
         .update({
@@ -365,90 +335,38 @@ export default function TaskerProfilePage() {
 
       if (updateError) throw updateError;
 
-      // Update local state
-      setUser({
-        ...user,
-        avatar_url: publicUrl,
-        updated_at: new Date().toISOString(),
-      });
-      setPersonalInfo((prev) => ({
-        ...prev,
-        avatar_url: publicUrl,
-      }));
-
-      toast.success(
-        t("success.profilePhotoUpdated") || "Profile photo updated successfully"
-      );
-    } catch (error) {
-      console.error("Error uploading photo:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to upload photo";
-      toast.error(t("errors.profilePhotoUpload") || errorMessage);
+      setUser({ ...user, avatar_url: publicUrl });
+      toast.success("Profile photo updated successfully");
+    } catch {
+      toast.error("Failed to upload photo");
     } finally {
       setUploadingPhoto(false);
     }
   };
 
-  // Add optimized addAddress function with better error handling
   const addAddress = async () => {
-    if (
-      !user?.id ||
-      !newAddress.street_address.trim() ||
-      !newAddress.city.trim()
-    ) {
-      toast.error(
-        t("errors.requiredFields") || "Please fill in all required fields"
-      );
-      return;
-    }
+    if (!user?.id) return;
 
     setLoading(true);
-    try {
-      const supabase = createClient();
+    const supabase = createClient();
 
-      const { error } = await supabase.from("addresses").insert([
-        {
-          ...newAddress,
-          user_id: user.id,
-          street_address: newAddress.street_address.trim(),
-          city: newAddress.city.trim(),
-          region: newAddress.region.trim(),
-          postal_code: newAddress.postal_code?.trim() || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ]);
+    const { error } = await supabase.from("addresses").insert([
+      {
+        ...newAddressForm,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]);
 
-      if (error) throw error;
-
-      toast.success(
-        t("success.addressAdded") || "Service location added successfully"
-      );
-
-      // Reset form
-      setNewAddress({
-        label: "home",
-        street_address: "",
-        city: "",
-        region: "",
-        postal_code: "",
-        country: "MA",
-        is_default: false,
-      });
-      setShowNewAddressForm(false);
-
-      // Refresh addresses
-      await fetchAddresses();
-    } catch (error) {
-      console.error("Error adding address:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to add service location";
-      toast.error(t("errors.addAddress") || errorMessage);
-    } finally {
-      setLoading(false);
+    if (error) {
+      toast.error("Failed to add address");
+    } else {
+      toast.success("Address added successfully");
+      setAddAddressOpen(false);
+      fetchAddresses();
     }
+    setLoading(false);
   };
 
   const deleteAddress = async (addressId: number) => {
@@ -464,86 +382,105 @@ export default function TaskerProfilePage() {
       .eq("user_id", user.id);
 
     if (error) {
-      toast.error(t("errors.deleteAddress"));
-      console.error("Error deleting address:", error);
+      toast.error("Failed to delete address");
     } else {
-      toast.success(t("success.addressDeleted"));
+      toast.success("Address deleted successfully");
       fetchAddresses();
     }
-
     setLoading(false);
   };
 
-  const updateAvailability = (
-    dayIndex: number,
-    field: keyof AvailabilitySlot,
-    value: string | boolean
-  ) => {
-    setAvailability((prev) =>
-      prev.map((slot, index) =>
-        index === dayIndex ? { ...slot, [field]: value } : slot
-      )
-    );
-  };
+  // Missing fields detection
+  const getMissingFields = useCallback((): MissingField[] => {
+    if (!user || !taskerProfile) return [];
 
-  const saveAvailability = async () => {
-    if (!user?.id) return;
-    setLoading(true);
-    const supabase = createClient();
+    const missingFields: MissingField[] = [];
 
-    const { error } = await supabase.from("tasker_profiles").upsert({
-      id: user.id,
-      operation_hours: availability,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      toast.error(t("errors.updateProfile") || "Failed to update availability");
-      console.error("Error updating availability:", error);
-    } else {
-      toast.success(
-        t("success.availabilityUpdated") || "Availability updated successfully"
-      );
-      // Update the local profile state
-      setTaskerProfile((prev) => ({
-        ...prev,
-        id: user.id,
-        operation_hours: availability,
-        updated_at: new Date().toISOString(),
-      }));
-      setOriginalAvailability(availability); // Update the original state
-      setIsEditing((prev) => ({ ...prev, availability: false }));
+    // Personal Information Section
+    if (!user.avatar_url) {
+      missingFields.push({
+        id: "profile_photo",
+        label: "Profile Photo",
+        section: "personal",
+        icon: <Camera className="h-4 w-4" />,
+        description: "Add a professional profile photo to build trust",
+        required: true,
+      });
     }
-    setLoading(false);
-  };
 
-  const sectionIcons: Record<ProfileSection, React.ReactNode> = {
-    personal: <User className="h-4 w-4" />,
-    availability: <Clock className="h-4 w-4" />,
-    verification: <BadgeCheck className="h-4 w-4" />,
-    bio: <FileText className="h-4 w-4" />,
-    addresses: <MapPin className="h-4 w-4" />,
-    security: <Shield className="h-4 w-4" />,
-    payment: <CreditCard className="h-4 w-4" />,
-  };
+    if (!user.first_name || !user.last_name) {
+      missingFields.push({
+        id: "full_name",
+        label: "Full Name",
+        section: "personal",
+        icon: <User className="h-4 w-4" />,
+        description: "Complete your name for better recognition",
+        required: true,
+      });
+    }
 
-  const sections = [
-    { id: "personal" as ProfileSection, title: t("sections.personal") },
-    { id: "bio" as ProfileSection, title: t("sections.bio") },
-    { id: "availability" as ProfileSection, title: t("sections.availability") },
-    { id: "addresses" as ProfileSection, title: t("sections.addresses") },
-    { id: "payment" as ProfileSection, title: t("sections.payment") },
-  ];
+    if (taskerProfile.verification_status !== "verified") {
+      missingFields.push({
+        id: "identity_verification",
+        label: "Identity Verification",
+        section: "personal",
+        icon: <BadgeCheck className="h-4 w-4" />,
+        description: "Verify your identity to increase trust",
+        required: true,
+      });
+    }
 
-  if (!user) {
+    // Bio & Experience Section
+    if (!taskerProfile.bio || taskerProfile.bio.trim().length === 0) {
+      missingFields.push({
+        id: "bio",
+        label: "Bio & Experience",
+        section: "bio",
+        icon: <FileText className="h-4 w-4" />,
+        description: "Tell customers about your experience and skills",
+        required: true,
+      });
+    }
+
+    if (
+      !taskerProfile.service_radius_km ||
+      taskerProfile.service_radius_km <= 0
+    ) {
+      missingFields.push({
+        id: "service_area",
+        label: "Service Area",
+        section: "bio",
+        icon: <MapPin className="h-4 w-4" />,
+        description: "Define your service coverage area",
+        required: true,
+      });
+    }
+
+    return missingFields;
+  }, [user, taskerProfile]);
+
+  const missingFields = useMemo(() => getMissingFields(), [getMissingFields]);
+  const personalMissingFields = useMemo(
+    () => missingFields.filter((field) => field.section === "personal"),
+    [missingFields]
+  );
+  const bioMissingFields = useMemo(
+    () => missingFields.filter((field) => field.section === "bio"),
+    [missingFields]
+  );
+
+  // Memoized values
+  const isLoggedIn = useMemo(() => !!user, [user]);
+
+  if (!isLoggedIn) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">
-            {t("errors.notLoggedIn")}
-          </h2>
-          <p className="text-muted-foreground">{t("errors.loginRequired")}</p>
+          <h2 className="text-lg font-semibold mb-2">Not logged in</h2>
+          <p className="text-muted-foreground">
+            Please log in to view your profile
+          </p>
         </div>
       </div>
     );
@@ -551,50 +488,49 @@ export default function TaskerProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-color-bg via-color-surface to-color-bg/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Header */}
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-color-text-primary leading-tight">
-                {t("title")}
-              </h1>
-              <p className="text-color-text-secondary text-sm sm:text-base">
-                {t("subtitle")}
-              </p>
-            </div>
-          </div>
+        <div className="space-y-4">
+          <h1 className="text-3xl font-bold text-color-text-primary">
+            Profile
+          </h1>
+          <p className="text-color-text-secondary">
+            Manage your account information and preferences
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-          {/* Mobile Navigation Dropdown */}
-          <div className="lg:hidden">
-            <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-color-text-primary">
-                    {t("navigation.title")}
-                  </CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                  >
-                    <Menu className="h-4 w-4 mr-2" />
-                    {mobileMenuOpen ? "Close" : "Menu"}
-                    <ChevronDown
-                      className={`h-4 w-4 ml-2 transition-transform duration-200 ${
-                        mobileMenuOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </Button>
-                </div>
-              </CardHeader>
-              {mobileMenuOpen && (
-                <CardContent className="pt-0">
-                  <nav className="space-y-1">
-                    {sections.map((section) => (
+        {/* Mobile Navigation */}
+        <div className="lg:hidden">
+          <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg text-color-text-primary">
+                  Navigation
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="border-color-border hover:bg-color-primary/5"
+                >
+                  <Menu className="h-4 w-4 mr-2" />
+                  {mobileMenuOpen ? "Close" : "Menu"}
+                  <ChevronDown
+                    className={`h-4 w-4 ml-2 transition-transform ${
+                      mobileMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </Button>
+              </div>
+            </CardHeader>
+            {mobileMenuOpen && (
+              <CardContent className="pt-0">
+                <nav className="space-y-1">
+                  {SECTIONS.map((section) => {
+                    const sectionMissingFields = missingFields.filter(
+                      (field) => field.section === section.id
+                    );
+                    return (
                       <button
                         key={section.id}
                         onClick={() => {
@@ -608,845 +544,752 @@ export default function TaskerProfilePage() {
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`p-1.5 rounded-md transition-colors ${
-                              activeSection === section.id
-                                ? "bg-color-primary/20"
-                                : "bg-color-accent/20"
-                            }`}
-                          >
-                            {sectionIcons[section.id]}
-                          </div>
+                          <section.icon className="h-4 w-4" />
                           <span>{section.title}</span>
                         </div>
+                        {sectionMissingFields.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-color-error" />
+                            <span className="text-xs font-medium text-color-error">
+                              {sectionMissingFields.length}
+                            </span>
+                          </div>
+                        )}
                       </button>
-                    ))}
-                  </nav>
-                </CardContent>
-              )}
-            </Card>
-          </div>
+                    );
+                  })}
+                </nav>
+              </CardContent>
+            )}
+          </Card>
+        </div>
 
-          {/* Desktop Sidebar Navigation */}
-          <div className="hidden lg:block lg:col-span-1">
-            <Card className="sticky top-6 border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg text-color-text-primary">
-                  {t("navigation.title")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <nav className="space-y-1">
-                  {sections.map((section) => (
+        {/* Desktop Navigation */}
+        <div className="hidden lg:block">
+          <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <nav className="flex space-x-1">
+                {SECTIONS.map((section) => {
+                  const sectionMissingFields = missingFields.filter(
+                    (field) => field.section === section.id
+                  );
+                  return (
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium transition-all duration-200 rounded-lg mx-2 ${
+                      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg ${
                         activeSection === section.id
                           ? "bg-gradient-to-r from-color-primary/10 to-color-secondary/10 text-color-primary border border-color-primary/20 shadow-sm"
                           : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30"
                       }`}
                     >
-                      <div
-                        className={`p-1.5 rounded-md transition-colors ${
-                          activeSection === section.id
-                            ? "bg-color-primary/20"
-                            : "bg-color-accent/20"
-                        }`}
-                      >
-                        {sectionIcons[section.id]}
-                      </div>
-                      <span className="flex-1">{section.title}</span>
+                      <section.icon className="h-4 w-4" />
+                      <span>{section.title}</span>
+                      {sectionMissingFields.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3 text-color-error" />
+                          <span className="text-xs font-medium text-color-error">
+                            {sectionMissingFields.length}
+                          </span>
+                        </div>
+                      )}
                     </button>
-                  ))}
-                </nav>
-              </CardContent>
-            </Card>
-          </div>
+                  );
+                })}
+              </nav>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Personal Information Section */}
-            {activeSection === "personal" && (
-              <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-2">
-                      <CardTitle className="flex items-center gap-3 text-xl text-color-text-primary">
-                        <div className="p-2 rounded-lg bg-color-primary/10">
-                          <User className="h-5 w-5 text-color-primary" />
-                        </div>
-                        {t("sections.personal")}
-                      </CardTitle>
-                      <CardDescription className="text-color-text-secondary">
-                        {t("personal.description")}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setIsEditing((prev) => ({
-                          ...prev,
-                          personal: !prev.personal,
-                        }))
-                      }
-                      className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      {isEditing.personal
-                        ? t("actions.cancel")
-                        : t("actions.edit")}
-                    </Button>
+        {/* Content */}
+        <div className="space-y-6">
+          {/* Personal Information Section */}
+          {activeSection === "personal" && (
+            <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl text-color-text-primary">
+                      Personal Information
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      Your basic profile information
+                    </CardDescription>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                  {/* Profile Photo Section */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                    <div className="relative">
-                      <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-gradient-to-br from-color-primary/10 to-color-secondary/10 flex items-center justify-center overflow-hidden border-4 border-color-surface shadow-lg">
-                        {user.avatar_url ? (
-                          <Image
-                            src={user.avatar_url}
-                            alt={t("personal.avatar")}
-                            className="h-full w-full object-cover"
-                            fill
-                            sizes="112px"
-                            style={{ objectFit: "cover" }}
-                            priority
-                          />
-                        ) : (
-                          <User className="h-10 w-10 sm:h-12 sm:w-12 text-color-text-secondary" />
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handlePhotoUpload(file);
-                        }}
-                        className="hidden"
-                        id="photo-upload"
-                        disabled={uploadingPhoto}
-                      />
-                      <label
-                        htmlFor="photo-upload"
-                        className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0 bg-gradient-to-r from-color-primary to-color-secondary text-white hover:from-color-primary-light hover:to-color-secondary-light cursor-pointer flex items-center justify-center transition-all duration-200 shadow-lg disabled:opacity-50"
-                      >
-                        {uploadingPhoto ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        ) : (
-                          <Camera className="h-4 w-4" />
-                        )}
-                      </label>
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <h3 className="font-semibold text-color-text-primary">
-                          {t("personal.avatar")}
-                        </h3>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            document.getElementById("photo-upload")?.click()
-                          }
-                          disabled={uploadingPhoto}
-                          className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          {uploadingPhoto
-                            ? t("actions.uploading") || "Uploading..."
-                            : t("personal.uploadPhoto") || "Upload Photo"}
-                        </Button>
-                      </div>
-                      <p className="text-sm text-color-text-secondary">
-                        {t("personal.avatarDescription")}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Personal Info Form */}
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="first_name"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("personal.firstName")}
-                      </Label>
-                      <Input
-                        id="first_name"
-                        value={personalInfo.first_name}
-                        onChange={(e) =>
-                          setPersonalInfo((prev) => ({
-                            ...prev,
-                            first_name: e.target.value,
-                          }))
-                        }
-                        disabled={!isEditing.personal}
-                        placeholder={t("personal.firstNamePlaceholder")}
-                        className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="last_name"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("personal.lastName")}
-                      </Label>
-                      <Input
-                        id="last_name"
-                        value={personalInfo.last_name}
-                        onChange={(e) =>
-                          setPersonalInfo((prev) => ({
-                            ...prev,
-                            last_name: e.target.value,
-                          }))
-                        }
-                        disabled={!isEditing.personal}
-                        placeholder={t("personal.lastNamePlaceholder")}
-                        className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="email"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("personal.email")}
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={personalInfo.email}
-                        disabled={true}
-                        className="bg-color-accent/30 border-color-border text-color-text-secondary"
-                      />
-                      <p className="text-xs text-color-text-secondary">
-                        {t("personal.emailNote")}
-                      </p>
-                    </div>
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="phone"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("personal.phone")}{" "}
-                        <span className="text-color-text-secondary text-xs">
-                          (Optional)
-                        </span>
-                      </Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={personalInfo.phone}
-                        onChange={(e) =>
-                          setPersonalInfo((prev) => ({
-                            ...prev,
-                            phone: e.target.value,
-                          }))
-                        }
-                        disabled={!isEditing.personal}
-                        placeholder={t("personal.phonePlaceholder")}
-                        className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                      />
-                      <p className="text-xs text-color-text-secondary">
-                        {t("personal.phoneNote") ||
-                          "Phone number is optional but recommended for better communication"}
-                      </p>
-                    </div>
-                    <div className="space-y-3 sm:col-span-2">
-                      <Label
-                        htmlFor="date_of_birth"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("personal.birthDate")}
-                      </Label>
-                      <Input
-                        id="date_of_birth"
-                        type="date"
-                        value={personalInfo.date_of_birth}
-                        onChange={(e) =>
-                          setPersonalInfo((prev) => ({
-                            ...prev,
-                            date_of_birth: e.target.value,
-                          }))
-                        }
-                        disabled={!isEditing.personal}
-                        className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-                  {isEditing.personal && (
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6">
-                      <Button
-                        onClick={updatePersonalInfo}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-color-primary to-color-secondary hover:from-color-primary-light hover:to-color-secondary-light text-white shadow-lg transition-all duration-200"
-                      >
-                        {loading ? t("actions.saving") : t("actions.save")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setPersonalInfo({
-                            first_name: user?.first_name || "",
-                            last_name: user?.last_name || "",
-                            email: user?.email || "",
-                            phone: user?.phone || "",
-                            date_of_birth: user?.date_of_birth || "",
-                            avatar_url: user?.avatar_url || "",
-                          });
-                          setIsEditing((prev) => ({
-                            ...prev,
-                            personal: false,
-                          }));
-                        }}
-                        className="border-color-border hover:bg-color-accent/30 transition-all duration-200"
-                      >
-                        {t("actions.cancel")}
-                      </Button>
+                  {personalMissingFields.length > 0 && (
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-color-error/20 border border-color-error/30">
+                      <AlertTriangle className="h-4 w-4 text-color-error" />
+                      <span className="text-sm font-medium text-color-error">
+                        {personalMissingFields.length} missing
+                      </span>
                     </div>
                   )}
-                  {/* Verification Section */}
-                  <div className="mt-8 space-y-6">
-                    <h2 className="text-lg font-semibold flex items-center gap-3 text-color-text-primary">
-                      <div className="p-2 rounded-lg bg-color-success/10">
-                        <CheckCircle className="h-5 w-5 text-color-success" />
-                      </div>
-                      {t("sections.verification")}
-                    </h2>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {/* Identity Verification */}
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-color-border/50 bg-color-surface/50 backdrop-blur-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-color-primary/10">
-                            <Upload className="h-5 w-5 text-color-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-color-text-primary">
-                              {t("verification.identity")}
-                            </p>
-                            <p className="text-sm text-color-text-secondary">
-                              {taskerProfile?.verification_status === "verified"
-                                ? t("verification.verified")
-                                : t("verification.identityDescription")}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {taskerProfile?.verification_status === "verified" ? (
-                            <div className="flex items-center gap-2">
-                              <BadgeCheck
-                                className="h-4 w-4 text-color-success"
-                                aria-label={
-                                  t("verification.verified") || "Verified"
-                                }
-                              />
-                              <span className="text-xs text-color-success font-medium">
-                                Verified
-                              </span>
-                            </div>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                            >
-                              {t("verification.uploadDocument")}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      {/* Email Verification */}
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-color-border/50 bg-color-surface/50 backdrop-blur-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-color-primary/10">
-                            <Mail className="h-5 w-5 text-color-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-color-text-primary">
-                              {t("verification.email")}
-                            </p>
-                            <p className="text-sm text-color-text-secondary">
-                              {user.email}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {user.email_verified ? (
-                            <div className="flex items-center gap-2">
-                              <BadgeCheck
-                                className="h-4 w-4 text-color-success"
-                                aria-label={
-                                  t("verification.verified") || "Verified"
-                                }
-                              />
-                              <span className="text-xs text-color-success font-medium">
-                                Verified
-                              </span>
-                            </div>
-                          ) : (
-                            <Button
-                              size="sm"
-                              className="bg-gradient-to-r from-color-primary to-color-secondary hover:from-color-primary-light hover:to-color-secondary-light text-white shadow-lg transition-all duration-200"
-                            >
-                              {t("verification.verify")}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      {/* Phone Verification */}
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-color-border/50 bg-color-surface/50 backdrop-blur-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-color-primary/10">
-                            <Phone className="h-5 w-5 text-color-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-color-text-primary">
-                              {t("verification.phone")}
-                            </p>
-                            <p className="text-sm text-color-text-secondary">
-                              {user.phone || t("verification.phoneNotAdded")}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {user.phone ? (
-                            <div className="flex items-center gap-2">
-                              <BadgeCheck
-                                className="h-4 w-4 text-color-success"
-                                aria-label="Added"
-                              />
-                              <span className="text-xs text-color-success font-medium">
-                                Added
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-color-text-secondary">
-                              Add phone number
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Bio & Experience Section */}
-            {activeSection === "bio" && (
-              <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-2">
-                      <CardTitle className="flex items-center gap-3 text-xl text-color-text-primary">
-                        <div className="p-2 rounded-lg bg-color-primary/10">
-                          <FileText className="h-5 w-5 text-color-primary" />
-                        </div>
-                        {t("sections.bio")}
-                      </CardTitle>
-                      <CardDescription className="text-color-text-secondary">
-                        {t("bio.description")}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setIsEditing((prev) => ({ ...prev, bio: !prev.bio }))
-                      }
-                      className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      {isEditing.bio ? t("actions.cancel") : t("actions.edit")}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="bio"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("bio.bioTitle")}
-                      </Label>
-                      <textarea
-                        id="bio"
-                        rows={4}
-                        value={bioInfo.bio}
-                        onChange={(e) =>
-                          setBioInfo((prev) => ({
-                            ...prev,
-                            bio: e.target.value,
-                          }))
-                        }
-                        disabled={!isEditing.bio}
-                        placeholder={t("bio.bioPlaceholder")}
-                        className="w-full px-3 py-2 border border-color-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200 disabled:bg-color-accent/30 disabled:cursor-not-allowed"
-                      />
-                      <p className="text-xs text-color-text-secondary">
-                        {t("bio.bioHint")}
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="experience_level"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("bio.experienceLevel")}
-                      </Label>
-                      <select
-                        id="experience_level"
-                        value={bioInfo.experience_level}
-                        onChange={(e) =>
-                          setBioInfo((prev) => ({
-                            ...prev,
-                            experience_level: e.target.value,
-                          }))
-                        }
-                        disabled={!isEditing.bio}
-                        className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200 disabled:bg-color-accent/30 disabled:cursor-not-allowed"
-                      >
-                        {EXPERIENCE_LEVELS.map((level) => (
-                          <option key={level.value} value={level.value}>
-                            {level.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="service_radius"
-                        className="text-color-text-primary font-medium"
-                      >
-                        {t("bio.serviceRadius")}
-                      </Label>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          id="service_radius"
-                          type="number"
-                          min="1"
-                          max="100"
-                          value={bioInfo.service_radius_km}
-                          onChange={(e) =>
-                            setBioInfo((prev) => ({
-                              ...prev,
-                              service_radius_km: parseInt(e.target.value) || 25,
-                            }))
-                          }
-                          disabled={!isEditing.bio}
-                          className="w-24 border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                        />
-                        <span className="text-sm text-color-text-secondary">
-                          km
-                        </span>
-                      </div>
-                      <p className="text-xs text-color-text-secondary">
-                        {t("bio.serviceRadiusHint")}
-                      </p>
-                    </div>
-                  </div>
-
-                  {isEditing.bio && (
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6">
-                      <Button
-                        onClick={updateBioInfo}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-color-primary to-color-secondary hover:from-color-primary-light hover:to-color-secondary-light text-white shadow-lg transition-all duration-200"
-                      >
-                        {loading ? t("actions.saving") : t("actions.save")}
+                  <Dialog
+                    open={editPersonalOpen}
+                    onOpenChange={setEditPersonalOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setBioInfo({
-                            bio: taskerProfile?.bio || "",
-                            experience_level:
-                              taskerProfile?.experience_level || "beginner",
-                            service_radius_km:
-                              taskerProfile?.service_radius_km || 25,
-                          });
-                          setIsEditing((prev) => ({ ...prev, bio: false }));
-                        }}
-                        className="border-color-border hover:bg-color-accent/30 transition-all duration-200"
-                      >
-                        {t("actions.cancel")}
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Availability Schedule Section */}
-            {activeSection === "availability" && (
-              <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-2">
-                      <CardTitle className="flex items-center gap-3 text-xl text-color-text-primary">
-                        <div className="p-2 rounded-lg bg-color-primary/10">
-                          <Clock className="h-5 w-5 text-color-primary" />
-                        </div>
-                        {t("sections.availability")}
-                      </CardTitle>
-                      <CardDescription className="text-color-text-secondary">
-                        {t("availability.description")}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setIsEditing((prev) => ({
-                          ...prev,
-                          availability: !prev.availability,
-                        }))
-                      }
-                      className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      {isEditing.availability
-                        ? t("actions.cancel")
-                        : t("actions.edit")}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    {WEEKDAYS.map((day, index) => {
-                      const slot = availability[index];
-                      return (
-                        <div
-                          key={day.key}
-                          className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl border border-color-border/50 bg-color-surface/50 backdrop-blur-sm"
-                        >
-                          <div className="w-full sm:w-32">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={slot.enabled}
-                                onChange={(e) =>
-                                  updateAvailability(
-                                    index,
-                                    "enabled",
-                                    e.target.checked
-                                  )
-                                }
-                                disabled={!isEditing.availability}
-                                className="rounded border-color-border focus:ring-color-primary/20 transition-all duration-200"
-                              />
-                              <span className="font-medium text-color-text-primary text-sm">
-                                {day.label}
-                              </span>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Edit Personal Information</DialogTitle>
+                        <DialogDescription>
+                          Update your personal information and profile photo
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        {/* Profile Photo */}
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-color-primary/10 to-color-secondary/10 flex items-center justify-center overflow-hidden border-4 border-color-surface shadow-lg">
+                              {user?.avatar_url ? (
+                                <Image
+                                  src={user.avatar_url}
+                                  alt="Profile"
+                                  className="h-full w-full object-cover"
+                                  fill
+                                  sizes="80px"
+                                  style={{ objectFit: "cover" }}
+                                />
+                              ) : (
+                                <User className="h-8 w-8 text-color-text-secondary" />
+                              )}
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handlePhotoUpload(file);
+                              }}
+                              className="hidden"
+                              id="photo-upload"
+                              disabled={uploadingPhoto}
+                            />
+                            <label
+                              htmlFor="photo-upload"
+                              className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-r from-color-primary to-color-secondary text-white cursor-pointer flex items-center justify-center transition-all duration-200 shadow-lg disabled:opacity-50"
+                            >
+                              {uploadingPhoto ? (
+                                <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                              ) : (
+                                <Camera className="h-3 w-3" />
+                              )}
                             </label>
                           </div>
-                          {slot.enabled && (
-                            <div className="flex flex-col sm:flex-row items-center gap-3 flex-1">
-                              <Input
-                                type="time"
-                                value={slot.startTime}
-                                onChange={(e) =>
-                                  updateAvailability(
-                                    index,
-                                    "startTime",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={!isEditing.availability}
-                                className="w-full sm:w-32 border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                              />
-                              <span className="text-color-text-secondary text-sm">
-                                to
-                              </span>
-                              <Input
-                                type="time"
-                                value={slot.endTime}
-                                onChange={(e) =>
-                                  updateAvailability(
-                                    index,
-                                    "endTime",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={!isEditing.availability}
-                                className="w-full sm:w-32 border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                              />
-                            </div>
-                          )}
-                          {!slot.enabled && (
-                            <span className="text-color-text-secondary text-sm">
-                              {t("availability.unavailable")}
-                            </span>
-                          )}
+                          <div>
+                            <h4 className="font-semibold text-color-text-primary">
+                              Profile Photo
+                            </h4>
+                            <p className="text-sm text-color-text-secondary">
+                              {user?.avatar_url
+                                ? "Click the camera icon to change"
+                                : "Add a profile photo"}
+                            </p>
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
 
-                  <div className="bg-gradient-to-r from-color-info/10 to-color-secondary/10 border border-color-info/20 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-color-info/20">
-                        <Zap className="h-5 w-5 text-color-info" />
+                        {/* Form Fields */}
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="first_name">First Name</Label>
+                            <Input
+                              id="first_name"
+                              value={personalForm.first_name}
+                              onChange={(e) =>
+                                setPersonalForm((prev) => ({
+                                  ...prev,
+                                  first_name: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter your first name"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="last_name">Last Name</Label>
+                            <Input
+                              id="last_name"
+                              value={personalForm.last_name}
+                              onChange={(e) =>
+                                setPersonalForm((prev) => ({
+                                  ...prev,
+                                  last_name: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter your last name"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              value={user?.email || ""}
+                              disabled
+                              className="bg-color-accent/30"
+                            />
+                            <p className="text-xs text-color-text-secondary">
+                              Email cannot be changed
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input
+                              id="phone"
+                              type="tel"
+                              value={personalForm.phone}
+                              onChange={(e) =>
+                                setPersonalForm((prev) => ({
+                                  ...prev,
+                                  phone: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter your phone number"
+                            />
+                          </div>
+                          <div className="space-y-2 sm:col-span-2">
+                            <Label htmlFor="date_of_birth">Date of Birth</Label>
+                            <Input
+                              id="date_of_birth"
+                              type="date"
+                              value={personalForm.date_of_birth}
+                              onChange={(e) =>
+                                setPersonalForm((prev) => ({
+                                  ...prev,
+                                  date_of_birth: e.target.value,
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-color-text-primary">
-                          {t("availability.quickBookingTitle")}
-                        </h4>
-                        <p className="text-sm text-color-text-secondary mt-1">
-                          {t("availability.quickBookingDescription")}
-                        </p>
-                      </div>
-                    </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setEditPersonalOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={updatePersonalInfo} disabled={loading}>
+                          {loading ? "Saving..." : "Save Changes"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Profile Photo Display */}
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-color-primary/10 to-color-secondary/10 flex items-center justify-center overflow-hidden border-4 border-color-surface shadow-lg">
+                    {user.avatar_url ? (
+                      <Image
+                        src={user.avatar_url}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                        fill
+                        sizes="64px"
+                        style={{ objectFit: "cover" }}
+                      />
+                    ) : (
+                      <User className="h-6 w-6 text-color-text-secondary" />
+                    )}
                   </div>
+                  <div>
+                    <h3 className="font-semibold text-color-text-primary">
+                      {user.first_name} {user.last_name}
+                    </h3>
+                    <p className="text-sm text-color-text-secondary">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
 
-                  {isEditing.availability && (
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6">
-                      <Button
-                        onClick={saveAvailability}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-color-primary to-color-secondary hover:from-color-primary-light hover:to-color-secondary-light text-white shadow-lg transition-all duration-200"
-                      >
-                        {loading ? t("actions.saving") : t("actions.save")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setAvailability(originalAvailability);
-                          setIsEditing((prev) => ({
-                            ...prev,
-                            availability: false,
-                          }));
-                        }}
-                        className="border-color-border hover:bg-color-accent/30 transition-all duration-200"
-                      >
-                        {t("actions.cancel")}
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                {/* Information Grid */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-color-text-secondary">
+                      Phone Number
+                    </Label>
+                    <p className="text-color-text-primary">
+                      {user.phone || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-color-text-secondary">
+                      Date of Birth
+                    </Label>
+                    <p className="text-color-text-primary">
+                      {user.date_of_birth
+                        ? new Date(user.date_of_birth).toLocaleDateString()
+                        : "Not provided"}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Addresses Section */}
-            {activeSection === "addresses" && (
-              <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-2">
-                      <CardTitle className="flex items-center gap-3 text-xl text-color-text-primary">
+                {/* Verification Status */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-color-text-primary">
+                    Verification Status
+                  </h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-color-border/50 bg-color-surface/50">
+                      <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-color-primary/10">
-                          <MapPin className="h-5 w-5 text-color-primary" />
+                          <Mail className="h-4 w-4 text-color-primary" />
                         </div>
-                        {t("sections.serviceLocations") || "Service Locations"}
-                      </CardTitle>
-                      <CardDescription className="text-color-text-secondary">
-                        {t("serviceLocations.description") ||
-                          "Manage where you provide your services."}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowNewAddressForm(true)}
-                      className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t("serviceLocations.addLocation") ||
-                        "Add Service Location"}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {addresses.length === 0 && !showNewAddressForm && (
-                    <div className="text-center py-12">
-                      <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                        <MapPinIcon className="h-8 w-8 text-color-text-secondary" />
+                        <div>
+                          <p className="font-medium text-color-text-primary">
+                            Email
+                          </p>
+                          <p className="text-sm text-color-text-secondary">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
-                      <h3 className="font-semibold text-color-text-primary mb-2">
-                        {t("addresses.empty")}
-                      </h3>
-                      <p className="text-color-text-secondary mb-6 max-w-md mx-auto">
-                        {t("addresses.emptyDescription")}
-                      </p>
-                      <Button
-                        onClick={() => setShowNewAddressForm(true)}
-                        className="bg-gradient-to-r from-color-primary to-color-secondary hover:from-color-primary-light hover:to-color-secondary-light text-white shadow-lg transition-all duration-200"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        {t("addresses.addFirst")}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {user.email_verified ? (
+                          <div className="flex items-center gap-2 text-color-success">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-xs font-medium">
+                              Verified
+                            </span>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="outline">
+                            Verify
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-color-border/50 bg-color-surface/50">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-color-primary/10">
+                          <BadgeCheck className="h-4 w-4 text-color-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-color-text-primary">
+                            Identity
+                          </p>
+                          <p className="text-sm text-color-text-secondary">
+                            {taskerProfile?.verification_status === "verified"
+                              ? "Verified"
+                              : "Not verified"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {taskerProfile?.verification_status === "verified" ? (
+                          <div className="flex items-center gap-2 text-color-success">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-xs font-medium">
+                              Verified
+                            </span>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="outline">
+                            Upload
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Bio & Experience Section */}
+          {activeSection === "bio" && (
+            <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl text-color-text-primary">
+                      Bio & Experience
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      Tell customers about your experience and skills
+                    </CardDescription>
+                  </div>
+                  {bioMissingFields.length > 0 && (
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-color-error/20 border border-color-error/30">
+                      <AlertTriangle className="h-4 w-4 text-color-error" />
+                      <span className="text-sm font-medium text-color-error">
+                        {bioMissingFields.length} missing
+                      </span>
                     </div>
                   )}
-
-                  {/* New Address Form */}
-                  {showNewAddressForm && (
-                    <Card className="border-2 border-dashed border-color-border bg-color-surface/50 backdrop-blur-sm">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg text-color-text-primary">
-                            {t("addresses.newAddress")}
-                          </CardTitle>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowNewAddressForm(false)}
-                            className="text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30 transition-all duration-200"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                  <Dialog open={editBioOpen} onOpenChange={setEditBioOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Edit Bio & Experience</DialogTitle>
+                        <DialogDescription>
+                          Update your bio, experience level, and service area
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="bio">Bio</Label>
+                          <textarea
+                            id="bio"
+                            rows={4}
+                            value={bioForm.bio}
+                            onChange={(e) =>
+                              setBioForm((prev) => ({
+                                ...prev,
+                                bio: e.target.value,
+                              }))
+                            }
+                            placeholder="Tell customers about your experience, skills, and what you offer..."
+                            className="w-full px-3 py-2 border border-color-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
+                          />
                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        <div className="grid gap-6 sm:grid-cols-2">
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="address_label"
-                              className="text-color-text-primary font-medium"
+
+                        <div className="space-y-2">
+                          <Label htmlFor="experience_level">
+                            Experience Level
+                          </Label>
+                          <select
+                            id="experience_level"
+                            value={bioForm.experience_level}
+                            onChange={(e) =>
+                              setBioForm((prev) => ({
+                                ...prev,
+                                experience_level: e.target.value,
+                              }))
+                            }
+                            className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
+                          >
+                            {EXPERIENCE_LEVELS.map((level) => (
+                              <option key={level.value} value={level.value}>
+                                {level.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="service_radius">
+                            Service Area (km)
+                          </Label>
+                          <div className="flex items-center gap-3">
+                            <Input
+                              id="service_radius"
+                              type="number"
+                              min="1"
+                              max="100"
+                              value={bioForm.service_radius_km}
+                              onChange={(e) =>
+                                setBioForm((prev) => ({
+                                  ...prev,
+                                  service_radius_km:
+                                    parseInt(e.target.value) || 25,
+                                }))
+                              }
+                              className="w-24"
+                            />
+                            <span className="text-sm text-color-text-secondary">
+                              km
+                            </span>
+                          </div>
+                          <p className="text-xs text-color-text-secondary">
+                            Define your service coverage area
+                          </p>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setEditBioOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={updateBioInfo} disabled={loading}>
+                          {loading ? "Saving..." : "Save Changes"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-color-text-secondary">
+                      Bio
+                    </Label>
+                    <p className="text-color-text-primary">
+                      {taskerProfile?.bio || "No bio provided"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-color-text-secondary">
+                      Experience Level
+                    </Label>
+                    <p className="text-color-text-primary">
+                      {EXPERIENCE_LEVELS.find(
+                        (level) =>
+                          level.value === taskerProfile?.experience_level
+                      )?.label || "Not specified"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-color-text-secondary">
+                      Service Area
+                    </Label>
+                    <p className="text-color-text-primary">
+                      {taskerProfile?.service_radius_km
+                        ? `${taskerProfile.service_radius_km} km`
+                        : "Not specified"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Availability Section */}
+          {activeSection === "availability" && (
+            <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl text-color-text-primary">
+                      Availability
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      Set your working hours and availability
+                    </CardDescription>
+                  </div>
+                  <Dialog
+                    open={editAvailabilityOpen}
+                    onOpenChange={setEditAvailabilityOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Edit Availability</DialogTitle>
+                        <DialogDescription>
+                          Set your working hours for each day of the week
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        {WEEKDAYS.map((day, index) => {
+                          const slot = availabilityForm[index] || {
+                            day: day.key,
+                            enabled: false,
+                            startTime: "09:00",
+                            endTime: "17:00",
+                          };
+                          return (
+                            <div
+                              key={day.key}
+                              className="space-y-3 p-3 rounded-lg border border-color-border/50"
                             >
-                              {t("addresses.label")}
-                            </Label>
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={slot.enabled}
+                                  onChange={(e) => {
+                                    const newForm = [...availabilityForm];
+                                    newForm[index] = {
+                                      ...slot,
+                                      enabled: e.target.checked,
+                                    };
+                                    setAvailabilityForm(newForm);
+                                  }}
+                                  className="rounded border-color-border focus:ring-color-primary/20"
+                                />
+                                <span className="font-medium text-color-text-primary">
+                                  {day.label}
+                                </span>
+                              </div>
+                              {slot.enabled && (
+                                <div className="flex items-center gap-3 ml-6">
+                                  <Input
+                                    type="time"
+                                    value={slot.startTime}
+                                    onChange={(e) => {
+                                      const newForm = [...availabilityForm];
+                                      newForm[index] = {
+                                        ...slot,
+                                        startTime: e.target.value,
+                                      };
+                                      setAvailabilityForm(newForm);
+                                    }}
+                                    className="w-32"
+                                  />
+                                  <span className="text-color-text-secondary">
+                                    to
+                                  </span>
+                                  <Input
+                                    type="time"
+                                    value={slot.endTime}
+                                    onChange={(e) => {
+                                      const newForm = [...availabilityForm];
+                                      newForm[index] = {
+                                        ...slot,
+                                        endTime: e.target.value,
+                                      };
+                                      setAvailabilityForm(newForm);
+                                    }}
+                                    className="w-32"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setEditAvailabilityOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={updateAvailability} disabled={loading}>
+                          {loading ? "Saving..." : "Save Changes"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {WEEKDAYS.map((day, index) => {
+                    const slot = availabilityForm[index] || {
+                      day: day.key,
+                      enabled: false,
+                      startTime: "09:00",
+                      endTime: "17:00",
+                    };
+                    return (
+                      <div
+                        key={day.key}
+                        className="flex items-center justify-between p-3 rounded-lg border border-color-border/50 bg-color-surface/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`p-2 rounded-lg ${
+                              slot.enabled
+                                ? "bg-color-success/10"
+                                : "bg-color-accent/10"
+                            }`}
+                          >
+                            <Clock
+                              className={`h-4 w-4 ${
+                                slot.enabled
+                                  ? "text-color-success"
+                                  : "text-color-text-secondary"
+                              }`}
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium text-color-text-primary">
+                              {day.label}
+                            </p>
+                            <p className="text-sm text-color-text-secondary">
+                              {slot.enabled
+                                ? `${slot.startTime} - ${slot.endTime}`
+                                : "Not available"}
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            slot.enabled
+                              ? "bg-color-success/10 text-color-success"
+                              : "bg-color-accent/10 text-color-text-secondary"
+                          }`}
+                        >
+                          {slot.enabled ? "Available" : "Unavailable"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Addresses Section */}
+          {activeSection === "addresses" && (
+            <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl text-color-text-primary">
+                      Service Locations
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      Manage your service locations
+                    </CardDescription>
+                  </div>
+                  <Dialog
+                    open={addAddressOpen}
+                    onOpenChange={setAddAddressOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Location
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Add Service Location</DialogTitle>
+                        <DialogDescription>
+                          Add a new location where you provide services
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="address_label">Label</Label>
                             <select
                               id="address_label"
-                              value={newAddress.label}
+                              value={newAddressForm.label}
                               onChange={(e) =>
-                                setNewAddress((prev) => ({
+                                setNewAddressForm((prev) => ({
                                   ...prev,
                                   label: e.target.value,
                                 }))
                               }
                               className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
                             >
-                              <option value="home">
-                                {t("addresses.home")}
-                              </option>
-                              <option value="work">
-                                {t("addresses.work")}
-                              </option>
-                              <option value="other">
-                                {t("addresses.other")}
-                              </option>
+                              <option value="home">Home</option>
+                              <option value="work">Work</option>
+                              <option value="other">Other</option>
                             </select>
                           </div>
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="country"
-                              className="text-color-text-primary font-medium"
-                            >
-                              {t("addresses.country")}
-                            </Label>
+                          <div className="space-y-2">
+                            <Label htmlFor="country">Country</Label>
                             <select
                               id="country"
-                              value={newAddress.country}
+                              value={newAddressForm.country}
                               onChange={(e) =>
-                                setNewAddress((prev) => ({
+                                setNewAddressForm((prev) => ({
                                   ...prev,
                                   country: e.target.value,
                                 }))
@@ -1458,212 +1301,189 @@ export default function TaskerProfilePage() {
                               <option value="ES">Spain</option>
                             </select>
                           </div>
-                          <div className="space-y-3 sm:col-span-2">
-                            <Label
-                              htmlFor="street_address"
-                              className="text-color-text-primary font-medium"
-                            >
-                              {t("addresses.street")}
-                            </Label>
-                            <Input
-                              id="street_address"
-                              value={newAddress.street_address}
-                              onChange={(e) =>
-                                setNewAddress((prev) => ({
-                                  ...prev,
-                                  street_address: e.target.value,
-                                }))
-                              }
-                              placeholder={t("addresses.streetPlaceholder")}
-                              className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                            />
-                          </div>
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="city"
-                              className="text-color-text-primary font-medium"
-                            >
-                              {t("addresses.city")}
-                            </Label>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="street_address">Street Address</Label>
+                          <Input
+                            id="street_address"
+                            value={newAddressForm.street_address}
+                            onChange={(e) =>
+                              setNewAddressForm((prev) => ({
+                                ...prev,
+                                street_address: e.target.value,
+                              }))
+                            }
+                            placeholder="Enter street address"
+                          />
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="city">City</Label>
                             <Input
                               id="city"
-                              value={newAddress.city}
+                              value={newAddressForm.city}
                               onChange={(e) =>
-                                setNewAddress((prev) => ({
+                                setNewAddressForm((prev) => ({
                                   ...prev,
                                   city: e.target.value,
                                 }))
                               }
-                              placeholder={t("addresses.cityPlaceholder")}
-                              className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
+                              placeholder="Enter city"
                             />
                           </div>
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="region"
-                              className="text-color-text-primary font-medium"
-                            >
-                              {t("addresses.region")}
-                            </Label>
+                          <div className="space-y-2">
+                            <Label htmlFor="region">Region</Label>
                             <Input
                               id="region"
-                              value={newAddress.region}
+                              value={newAddressForm.region}
                               onChange={(e) =>
-                                setNewAddress((prev) => ({
+                                setNewAddressForm((prev) => ({
                                   ...prev,
                                   region: e.target.value,
                                 }))
                               }
-                              placeholder={t("addresses.regionPlaceholder")}
-                              className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
-                            />
-                          </div>
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="postal_code"
-                              className="text-color-text-primary font-medium"
-                            >
-                              {t("addresses.postalCode")}
-                            </Label>
-                            <Input
-                              id="postal_code"
-                              value={newAddress.postal_code}
-                              onChange={(e) =>
-                                setNewAddress((prev) => ({
-                                  ...prev,
-                                  postal_code: e.target.value,
-                                }))
-                              }
-                              placeholder={t("addresses.postalCodePlaceholder")}
-                              className="border-color-border focus:border-color-primary focus:ring-color-primary/20 transition-all duration-200"
+                              placeholder="Enter region"
                             />
                           </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-3 pt-6">
-                          <Button
-                            onClick={addAddress}
-                            disabled={loading}
-                            className="bg-gradient-to-r from-color-primary to-color-secondary hover:from-color-primary-light hover:to-color-secondary-light text-white shadow-lg transition-all duration-200"
-                          >
-                            {loading ? t("actions.saving") : t("actions.save")}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowNewAddressForm(false)}
-                            className="border-color-border hover:bg-color-accent/30 transition-all duration-200"
-                          >
-                            {t("actions.cancel")}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
 
-                  {/* Existing Addresses */}
-                  {addresses.map((address) => (
-                    <Card
-                      key={address.id}
-                      className="border border-color-border/50 bg-color-surface/50 backdrop-blur-sm"
-                    >
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="font-semibold text-color-text-primary capitalize">
-                                {address.label}
-                              </span>
-                              {address.is_default && (
-                                <span className="text-xs bg-color-primary/10 text-color-primary px-2 py-1 rounded-full font-medium">
-                                  {t("addresses.default")}
-                                </span>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-sm text-color-text-secondary">
-                                {address.street_address}
-                              </p>
-                              <p className="text-sm text-color-text-secondary">
-                                {address.city}, {address.region}{" "}
-                                {address.postal_code}
-                              </p>
-                              <p className="text-sm text-color-text-secondary">
-                                {address.country}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30 transition-all duration-200"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                address.id && deleteAddress(address.id)
-                              }
-                              className="text-color-error hover:text-color-error hover:bg-color-error/10 transition-all duration-200"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="postal_code">Postal Code</Label>
+                          <Input
+                            id="postal_code"
+                            value={newAddressForm.postal_code}
+                            onChange={(e) =>
+                              setNewAddressForm((prev) => ({
+                                ...prev,
+                                postal_code: e.target.value,
+                              }))
+                            }
+                            placeholder="Enter postal code"
+                          />
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Payment Methods Section */}
-            {activeSection === "payment" && (
-              <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-2">
-                      <CardTitle className="flex items-center gap-3 text-xl text-color-text-primary">
-                        <div className="p-2 rounded-lg bg-color-primary/10">
-                          <CreditCard className="h-5 w-5 text-color-primary" />
-                        </div>
-                        {t("sections.payment")}
-                      </CardTitle>
-                      <CardDescription className="text-color-text-secondary">
-                        {t("payment.description")}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-color-border hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t("payment.addMethod")}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setAddAddressOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={addAddress} disabled={loading}>
+                          {loading ? "Adding..." : "Add Location"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {addresses.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                      <CreditCard className="h-8 w-8 text-color-text-secondary" />
+                      <MapPinIcon className="h-8 w-8 text-color-text-secondary" />
                     </div>
                     <h3 className="font-semibold text-color-text-primary mb-2">
-                      {t("payment.noMethods")}
+                      No service locations
                     </h3>
                     <p className="text-color-text-secondary mb-6 max-w-md mx-auto">
-                      {t("payment.noMethodsDescription")}
+                      Add locations where you provide your services to help
+                      customers find you
                     </p>
-                    <Button className="bg-gradient-to-r from-color-primary to-color-secondary hover:from-color-primary-light hover:to-color-secondary-light text-white shadow-lg transition-all duration-200">
+                    <Button onClick={() => setAddAddressOpen(true)}>
                       <Plus className="h-4 w-4 mr-2" />
-                      {t("payment.addFirst")}
+                      Add First Location
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                ) : (
+                  <div className="space-y-4">
+                    {addresses.map((address) => (
+                      <div
+                        key={address.id}
+                        className="flex items-start justify-between p-4 rounded-lg border border-color-border/50 bg-color-surface/50"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-semibold text-color-text-primary capitalize">
+                              {address.label}
+                            </span>
+                            {address.is_default && (
+                              <span className="text-xs bg-color-primary/10 text-color-primary px-2 py-1 rounded-full font-medium">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm text-color-text-secondary">
+                              {address.street_address}
+                            </p>
+                            <p className="text-sm text-color-text-secondary">
+                              {address.city}, {address.region}{" "}
+                              {address.postal_code}
+                            </p>
+                            <p className="text-sm text-color-text-secondary">
+                              {address.country}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            address.id && deleteAddress(address.id)
+                          }
+                          className="text-color-error hover:text-color-error hover:bg-color-error/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Payment Section */}
+          {activeSection === "payment" && (
+            <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl text-color-text-primary">
+                      Payment Methods
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      Manage your payment methods and billing information
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Method
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <CreditCard className="h-8 w-8 text-color-text-secondary" />
+                  </div>
+                  <h3 className="font-semibold text-color-text-primary mb-2">
+                    No payment methods
+                  </h3>
+                  <p className="text-color-text-secondary mb-6 max-w-md mx-auto">
+                    Add payment methods to receive payments for your services
+                  </p>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add First Payment Method
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
