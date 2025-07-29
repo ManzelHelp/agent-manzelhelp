@@ -56,9 +56,9 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
   };
 
   return (
-    <form action={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
+    <form action={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-1.5 sm:space-y-2">
           <Label
             htmlFor="email"
             className="text-sm font-medium text-[var(--color-text-primary)]"
@@ -74,13 +74,13 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
               type="email"
               required
               disabled={isPending}
-              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              className="pl-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
               autoComplete="email"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           <Label
             htmlFor="password"
             className="text-sm font-medium text-[var(--color-text-primary)]"
@@ -96,18 +96,18 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
               type="password"
               required
               disabled={isPending}
-              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              className="pl-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
               autoComplete="current-password"
             />
           </div>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <Button
           type="submit"
           disabled={isPending}
-          className="w-full h-12 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-300"
+          className="w-full h-11 sm:h-12 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-300"
         >
           {isPending ? (
             <div className="flex items-center gap-2">

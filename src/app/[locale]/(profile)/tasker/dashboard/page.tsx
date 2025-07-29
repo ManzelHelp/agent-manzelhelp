@@ -10,7 +10,6 @@ import {
   MessageSquare,
   Star,
   Clock,
-  AlertCircle,
   Eye,
   ChevronRight,
   Activity,
@@ -21,7 +20,6 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   // Mock data - replace with real data fetching
-  const profileCompleteness = 65;
   const stats = {
     activeJobs: 3,
     completedJobs: 47,
@@ -66,49 +64,6 @@ export default function DashboardPage() {
               Welcome back! Here's an overview of your business
             </p>
           </div>
-
-          {/* Profile Completeness Bar - Mobile Optimized */}
-          {profileCompleteness < 100 && (
-            <Card className="border-[var(--color-warning)] bg-gradient-to-r from-amber-50 to-orange-50 shadow-lg hover:shadow-xl transition-all duration-300 mobile-spacing">
-              <CardContent className="pt-4 sm:pt-6">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-100 rounded-full">
-                      <AlertCircle className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                        <span className="font-semibold text-[var(--color-text-primary)] text-sm sm:text-base">
-                          Profile {profileCompleteness}% complete
-                        </span>
-                        <Link
-                          href="/tasker/profile"
-                          className="block sm:inline-block"
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full sm:w-auto bg-[var(--color-primary)] text-white border-[var(--color-primary)] hover:bg-[var(--color-primary-light)] hover:border-[var(--color-primary-light)] transition-all duration-200 mobile-button"
-                          >
-                            Complete Profile
-                          </Button>
-                        </Link>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3 mt-3 overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 h-3 rounded-full transition-all duration-500 ease-out"
-                          style={{ width: `${profileCompleteness}%` }}
-                        />
-                      </div>
-                      <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-2">
-                        Complete your profile to get more bookings
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Stats Overview - Mobile First Grid */}

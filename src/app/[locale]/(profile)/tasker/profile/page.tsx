@@ -52,14 +52,6 @@ type ProfileSection =
   | "security"
   | "payment";
 
-interface ProfileCompletionItem {
-  id: string;
-  section: ProfileSection;
-  title: string;
-  completed: boolean;
-  required: boolean;
-}
-
 interface TaskerProfile {
   id: string;
   experience_level?: string;
@@ -192,68 +184,6 @@ export default function TaskerProfilePage() {
 
   // Mobile dropdown state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Calculate profile completion
-  const completionItems: ProfileCompletionItem[] = [
-    {
-      id: "basic_info",
-      section: "personal",
-      title: t("completion.basicInfo"),
-      completed: !!(user?.first_name && user?.last_name),
-      required: true,
-    },
-    {
-      id: "profile_photo",
-      section: "personal",
-      title: t("completion.profilePhoto"),
-      completed: !!user?.avatar_url,
-      required: true,
-    },
-
-    {
-      id: "bio_experience",
-      section: "bio",
-      title: t("completion.bioExperience"),
-      completed: !!(taskerProfile?.bio && taskerProfile?.experience_level),
-      required: true,
-    },
-
-    {
-      id: "availability",
-      section: "availability",
-      title: t("completion.availability"),
-      completed: availability.some((slot) => slot.enabled),
-      required: true,
-    },
-    {
-      id: "address",
-      section: "addresses",
-      title: t("completion.address"),
-      completed: addresses.length > 0,
-      required: true,
-    },
-    {
-      id: "identity_verified",
-      section: "verification",
-      title: t("completion.identityVerified"),
-      completed: taskerProfile?.verification_status === "verified",
-      required: true,
-    },
-    {
-      id: "email_verified",
-      section: "verification",
-      title: t("completion.emailVerified"),
-      completed: !!user?.email_verified,
-      required: true,
-    },
-  ];
-
-  const completedCount = completionItems.filter(
-    (item) => item.completed
-  ).length;
-  const completionPercentage = Math.round(
-    (completedCount / completionItems.length) * 100
-  );
 
   // Fetch data on component mount
   const fetchTaskerData = React.useCallback(async () => {
@@ -622,7 +552,7 @@ export default function TaskerProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-color-bg via-color-surface to-color-bg/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Header with completion status */}
+        {/* Header */}
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-2">
@@ -633,66 +563,7 @@ export default function TaskerProfilePage() {
                 {t("subtitle")}
               </p>
             </div>
-            <div className="flex flex-col items-center sm:items-end space-y-1">
-              <div className="relative">
-                <div className="text-2xl sm:text-3xl font-bold text-color-primary">
-                  {completionPercentage}%
-                </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-color-secondary rounded-full animate-pulse"></div>
-              </div>
-              <p className="text-xs sm:text-sm text-color-text-secondary">
-                {t("completion.complete")}
-              </p>
-            </div>
           </div>
-
-          {/* Completion Progress Card */}
-          {completionPercentage < 100 && (
-            <Card className="hidden lg:block border-0 shadow-lg bg-gradient-to-r from-color-primary/5 to-color-secondary/5 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-color-primary/10">
-                    <AlertCircle className="h-5 w-5 text-color-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg text-color-text-primary">
-                      {t("completion.title")}
-                    </CardTitle>
-                    <CardDescription className="text-color-text-secondary">
-                      {t("completion.description")}
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {completionItems
-                    .filter((item) => !item.completed)
-                    .map((item) => (
-                      <div
-                        key={item.id}
-                        className="group flex items-center gap-3 p-4 rounded-xl border border-color-border/50 bg-color-surface/50 backdrop-blur-sm cursor-pointer hover:bg-color-primary/5 hover:border-color-primary/30 transition-all duration-200 hover:shadow-md"
-                        onClick={() => setActiveSection(item.section)}
-                      >
-                        <div className="p-2 rounded-lg bg-color-primary/10 group-hover:bg-color-primary/20 transition-colors">
-                          {sectionIcons[item.section]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium text-color-text-primary block truncate">
-                            {item.title}
-                          </span>
-                          {item.required && (
-                            <span className="inline-block mt-1 text-xs bg-color-error/10 text-color-error px-2 py-1 rounded-full">
-                              {t("completion.required")}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
@@ -723,43 +594,33 @@ export default function TaskerProfilePage() {
               {mobileMenuOpen && (
                 <CardContent className="pt-0">
                   <nav className="space-y-1">
-                    {sections.map((section) => {
-                      const hasIncompleteItems = completionItems.some(
-                        (item) => item.section === section.id && !item.completed
-                      );
-                      return (
-                        <button
-                          key={section.id}
-                          onClick={() => {
-                            setActiveSection(section.id);
-                            setMobileMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium transition-all duration-200 rounded-lg ${
-                            activeSection === section.id
-                              ? "bg-gradient-to-r from-color-primary/10 to-color-secondary/10 text-color-primary border border-color-primary/20 shadow-sm"
-                              : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`p-1.5 rounded-md transition-colors ${
-                                activeSection === section.id
-                                  ? "bg-color-primary/20"
-                                  : "bg-color-accent/20"
-                              }`}
-                            >
-                              {sectionIcons[section.id]}
-                            </div>
-                            <span>{section.title}</span>
+                    {sections.map((section) => (
+                      <button
+                        key={section.id}
+                        onClick={() => {
+                          setActiveSection(section.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium transition-all duration-200 rounded-lg ${
+                          activeSection === section.id
+                            ? "bg-gradient-to-r from-color-primary/10 to-color-secondary/10 text-color-primary border border-color-primary/20 shadow-sm"
+                            : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`p-1.5 rounded-md transition-colors ${
+                              activeSection === section.id
+                                ? "bg-color-primary/20"
+                                : "bg-color-accent/20"
+                            }`}
+                          >
+                            {sectionIcons[section.id]}
                           </div>
-                          {hasIncompleteItems && (
-                            <span className="text-xs bg-color-error text-white px-2 py-1 rounded-full font-medium">
-                              Missing
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                          <span>{section.title}</span>
+                        </div>
+                      </button>
+                    ))}
                   </nav>
                 </CardContent>
               )}
@@ -776,36 +637,28 @@ export default function TaskerProfilePage() {
               </CardHeader>
               <CardContent className="p-0">
                 <nav className="space-y-1">
-                  {sections.map((section) => {
-                    const hasIncompleteItems = completionItems.some(
-                      (item) => item.section === section.id && !item.completed
-                    );
-                    return (
-                      <button
-                        key={section.id}
-                        onClick={() => setActiveSection(section.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium transition-all duration-200 rounded-lg mx-2 ${
+                  {sections.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium transition-all duration-200 rounded-lg mx-2 ${
+                        activeSection === section.id
+                          ? "bg-gradient-to-r from-color-primary/10 to-color-secondary/10 text-color-primary border border-color-primary/20 shadow-sm"
+                          : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30"
+                      }`}
+                    >
+                      <div
+                        className={`p-1.5 rounded-md transition-colors ${
                           activeSection === section.id
-                            ? "bg-gradient-to-r from-color-primary/10 to-color-secondary/10 text-color-primary border border-color-primary/20 shadow-sm"
-                            : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30"
+                            ? "bg-color-primary/20"
+                            : "bg-color-accent/20"
                         }`}
                       >
-                        <div
-                          className={`p-1.5 rounded-md transition-colors ${
-                            activeSection === section.id
-                              ? "bg-color-primary/20"
-                              : "bg-color-accent/20"
-                          }`}
-                        >
-                          {sectionIcons[section.id]}
-                        </div>
-                        <span className="flex-1">{section.title}</span>
-                        {hasIncompleteItems && (
-                          <div className="w-2 h-2 rounded-full bg-color-error animate-pulse"></div>
-                        )}
-                      </button>
-                    );
-                  })}
+                        {sectionIcons[section.id]}
+                      </div>
+                      <span className="flex-1">{section.title}</span>
+                    </button>
+                  ))}
                 </nav>
               </CardContent>
             </Card>

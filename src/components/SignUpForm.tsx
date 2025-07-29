@@ -60,9 +60,9 @@ function SignUpForm() {
   };
 
   return (
-    <form action={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
+    <form action={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-1.5 sm:space-y-2">
           <Label
             htmlFor="email"
             className="text-sm font-medium text-[var(--color-text-primary)]"
@@ -78,13 +78,13 @@ function SignUpForm() {
               type="email"
               required
               disabled={isPending}
-              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              className="pl-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
               autoComplete="email"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           <Label
             htmlFor="password"
             className="text-sm font-medium text-[var(--color-text-primary)]"
@@ -101,13 +101,13 @@ function SignUpForm() {
               required
               disabled={isPending}
               minLength={6}
-              className="pl-10 h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              className="pl-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
               autoComplete="new-password"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           <Label
             htmlFor="userRole"
             className="text-sm font-medium text-[var(--color-text-primary)]"
@@ -119,7 +119,7 @@ function SignUpForm() {
             <select
               id="userRole"
               name="userRole"
-              className="w-full h-12 pl-10 pr-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] disabled:opacity-50 text-base transition-all duration-200 bg-white"
+              className="w-full h-11 sm:h-12 pl-10 pr-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] disabled:opacity-50 text-base transition-all duration-200 bg-white"
               disabled={isPending}
               required
               defaultValue=""
@@ -134,11 +134,11 @@ function SignUpForm() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <Button
           type="submit"
           disabled={isPending}
-          className="w-full h-12 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-300"
+          className="w-full h-11 sm:h-12 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-300"
         >
           {isPending ? (
             <div className="flex items-center gap-2">
