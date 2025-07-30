@@ -123,6 +123,7 @@ export default function TaskerProfilePage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [taskerServices, setTaskerServices] = useState<TaskerService[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [processingPhoto, setProcessingPhoto] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Dialog states
@@ -600,36 +601,138 @@ export default function TaskerProfilePage() {
     }
   };
 
+  // Image validation and compression constants
+  const IMAGE_CONSTRAINTS = {
+    maxFileSize: 2 * 1024 * 1024, // 2MB (reduced from 5MB)
+    maxDimensions: { width: 1024, height: 1024 }, // Max dimensions
+    minDimensions: { width: 200, height: 200 }, // Min dimensions
+    allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+    targetDimensions: { width: 400, height: 400 }, // Optimal size for profile
+    quality: 0.8, // JPEG quality for compression
+  };
+
+  // Compress and resize image using canvas
+  const compressAndResizeImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new window.Image();
+
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        const { width: maxWidth, height: maxHeight } =
+          IMAGE_CONSTRAINTS.maxDimensions;
+
+        let { width, height } = img;
+
+        // Scale down if image is larger than max dimensions
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+
+        // Ensure minimum dimensions
+        if (
+          width < IMAGE_CONSTRAINTS.minDimensions.width ||
+          height < IMAGE_CONSTRAINTS.minDimensions.height
+        ) {
+          const ratio = Math.max(
+            IMAGE_CONSTRAINTS.minDimensions.width / width,
+            IMAGE_CONSTRAINTS.minDimensions.height / height
+          );
+          width *= ratio;
+          height *= ratio;
+        }
+
+        // Set canvas dimensions
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw and compress image
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              // Create new file with compressed data
+              const compressedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error("Failed to compress image"));
+            }
+          },
+          file.type,
+          IMAGE_CONSTRAINTS.quality
+        );
+      };
+
+      img.onerror = () => reject(new Error("Invalid image file"));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handlePhotoUpload = async (file: File) => {
     if (!user?.id) return;
 
-    // Validate file type and size
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    if (!allowedTypes.includes(file.type)) {
+    // Validate file type
+    if (!IMAGE_CONSTRAINTS.allowedTypes.includes(file.type)) {
       toast.error("Please select a valid image file (JPEG, PNG, or WebP)");
       return;
     }
 
-    if (file.size > maxSize) {
-      toast.error("File size must be less than 5MB");
+    // Validate file size
+    if (file.size > IMAGE_CONSTRAINTS.maxFileSize) {
+      toast.error(
+        `File size must be less than ${
+          IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)
+        }MB`
+      );
       return;
     }
 
-    // Validate file dimensions (optional but recommended)
+    // Validate initial dimensions before compression
     const img = new window.Image();
     const url = URL.createObjectURL(file);
 
     img.onload = async () => {
       URL.revokeObjectURL(url);
-      if (img.width < 200 || img.height < 200) {
-        toast.error("Image must be at least 200x200 pixels");
+
+      // Check minimum dimensions
+      if (
+        img.width < IMAGE_CONSTRAINTS.minDimensions.width ||
+        img.height < IMAGE_CONSTRAINTS.minDimensions.height
+      ) {
+        toast.error(
+          `Image must be at least ${IMAGE_CONSTRAINTS.minDimensions.width}x${IMAGE_CONSTRAINTS.minDimensions.height} pixels`
+        );
         return;
       }
 
-      // Continue with upload if validation passes
-      await performPhotoUpload(file);
+      try {
+        setProcessingPhoto(true);
+        // Compress and resize the image
+        const compressedFile = await compressAndResizeImage(file);
+
+        // Validate compressed file size
+        if (compressedFile.size > IMAGE_CONSTRAINTS.maxFileSize) {
+          toast.error(
+            "Image is still too large after compression. Please try a smaller image."
+          );
+          return;
+        }
+
+        // Continue with upload if validation passes
+        await performPhotoUpload(compressedFile);
+      } catch (error) {
+        console.error("Error processing image:", error);
+        toast.error("Failed to process image. Please try again.");
+      } finally {
+        setProcessingPhoto(false);
+      }
     };
 
     img.onerror = () => {
@@ -970,9 +1073,9 @@ export default function TaskerProfilePage() {
                                 <Image
                                   src={user.avatar_url}
                                   alt="Profile"
-                                  className="h-full w-full object-cover"
-                                  fill
-                                  sizes="80px"
+                                  width={80}
+                                  height={80}
+                                  className="h-full w-full object-cover rounded-full"
                                   style={{ objectFit: "cover" }}
                                 />
                               ) : (
@@ -988,13 +1091,13 @@ export default function TaskerProfilePage() {
                               }}
                               className="hidden"
                               id="photo-upload"
-                              disabled={uploadingPhoto}
+                              disabled={uploadingPhoto || processingPhoto}
                             />
                             <label
                               htmlFor="photo-upload"
                               className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-r from-color-primary to-color-secondary text-white cursor-pointer flex items-center justify-center transition-all duration-200 shadow-lg disabled:opacity-50"
                             >
-                              {uploadingPhoto ? (
+                              {uploadingPhoto || processingPhoto ? (
                                 <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                               ) : (
                                 <Camera className="h-3 w-3" />
@@ -1010,6 +1113,19 @@ export default function TaskerProfilePage() {
                                 ? "Click the camera icon to change"
                                 : "Add a profile photo"}
                             </p>
+                            <div className="mt-2 p-2 rounded-lg bg-color-accent/20 border border-color-border/50">
+                              <p className="text-xs text-color-text-secondary">
+                                <strong>Requirements:</strong> JPEG, PNG, or
+                                WebP format. Max{" "}
+                                {IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)}
+                                MB, min {IMAGE_CONSTRAINTS.minDimensions.width}x
+                                {IMAGE_CONSTRAINTS.minDimensions.height}px, max{" "}
+                                {IMAGE_CONSTRAINTS.maxDimensions.width}x
+                                {IMAGE_CONSTRAINTS.maxDimensions.height}px.
+                                Image will be automatically resized and
+                                compressed.
+                              </p>
+                            </div>
                           </div>
                         </div>
 
@@ -1115,9 +1231,9 @@ export default function TaskerProfilePage() {
                       <Image
                         src={userDisplayData.avatarUrl}
                         alt="Profile"
-                        className="h-full w-full object-cover"
-                        fill
-                        sizes="64px"
+                        width={64}
+                        height={64}
+                        className="h-full w-full object-cover rounded-full"
                         style={{ objectFit: "cover" }}
                       />
                     ) : (
