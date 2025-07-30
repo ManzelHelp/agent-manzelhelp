@@ -312,24 +312,21 @@ export default function NotificationsPage() {
             </div>
           </div>
 
-          {/* Action Buttons - Mobile Stacked */}
+          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            {/* Filter and Actions Row */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 flex-1">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mobile-button flex-1 sm:flex-none"
+                    className="mobile-button flex-1"
                   >
-                    <Filter className="h-4 w-4 mr-2" />
+                    <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span className="hidden sm:inline">
                       {t("filters." + filter)}
                     </span>
-                    <span className="sm:hidden">
-                      {t("filters." + filter).slice(0, 8)}
-                    </span>
+                    <span className="sm:hidden">{t("filters." + filter)}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
@@ -350,17 +347,16 @@ export default function NotificationsPage() {
                 size="sm"
                 onClick={markAllAsRead}
                 disabled={!notifications.some((n) => !n.is_read)}
-                className="mobile-button flex-1 sm:flex-none"
+                className="mobile-button flex-1"
               >
-                <MailOpen className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">
+                <MailOpen className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">
                   {t("actions.markAllRead")}
                 </span>
-                <span className="sm:hidden">Mark All</span>
+                <span className="sm:hidden truncate">Mark All</span>
               </Button>
             </div>
 
-            {/* Refresh Button */}
             <Button
               variant="outline"
               size="sm"
@@ -376,7 +372,7 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        {/* Error State - Mobile Optimized */}
+        {/* Error State */}
         {error && (
           <Card className="border-destructive/20 bg-destructive/5 mobile-spacing">
             <CardContent className="flex items-center gap-3 p-4">
@@ -398,7 +394,7 @@ export default function NotificationsPage() {
           </Card>
         )}
 
-        {/* Notifications List - Mobile Optimized */}
+        {/* Notifications List */}
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px]">
             <div className="flex flex-col items-center gap-4">
@@ -415,17 +411,9 @@ export default function NotificationsPage() {
               <h3 className="mobile-text-lg font-medium mb-2 text-foreground text-center">
                 {t("empty.title")}
               </h3>
-              <p className="text-muted-foreground text-center max-w-sm mb-6 mobile-leading">
+              <p className="text-muted-foreground text-center max-w-sm mobile-leading">
                 {t("empty.description")}
               </p>
-              <Button
-                variant="outline"
-                onClick={() => fetchNotifications(true)}
-                className="mobile-button"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                {t("actions.refresh")}
-              </Button>
             </CardContent>
           </Card>
         ) : (

@@ -332,9 +332,9 @@ export default function BookingsPage() {
 
   return (
     <div className="min-h-screen bg-color-bg smooth-scroll">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-color-surface border-b border-color-border shadow-sm">
-        <div className="container mx-auto px-4 py-4 mobile-spacing">
+      <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
+        {/* Page Header - Now part of normal page flow */}
+        <div className="bg-color-surface border-b border-color-border pb-4">
           <div>
             <h1 className="text-2xl font-bold text-color-text-primary mobile-text-xl mobile-leading">
               Task Management
@@ -344,9 +344,6 @@ export default function BookingsPage() {
             </p>
           </div>
         </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
         {/* Desktop Navigation Tabs */}
         <div className="hidden sm:flex gap-1 bg-color-accent-light p-2 rounded-xl">
           {(

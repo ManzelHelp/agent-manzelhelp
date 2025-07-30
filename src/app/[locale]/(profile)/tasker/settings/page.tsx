@@ -7,19 +7,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Shield,
   Bell,
-  Palette,
   Mail,
   CheckCircle,
-  Zap,
   ChevronRight,
   Settings,
   User,
-  Smartphone,
-  Globe,
   AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
@@ -58,19 +53,13 @@ export default function SettingsPage() {
       icon: Bell,
       description: "Choose how you'd like to be notified",
     },
-    {
-      id: "preferences",
-      title: "Preferences",
-      icon: Palette,
-      description: "Customize your app experience",
-    },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-color-bg to-color-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-color-primary/10 rounded-lg">
               <Settings className="h-6 w-6 text-color-primary" />
@@ -96,7 +85,7 @@ export default function SettingsPage() {
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 touch-target ${
                       activeSection === section.id
                         ? "border-color-primary bg-color-primary/5 text-color-primary shadow-lg"
                         : "border-color-border bg-color-surface text-color-text-secondary hover:border-color-primary/50 hover:text-color-text-primary"
@@ -186,7 +175,7 @@ export default function SettingsPage() {
                               </div>
                               <div>
                                 <p className="font-medium text-color-text-primary">
-                                  Email & Password
+                                  Email
                                 </p>
                                 <p className="text-sm text-color-text-secondary">
                                   {user?.email || "user@email.com"}
@@ -198,7 +187,7 @@ export default function SettingsPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="border-color-border hover:bg-color-primary hover:text-color-surface"
+                                className="border-color-border hover:bg-color-primary hover:text-color-surface touch-target"
                               >
                                 Change
                               </Button>
@@ -224,7 +213,7 @@ export default function SettingsPage() {
                           </div>
                           <Button
                             variant="outline"
-                            className="border-color-border hover:bg-color-primary hover:text-color-surface"
+                            className="border-color-border hover:bg-color-primary hover:text-color-surface touch-target"
                           >
                             Change Password
                           </Button>
@@ -250,7 +239,7 @@ export default function SettingsPage() {
                             <Button
                               variant="destructive"
                               size="sm"
-                              className="bg-color-error hover:bg-color-error/90"
+                              className="bg-color-error hover:bg-color-error/90 touch-target"
                             >
                               Deactivate
                             </Button>
@@ -296,7 +285,7 @@ export default function SettingsPage() {
                           key: "sms",
                           title: "SMS Notifications",
                           description: "Receive urgent alerts via text message",
-                          icon: Smartphone,
+                          icon: Bell,
                         },
                         {
                           key: "marketing",
@@ -338,7 +327,7 @@ export default function SettingsPage() {
                             </div>
                           </div>
                           <button
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2 ${
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2 touch-target ${
                               notifications[notification.key]
                                 ? "bg-color-primary"
                                 : "bg-color-border"
@@ -358,64 +347,6 @@ export default function SettingsPage() {
                         </div>
                       );
                     })}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Preferences Section */}
-              {activeSection === "preferences" && (
-                <Card className="border-color-border bg-color-surface shadow-sm">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-3 text-color-text-primary">
-                      <div className="p-2 bg-color-primary/10 rounded-lg">
-                        <Palette className="h-5 w-5 text-color-primary" />
-                      </div>
-                      Preferences
-                    </CardTitle>
-                    <CardDescription className="text-color-text-secondary">
-                      Customize your app experience
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium text-color-text-primary flex items-center gap-2">
-                          <Globe className="h-4 w-4" />
-                          Language
-                        </Label>
-                        <select className="w-full rounded-xl border border-color-border bg-color-surface px-4 py-3 text-sm ring-offset-color-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2 transition-colors">
-                          <option value="en">English</option>
-                          <option value="de">Deutsch</option>
-                          <option value="fr">Français</option>
-                        </select>
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium text-color-text-primary flex items-center gap-2">
-                          <Zap className="h-4 w-4" />
-                          Theme
-                        </Label>
-                        <select className="w-full rounded-xl border border-color-border bg-color-surface px-4 py-3 text-sm ring-offset-color-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2 transition-colors">
-                          <option value="light">Light</option>
-                          <option value="dark">Dark</option>
-                          <option value="auto">Auto</option>
-                        </select>
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium text-color-text-primary flex items-center gap-2">
-                          <Bell className="h-4 w-4" />
-                          Time Zone
-                        </Label>
-                        <select className="w-full rounded-xl border border-color-border bg-color-surface px-4 py-3 text-sm ring-offset-color-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2 transition-colors">
-                          <option value="GMT">GMT (Greenwich Mean Time)</option>
-                          <option value="CET">
-                            CET (Central European Time)
-                          </option>
-                          <option value="EST">
-                            EST (Eastern Standard Time)
-                          </option>
-                        </select>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               )}
