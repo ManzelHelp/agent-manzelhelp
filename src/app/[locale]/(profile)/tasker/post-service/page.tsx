@@ -51,7 +51,7 @@ interface BasicInfoData {
   description: string;
   categoryId: number;
   serviceId: number;
-  selectedAddressId: string; // changed from number to string
+  selectedAddressId: string;
   serviceArea?: string;
 }
 
@@ -75,7 +75,7 @@ const INITIAL_BASIC_INFO: BasicInfoData = {
   description: "",
   categoryId: 0,
   serviceId: 0,
-  selectedAddressId: "", // changed from 0 to ""
+  selectedAddressId: "",
   serviceArea: "",
 };
 
@@ -125,6 +125,9 @@ export default function CreateOfferPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [availability, setAvailability] = useState<AvailabilitySlot[]>([]);
+  const [taskerProfile, setTaskerProfile] = useState<TaskerProfile | null>(
+    null
+  );
 
   // Form states
   const [newExtra, setNewExtra] = useState({ name: "", price: 0 });
@@ -132,10 +135,12 @@ export default function CreateOfferPage() {
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Add state for taskerProfile
-  const [taskerProfile, setTaskerProfile] = useState<TaskerProfile | null>(
-    null
-  );
+  // Redirect customer users to their dashboard
+  useEffect(() => {
+    if (user?.role === "customer") {
+      router.push("/customer/dashboard");
+    }
+  }, [user?.role, router]);
 
   // Fetch initial data
   const fetchInitialData = React.useCallback(async () => {
@@ -222,12 +227,8 @@ export default function CreateOfferPage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id) {
-      router.push("/login");
-      return;
-    }
     fetchInitialData();
-  }, [user?.id, router, fetchInitialData]);
+  }, [fetchInitialData]);
 
   // Validation functions
   const validateStep1 = (): boolean => {

@@ -164,24 +164,12 @@ export default function TaskerProfilePage() {
     service_radius_km?: string;
   }>({});
 
-  // Redirect to login if no user or wrong role
+  // Redirect customer users to their dashboard
   useEffect(() => {
-    // Don't redirect immediately to allow for userStore rehydration
-    const timeoutId = setTimeout(() => {
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
-
-      // Redirect if user is not a tasker
-      if (user.role && user.role === "customer") {
-        router.replace("/customer/dashboard");
-        return;
-      }
-    }, 100); // Small delay to allow for store rehydration
-
-    return () => clearTimeout(timeoutId);
-  }, [user, router]);
+    if (user?.role === "customer") {
+      router.replace("/customer/profile");
+    }
+  }, [user?.role, router]);
 
   // Data fetching
   const fetchTaskerData = useCallback(async () => {
@@ -277,23 +265,14 @@ export default function TaskerProfilePage() {
     }
   }, [user?.id]);
 
-  // Effects - only fetch data if user exists and is a tasker
+  // Effects - fetch data when user is available
   useEffect(() => {
-    if (
-      user?.id &&
-      (user.role === "tasker" || user.role === "both" || user.role === "admin")
-    ) {
+    if (user?.id) {
       fetchTaskerData();
       fetchAddresses();
       fetchTaskerServices();
     }
-  }, [
-    user?.id,
-    user?.role,
-    fetchTaskerData,
-    fetchAddresses,
-    fetchTaskerServices,
-  ]);
+  }, [user?.id, fetchTaskerData, fetchAddresses, fetchTaskerServices]);
 
   useEffect(() => {
     if (user) {
@@ -405,25 +384,6 @@ export default function TaskerProfilePage() {
     [user]
   );
 
-  // Early return if no user (with redirect)
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-color-bg via-color-surface to-color-bg/50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-color-primary border-t-transparent" />
-          </div>
-          <h3 className="font-semibold text-color-text-primary mb-2">
-            Redirecting to Login
-          </h3>
-          <p className="text-color-text-secondary">
-            Please wait while we redirect you to the login page
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   // Update functions
   const updatePersonalInfo = async () => {
     if (!user?.id) return;
@@ -495,14 +455,16 @@ export default function TaskerProfilePage() {
       }
 
       // Update userStore with new data
-      setUser({
-        ...user,
-        first_name: personalForm.first_name.trim(),
-        last_name: personalForm.last_name.trim(),
-        phone: personalForm.phone.trim() || undefined,
-        date_of_birth: updateData.date_of_birth || undefined,
-        updated_at: new Date().toISOString(),
-      });
+      if (user) {
+        setUser({
+          ...user,
+          first_name: personalForm.first_name.trim(),
+          last_name: personalForm.last_name.trim(),
+          phone: personalForm.phone.trim() || undefined,
+          date_of_birth: updateData.date_of_birth || undefined,
+          updated_at: new Date().toISOString(),
+        });
+      }
       toast.success("Personal information updated successfully");
       setEditPersonalOpen(false);
     } catch (error) {
@@ -679,6 +641,8 @@ export default function TaskerProfilePage() {
   };
 
   const performPhotoUpload = async (file: File) => {
+    if (!user?.id) return;
+
     setUploadingPhoto(true);
     try {
       const supabase = createClient();
@@ -713,11 +677,13 @@ export default function TaskerProfilePage() {
       }
 
       // Update userStore with new avatar
-      setUser({
-        ...user,
-        avatar_url: publicUrl,
-        updated_at: new Date().toISOString(),
-      });
+      if (user) {
+        setUser({
+          ...user,
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString(),
+        });
+      }
       toast.success("Profile photo updated successfully");
     } catch (error) {
       console.error("Error uploading photo:", error);
