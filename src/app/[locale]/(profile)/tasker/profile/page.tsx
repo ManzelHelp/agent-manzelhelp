@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import type { AvailabilitySlot } from "@/types/supabase";
+import { useRouter } from "@/i18n/navigation";
+import type {
+  AvailabilitySlot,
+  TaskerProfile,
+  Address,
+  TaskerService,
+  ExperienceLevel,
+} from "@/types/supabase";
 import {
   Card,
   CardContent,
@@ -26,7 +33,6 @@ import {
   MapPin,
   CreditCard,
   CheckCircle,
-  AlertCircle,
   Edit,
   Plus,
   Camera,
@@ -50,30 +56,8 @@ type ProfileSection =
   | "bio"
   | "availability"
   | "addresses"
+  | "services"
   | "payment";
-
-interface TaskerProfile {
-  id: string;
-  experience_level?: string;
-  bio?: string;
-  identity_document_url?: string;
-  verification_status?: "pending" | "verified" | "rejected";
-  service_radius_km?: number;
-  is_available?: boolean;
-  updated_at?: string;
-  operation_hours?: AvailabilitySlot[] | null;
-}
-
-interface Address {
-  id?: number;
-  label: string;
-  street_address: string;
-  city: string;
-  region: string;
-  postal_code?: string;
-  country: string;
-  is_default: boolean;
-}
 
 interface MissingField {
   id: string;
@@ -87,8 +71,7 @@ interface MissingField {
 const EXPERIENCE_LEVELS = [
   { value: "beginner", label: "Beginner (0-1 years)" },
   { value: "intermediate", label: "Intermediate (1-3 years)" },
-  { value: "experienced", label: "Experienced (3-5 years)" },
-  { value: "expert", label: "Expert (5+ years)" },
+  { value: "expert", label: "Expert (3+ years)" },
 ];
 
 const WEEKDAYS = [
@@ -115,6 +98,11 @@ const SECTIONS = [
     icon: MapPin,
   },
   {
+    id: "services" as ProfileSection,
+    title: "My Services",
+    icon: FileText,
+  },
+  {
     id: "payment" as ProfileSection,
     title: "Payment Methods",
     icon: CreditCard,
@@ -122,6 +110,7 @@ const SECTIONS = [
 ];
 
 export default function TaskerProfilePage() {
+  const router = useRouter();
   const { user, setUser } = useUserStore();
 
   // Core state
@@ -132,6 +121,7 @@ export default function TaskerProfilePage() {
     null
   );
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [taskerServices, setTaskerServices] = useState<TaskerService[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -151,14 +141,14 @@ export default function TaskerProfilePage() {
 
   const [bioForm, setBioForm] = useState({
     bio: "",
-    experience_level: "beginner",
-    service_radius_km: 25,
+    experience_level: "beginner" as ExperienceLevel,
+    service_radius_km: 50 as number | undefined,
   });
 
   const [availabilityForm, setAvailabilityForm] = useState<AvailabilitySlot[]>(
     []
   );
-  const [newAddressForm, setNewAddressForm] = useState<Address>({
+  const [newAddressForm, setNewAddressForm] = useState({
     label: "home",
     street_address: "",
     city: "",
@@ -168,50 +158,142 @@ export default function TaskerProfilePage() {
     is_default: false,
   });
 
+  // Form validation states
+  const [bioFormErrors, setBioFormErrors] = useState<{
+    bio?: string;
+    service_radius_km?: string;
+  }>({});
+
+  // Redirect to login if no user or wrong role
+  useEffect(() => {
+    // Don't redirect immediately to allow for userStore rehydration
+    const timeoutId = setTimeout(() => {
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+
+      // Redirect if user is not a tasker
+      if (user.role && user.role === "customer") {
+        router.replace("/customer/dashboard");
+        return;
+      }
+    }, 100); // Small delay to allow for store rehydration
+
+    return () => clearTimeout(timeoutId);
+  }, [user, router]);
+
   // Data fetching
   const fetchTaskerData = useCallback(async () => {
     if (!user?.id) return;
 
-    const supabase = createClient();
-    const { data: profile, error } = await supabase
-      .from("tasker_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+    try {
+      setLoading(true);
+      const supabase = createClient();
+      const { data: profile, error } = await supabase
+        .from("tasker_profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-    if (!error && profile) {
-      setTaskerProfile(profile);
-      setBioForm({
-        bio: profile.bio || "",
-        experience_level: profile.experience_level || "beginner",
-        service_radius_km: profile.service_radius_km || 25,
-      });
-      setAvailabilityForm(profile.operation_hours || []);
+      if (error) {
+        console.error("Error fetching tasker data:", error);
+        toast.error("Failed to load profile data");
+        return;
+      }
+
+      if (profile) {
+        setTaskerProfile(profile);
+        setBioForm({
+          bio: profile.bio || "",
+          experience_level:
+            (profile.experience_level as ExperienceLevel) || "beginner",
+          service_radius_km: profile.service_radius_km || 50,
+        });
+        setAvailabilityForm(profile.operation_hours || []);
+      }
+    } catch (error) {
+      console.error("Error fetching tasker data:", error);
+      toast.error("Failed to load profile data");
+    } finally {
+      setLoading(false);
     }
   }, [user?.id]);
 
   const fetchAddresses = useCallback(async () => {
     if (!user?.id) return;
 
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("addresses")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("is_default", { ascending: false });
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("is_default", { ascending: false });
 
-    if (!error) {
+      if (error) {
+        console.error("Error fetching addresses:", error);
+        toast.error("Failed to load addresses");
+        return;
+      }
+
       setAddresses(data || []);
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+      toast.error("Failed to load addresses");
     }
   }, [user?.id]);
 
-  // Effects
+  const fetchTaskerServices = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("tasker_services")
+        .select(
+          `
+          *,
+          service:services(*),
+          category:services(service_categories(*))
+        `
+        )
+        .eq("tasker_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching tasker services:", error);
+        // Don't show error toast for empty results
+        if (error.code !== "PGRST116") {
+          toast.error("Failed to load services");
+        }
+        return;
+      }
+
+      setTaskerServices(data || []);
+    } catch (error) {
+      console.error("Error fetching tasker services:", error);
+      toast.error("Failed to load services");
+    }
+  }, [user?.id]);
+
+  // Effects - only fetch data if user exists and is a tasker
   useEffect(() => {
-    if (user?.id) {
+    if (
+      user?.id &&
+      (user.role === "tasker" || user.role === "both" || user.role === "admin")
+    ) {
       fetchTaskerData();
       fetchAddresses();
+      fetchTaskerServices();
     }
-  }, [user?.id, fetchTaskerData, fetchAddresses]);
+  }, [
+    user?.id,
+    user?.role,
+    fetchTaskerData,
+    fetchAddresses,
+    fetchTaskerServices,
+  ]);
 
   useEffect(() => {
     if (user) {
@@ -219,176 +301,12 @@ export default function TaskerProfilePage() {
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         phone: user.phone || "",
-        date_of_birth: user.date_of_birth || "",
+        date_of_birth: user.date_of_birth
+          ? user.date_of_birth.split("T")[0]
+          : "",
       });
     }
   }, [user]);
-
-  // Update functions
-  const updatePersonalInfo = async () => {
-    if (!user?.id) return;
-
-    setLoading(true);
-    const supabase = createClient();
-
-    const { error } = await supabase
-      .from("users")
-      .update({
-        first_name: personalForm.first_name,
-        last_name: personalForm.last_name,
-        phone: personalForm.phone,
-        date_of_birth: personalForm.date_of_birth,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
-
-    if (error) {
-      toast.error("Failed to update personal information");
-    } else {
-      setUser({ ...user, ...personalForm });
-      toast.success("Personal information updated successfully");
-      setEditPersonalOpen(false);
-    }
-    setLoading(false);
-  };
-
-  const updateBioInfo = async () => {
-    if (!user?.id) return;
-
-    setLoading(true);
-    const supabase = createClient();
-
-    const { error } = await supabase.from("tasker_profiles").upsert({
-      id: user.id,
-      bio: bioForm.bio,
-      experience_level: bioForm.experience_level,
-      service_radius_km: bioForm.service_radius_km,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      toast.error("Failed to update bio information");
-    } else {
-      setTaskerProfile((prev) => (prev ? { ...prev, ...bioForm } : null));
-      toast.success("Bio information updated successfully");
-      setEditBioOpen(false);
-    }
-    setLoading(false);
-  };
-
-  const updateAvailability = async () => {
-    if (!user?.id) return;
-
-    setLoading(true);
-    const supabase = createClient();
-
-    const { error } = await supabase.from("tasker_profiles").upsert({
-      id: user.id,
-      operation_hours: availabilityForm,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      toast.error("Failed to update availability");
-    } else {
-      setTaskerProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              operation_hours: availabilityForm,
-            }
-          : null
-      );
-      toast.success("Availability updated successfully");
-      setEditAvailabilityOpen(false);
-    }
-    setLoading(false);
-  };
-
-  const handlePhotoUpload = async (file: File) => {
-    if (!user?.id) return;
-
-    setUploadingPhoto(true);
-    try {
-      const supabase = createClient();
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("user-uploads")
-        .upload(filePath, file, { cacheControl: "3600", upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("user-uploads").getPublicUrl(filePath);
-
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({
-          avatar_url: publicUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-
-      if (updateError) throw updateError;
-
-      setUser({ ...user, avatar_url: publicUrl });
-      toast.success("Profile photo updated successfully");
-    } catch {
-      toast.error("Failed to upload photo");
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  const addAddress = async () => {
-    if (!user?.id) return;
-
-    setLoading(true);
-    const supabase = createClient();
-
-    const { error } = await supabase.from("addresses").insert([
-      {
-        ...newAddressForm,
-        user_id: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ]);
-
-    if (error) {
-      toast.error("Failed to add address");
-    } else {
-      toast.success("Address added successfully");
-      setAddAddressOpen(false);
-      fetchAddresses();
-    }
-    setLoading(false);
-  };
-
-  const deleteAddress = async (addressId: number) => {
-    if (!user?.id) return;
-
-    setLoading(true);
-    const supabase = createClient();
-
-    const { error } = await supabase
-      .from("addresses")
-      .delete()
-      .eq("id", addressId)
-      .eq("user_id", user.id);
-
-    if (error) {
-      toast.error("Failed to delete address");
-    } else {
-      toast.success("Address deleted successfully");
-      fetchAddresses();
-    }
-    setLoading(false);
-  };
 
   // Missing fields detection
   const getMissingFields = useCallback((): MissingField[] => {
@@ -459,6 +377,7 @@ export default function TaskerProfilePage() {
     return missingFields;
   }, [user, taskerProfile]);
 
+  // Memoized computed values for performance
   const missingFields = useMemo(() => getMissingFields(), [getMissingFields]);
   const personalMissingFields = useMemo(
     () => missingFields.filter((field) => field.section === "personal"),
@@ -469,17 +388,452 @@ export default function TaskerProfilePage() {
     [missingFields]
   );
 
-  // Memoized values
-  const isLoggedIn = useMemo(() => !!user, [user]);
+  // Memoize user display data for performance
+  const userDisplayData = useMemo(
+    () => ({
+      fullName: user
+        ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
+        : "",
+      email: user?.email || "",
+      phone: user?.phone || "Not provided",
+      dateOfBirth: user?.date_of_birth
+        ? new Date(user.date_of_birth).toLocaleDateString()
+        : "Not provided",
+      avatarUrl: user?.avatar_url,
+      emailVerified: user?.email_verified || false,
+    }),
+    [user]
+  );
 
-  if (!isLoggedIn) {
+  // Early return if no user (with redirect)
+  if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-color-bg via-color-surface to-color-bg/50 flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Not logged in</h2>
-          <p className="text-muted-foreground">
-            Please log in to view your profile
+          <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-color-primary border-t-transparent" />
+          </div>
+          <h3 className="font-semibold text-color-text-primary mb-2">
+            Redirecting to Login
+          </h3>
+          <p className="text-color-text-secondary">
+            Please wait while we redirect you to the login page
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Update functions
+  const updatePersonalInfo = async () => {
+    if (!user?.id) return;
+
+    // Basic validation
+    if (!personalForm.first_name.trim() || !personalForm.last_name.trim()) {
+      toast.error("First name and last name are required");
+      return;
+    }
+
+    // Validate phone number format if provided
+    if (personalForm.phone.trim()) {
+      const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
+      if (!phoneRegex.test(personalForm.phone.trim())) {
+        toast.error("Please enter a valid phone number");
+        return;
+      }
+    }
+
+    // Validate date format if provided
+    if (
+      personalForm.date_of_birth &&
+      personalForm.date_of_birth.trim() !== ""
+    ) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(personalForm.date_of_birth)) {
+        toast.error("Please enter a valid date in YYYY-MM-DD format");
+        return;
+      }
+    }
+
+    try {
+      setLoading(true);
+      const supabase = createClient();
+
+      // Prepare update data with proper null handling for date
+      const updateData: {
+        first_name: string;
+        last_name: string;
+        phone: string | null;
+        date_of_birth?: string | null;
+        updated_at: string;
+      } = {
+        first_name: personalForm.first_name.trim(),
+        last_name: personalForm.last_name.trim(),
+        phone: personalForm.phone.trim() || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Handle date_of_birth properly - only send if it's not empty
+      if (
+        personalForm.date_of_birth &&
+        personalForm.date_of_birth.trim() !== ""
+      ) {
+        updateData.date_of_birth = personalForm.date_of_birth;
+      } else {
+        updateData.date_of_birth = null;
+      }
+
+      const { error } = await supabase
+        .from("users")
+        .update(updateData)
+        .eq("id", user.id);
+
+      if (error) {
+        console.error("Error updating personal info:", error);
+        toast.error("Failed to update personal information");
+        return;
+      }
+
+      // Update userStore with new data
+      setUser({
+        ...user,
+        first_name: personalForm.first_name.trim(),
+        last_name: personalForm.last_name.trim(),
+        phone: personalForm.phone.trim() || undefined,
+        date_of_birth: updateData.date_of_birth || undefined,
+        updated_at: new Date().toISOString(),
+      });
+      toast.success("Personal information updated successfully");
+      setEditPersonalOpen(false);
+    } catch (error) {
+      console.error("Error updating personal info:", error);
+      toast.error("Failed to update personal information");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateBioInfo = async () => {
+    if (!user?.id) return;
+
+    // Clear previous errors
+    setBioFormErrors({});
+
+    // Basic validation
+    const errors: typeof bioFormErrors = {};
+
+    if (!bioForm.bio.trim()) {
+      errors.bio = "Bio is required";
+    }
+
+    if (
+      !bioForm.service_radius_km ||
+      bioForm.service_radius_km < 1 ||
+      bioForm.service_radius_km > 200
+    ) {
+      errors.service_radius_km = "Service radius must be between 1 and 200 km";
+    }
+
+    // If there are errors, show them and return
+    if (Object.keys(errors).length > 0) {
+      setBioFormErrors(errors);
+      toast.error("Please fix the errors before saving");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const supabase = createClient();
+
+      const { error } = await supabase.from("tasker_profiles").upsert(
+        {
+          id: user.id,
+          bio: bioForm.bio.trim(),
+          experience_level: bioForm.experience_level,
+          service_radius_km: bioForm.service_radius_km,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "id",
+        }
+      );
+
+      if (error) {
+        console.error("Error updating bio info:", error);
+        toast.error("Failed to update bio information");
+        return;
+      }
+
+      setTaskerProfile((prev) => (prev ? { ...prev, ...bioForm } : null));
+      toast.success("Bio information updated successfully");
+      setEditBioOpen(false);
+    } catch (error) {
+      console.error("Error updating bio info:", error);
+      toast.error("Failed to update bio information");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateAvailability = async () => {
+    if (!user?.id) return;
+
+    // Validate that at least one day is enabled
+    const enabledDays = availabilityForm.filter((slot) => slot.enabled);
+    if (enabledDays.length === 0) {
+      toast.error("Please enable at least one day of availability");
+      return;
+    }
+
+    // Validate time format for enabled days
+    for (const slot of enabledDays) {
+      if (!slot.startTime || !slot.endTime) {
+        toast.error("Please set start and end times for all enabled days");
+        return;
+      }
+
+      // Validate that end time is after start time
+      if (slot.startTime >= slot.endTime) {
+        toast.error("End time must be after start time");
+        return;
+      }
+    }
+
+    try {
+      setLoading(true);
+      const supabase = createClient();
+
+      const { error } = await supabase.from("tasker_profiles").upsert(
+        {
+          id: user.id,
+          operation_hours: availabilityForm,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "id",
+        }
+      );
+
+      if (error) {
+        console.error("Error updating availability:", error);
+        toast.error("Failed to update availability");
+        return;
+      }
+
+      setTaskerProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              operation_hours: availabilityForm,
+            }
+          : null
+      );
+      toast.success("Availability updated successfully");
+      setEditAvailabilityOpen(false);
+    } catch (error) {
+      console.error("Error updating availability:", error);
+      toast.error("Failed to update availability");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (file: File) => {
+    if (!user?.id) return;
+
+    // Validate file type and size
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please select a valid image file (JPEG, PNG, or WebP)");
+      return;
+    }
+
+    if (file.size > maxSize) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    // Validate file dimensions (optional but recommended)
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      URL.revokeObjectURL(url);
+      if (img.width < 200 || img.height < 200) {
+        toast.error("Image must be at least 200x200 pixels");
+        return;
+      }
+
+      // Continue with upload if validation passes
+      await performPhotoUpload(file);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      toast.error("Invalid image file");
+    };
+
+    img.src = url;
+  };
+
+  const performPhotoUpload = async (file: File) => {
+    setUploadingPhoto(true);
+    try {
+      const supabase = createClient();
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("user-uploads")
+        .upload(filePath, file, { cacheControl: "3600", upsert: true });
+
+      if (uploadError) {
+        console.error("Error uploading photo:", uploadError);
+        throw uploadError;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("user-uploads").getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (updateError) {
+        console.error("Error updating user avatar:", updateError);
+        throw updateError;
+      }
+
+      // Update userStore with new avatar
+      setUser({
+        ...user,
+        avatar_url: publicUrl,
+        updated_at: new Date().toISOString(),
+      });
+      toast.success("Profile photo updated successfully");
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      toast.error("Failed to upload photo");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const addAddress = async () => {
+    if (!user?.id) return;
+
+    // Basic validation
+    if (
+      !newAddressForm.street_address.trim() ||
+      !newAddressForm.city.trim() ||
+      !newAddressForm.region.trim()
+    ) {
+      toast.error("Street address, city, and region are required");
+      return;
+    }
+
+    // Validate country code format (2 characters)
+    if (newAddressForm.country && newAddressForm.country.length !== 2) {
+      toast.error("Country code must be exactly 2 characters");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const supabase = createClient();
+
+      const { error } = await supabase.from("addresses").insert([
+        {
+          label: newAddressForm.label,
+          street_address: newAddressForm.street_address.trim(),
+          city: newAddressForm.city.trim(),
+          region: newAddressForm.region.trim(),
+          postal_code: newAddressForm.postal_code?.trim() || null,
+          country: newAddressForm.country,
+          is_default: newAddressForm.is_default,
+          user_id: user.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) {
+        console.error("Error adding address:", error);
+        toast.error("Failed to add address");
+        return;
+      }
+
+      toast.success("Address added successfully");
+      setAddAddressOpen(false);
+      // Reset form
+      setNewAddressForm({
+        label: "home",
+        street_address: "",
+        city: "",
+        region: "",
+        postal_code: "",
+        country: "MA",
+        is_default: false,
+      });
+      fetchAddresses();
+    } catch (error) {
+      console.error("Error adding address:", error);
+      toast.error("Failed to add address");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAddress = async (addressId: string) => {
+    if (!user?.id) return;
+
+    try {
+      setLoading(true);
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from("addresses")
+        .delete()
+        .eq("id", addressId)
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Error deleting address:", error);
+        toast.error("Failed to delete address");
+        return;
+      }
+
+      toast.success("Address deleted successfully");
+      fetchAddresses();
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      toast.error("Failed to delete address");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Loading state
+  if (loading && !taskerProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-color-bg via-color-surface to-color-bg/50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-color-primary border-t-transparent" />
+          </div>
+          <h3 className="font-semibold text-color-text-primary mb-2">
+            Loading Profile
+          </h3>
+          <p className="text-color-text-secondary">
+            Please wait while we load your profile data
           </p>
         </div>
       </div>
@@ -763,7 +1117,12 @@ export default function TaskerProfilePage() {
                                   date_of_birth: e.target.value,
                                 }))
                               }
+                              max={new Date().toISOString().split("T")[0]}
                             />
+                            <p className="text-xs text-color-text-secondary">
+                              Leave empty if you don't want to provide your date
+                              of birth
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -786,9 +1145,9 @@ export default function TaskerProfilePage() {
                 {/* Profile Photo Display */}
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-color-primary/10 to-color-secondary/10 flex items-center justify-center overflow-hidden border-4 border-color-surface shadow-lg">
-                    {user.avatar_url ? (
+                    {userDisplayData.avatarUrl ? (
                       <Image
-                        src={user.avatar_url}
+                        src={userDisplayData.avatarUrl}
                         alt="Profile"
                         className="h-full w-full object-cover"
                         fill
@@ -801,10 +1160,10 @@ export default function TaskerProfilePage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-color-text-primary">
-                      {user.first_name} {user.last_name}
+                      {userDisplayData.fullName}
                     </h3>
                     <p className="text-sm text-color-text-secondary">
-                      {user.email}
+                      {userDisplayData.email}
                     </p>
                   </div>
                 </div>
@@ -816,7 +1175,7 @@ export default function TaskerProfilePage() {
                       Phone Number
                     </Label>
                     <p className="text-color-text-primary">
-                      {user.phone || "Not provided"}
+                      {userDisplayData.phone}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -824,9 +1183,7 @@ export default function TaskerProfilePage() {
                       Date of Birth
                     </Label>
                     <p className="text-color-text-primary">
-                      {user.date_of_birth
-                        ? new Date(user.date_of_birth).toLocaleDateString()
-                        : "Not provided"}
+                      {userDisplayData.dateOfBirth}
                     </p>
                   </div>
                 </div>
@@ -847,12 +1204,12 @@ export default function TaskerProfilePage() {
                             Email
                           </p>
                           <p className="text-sm text-color-text-secondary">
-                            {user.email}
+                            {userDisplayData.email}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {user.email_verified ? (
+                        {userDisplayData.emailVerified ? (
                           <div className="flex items-center gap-2 text-color-success">
                             <CheckCircle className="h-4 w-4" />
                             <span className="text-xs font-medium">
@@ -925,7 +1282,16 @@ export default function TaskerProfilePage() {
                       </span>
                     </div>
                   )}
-                  <Dialog open={editBioOpen} onOpenChange={setEditBioOpen}>
+                  <Dialog
+                    open={editBioOpen}
+                    onOpenChange={(open) => {
+                      setEditBioOpen(open);
+                      if (!open) {
+                        // Clear errors when dialog is closed
+                        setBioFormErrors({});
+                      }
+                    }}
+                  >
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4 mr-2" />
@@ -946,15 +1312,31 @@ export default function TaskerProfilePage() {
                             id="bio"
                             rows={4}
                             value={bioForm.bio}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setBioForm((prev) => ({
                                 ...prev,
                                 bio: e.target.value,
-                              }))
-                            }
+                              }));
+                              // Clear error when user starts typing
+                              if (bioFormErrors.bio) {
+                                setBioFormErrors((prev) => ({
+                                  ...prev,
+                                  bio: undefined,
+                                }));
+                              }
+                            }}
                             placeholder="Tell customers about your experience, skills, and what you offer..."
-                            className="w-full px-3 py-2 border border-color-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
+                            className={`w-full px-3 py-2 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200 ${
+                              bioFormErrors.bio
+                                ? "border-color-error focus:ring-color-error/20"
+                                : "border-color-border"
+                            }`}
                           />
+                          {bioFormErrors.bio && (
+                            <p className="text-xs text-color-error">
+                              {bioFormErrors.bio}
+                            </p>
+                          )}
                         </div>
 
                         <div className="space-y-2">
@@ -967,7 +1349,8 @@ export default function TaskerProfilePage() {
                             onChange={(e) =>
                               setBioForm((prev) => ({
                                 ...prev,
-                                experience_level: e.target.value,
+                                experience_level: e.target
+                                  .value as ExperienceLevel,
                               }))
                             }
                             className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
@@ -989,23 +1372,52 @@ export default function TaskerProfilePage() {
                               id="service_radius"
                               type="number"
                               min="1"
-                              max="100"
-                              value={bioForm.service_radius_km}
-                              onChange={(e) =>
+                              max="200"
+                              value={bioForm.service_radius_km || ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
                                 setBioForm((prev) => ({
                                   ...prev,
                                   service_radius_km:
-                                    parseInt(e.target.value) || 25,
-                                }))
-                              }
-                              className="w-24"
+                                    value === ""
+                                      ? undefined
+                                      : parseInt(value) || 50,
+                                }));
+                                // Clear error when user starts typing
+                                if (bioFormErrors.service_radius_km) {
+                                  setBioFormErrors((prev) => ({
+                                    ...prev,
+                                    service_radius_km: undefined,
+                                  }));
+                                }
+                              }}
+                              onBlur={(e) => {
+                                // Set default value if field is empty on blur
+                                if (e.target.value === "") {
+                                  setBioForm((prev) => ({
+                                    ...prev,
+                                    service_radius_km: 50,
+                                  }));
+                                }
+                              }}
+                              className={`w-24 ${
+                                bioFormErrors.service_radius_km
+                                  ? "border-color-error focus:ring-color-error/20"
+                                  : ""
+                              }`}
                             />
                             <span className="text-sm text-color-text-secondary">
                               km
                             </span>
                           </div>
+                          {bioFormErrors.service_radius_km && (
+                            <p className="text-xs text-color-error">
+                              {bioFormErrors.service_radius_km}
+                            </p>
+                          )}
                           <p className="text-xs text-color-text-secondary">
-                            Define your service coverage area
+                            Define your service coverage area (1-200 km). Leave
+                            empty to use default (50 km).
                           </p>
                         </div>
                       </div>
@@ -1434,6 +1846,106 @@ export default function TaskerProfilePage() {
                           onClick={() =>
                             address.id && deleteAddress(address.id)
                           }
+                          className="text-color-error hover:text-color-error hover:bg-color-error/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Services Section */}
+          {activeSection === "services" && (
+            <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl text-color-text-primary">
+                      My Services
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      Manage your offered services and pricing
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Service
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {taskerServices.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <FileText className="h-8 w-8 text-color-text-secondary" />
+                    </div>
+                    <h3 className="font-semibold text-color-text-primary mb-2">
+                      No services yet
+                    </h3>
+                    <p className="text-color-text-secondary mb-6 max-w-md mx-auto">
+                      Start offering services to customers by adding your first
+                      service
+                    </p>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add First Service
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {taskerServices.map((service) => (
+                      <div
+                        key={service.id}
+                        className="flex items-start justify-between p-4 rounded-lg border border-color-border/50 bg-color-surface/50"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-semibold text-color-text-primary">
+                              {service.title}
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                service.verification_status === "verified"
+                                  ? "bg-color-success/10 text-color-success"
+                                  : service.verification_status === "rejected"
+                                  ? "bg-color-error/10 text-color-error"
+                                  : "bg-color-warning/10 text-color-warning"
+                              }`}
+                            >
+                              {service.verification_status}
+                            </span>
+                          </div>
+                          <p className="text-sm text-color-text-secondary mb-2">
+                            {service.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="text-color-text-primary font-medium">
+                              {service.pricing_type === "fixed"
+                                ? `$${service.base_price}`
+                                : service.pricing_type === "hourly"
+                                ? `$${service.hourly_rate}/hr`
+                                : "Custom pricing"}
+                            </span>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                service.is_available
+                                  ? "bg-color-success/10 text-color-success"
+                                  : "bg-color-accent/10 text-color-text-secondary"
+                              }`}
+                            >
+                              {service.is_available
+                                ? "Available"
+                                : "Unavailable"}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="text-color-error hover:text-color-error hover:bg-color-error/10"
                         >
                           <Trash2 className="h-4 w-4" />
