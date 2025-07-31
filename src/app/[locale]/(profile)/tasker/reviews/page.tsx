@@ -34,9 +34,12 @@ import type {
 } from "@/types/supabase";
 
 interface ReviewWithDetails extends Review {
-  reviewer: UserType;
-  service_booking?: ServiceBooking;
-  tasker_service?: TaskerService;
+  reviewer: UserType | null;
+  service_booking?:
+    | (ServiceBooking & {
+        tasker_service?: TaskerService;
+      })
+    | null;
 }
 
 type FilterType =
@@ -85,7 +88,17 @@ export default function ReviewsPage() {
         return;
       }
 
-      setReviews(reviewsData || []);
+      // Transform the data to handle the nested structure properly
+      const transformedReviews = (reviewsData || []).map(
+        (review: ReviewWithDetails) => ({
+          ...review,
+          // Ensure the nested structure is properly handled
+          service_booking: review.service_booking || null,
+          reviewer: review.reviewer || null,
+        })
+      );
+
+      setReviews(transformedReviews);
 
       // Get stats using server action
       const { data: statsData, error: statsError } = await getReviewStats(
@@ -425,9 +438,9 @@ export default function ReviewsPage() {
                           </div>
                         </div>
                       </div>
-                      {review.tasker_service && (
+                      {review.service_booking?.tasker_service && (
                         <p className="mobile-text-sm text-[var(--color-text-secondary)] mobile-leading">
-                          Service: {review.tasker_service.title}
+                          Service: {review.service_booking.tasker_service.title}
                         </p>
                       )}
                     </div>

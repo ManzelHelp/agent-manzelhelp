@@ -27,9 +27,22 @@ export async function getTaskerReviews(taskerId: string) {
       .select(
         `
         *,
-        reviewer:users!reviews_reviewer_id_fkey(*),
-        service_booking:service_bookings!reviews_booking_id_fkey(*),
-        tasker_service:tasker_services!service_bookings_tasker_service_id_fkey(*)
+        reviewer:users!reviews_reviewer_id_fkey(
+          id,
+          first_name,
+          last_name,
+          avatar_url,
+          email
+        ),
+        service_booking:service_bookings!reviews_booking_id_fkey(
+          id,
+          tasker_service_id,
+          tasker_service:tasker_services!service_bookings_tasker_service_id_fkey(
+            id,
+            title,
+            description
+          )
+        )
       `
       )
       .eq("reviewee_id", taskerId)
@@ -65,10 +78,10 @@ export async function replyToReview(
 
     const supabase = await createClient();
 
-    // Verify the review belongs to this tasker
+    // Verify the review belongs to this tasker and hasn't been replied to
     const { data: reviewCheck, error: checkError } = await supabase
       .from("reviews")
-      .select("reviewee_id")
+      .select("reviewee_id, reply_comment")
       .eq("id", reviewId)
       .single();
 
@@ -80,14 +93,7 @@ export async function replyToReview(
       return { success: false, error: "Unauthorized to reply to this review" };
     }
 
-    // Check if already replied
-    const { data: existingReply } = await supabase
-      .from("reviews")
-      .select("reply_comment")
-      .eq("id", reviewId)
-      .single();
-
-    if (existingReply?.reply_comment) {
+    if (reviewCheck.reply_comment) {
       return { success: false, error: "Already replied to this review" };
     }
 
