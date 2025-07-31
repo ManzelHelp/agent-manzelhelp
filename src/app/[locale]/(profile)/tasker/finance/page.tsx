@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -13,88 +13,84 @@ import {
   TrendingUp,
   TrendingDown,
   Calendar,
-  CreditCard,
-  ArrowUpRight,
-  ArrowDownRight,
   Wallet,
   BarChart2,
-  Plus,
-  Download,
-  Filter,
+  ArrowUpRight,
+  ArrowDownRight,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUserStore } from "@/stores/userStore";
+import {
+  getTaskerFinanceData,
+  getTaskerTransactions,
+  getTaskerEarningsByPeriod,
+  type FinanceData,
+  type TransactionWithDetails,
+} from "@/actions/finance";
 
 export default function FinancePage() {
-  // Mock data - replace with real data fetching
-  const earnings = {
-    today: 125,
-    yesterday: 110,
-    thisWeek: 890,
-    lastWeek: 820,
-    thisMonth: 3250,
-    lastMonth: 2800,
-    total: 12840,
-  };
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [financeData, setFinanceData] = useState<FinanceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<TransactionWithDetails[]>(
+    []
+  );
+  const [earningsData, setEarningsData] = useState<
+    { date: string; earnings: number }[]
+  >([]);
+  const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month">(
+    "month"
+  );
+  const { user } = useUserStore();
 
-  const transactions = [
-    {
-      id: 1,
-      type: "income",
-      title: "House Cleaning",
-      client: "Sarah M.",
-      amount: 80,
-      date: "2024-01-15",
-      status: "completed",
-    },
-    {
-      id: 2,
-      type: "income",
-      title: "Office Cleaning",
-      client: "Tech Corp",
-      amount: 200,
-      date: "2024-01-14",
-      status: "completed",
-    },
-    {
-      id: 3,
-      type: "withdrawal",
-      title: "Bank Transfer",
-      amount: 250,
-      date: "2024-01-13",
-      status: "processed",
-    },
-    {
-      id: 4,
-      type: "income",
-      title: "Furniture Assembly",
-      client: "John D.",
-      amount: 60,
-      date: "2024-01-12",
-      status: "completed",
-    },
-  ];
+  useEffect(() => {
+    if (user?.id) {
+      loadFinanceData();
+    }
+  }, [user?.id, chartPeriod]);
 
-  const stats = {
-    avgEarningsPerTask: 85,
-    completionRate: 98,
-    totalTasks: 47,
-    activeBookings: 3,
-  };
+  const loadFinanceData = useCallback(async () => {
+    if (!user?.id) return;
 
-  const paymentMethods = [
-    {
-      id: 1,
-      type: "Bank Account",
-      last4: "4389",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      type: "PayPal",
-      email: "j***@example.com",
-      isDefault: false,
-    },
-  ];
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [data, earnings] = await Promise.all([
+        getTaskerFinanceData(user.id),
+        getTaskerEarningsByPeriod(user.id, chartPeriod, 30),
+      ]);
+
+      setFinanceData(data);
+      setTransactions(data.transactions);
+      setEarningsData(earnings);
+    } catch (err) {
+      console.error("Error loading finance data:", err);
+      setError("Failed to load finance data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id, chartPeriod]);
+
+  const loadMoreTransactions = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const moreTransactions = await getTaskerTransactions(
+        user.id,
+        20,
+        transactions.length
+      );
+      setTransactions((prev) => [...prev, ...moreTransactions]);
+      setShowAllTransactions(true);
+    } catch (err) {
+      console.error("Error loading more transactions:", err);
+      setError("Failed to load more transactions.");
+    }
+  }, [user?.id, transactions.length]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -110,10 +106,238 @@ export default function FinancePage() {
     return Math.round(((current - previous) / previous) * 100);
   };
 
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "Unknown date";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getTransactionIcon = (transactionType: string) => {
+    switch (transactionType) {
+      case "service_payment":
+      case "booking_payment":
+        return <ArrowUpRight className="h-4 w-4 text-color-success" />;
+      case "platform_fee":
+        return <ArrowDownRight className="h-4 w-4 text-color-warning" />;
+      default:
+        return <ArrowUpRight className="h-4 w-4 text-color-secondary" />;
+    }
+  };
+
+  const getTransactionTypeLabel = (transactionType: string) => {
+    switch (transactionType) {
+      case "service_payment":
+        return "Service Payment";
+      case "booking_payment":
+        return "Booking Payment";
+      case "platform_fee":
+        return "Platform Fee";
+      case "refund":
+        return "Refund";
+      default:
+        return "Payment";
+    }
+  };
+
+  // Earnings Chart Component
+  const EarningsChart = ({
+    data,
+    period,
+  }: {
+    data: { date: string; earnings: number }[];
+    period: "day" | "week" | "month";
+  }) => {
+    if (!data || data.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-48 bg-color-accent-light rounded-lg">
+          <div className="text-center">
+            <div className="text-color-text-secondary text-sm mb-2">
+              No earnings data available
+            </div>
+            <div className="text-color-text-secondary text-xs">
+              Complete bookings to see your earnings chart
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const maxEarnings = Math.max(...data.map((d) => d.earnings));
+    const minEarnings = Math.min(...data.map((d) => d.earnings));
+    const range = maxEarnings - minEarnings;
+
+    const formatChartDate = (dateStr: string) => {
+      const date = new Date(dateStr);
+      switch (period) {
+        case "day":
+          return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+        case "week":
+          return `Week ${date.getDate()}`;
+        case "month":
+          return date.toLocaleDateString("en-US", { month: "short" });
+        default:
+          return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+      }
+    };
+
+    return (
+      <div className="bg-color-surface border border-color-border rounded-lg p-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-color-text-primary mb-1">
+            Earnings Trend
+          </h3>
+          <p className="text-sm text-color-text-secondary">
+            {period === "day"
+              ? "Daily"
+              : period === "week"
+              ? "Weekly"
+              : "Monthly"}{" "}
+            earnings overview
+          </p>
+        </div>
+
+        <div className="relative">
+          <div className="h-48 flex items-end justify-between gap-1">
+            {data.map((item, index) => {
+              const height =
+                range > 0 ? ((item.earnings - minEarnings) / range) * 100 : 0;
+              const isHighest = item.earnings === maxEarnings;
+
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center">
+                  <div className="relative w-full">
+                    <div
+                      className={`w-full transition-all duration-300 ease-in-out ${
+                        isHighest
+                          ? "bg-color-secondary"
+                          : "bg-color-secondary/60"
+                      } rounded-t-sm hover:bg-color-secondary/80`}
+                      style={{ height: `${Math.max(height, 2)}%` }}
+                    >
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-color-surface border border-color-border rounded text-xs text-color-text-primary opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                        {formatCurrency(item.earnings)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-color-text-secondary mt-2 text-center">
+                    {formatChartDate(item.date)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-color-text-secondary">
+            <span>{formatCurrency(maxEarnings)}</span>
+            <span>{formatCurrency(Math.round(maxEarnings / 2))}</span>
+            <span>{formatCurrency(minEarnings)}</span>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-color-border">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-sm text-color-text-secondary">Total</div>
+              <div className="text-lg font-semibold text-color-text-primary">
+                {formatCurrency(
+                  data.reduce((sum, item) => sum + item.earnings, 0)
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-color-text-secondary">Average</div>
+              <div className="text-lg font-semibold text-color-text-primary">
+                {formatCurrency(
+                  Math.round(
+                    data.reduce((sum, item) => sum + item.earnings, 0) /
+                      data.length
+                  )
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-color-text-secondary">Highest</div>
+              <div className="text-lg font-semibold text-color-success">
+                {formatCurrency(maxEarnings)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-color-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-color-secondary" />
+          <p className="text-color-text-secondary">Loading finance data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-color-bg">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-color-error mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-color-text-primary mb-2">
+                Error Loading Finance Data
+              </h2>
+              <p className="text-color-text-secondary mb-4">{error}</p>
+              <Button onClick={loadFinanceData} className="touch-target">
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!financeData) {
+    return (
+      <div className="min-h-screen bg-color-bg">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Wallet className="h-12 w-12 text-color-secondary mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-color-text-primary mb-2">
+                No Finance Data Available
+              </h2>
+              <p className="text-color-text-secondary">
+                Complete some bookings to see your finance data here.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { stats, userStats } = financeData;
+  const displayedTransactions = showAllTransactions
+    ? transactions
+    : transactions.slice(0, 4);
+
   return (
     <div className="min-h-screen bg-color-bg">
       {/* Header Section */}
-      <div className="sticky top-0 z-10 bg-color-surface border-b border-color-border shadow-sm">
+      <div className="bg-color-surface border-b border-color-border shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -123,24 +347,6 @@ export default function FinancePage() {
               <p className="text-color-text-secondary text-sm mt-1">
                 Track your earnings and manage payments
               </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex items-center gap-2 touch-target"
-              >
-                <Download className="h-4 w-4" />
-                <span className="hidden md:inline">Export</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 touch-target"
-              >
-                <Filter className="h-4 w-4" />
-                <span className="hidden md:inline">Filter</span>
-              </Button>
             </div>
           </div>
         </div>
@@ -159,26 +365,22 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(earnings.today)}
+                {formatCurrency(stats.today)}
               </div>
               <div className="flex items-center gap-1 mt-1">
-                {earnings.today > earnings.yesterday ? (
+                {stats.today > stats.yesterday ? (
                   <TrendingUp className="h-3 w-3 text-color-success" />
                 ) : (
                   <TrendingDown className="h-3 w-3 text-color-error" />
                 )}
                 <p
                   className={`text-xs ${
-                    earnings.today > earnings.yesterday
+                    stats.today > stats.yesterday
                       ? "text-color-success"
                       : "text-color-error"
                   }`}
                 >
-                  {calculatePercentageChange(
-                    earnings.today,
-                    earnings.yesterday
-                  )}
-                  %
+                  {calculatePercentageChange(stats.today, stats.yesterday)}%
                 </p>
               </div>
             </CardContent>
@@ -194,26 +396,22 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(earnings.thisWeek)}
+                {formatCurrency(stats.thisWeek)}
               </div>
               <div className="flex items-center gap-1 mt-1">
-                {earnings.thisWeek > earnings.lastWeek ? (
+                {stats.thisWeek > stats.lastWeek ? (
                   <TrendingUp className="h-3 w-3 text-color-success" />
                 ) : (
                   <TrendingDown className="h-3 w-3 text-color-error" />
                 )}
                 <p
                   className={`text-xs ${
-                    earnings.thisWeek > earnings.lastWeek
+                    stats.thisWeek > stats.lastWeek
                       ? "text-color-success"
                       : "text-color-error"
                   }`}
                 >
-                  {calculatePercentageChange(
-                    earnings.thisWeek,
-                    earnings.lastWeek
-                  )}
-                  %
+                  {calculatePercentageChange(stats.thisWeek, stats.lastWeek)}%
                 </p>
               </div>
             </CardContent>
@@ -229,26 +427,22 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(earnings.thisMonth)}
+                {formatCurrency(stats.thisMonth)}
               </div>
               <div className="flex items-center gap-1 mt-1">
-                {earnings.thisMonth > earnings.lastMonth ? (
+                {stats.thisMonth > stats.lastMonth ? (
                   <TrendingUp className="h-3 w-3 text-color-success" />
                 ) : (
                   <TrendingDown className="h-3 w-3 text-color-error" />
                 )}
                 <p
                   className={`text-xs ${
-                    earnings.thisMonth > earnings.lastMonth
+                    stats.thisMonth > stats.lastMonth
                       ? "text-color-success"
                       : "text-color-error"
                   }`}
                 >
-                  {calculatePercentageChange(
-                    earnings.thisMonth,
-                    earnings.lastMonth
-                  )}
-                  %
+                  {calculatePercentageChange(stats.thisMonth, stats.lastMonth)}%
                 </p>
               </div>
             </CardContent>
@@ -264,7 +458,7 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(earnings.total)}
+                {formatCurrency(stats.total)}
               </div>
               <p className="text-xs text-color-text-secondary mt-1">
                 Lifetime earnings
@@ -273,104 +467,102 @@ export default function FinancePage() {
           </Card>
         </div>
 
-        {/* Performance Metrics & Payment Methods */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Performance Metrics */}
+        {/* User Stats Summary */}
+        {userStats && (
           <Card className="border-color-border bg-color-surface shadow-sm">
-            <CardHeader className="pb-4">
+            <CardHeader>
               <CardTitle className="text-lg font-semibold text-color-text-primary">
-                Performance Metrics
+                Performance Summary
               </CardTitle>
               <CardDescription className="text-color-text-secondary">
-                Your service statistics
+                Your overall performance metrics
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-color-accent-light rounded-lg">
-                  <p className="text-sm font-medium text-color-text-secondary mb-1">
-                    Avg. per Task
-                  </p>
-                  <p className="text-xl font-bold text-color-text-primary">
-                    {formatCurrency(stats.avgEarningsPerTask)}
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-color-accent-light rounded-lg">
-                  <p className="text-sm font-medium text-color-text-secondary mb-1">
-                    Completion Rate
-                  </p>
-                  <p className="text-xl font-bold text-color-success">
-                    {stats.completionRate}%
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-color-accent-light rounded-lg">
-                  <p className="text-sm font-medium text-color-text-secondary mb-1">
-                    Total Tasks
-                  </p>
-                  <p className="text-xl font-bold text-color-text-primary">
-                    {stats.totalTasks}
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-color-accent-light rounded-lg">
-                  <p className="text-sm font-medium text-color-text-secondary mb-1">
-                    Active Bookings
-                  </p>
-                  <p className="text-xl font-bold text-color-info">
-                    {stats.activeBookings}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment Methods */}
-          <Card className="border-color-border bg-color-surface shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-color-text-primary">
-                Payment Methods
-              </CardTitle>
-              <CardDescription className="text-color-text-secondary">
-                Manage your payout options
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {paymentMethods.map((method) => (
-                <div
-                  key={method.id}
-                  className="flex items-center justify-between p-3 bg-color-accent-light rounded-lg border border-color-border"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-color-secondary/10 rounded-full">
-                      <CreditCard className="h-4 w-4 text-color-secondary" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-color-text-primary text-sm">
-                        {method.type}
-                      </p>
-                      <p className="text-xs text-color-text-secondary">
-                        {method.last4 ? `****${method.last4}` : method.email}
-                      </p>
-                    </div>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-color-text-primary">
+                    {userStats.completed_jobs || 0}
                   </div>
-                  {method.isDefault && (
-                    <span className="text-xs bg-color-secondary/10 text-color-secondary px-2 py-1 rounded-full font-medium">
-                      Default
-                    </span>
-                  )}
+                  <div className="text-sm text-color-text-secondary">
+                    Completed Jobs
+                  </div>
                 </div>
-              ))}
-              <Button
-                variant="outline"
-                className="w-full touch-target border-color-border text-color-text-primary hover:bg-color-accent-light"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Payment Method
-              </Button>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-color-text-primary">
+                    {userStats.total_reviews || 0}
+                  </div>
+                  <div className="text-sm text-color-text-secondary">
+                    Total Reviews
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-color-text-primary">
+                    {userStats.tasker_rating
+                      ? userStats.tasker_rating.toFixed(1)
+                      : "N/A"}
+                  </div>
+                  <div className="text-sm text-color-text-secondary">
+                    Average Rating
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-color-text-primary">
+                    {userStats.response_time_hours || "N/A"}
+                  </div>
+                  <div className="text-sm text-color-text-secondary">
+                    Avg Response (hrs)
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        </div>
+        )}
+
+        {/* Earnings Chart */}
+        <Card className="border-color-border bg-color-surface shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-color-text-primary">
+                  Earnings Overview
+                </CardTitle>
+                <CardDescription className="text-color-text-secondary">
+                  Visualize your earnings trends
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={chartPeriod === "day" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setChartPeriod("day")}
+                  className="touch-target"
+                >
+                  Day
+                </Button>
+                <Button
+                  variant={chartPeriod === "week" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setChartPeriod("week")}
+                  className="touch-target"
+                >
+                  Week
+                </Button>
+                <Button
+                  variant={chartPeriod === "month" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setChartPeriod("month")}
+                  className="touch-target"
+                >
+                  Month
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <EarningsChart data={earningsData} period={chartPeriod} />
+          </CardContent>
+        </Card>
 
         {/* Recent Transactions */}
         <Card className="border-color-border bg-color-surface shadow-sm">
@@ -384,93 +576,98 @@ export default function FinancePage() {
                   Your latest financial activity
                 </CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex touch-target"
-              >
-                View All
-              </Button>
+              {!showAllTransactions && transactions.length > 4 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:flex touch-target"
+                  onClick={loadMoreTransactions}
+                >
+                  Load More
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-4 bg-color-accent-light rounded-lg border border-color-border hover:shadow-sm transition-shadow"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div
-                      className={`p-2 rounded-full ${
-                        transaction.type === "income"
-                          ? "bg-color-success/10"
-                          : "bg-color-warning/10"
-                      }`}
-                    >
-                      {transaction.type === "income" ? (
-                        <ArrowUpRight
-                          className={`h-4 w-4 ${
-                            transaction.type === "income"
-                              ? "text-color-success"
-                              : "text-color-warning"
-                          }`}
-                        />
-                      ) : (
-                        <ArrowDownRight
-                          className={`h-4 w-4 ${
-                            transaction.type === "income"
-                              ? "text-color-success"
-                              : "text-color-warning"
-                          }`}
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-color-text-primary text-sm truncate">
-                        {transaction.title}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-color-text-secondary mt-1">
-                        <span>{transaction.date}</span>
-                        {transaction.client && (
-                          <>
-                            <span>•</span>
-                            <span className="truncate">
-                              {transaction.client}
-                            </span>
-                          </>
-                        )}
+            {displayedTransactions.length === 0 ? (
+              <div className="text-center py-8">
+                <Wallet className="h-12 w-12 text-color-secondary mx-auto mb-4" />
+                <p className="text-color-text-secondary">No transactions yet</p>
+                <p className="text-sm text-color-text-secondary mt-1">
+                  Complete your first booking to see transactions here
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {displayedTransactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-4 bg-color-accent-light rounded-lg border border-color-border hover:shadow-sm transition-shadow"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div
+                        className={`p-2 rounded-full ${
+                          transaction.transaction_type === "platform_fee"
+                            ? "bg-color-warning/10"
+                            : "bg-color-success/10"
+                        }`}
+                      >
+                        {getTransactionIcon(transaction.transaction_type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-color-text-primary text-sm truncate">
+                          {transaction.booking_title ||
+                            getTransactionTypeLabel(
+                              transaction.transaction_type
+                            )}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-color-text-secondary mt-1">
+                          <span>{formatDate(transaction.created_at)}</span>
+                          {transaction.customer_name && (
+                            <>
+                              <span>•</span>
+                              <span className="truncate">
+                                {transaction.customer_name}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right ml-3">
+                      <p
+                        className={`text-lg font-bold ${
+                          transaction.transaction_type === "platform_fee"
+                            ? "text-color-warning"
+                            : "text-color-success"
+                        }`}
+                      >
+                        {transaction.transaction_type === "platform_fee"
+                          ? "-"
+                          : "+"}
+                        {formatCurrency(transaction.amount)}
+                      </p>
+                      <p className="text-xs text-color-text-secondary capitalize">
+                        {transaction.payment_status || "completed"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right ml-3">
-                    <p
-                      className={`text-lg font-bold ${
-                        transaction.type === "income"
-                          ? "text-color-success"
-                          : "text-color-warning"
-                      }`}
-                    >
-                      {transaction.type === "income" ? "+" : "-"}
-                      {formatCurrency(transaction.amount)}
-                    </p>
-                    <p className="text-xs text-color-text-secondary capitalize">
-                      {transaction.status}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
-            {/* Mobile View All Button */}
-            <div className="mt-4 sm:hidden">
-              <Button
-                variant="outline"
-                className="w-full touch-target border-color-border text-color-text-primary hover:bg-color-accent-light"
-              >
-                View All Transactions
-              </Button>
-            </div>
+            {/* Mobile Load More Button */}
+            {!showAllTransactions && transactions.length > 4 && (
+              <div className="mt-4 sm:hidden">
+                <Button
+                  variant="outline"
+                  className="w-full touch-target border-color-border text-color-text-primary hover:bg-color-accent-light"
+                  onClick={loadMoreTransactions}
+                >
+                  Load More Transactions
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
