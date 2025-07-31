@@ -61,13 +61,13 @@ export default function PaymentSection({ missingFields }: PaymentSectionProps) {
       </CardHeader>
       <CardContent>
         <div className="text-center py-12">
-          <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-            <CreditCard className="h-8 w-8 text-color-text-secondary" />
+          <div className="p-4 rounded-full bg-[var(--color-accent)]/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <CreditCard className="h-8 w-8 text-[var(--color-text-secondary)]" />
           </div>
-          <h3 className="font-semibold text-color-text-primary mb-2">
+          <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
             No payment methods
           </h3>
-          <p className="text-color-text-secondary mb-6 max-w-md mx-auto">
+          <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
             Add payment methods to receive payments for your services
           </p>
           <Button>

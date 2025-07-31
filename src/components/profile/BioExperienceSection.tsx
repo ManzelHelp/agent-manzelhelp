@@ -112,18 +112,28 @@ export default function BioExperienceSection({
       return;
     }
 
+    // Check if we have a valid tasker profile
+    if (!taskerProfile?.id) {
+      toast.error("Profile not found. Please refresh the page and try again.");
+      return;
+    }
+
     try {
       const supabase = createClient();
 
-      const { data, error } = await supabase.from("tasker_profiles").upsert(
-        {
-          id: taskerProfile?.id,
-          bio: bioForm.bio.trim(),
-          experience_level: bioForm.experience_level,
-          service_radius_km: bioForm.service_radius_km,
-        },
-        { onConflict: "id" }
-      );
+      const updateData = {
+        bio: bioForm.bio.trim(),
+        experience_level: bioForm.experience_level,
+        service_radius_km: bioForm.service_radius_km,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from("tasker_profiles")
+        .update(updateData)
+        .eq("id", taskerProfile.id)
+        .select()
+        .single();
 
       if (error) {
         console.error("Error updating bio info:", error);
@@ -132,7 +142,7 @@ export default function BioExperienceSection({
       }
 
       if (data) {
-        onProfileUpdate(data[0]);
+        onProfileUpdate(data);
         setEditBioOpen(false);
         toast.success("Bio information updated successfully");
       }

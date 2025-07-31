@@ -37,6 +37,7 @@ interface AddressesSectionProps {
     description: string;
     required: boolean;
   }>;
+  userId?: string; // Add userId prop
 }
 
 interface NewAddressForm {
@@ -54,6 +55,7 @@ export default function AddressesSection({
   loading,
   onAddressesUpdate,
   missingFields,
+  userId,
 }: AddressesSectionProps) {
   const [addAddressOpen, setAddAddressOpen] = useState(false);
   const [newAddressForm, setNewAddressForm] = useState<NewAddressForm>({
@@ -72,6 +74,12 @@ export default function AddressesSection({
   );
 
   const addAddress = async () => {
+    // Check if we have a valid user ID
+    if (!userId) {
+      toast.error("User not found. Please refresh the page and try again.");
+      return;
+    }
+
     // Basic validation
     if (
       !newAddressForm.street_address.trim() ||
@@ -93,6 +101,7 @@ export default function AddressesSection({
 
       const { error } = await supabase.from("addresses").insert([
         {
+          user_id: userId,
           label: newAddressForm.label,
           street_address: newAddressForm.street_address.trim(),
           city: newAddressForm.city.trim(),
@@ -128,6 +137,7 @@ export default function AddressesSection({
       const { data: updatedAddresses, error: fetchError } = await supabase
         .from("addresses")
         .select("*")
+        .eq("user_id", userId)
         .order("is_default", { ascending: false });
 
       if (fetchError) {

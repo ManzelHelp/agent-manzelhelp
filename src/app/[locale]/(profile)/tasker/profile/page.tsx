@@ -446,6 +446,7 @@ export default function TaskerProfilePage() {
               loading={loading}
               onAddressesUpdate={setAddresses}
               missingFields={missingFields}
+              userId={user?.id}
             />
           )}
 

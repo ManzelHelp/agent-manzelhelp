@@ -93,19 +93,26 @@ export default function AvailabilitySection({
       }
     }
 
+    // Check if we have a valid tasker profile
+    if (!taskerProfile?.id) {
+      toast.error("Profile not found. Please refresh the page and try again.");
+      return;
+    }
+
     try {
       const supabase = createClient();
 
-      const { data, error } = await supabase.from("tasker_profiles").upsert(
-        {
-          id: taskerProfile?.id,
-          operation_hours: availabilityForm,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "id",
-        }
-      );
+      const updateData = {
+        operation_hours: availabilityForm,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from("tasker_profiles")
+        .update(updateData)
+        .eq("id", taskerProfile.id)
+        .select()
+        .single();
 
       if (error) {
         console.error("Error updating availability:", error);
@@ -114,12 +121,8 @@ export default function AvailabilitySection({
       }
 
       // Update the profile in parent component
-      if (taskerProfile && data) {
-        const updatedProfile = {
-          ...taskerProfile,
-          operation_hours: availabilityForm,
-        };
-        onProfileUpdate(updatedProfile);
+      if (data) {
+        onProfileUpdate(data);
       }
 
       toast.success("Availability updated successfully");
