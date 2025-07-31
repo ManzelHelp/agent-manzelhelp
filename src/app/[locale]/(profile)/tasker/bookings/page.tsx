@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   Calendar,
-  Star,
   User,
   Clock,
   MapPin,
@@ -13,254 +13,430 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  Play,
+  X,
+  MessageSquare,
+  Phone,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useUserStore } from "@/stores/userStore";
+import {
+  getTaskerBookings,
+  updateBookingStatus,
+  type BookingWithDetails,
+} from "@/actions/bookings";
+import { BookingStatus } from "@/types/supabase";
 
-type TaskStatus = "all" | "requests" | "upcoming" | "active" | "completed";
+type TaskStatus =
+  | "all"
+  | "pending"
+  | "accepted"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
-interface Task {
-  id: number;
+interface ConfirmationDialogState {
+  isOpen: boolean;
+  bookingId: string;
+  action: string;
   title: string;
-  client: string;
-  price: number;
-  location: string;
-  date: string;
-  time?: string;
-  duration?: string;
-  urgent?: boolean;
-  status?: string;
-  progress?: number;
-  rating?: number;
+  description: string;
+  confirmText: string;
+  variant: "default" | "success" | "warning" | "danger";
 }
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState<TaskStatus>("all");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
+  const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [confirmationDialog, setConfirmationDialog] =
+    useState<ConfirmationDialogState>({
+      isOpen: false,
+      bookingId: "",
+      action: "",
+      title: "",
+      description: "",
+      confirmText: "",
+      variant: "default",
+    });
 
-  // Mock data - replace with real data fetching
-  const tasks = {
-    requests: [
-      {
-        id: 1,
-        title: "House Cleaning",
-        client: "Sarah M.",
-        price: 80,
-        location: "Downtown",
-        date: "2024-01-15",
-        time: "09:00",
-        duration: "3h",
-        urgent: true,
-      },
-      {
-        id: 2,
-        title: "Furniture Assembly",
-        client: "John D.",
-        price: 60,
-        location: "Westside",
-        date: "2024-01-16",
-        time: "14:00",
-        duration: "2h",
-      },
-    ],
-    upcoming: [
-      {
-        id: 3,
-        title: "Moving Help",
-        client: "Mike R.",
-        price: 120,
-        location: "Eastside",
-        date: "2024-01-18",
-        time: "10:00",
-        duration: "4h",
-      },
-      {
-        id: 4,
-        title: "Garden Maintenance",
-        client: "Lisa K.",
-        price: 45,
-        location: "Suburbs",
-        date: "2024-01-20",
-        time: "15:00",
-        duration: "2h",
-      },
-    ],
-    active: [
-      {
-        id: 5,
-        title: "Office Cleaning",
-        client: "Tech Corp",
-        price: 200,
-        location: "Business District",
-        date: "2024-01-14",
-        time: "08:00",
-        duration: "6h",
-        progress: 75,
-      },
-      {
-        id: 6,
-        title: "Home Renovation",
-        client: "Emma T.",
-        price: 350,
-        location: "Midtown",
-        date: "2024-01-13",
-        time: "09:00",
-        duration: "3 days",
-        progress: 50,
-      },
-    ],
-    completed: [
-      {
-        id: 7,
-        title: "Kitchen Deep Clean",
-        client: "Robert S.",
-        price: 95,
-        location: "Downtown",
-        date: "2024-01-12",
-        time: "10:00",
-        duration: "4h",
-        rating: 5,
-      },
-      {
-        id: 8,
-        title: "Plumbing Fix",
-        client: "Anna L.",
-        price: 75,
-        location: "Suburbs",
-        date: "2024-01-10",
-        time: "13:00",
-        duration: "1h",
-        rating: 4,
-      },
-    ],
-  };
-  // Aggregate all tasks for the 'all' tab
-  const allTasks = [
-    ...tasks.requests,
-    ...tasks.upcoming,
-    ...tasks.active,
-    ...tasks.completed,
-  ];
-  // Add 'all' to tasks object for easier access
-  const tasksWithAll = { ...tasks, all: allTasks };
+  const router = useRouter();
+  const { user } = useUserStore();
 
-  const getStatusIcon = (status: TaskStatus) => {
-    switch (status) {
-      case "all":
-        return <User className="h-4 w-4" />;
-      case "requests":
-        return <AlertCircle className="h-4 w-4" />;
-      case "upcoming":
-        return <Calendar className="h-4 w-4" />;
-      case "active":
-        return <Clock className="h-4 w-4" />;
-      case "completed":
-        return <CheckCircle className="h-4 w-4" />;
+  useEffect(() => {
+    if (user && user.role === "customer") {
+      router.replace("/customer/dashboard");
     }
-  };
+  }, [user, router]);
 
-  const getStatusLabel = (status: TaskStatus) => {
-    switch (status) {
-      case "all":
-        return "All Tasks";
-      case "requests":
-        return "Booking Requests";
-      case "upcoming":
-        return "Upcoming Tasks";
-      case "active":
-        return "Active Tasks";
-      case "completed":
-        return "Completed Tasks";
-    }
-  };
+  // Fetch bookings on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return; // Let middleware handle auth redirects
 
-  const getStatusColor = (status: TaskStatus) => {
-    switch (status) {
-      case "all":
-        return "text-color-primary";
-      case "requests":
-        return "text-color-warning";
-      case "upcoming":
-        return "text-color-info";
-      case "active":
-        return "text-color-success";
-      case "completed":
-        return "text-color-text-secondary";
-    }
-  };
+      try {
+        const taskerBookings = await getTaskerBookings(user.id);
+        setBookings(taskerBookings);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        toast.error("Failed to load bookings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const getStatusBgColor = (status: TaskStatus) => {
-    switch (status) {
-      case "all":
-        return "bg-color-primary/10";
-      case "requests":
-        return "bg-color-warning/10";
-      case "upcoming":
-        return "bg-color-info/10";
-      case "active":
-        return "bg-color-success/10";
-      case "completed":
-        return "bg-color-accent-light";
-    }
-  };
+    fetchData();
+  }, [user]);
 
-  const formatCurrency = (amount: number) => {
+  // Memoized utility functions for better performance
+  const getStatusIcon = useCallback((status: TaskStatus) => {
+    const iconMap: Record<TaskStatus, React.ReactNode> = {
+      all: <User className="h-4 w-4" />,
+      pending: <AlertCircle className="h-4 w-4" />,
+      accepted: <CheckCircle className="h-4 w-4" />,
+      confirmed: <CheckCircle className="h-4 w-4" />,
+      in_progress: <Play className="h-4 w-4" />,
+      completed: <CheckCircle className="h-4 w-4" />,
+      cancelled: <X className="h-4 w-4" />,
+    };
+    return iconMap[status];
+  }, []);
+
+  const getStatusLabel = useCallback((status: TaskStatus) => {
+    const labelMap: Record<TaskStatus, string> = {
+      all: "All Bookings",
+      pending: "Pending Requests",
+      accepted: "Accepted",
+      confirmed: "Confirmed",
+      in_progress: "In Progress",
+      completed: "Completed",
+      cancelled: "Cancelled",
+    };
+    return labelMap[status];
+  }, []);
+
+  const getStatusColor = useCallback((status: TaskStatus) => {
+    const colorMap: Record<TaskStatus, string> = {
+      all: "text-color-primary",
+      pending: "text-color-warning",
+      accepted: "text-color-info",
+      confirmed: "text-color-success",
+      in_progress: "text-color-primary",
+      completed: "text-color-success",
+      cancelled: "text-color-error",
+    };
+    return colorMap[status];
+  }, []);
+
+  const getStatusBgColor = useCallback((status: TaskStatus) => {
+    const bgColorMap: Record<TaskStatus, string> = {
+      all: "bg-color-primary/10",
+      pending: "bg-color-warning/10",
+      accepted: "bg-color-info/10",
+      confirmed: "bg-color-success/10",
+      in_progress: "bg-color-primary/10",
+      completed: "bg-color-success/10",
+      cancelled: "bg-color-error/10",
+    };
+    return bgColorMap[status];
+  }, []);
+
+  const formatCurrency = useCallback((amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-  };
+  }, []);
 
-  const TabButton = ({
-    status,
-    count,
-  }: {
-    status: TaskStatus;
-    count: number;
-  }) => (
-    <button
-      onClick={() => {
-        setActiveTab(status);
-        setIsNavExpanded(false); // Close dropdown when tab is selected
-      }}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus shadow-sm
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }, []);
+
+  const formatTime = useCallback((timeString: string) => {
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }, []);
+
+  const formatDuration = useCallback((minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0 && mins > 0) {
+      return `${hours}h ${mins}m`;
+    } else if (hours > 0) {
+      return `${hours}h`;
+    } else {
+      return `${mins}m`;
+    }
+  }, []);
+
+  const getCustomerName = useCallback((booking: BookingWithDetails) => {
+    const firstName = booking.customer_first_name || "";
+    const lastName = booking.customer_last_name || "";
+    return `${firstName} ${lastName}`.trim() || "Customer";
+  }, []);
+
+  const getLocation = useCallback((booking: BookingWithDetails) => {
+    const parts = [booking.street_address, booking.city, booking.region].filter(
+      Boolean
+    );
+    return parts.join(", ") || "Location not specified";
+  }, []);
+
+  const getActionButton = useCallback((booking: BookingWithDetails) => {
+    const { status } = booking;
+
+    const actionConfig = {
+      pending: {
+        text: "Accept Request",
+        variant: "success" as const,
+        action: "accept",
+        className:
+          "bg-color-success text-color-surface hover:bg-color-success-dark",
+      },
+      accepted: {
+        text: "Confirm Booking",
+        variant: "success" as const,
+        action: "confirm",
+        className:
+          "bg-color-success text-color-surface hover:bg-color-success-dark",
+      },
+      confirmed: {
+        text: "Start Task",
+        variant: "success" as const,
+        action: "start",
+        className:
+          "bg-color-success text-color-surface hover:bg-color-success-dark",
+      },
+      in_progress: {
+        text: "Complete Task",
+        variant: "success" as const,
+        action: "complete",
+        className:
+          "bg-color-success text-color-surface hover:bg-color-success-dark",
+      },
+      completed: {
+        text: "View Details",
+        variant: "default" as const,
+        action: "view",
+        className:
+          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+      },
+      cancelled: {
+        text: "View Details",
+        variant: "default" as const,
+        action: "view",
+        className:
+          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+      },
+      disputed: {
+        text: "View Details",
+        variant: "default" as const,
+        action: "view",
+        className:
+          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+      },
+      refunded: {
+        text: "View Details",
+        variant: "default" as const,
+        action: "view",
+        className:
+          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+      },
+    };
+
+    return actionConfig[status] || actionConfig.completed;
+  }, []);
+
+  const handleActionClick = useCallback(
+    (booking: BookingWithDetails) => {
+      const actionButton = getActionButton(booking);
+
+      if (actionButton.action === "view") {
+        router.push(`/tasker/bookings/${booking.id}`);
+        return;
+      }
+
+      const actionConfig = {
+        accept: {
+          title: "Accept Booking Request",
+          description: `Are you sure you want to accept this booking request from ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Accept Request",
+          variant: "success" as const,
+        },
+        confirm: {
+          title: "Confirm Booking",
+          description: `Are you sure you want to confirm this booking with ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Confirm Booking",
+          variant: "success" as const,
+        },
+        start: {
+          title: "Start Task",
+          description: `Are you ready to start the task for ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Start Task",
+          variant: "success" as const,
+        },
+        complete: {
+          title: "Complete Task",
+          description: `Are you sure you want to mark this task as completed for ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Complete Task",
+          variant: "success" as const,
+        },
+      };
+
+      const config =
+        actionConfig[actionButton.action as keyof typeof actionConfig];
+
+      setConfirmationDialog({
+        isOpen: true,
+        bookingId: booking.id,
+        action: actionButton.action,
+        title: config.title,
+        description: config.description,
+        confirmText: config.confirmText,
+        variant: config.variant,
+      });
+    },
+    [getActionButton, getCustomerName, router]
+  );
+
+  const handleConfirmAction = useCallback(async () => {
+    if (!user) return;
+
+    setIsUpdating(true);
+
+    try {
+      const statusMap: Record<string, BookingStatus> = {
+        accept: "accepted",
+        confirm: "confirmed",
+        start: "in_progress",
+        complete: "completed",
+      };
+
+      const newStatus = statusMap[confirmationDialog.action];
+      if (!newStatus) return;
+
+      const result = await updateBookingStatus(
+        confirmationDialog.bookingId,
+        newStatus,
+        user.id
+      );
+
+      if (result.success) {
+        // Update local state
+        setBookings((prev) =>
+          prev.map((booking) =>
+            booking.id === confirmationDialog.bookingId
+              ? { ...booking, status: newStatus }
+              : booking
+          )
+        );
+        toast.success("Booking status updated successfully");
+      } else {
+        console.error("Failed to update booking:", result.error);
+        toast.error(result.error || "Failed to update booking status");
+      }
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsUpdating(false);
+      setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
+    }
+  }, [confirmationDialog, user]);
+
+  const handleCloseDialog = useCallback(() => {
+    setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
+  }, []);
+
+  // Memoized filtered bookings for better performance
+  const filteredBookings = useMemo(() => {
+    return activeTab === "all"
+      ? bookings
+      : bookings.filter((booking) => booking.status === activeTab);
+  }, [bookings, activeTab]);
+
+  // Memoized booking counts for better performance
+  const bookingCounts = useMemo(() => {
+    const counts: Record<TaskStatus, number> = {
+      all: bookings.length,
+      pending: bookings.filter((b) => b.status === "pending").length,
+      accepted: bookings.filter((b) => b.status === "accepted").length,
+      confirmed: bookings.filter((b) => b.status === "confirmed").length,
+      in_progress: bookings.filter((b) => b.status === "in_progress").length,
+      completed: bookings.filter((b) => b.status === "completed").length,
+      cancelled: bookings.filter((b) => b.status === "cancelled").length,
+    };
+    return counts;
+  }, [bookings]);
+
+  const TabButton = useCallback(
+    ({ status, count }: { status: TaskStatus; count: number }) => (
+      <button
+        onClick={() => {
+          setActiveTab(status);
+          setIsNavExpanded(false);
+        }}
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus shadow-sm
         ${
           activeTab === status
             ? "bg-color-primary text-color-surface shadow-md scale-105 z-10 ring-2 ring-color-primary-dark !border-none"
             : "bg-transparent text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light !border-none"
         }
       `}
-      style={{ minWidth: 0 }}
-      aria-current={activeTab === status ? "page" : undefined}
-    >
-      <div
-        className={`$ {
-          activeTab === status ? "text-color-surface" : getStatusColor(status)
-        }`}
+        style={{ minWidth: 0 }}
+        aria-current={activeTab === status ? "page" : undefined}
       >
-        {getStatusIcon(status)}
-      </div>
-      <span className="text-sm font-medium hidden sm:inline mobile-text-base">
-        {getStatusLabel(status)}
-      </span>
-      <span className="text-xs font-medium sm:hidden mobile-text-sm">
-        {status}
-      </span>
-      {count > 0 && (
-        <span
-          className={`text-xs rounded-full px-2 py-0.5 font-medium ${
-            activeTab === status
-              ? "bg-color-surface/20 text-color-surface"
-              : "bg-color-accent text-color-text-secondary"
+        <div
+          className={`${
+            activeTab === status ? "text-color-surface" : getStatusColor(status)
           }`}
         >
-          {count}
+          {getStatusIcon(status)}
+        </div>
+        <span className="text-sm font-medium hidden sm:inline mobile-text-base">
+          {getStatusLabel(status)}
         </span>
-      )}
-    </button>
+        <span className="text-xs font-medium sm:hidden mobile-text-sm">
+          {status}
+        </span>
+        {count > 0 && (
+          <span
+            className={`text-xs rounded-full px-2 py-0.5 font-medium ${
+              activeTab === status
+                ? "bg-color-surface/20 text-color-surface"
+                : "bg-color-accent text-color-text-secondary"
+            }`}
+          >
+            {count}
+          </span>
+        )}
+      </button>
+    ),
+    [activeTab, getStatusIcon, getStatusColor, getStatusLabel]
   );
 
-  const MobileNavDropdown = () => {
+  const MobileNavDropdown = useCallback(() => {
     return (
       <div className="sm:hidden">
         <button
@@ -275,7 +451,7 @@ export default function BookingsPage() {
               {getStatusLabel(activeTab)}
             </span>
             <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium">
-              {tasksWithAll[activeTab].length}
+              {filteredBookings.length}
             </span>
           </div>
           {isNavExpanded ? (
@@ -289,10 +465,12 @@ export default function BookingsPage() {
             {(
               [
                 "all",
-                "requests",
-                "upcoming",
-                "active",
+                "pending",
+                "accepted",
+                "confirmed",
+                "in_progress",
                 "completed",
+                "cancelled",
               ] as TaskStatus[]
             ).map((status) => (
               <button
@@ -320,7 +498,7 @@ export default function BookingsPage() {
                   {getStatusLabel(status)}
                 </span>
                 <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium ml-auto">
-                  {tasksWithAll[status].length}
+                  {bookingCounts[status]}
                 </span>
               </button>
             ))}
@@ -328,37 +506,59 @@ export default function BookingsPage() {
         )}
       </div>
     );
-  };
+  }, [
+    isNavExpanded,
+    activeTab,
+    getStatusColor,
+    getStatusIcon,
+    getStatusLabel,
+    filteredBookings.length,
+    bookingCounts,
+  ]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-color-bg flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-color-primary mx-auto"></div>
+          <p className="text-color-text-secondary">Loading bookings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-color-bg smooth-scroll">
       <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
-        {/* Page Header - Now part of normal page flow */}
+        {/* Page Header */}
         <div className="bg-color-surface border-b border-color-border pb-4">
           <div>
             <h1 className="text-2xl font-bold text-color-text-primary mobile-text-xl mobile-leading">
-              Task Management
+              My Bookings
             </h1>
             <p className="text-color-text-secondary text-sm mt-1 mobile-leading">
               Manage your booking requests and ongoing tasks
             </p>
           </div>
         </div>
+
         {/* Desktop Navigation Tabs */}
         <div className="hidden sm:flex gap-1 bg-color-accent-light p-2 rounded-xl">
           {(
             [
               "all",
-              "requests",
-              "upcoming",
-              "active",
+              "pending",
+              "accepted",
+              "confirmed",
+              "in_progress",
               "completed",
+              "cancelled",
             ] as TaskStatus[]
           ).map((status) => (
             <TabButton
               key={status}
               status={status}
-              count={tasksWithAll[status].length}
+              count={bookingCounts[status]}
             />
           ))}
         </div>
@@ -366,117 +566,106 @@ export default function BookingsPage() {
         {/* Mobile Navigation Dropdown */}
         <MobileNavDropdown />
 
-        {/* Task Cards */}
+        {/* Booking Cards */}
         <div className="space-y-4">
-          {tasksWithAll[activeTab].map((task: Task) => (
-            <Card
-              key={task.id}
-              className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
-            >
-              <CardContent className="p-4 mobile-spacing">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-3 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
-                        {task.title}
-                      </h3>
-                      {task.urgent && (
-                        <span className="bg-color-warning/10 text-color-warning text-xs px-2 py-1 rounded-full font-medium">
-                          Urgent
+          {filteredBookings.map((booking) => {
+            const actionButton = getActionButton(booking);
+            const customerName = getCustomerName(booking);
+            const location = getLocation(booking);
+
+            return (
+              <Card
+                key={booking.id}
+                className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
+              >
+                <CardContent className="p-4 mobile-spacing">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-3 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
+                          {booking.service_title || "Service"}
+                        </h3>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            booking.status === "pending"
+                              ? "bg-color-warning/10 text-color-warning"
+                              : booking.status === "completed"
+                              ? "bg-color-success/10 text-color-success"
+                              : "bg-color-accent text-color-text-secondary"
+                          }`}
+                        >
+                          {booking.status.replace("_", " ")}
                         </span>
-                      )}
-                      {task.rating && (
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-color-warning text-color-warning" />
-                          <span className="text-sm text-color-text-primary mobile-text-sm">
-                            {task.rating}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
-                      <span className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {task.client}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {task.location}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {task.date}
-                      </span>
-                      {task.time && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {task.time} ({task.duration})
-                        </span>
-                      )}
-                    </div>
-                    {task.progress !== undefined && (
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-color-text-secondary mobile-text-sm">
-                              Progress
-                            </span>
-                            <span className="text-xs font-medium text-color-text-primary mobile-text-sm">
-                              {task.progress}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-color-accent rounded-full h-2">
-                            <div
-                              className="bg-color-success h-2 rounded-full transition-all"
-                              style={{ width: `${task.progress}%` }}
-                            />
-                          </div>
-                        </div>
                       </div>
-                    )}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {customerName}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {location}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(booking.scheduled_date)}
+                        </span>
+                        {booking.scheduled_time_start && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatTime(booking.scheduled_time_start)} -{" "}
+                            {formatTime(booking.scheduled_time_end)}
+                            {booking.estimated_duration &&
+                              ` (${formatDuration(
+                                booking.estimated_duration
+                              )})`}
+                          </span>
+                        )}
+                      </div>
+                      {booking.customer_requirements && (
+                        <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2">
+                          {booking.customer_requirements}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end gap-3 min-w-[120px] w-full sm:w-auto">
+                      <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
+                        {formatCurrency(booking.agreed_price, booking.currency)}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => handleActionClick(booking)}
+                        disabled={isUpdating}
+                        className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto ${actionButton.className}`}
+                      >
+                        {actionButton.text}
+                      </Button>
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 sm:flex-none touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 sm:flex-none touch-target mobile-focus border-color-secondary text-color-secondary hover:bg-color-secondary/10"
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-3 min-w-[120px] w-full sm:w-auto">
-                    <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
-                      {formatCurrency(task.price)}
-                    </p>
-                    <Button
-                      size="sm"
-                      className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto
-                        ${
-                          activeTab === "requests"
-                            ? "bg-color-secondary text-color-surface hover:bg-color-secondary-dark border-color-secondary-dark"
-                            : activeTab === "completed"
-                            ? "bg-color-success text-color-surface hover:bg-color-success-dark border-color-success-dark"
-                            : activeTab === "active"
-                            ? "bg-color-info text-color-surface hover:bg-color-info-dark border-color-info-dark"
-                            : "bg-color-primary text-color-surface hover:bg-color-primary-dark border-color-primary-dark"
-                        }
-                      `}
-                    >
-                      {activeTab === "requests"
-                        ? "Accept Request"
-                        : activeTab === "completed"
-                        ? "View Details"
-                        : activeTab === "active"
-                        ? "Update Progress"
-                        : "Start Task"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="touch-target mobile-focus w-full sm:w-auto mt-1 sm:mt-0 border-color-primary text-color-primary hover:bg-color-primary/10"
-                    >
-                      View Task
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Empty State */}
-        {tasksWithAll[activeTab].length === 0 && (
+        {filteredBookings.length === 0 && (
           <Card className="border-color-border bg-color-surface shadow-sm">
             <CardContent className="py-8 mobile-spacing">
               <div className="text-center space-y-3">
@@ -491,25 +680,37 @@ export default function BookingsPage() {
                 </div>
                 <h3 className="font-semibold text-color-text-primary mobile-text-lg mobile-leading">
                   {activeTab === "all"
-                    ? "No tasks found"
+                    ? "No bookings found"
                     : `No ${getStatusLabel(activeTab).toLowerCase()}`}
                 </h3>
                 <p className="text-sm text-color-text-secondary mobile-leading">
                   {activeTab === "all"
-                    ? "You have no tasks yet."
-                    : activeTab === "requests"
+                    ? "You have no bookings yet."
+                    : activeTab === "pending"
                     ? "You have no new booking requests at the moment."
-                    : activeTab === "upcoming"
-                    ? "You have no upcoming tasks scheduled."
-                    : activeTab === "active"
-                    ? "You have no tasks currently in progress."
-                    : "You have no completed tasks yet."}
+                    : activeTab === "completed"
+                    ? "You have no completed bookings yet."
+                    : `You have no ${getStatusLabel(
+                        activeTab
+                      ).toLowerCase()} at the moment.`}
                 </p>
               </div>
             </CardContent>
           </Card>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmationDialog.isOpen}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmAction}
+        title={confirmationDialog.title}
+        description={confirmationDialog.description}
+        confirmText={confirmationDialog.confirmText}
+        variant={confirmationDialog.variant}
+        isLoading={isUpdating}
+      />
     </div>
   );
 }

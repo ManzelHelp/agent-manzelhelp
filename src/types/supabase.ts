@@ -2,7 +2,7 @@
 // This file is generated from the live Supabase schema. Do not edit manually.
 
 // ENUMS FROM SUPABASE
-export type UserRole = "customer" | "tasker" | "both" | "admin";
+export type UserRole = "customer" | "tasker" | "support" | "admin";
 export type VerificationStatus = "pending" | "verified" | "rejected";
 export type PricingType = "fixed" | "hourly" | "per_item";
 export type ExperienceLevel = "beginner" | "intermediate" | "expert";
@@ -214,6 +214,11 @@ export interface JobApplication {
   is_premium?: boolean;
   created_at?: string;
   updated_at?: string;
+  availability?: string;
+  experience_level?: string;
+  experience_description?: string;
+  availability_details?: string;
+  is_flexible_schedule?: boolean;
 }
 
 export interface Review {

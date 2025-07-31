@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   ArrowLeft,
   Calendar,
@@ -12,11 +13,9 @@ import {
   User,
   Phone,
   Mail,
-  Star,
   CheckCircle,
   AlertCircle,
   Play,
-  Pause,
   MessageSquare,
   FileText,
   DollarSign,
@@ -25,43 +24,25 @@ import {
   CalendarDays,
   Info,
   X,
-  Edit,
   MoreHorizontal,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useUserStore } from "@/stores/userStore";
+import {
+  getBookingById,
+  updateBookingStatus,
+  type BookingWithDetails,
+} from "@/actions/bookings";
+import { BookingStatus } from "@/types/supabase";
 
-interface TaskDetail {
-  id: string;
-  serviceTitle: string;
-  serviceDescription: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  customerAvatar?: string;
-  agreedPrice: number;
-  currency: string;
-  status: string;
-  bookingType: string;
-  scheduledDate: string;
-  scheduledTimeStart: string;
-  scheduledTimeEnd: string;
-  estimatedDuration: number;
-  address: {
-    street: string;
-    city: string;
-    region: string;
-    postalCode?: string;
-  };
-  customerRequirements: string;
-  taskerNotes?: string;
-  createdAt?: string;
-  acceptedAt?: string;
-  confirmedAt?: string;
-  startedAt?: string;
-  completedAt?: string;
-  paymentMethod: string;
-  cancellationFee: number;
-  rating?: number;
-  review?: string;
+interface ConfirmationDialogState {
+  isOpen: boolean;
+  action: string;
+  title: string;
+  description: string;
+  confirmText: string;
+  variant: "default" | "success" | "warning" | "danger";
 }
 
 export default function TaskDetailPage({
@@ -69,48 +50,48 @@ export default function TaskDetailPage({
 }: {
   params: { "task-id": string };
 }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [showNotes, setShowNotes] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [booking, setBooking] = useState<BookingWithDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [confirmationDialog, setConfirmationDialog] =
+    useState<ConfirmationDialogState>({
+      isOpen: false,
+      action: "",
+      title: "",
+      description: "",
+      confirmText: "",
+      variant: "default",
+    });
+  const router = useRouter();
+  const { user } = useUserStore();
 
-  // Mock data - replace with real data fetching based on params["task-id"]
-  const task: TaskDetail = {
-    id: params["task-id"],
-    serviceTitle: "House Cleaning Service",
-    serviceDescription:
-      "Professional house cleaning service including kitchen, bathroom, living areas, and bedrooms. Deep cleaning with eco-friendly products.",
-    customerName: "Sarah M. Johnson",
-    customerEmail: "sarah.johnson@email.com",
-    customerPhone: "+1 (555) 123-4567",
-    customerAvatar: "/api/placeholder/40/40",
-    agreedPrice: 120,
-    currency: "USD",
-    status: "confirmed",
-    bookingType: "scheduled",
-    scheduledDate: "2024-01-15",
-    scheduledTimeStart: "09:00",
-    scheduledTimeEnd: "12:00",
-    estimatedDuration: 180,
-    address: {
-      street: "123 Main Street",
-      city: "Downtown",
-      region: "New York",
-      postalCode: "10001",
-    },
-    customerRequirements:
-      "Please focus on the kitchen area as we're having guests over. Use eco-friendly cleaning products only. The master bedroom needs extra attention to dusting.",
-    taskerNotes:
-      "Customer prefers natural cleaning products. Kitchen has marble countertops - use appropriate cleaner. Master bedroom has allergies - use hypoallergenic products.",
-    acceptedAt: "2024-01-10T14:30:00Z",
-    confirmedAt: "2024-01-12T09:15:00Z",
-    paymentMethod: "online",
-    cancellationFee: 20,
-    rating: 5,
-    review:
-      "Excellent service! Very thorough and professional. Will definitely book again.",
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
 
-  const getStatusInfo = (status: string) => {
+      try {
+        const bookingData = await getBookingById(params["task-id"]);
+        if (!bookingData) {
+          router.push("/tasker/bookings");
+          return;
+        }
+
+        setBooking(bookingData);
+      } catch (error) {
+        console.error("Error fetching booking:", error);
+        router.push("/tasker/bookings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params["task-id"], user, router]);
+
+  const getStatusInfo = (status: BookingStatus) => {
     switch (status) {
       case "pending":
         return {
@@ -215,24 +196,120 @@ export default function TaskDetailPage({
     });
   };
 
-  const statusInfo = getStatusInfo(task.status);
-  const bookingTypeInfo = getBookingTypeInfo(task.bookingType);
+  const getCustomerName = () => {
+    if (!booking) return "Customer";
+    const firstName = booking.customer_first_name || "";
+    const lastName = booking.customer_last_name || "";
+    return `${firstName} ${lastName}`.trim() || "Customer";
+  };
+
+  const getCustomerEmail = () => {
+    // This would need to be added to the booking query
+    return "customer@example.com";
+  };
+
+  const getCustomerPhone = () => {
+    // This would need to be added to the booking query
+    return "+1 (555) 123-4567";
+  };
 
   const handleStatusAction = async (action: string) => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    // Handle status change
+    if (!user || !booking) return;
+
+    const actionConfig = {
+      start: {
+        title: "Start Task",
+        description: `Are you ready to start the task for ${getCustomerName()}?`,
+        confirmText: "Start Task",
+        variant: "success" as const,
+        status: "in_progress" as BookingStatus,
+      },
+      complete: {
+        title: "Complete Task",
+        description: `Are you sure you want to mark this task as completed for ${getCustomerName()}?`,
+        confirmText: "Complete Task",
+        variant: "success" as const,
+        status: "completed" as BookingStatus,
+      },
+    };
+
+    const config = actionConfig[action as keyof typeof actionConfig];
+    if (!config) return;
+
+    setConfirmationDialog({
+      isOpen: true,
+      action,
+      title: config.title,
+      description: config.description,
+      confirmText: config.confirmText,
+      variant: config.variant,
+    });
   };
 
-  const handleSaveNotes = async () => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setShowNotes(false);
+  const handleConfirmAction = async () => {
+    if (!user || !booking) return;
+
+    setIsUpdating(true);
+
+    try {
+      const statusMap: Record<string, BookingStatus> = {
+        start: "in_progress",
+        complete: "completed",
+      };
+
+      const newStatus = statusMap[confirmationDialog.action];
+      if (!newStatus) return;
+
+      const result = await updateBookingStatus(booking.id, newStatus, user.id);
+
+      if (result.success) {
+        setBooking((prev) => (prev ? { ...prev, status: newStatus } : null));
+        toast.success("Booking status updated successfully");
+      } else {
+        console.error("Failed to update booking:", result.error);
+        toast.error(result.error || "Failed to update booking status");
+      }
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsUpdating(false);
+      setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
+    }
   };
+
+  const handleCloseDialog = () => {
+    setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-color-bg flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-color-primary mx-auto"></div>
+          <p className="text-color-text-secondary">
+            Loading booking details...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="min-h-screen bg-color-bg flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-color-text-secondary">Booking not found</p>
+          <Button onClick={() => router.push("/tasker/bookings")}>
+            Back to Bookings
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const statusInfo = getStatusInfo(booking.status);
+  const bookingTypeInfo = getBookingTypeInfo(booking.booking_type);
 
   return (
     <div className="min-h-screen bg-color-bg smooth-scroll">
@@ -244,16 +321,16 @@ export default function TaskDetailPage({
               variant="ghost"
               size="sm"
               className="p-2 touch-target mobile-focus"
-              onClick={() => window.history.back()}
+              onClick={() => router.back()}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-color-text-primary mobile-text-lg mobile-leading">
-                Task Details
+                Booking Details
               </h1>
               <p className="text-color-text-secondary text-sm mobile-text-sm">
-                {task.serviceTitle}
+                {booking.service_title || "Service"}
               </p>
             </div>
             <Button
@@ -297,37 +374,20 @@ export default function TaskDetailPage({
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-color-text-primary mobile-text-base">
-                  {task.customerName}
+                  {getCustomerName()}
                 </h3>
                 <div className="flex flex-wrap gap-4 mt-2 text-sm text-color-text-secondary mobile-text-sm">
                   <span className="flex items-center gap-1">
                     <Mail className="h-3 w-3" />
-                    {task.customerEmail}
+                    {getCustomerEmail()}
                   </span>
-                  {task.customerPhone && (
-                    <span className="flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
-                      {task.customerPhone}
-                    </span>
-                  )}
+                  <span className="flex items-center gap-1">
+                    <Phone className="h-3 w-3" />
+                    {getCustomerPhone()}
+                  </span>
                 </div>
               </div>
             </div>
-            {task.rating && (
-              <div className="flex items-center gap-2 pt-2 border-t border-color-border">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-color-warning text-color-warning" />
-                  <span className="font-medium text-color-text-primary mobile-text-sm">
-                    {task.rating}/5
-                  </span>
-                </div>
-                {task.review && (
-                  <span className="text-sm text-color-text-secondary mobile-text-sm">
-                    "{task.review}"
-                  </span>
-                )}
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -341,10 +401,12 @@ export default function TaskDetailPage({
           <CardContent className="space-y-4">
             <div>
               <h3 className="font-semibold text-color-text-primary mobile-text-base mb-2">
-                {task.serviceTitle}
+                {booking.service_title || "Service"}
               </h3>
               <p className="text-sm text-color-text-secondary mobile-leading">
-                {task.serviceDescription}
+                {booking.category_name
+                  ? `${booking.category_name} service`
+                  : "Professional service"}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 pt-2 border-t border-color-border">
@@ -355,7 +417,7 @@ export default function TaskDetailPage({
                     Price
                   </p>
                   <p className="font-semibold text-color-text-primary mobile-text-base">
-                    {formatCurrency(task.agreedPrice, task.currency)}
+                    {formatCurrency(booking.agreed_price, booking.currency)}
                   </p>
                 </div>
               </div>
@@ -366,7 +428,7 @@ export default function TaskDetailPage({
                     Duration
                   </p>
                   <p className="font-semibold text-color-text-primary mobile-text-base">
-                    {formatDuration(task.estimatedDuration)}
+                    {formatDuration(booking.estimated_duration)}
                   </p>
                 </div>
               </div>
@@ -390,7 +452,7 @@ export default function TaskDetailPage({
                     Date
                   </p>
                   <p className="font-medium text-color-text-primary mobile-text-base">
-                    {formatDate(task.scheduledDate)}
+                    {formatDate(booking.scheduled_date)}
                   </p>
                 </div>
               </div>
@@ -401,8 +463,8 @@ export default function TaskDetailPage({
                     Time
                   </p>
                   <p className="font-medium text-color-text-primary mobile-text-base">
-                    {formatTime(task.scheduledTimeStart)} -{" "}
-                    {formatTime(task.scheduledTimeEnd)}
+                    {formatTime(booking.scheduled_time_start)} -{" "}
+                    {formatTime(booking.scheduled_time_end)}
                   </p>
                 </div>
               </div>
@@ -424,7 +486,7 @@ export default function TaskDetailPage({
                     Payment
                   </p>
                   <p className="font-medium text-color-text-primary mobile-text-base capitalize">
-                    {task.paymentMethod}
+                    {booking.payment_method}
                   </p>
                 </div>
               </div>
@@ -444,92 +506,43 @@ export default function TaskDetailPage({
               <MapPin className="h-5 w-5 text-color-error mt-0.5" />
               <div>
                 <p className="font-medium text-color-text-primary mobile-text-base">
-                  {task.address.street}
+                  {booking.street_address || "Address not specified"}
                 </p>
                 <p className="text-sm text-color-text-secondary mobile-text-sm">
-                  {task.address.city}, {task.address.region}
-                  {task.address.postalCode && ` ${task.address.postalCode}`}
+                  {[booking.city, booking.region].filter(Boolean).join(", ")}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Requirements & Notes */}
+        {/* Customer Requirements */}
         <Card className="border-color-border bg-color-surface shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold text-color-text-primary mobile-text-lg">
-              Requirements & Notes
+              Customer Requirements
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div>
               <h4 className="font-medium text-color-text-primary mobile-text-base mb-2 flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Customer Requirements
+                Requirements
               </h4>
               <p className="text-sm text-color-text-secondary mobile-leading bg-color-accent-light p-3 rounded-lg">
-                {task.customerRequirements}
+                {booking.customer_requirements ||
+                  "No specific requirements provided."}
               </p>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-color-text-primary mobile-text-base flex items-center gap-2">
-                  <Edit className="h-4 w-4" />
-                  Your Notes
-                </h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowNotes(!showNotes)}
-                  className="text-color-primary hover:text-color-primary-dark"
-                >
-                  {showNotes ? "Cancel" : "Edit"}
-                </Button>
-              </div>
-              {showNotes ? (
-                <div className="space-y-3">
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add your notes about this task..."
-                    className="w-full p-3 border border-color-border rounded-lg bg-color-surface text-color-text-primary mobile-text-sm resize-none"
-                    rows={4}
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleSaveNotes}
-                      disabled={isLoading}
-                      className="bg-color-primary text-color-surface hover:bg-color-primary-dark"
-                    >
-                      {isLoading ? "Saving..." : "Save Notes"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowNotes(false)}
-                      className="border-color-primary text-color-primary hover:bg-color-primary/10"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-color-text-secondary mobile-leading bg-color-accent-light p-3 rounded-lg">
-                  {task.taskerNotes ||
-                    "No notes added yet. Click 'Edit' to add your notes."}
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          {task.status === "confirmed" && (
+          {booking.status === "confirmed" && (
             <Button
               onClick={() => handleStatusAction("start")}
-              disabled={isLoading}
+              disabled={isUpdating}
               className="w-full bg-color-success text-color-surface hover:bg-color-success-dark touch-target mobile-focus"
             >
               <Play className="h-4 w-4 mr-2" />
@@ -537,19 +550,11 @@ export default function TaskDetailPage({
             </Button>
           )}
 
-          {task.status === "in_progress" && (
+          {booking.status === "in_progress" && (
             <div className="space-y-3">
               <Button
-                onClick={() => handleStatusAction("pause")}
-                disabled={isLoading}
-                className="w-full bg-color-warning text-color-surface hover:bg-color-warning-dark touch-target mobile-focus"
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                Pause Task
-              </Button>
-              <Button
                 onClick={() => handleStatusAction("complete")}
-                disabled={isLoading}
+                disabled={isUpdating}
                 className="w-full bg-color-success text-color-surface hover:bg-color-success-dark touch-target mobile-focus"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
@@ -592,12 +597,12 @@ export default function TaskDetailPage({
                     Booking Created
                   </p>
                   <p className="text-sm text-color-text-secondary mobile-text-sm">
-                    {formatDate(task.createdAt || new Date().toISOString())}
+                    {formatDate(booking.created_at)}
                   </p>
                 </div>
               </div>
 
-              {task.acceptedAt && (
+              {booking.accepted_at && (
                 <div className="flex items-start gap-3">
                   <div className="w-3 h-3 bg-color-info rounded-full mt-2"></div>
                   <div className="flex-1">
@@ -605,13 +610,13 @@ export default function TaskDetailPage({
                       Booking Accepted
                     </p>
                     <p className="text-sm text-color-text-secondary mobile-text-sm">
-                      {formatDate(task.acceptedAt)}
+                      {formatDate(booking.accepted_at)}
                     </p>
                   </div>
                 </div>
               )}
 
-              {task.confirmedAt && (
+              {booking.confirmed_at && (
                 <div className="flex items-start gap-3">
                   <div className="w-3 h-3 bg-color-success rounded-full mt-2"></div>
                   <div className="flex-1">
@@ -619,13 +624,13 @@ export default function TaskDetailPage({
                       Booking Confirmed
                     </p>
                     <p className="text-sm text-color-text-secondary mobile-text-sm">
-                      {formatDate(task.confirmedAt)}
+                      {formatDate(booking.confirmed_at)}
                     </p>
                   </div>
                 </div>
               )}
 
-              {task.startedAt && (
+              {booking.started_at && (
                 <div className="flex items-start gap-3">
                   <div className="w-3 h-3 bg-color-primary rounded-full mt-2"></div>
                   <div className="flex-1">
@@ -633,13 +638,13 @@ export default function TaskDetailPage({
                       Task Started
                     </p>
                     <p className="text-sm text-color-text-secondary mobile-text-sm">
-                      {formatDate(task.startedAt)}
+                      {formatDate(booking.started_at)}
                     </p>
                   </div>
                 </div>
               )}
 
-              {task.completedAt && (
+              {booking.completed_at && (
                 <div className="flex items-start gap-3">
                   <div className="w-3 h-3 bg-color-success rounded-full mt-2"></div>
                   <div className="flex-1">
@@ -647,7 +652,7 @@ export default function TaskDetailPage({
                       Task Completed
                     </p>
                     <p className="text-sm text-color-text-secondary mobile-text-sm">
-                      {formatDate(task.completedAt)}
+                      {formatDate(booking.completed_at)}
                     </p>
                   </div>
                 </div>
@@ -656,6 +661,18 @@ export default function TaskDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmationDialog.isOpen}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmAction}
+        title={confirmationDialog.title}
+        description={confirmationDialog.description}
+        confirmText={confirmationDialog.confirmText}
+        variant={confirmationDialog.variant}
+        isLoading={isUpdating}
+      />
     </div>
   );
 }
