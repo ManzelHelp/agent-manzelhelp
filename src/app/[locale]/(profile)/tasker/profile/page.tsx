@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "@/i18n/navigation";
-import type { TaskerProfile, Address, TaskerService } from "@/types/supabase";
+import type { TaskerProfile, Address } from "@/types/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import {
   Menu,
   AlertTriangle,
   Camera,
+  Settings,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { createClient } from "@/supabase/client";
@@ -24,7 +25,7 @@ import PersonalInfoSection from "@/components/profile/PersonalInfoSection";
 import BioExperienceSection from "@/components/profile/BioExperienceSection";
 import AvailabilitySection from "@/components/profile/AvailabilitySection";
 import AddressesSection from "@/components/profile/AddressesSection";
-import ServicesSection from "@/components/profile/ServicesSection";
+
 import PaymentSection from "@/components/profile/PaymentSection";
 
 type ProfileSection =
@@ -32,7 +33,6 @@ type ProfileSection =
   | "bio"
   | "availability"
   | "addresses"
-  | "services"
   | "payment";
 
 interface MissingField {
@@ -49,23 +49,36 @@ const SECTIONS = [
     id: "personal" as ProfileSection,
     title: "Personal Information",
     icon: User,
+    description: "Manage your basic profile details",
+    color: "from-blue-500 to-blue-600",
   },
-  { id: "bio" as ProfileSection, title: "Bio & Experience", icon: FileText },
-  { id: "availability" as ProfileSection, title: "Availability", icon: Clock },
+  {
+    id: "bio" as ProfileSection,
+    title: "Bio & Experience",
+    icon: FileText,
+    description: "Tell customers about your skills",
+    color: "from-green-500 to-green-600",
+  },
+  {
+    id: "availability" as ProfileSection,
+    title: "Availability",
+    icon: Clock,
+    description: "Set your working hours",
+    color: "from-purple-500 to-purple-600",
+  },
   {
     id: "addresses" as ProfileSection,
     title: "Service Locations",
     icon: MapPin,
-  },
-  {
-    id: "services" as ProfileSection,
-    title: "My Services",
-    icon: FileText,
+    description: "Manage your service areas",
+    color: "from-orange-500 to-orange-600",
   },
   {
     id: "payment" as ProfileSection,
     title: "Payment Methods",
     icon: CreditCard,
+    description: "Manage your payment info",
+    color: "from-indigo-500 to-indigo-600",
   },
 ];
 
@@ -81,7 +94,6 @@ export default function TaskerProfilePage() {
     null
   );
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [taskerServices, setTaskerServices] = useState<TaskerService[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Redirect customer users to their dashboard
@@ -145,47 +157,13 @@ export default function TaskerProfilePage() {
     }
   }, [user?.id]);
 
-  const fetchTaskerServices = useCallback(async () => {
-    if (!user?.id) return;
-
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("tasker_services")
-        .select(
-          `
-          *,
-          service:services(*),
-          category:services(service_categories(*))
-        `
-        )
-        .eq("tasker_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching tasker services:", error);
-        // Don't show error toast for empty results
-        if (error.code !== "PGRST116") {
-          toast.error("Failed to load services");
-        }
-        return;
-      }
-
-      setTaskerServices(data || []);
-    } catch (error) {
-      console.error("Error fetching tasker services:", error);
-      toast.error("Failed to load services");
-    }
-  }, [user?.id]);
-
   // Effects - fetch data when user is available
   useEffect(() => {
     if (user?.id) {
       fetchTaskerData();
       fetchAddresses();
-      fetchTaskerServices();
     }
-  }, [user?.id, fetchTaskerData, fetchAddresses, fetchTaskerServices]);
+  }, [user?.id, fetchTaskerData, fetchAddresses]);
 
   // Missing fields detection
   const getMissingFields = useCallback((): MissingField[] => {
@@ -262,15 +240,15 @@ export default function TaskerProfilePage() {
   // Loading state
   if (loading && !taskerProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-color-bg via-color-surface to-color-bg/50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
-          <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-color-primary border-t-transparent" />
+          <div className="p-4 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
           </div>
-          <h3 className="font-semibold text-color-text-primary mb-2">
+          <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
             Loading Profile
           </h3>
-          <p className="text-color-text-secondary">
+          <p className="text-[var(--color-text-secondary)]">
             Please wait while we load your profile data
           </p>
         </div>
@@ -279,31 +257,38 @@ export default function TaskerProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-color-bg via-color-surface to-color-bg/50">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Header */}
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold text-color-text-primary">
-            Profile
-          </h1>
-          <p className="text-color-text-secondary">
-            Manage your account information and preferences
-          </p>
+        {/* Enhanced Header Section */}
+        <div className="space-y-6">
+          <div className="text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-full">
+                <Settings className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)]">
+                Profile Settings
+              </h1>
+            </div>
+            <p className="text-[var(--color-text-secondary)] text-lg">
+              Manage your account information and preferences
+            </p>
+          </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Enhanced Mobile Navigation */}
         <div className="lg:hidden">
-          <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-color-text-primary">
+                <CardTitle className="text-lg text-[var(--color-text-primary)]">
                   Navigation
                 </CardTitle>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="border-color-border hover:bg-color-primary/5"
+                  className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                 >
                   <Menu className="h-4 w-4 mr-2" />
                   {mobileMenuOpen ? "Close" : "Menu"}
@@ -317,7 +302,7 @@ export default function TaskerProfilePage() {
             </CardHeader>
             {mobileMenuOpen && (
               <CardContent className="pt-0">
-                <nav className="space-y-1">
+                <nav className="space-y-2">
                   {SECTIONS.map((section) => {
                     const sectionMissingFields = missingFields.filter(
                       (field) => field.section === section.id
@@ -329,20 +314,35 @@ export default function TaskerProfilePage() {
                           setActiveSection(section.id);
                           setMobileMenuOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium transition-all duration-200 rounded-lg ${
+                        className={`w-full flex items-center justify-between p-4 text-left transition-all duration-200 rounded-xl ${
                           activeSection === section.id
-                            ? "bg-gradient-to-r from-color-primary/10 to-color-secondary/10 text-color-primary border border-color-primary/20 shadow-sm"
-                            : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30"
+                            ? `bg-gradient-to-r ${section.color} text-white shadow-lg`
+                            : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-accent)]/30"
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <section.icon className="h-4 w-4" />
-                          <span>{section.title}</span>
+                        <div className="flex items-center gap-3 flex-1">
+                          <div
+                            className={`p-2 rounded-lg ${
+                              activeSection === section.id
+                                ? "bg-white/20"
+                                : "bg-[var(--color-accent)]/50"
+                            }`}
+                          >
+                            <section.icon className="h-4 w-4" />
+                          </div>
+                          <div className="text-left flex-1 min-w-0">
+                            <div className="font-medium truncate">
+                              {section.title}
+                            </div>
+                            <div className="text-xs opacity-75 truncate">
+                              {section.description}
+                            </div>
+                          </div>
                         </div>
                         {sectionMissingFields.length > 0 && (
-                          <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4 text-color-error" />
-                            <span className="text-xs font-medium text-color-error">
+                          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                            <AlertTriangle className="h-3 w-3 text-[var(--color-error)]" />
+                            <span className="text-xs font-medium text-[var(--color-error)]">
                               {sectionMissingFields.length}
                             </span>
                           </div>
@@ -356,11 +356,11 @@ export default function TaskerProfilePage() {
           </Card>
         </div>
 
-        {/* Desktop Navigation */}
+        {/* Enhanced Desktop Navigation */}
         <div className="hidden lg:block">
-          <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
             <CardContent className="p-6">
-              <nav className="flex space-x-1">
+              <nav className="grid grid-cols-3 gap-3">
                 {SECTIONS.map((section) => {
                   const sectionMissingFields = missingFields.filter(
                     (field) => field.section === section.id
@@ -369,20 +369,34 @@ export default function TaskerProfilePage() {
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
-                      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg ${
+                      className={`flex flex-col items-center gap-3 p-4 text-center transition-all duration-200 rounded-xl ${
                         activeSection === section.id
-                          ? "bg-gradient-to-r from-color-primary/10 to-color-secondary/10 text-color-primary border border-color-primary/20 shadow-sm"
-                          : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent/30"
+                          ? `bg-gradient-to-r ${section.color} text-white shadow-lg transform scale-105`
+                          : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-accent)]/30 hover:shadow-md"
                       }`}
                     >
-                      <section.icon className="h-4 w-4" />
-                      <span>{section.title}</span>
+                      <div
+                        className={`p-3 rounded-lg ${
+                          activeSection === section.id
+                            ? "bg-white/20"
+                            : "bg-[var(--color-accent)]/50"
+                        }`}
+                      >
+                        <section.icon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">
+                          {section.title}
+                        </div>
+                        <div className="text-xs opacity-75 mt-1">
+                          {section.description}
+                        </div>
+                      </div>
                       {sectionMissingFields.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3 text-color-error" />
-                          <span className="text-xs font-medium text-color-error">
+                        <div className="absolute top-2 right-2">
+                          <div className="bg-[var(--color-error)] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                             {sectionMissingFields.length}
-                          </span>
+                          </div>
                         </div>
                       )}
                     </button>
@@ -431,14 +445,6 @@ export default function TaskerProfilePage() {
               addresses={addresses}
               loading={loading}
               onAddressesUpdate={setAddresses}
-              missingFields={missingFields}
-            />
-          )}
-
-          {/* Services Section */}
-          {activeSection === "services" && (
-            <ServicesSection
-              taskerServices={taskerServices}
               missingFields={missingFields}
             />
           )}

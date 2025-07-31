@@ -178,21 +178,26 @@ export default function AddressesSection({
   };
 
   return (
-    <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-      <CardHeader>
+    <Card className="border-0 shadow-xl bg-[var(--color-surface)]/80 backdrop-blur-sm">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl text-color-text-primary">
-              Service Locations
-            </CardTitle>
-            <CardDescription className="text-color-text-secondary">
-              Manage your service locations
-            </CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full">
+              <MapPinIcon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-xl text-[var(--color-text-primary)]">
+                Service Locations
+              </CardTitle>
+              <CardDescription className="text-[var(--color-text-secondary)]">
+                Manage your service locations
+              </CardDescription>
+            </div>
           </div>
           {addressesMissingFields.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-color-error/20 border border-color-error/30">
-              <AlertTriangle className="h-4 w-4 text-color-error" />
-              <span className="text-sm font-medium text-color-error">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
+              <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
+              <span className="text-sm font-medium text-[var(--color-error)]">
                 {addressesMissingFields.length} missing
               </span>
             </div>
@@ -330,13 +335,13 @@ export default function AddressesSection({
       <CardContent>
         {addresses.length === 0 ? (
           <div className="text-center py-12">
-            <div className="p-4 rounded-full bg-color-accent/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <MapPinIcon className="h-8 w-8 text-color-text-secondary" />
+            <div className="p-4 rounded-full bg-[var(--color-accent)]/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <MapPinIcon className="h-8 w-8 text-[var(--color-text-secondary)]" />
             </div>
-            <h3 className="font-semibold text-color-text-primary mb-2">
+            <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
               No service locations
             </h3>
-            <p className="text-color-text-secondary mb-6 max-w-md mx-auto">
+            <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
               Add locations where you provide your services to help customers
               find you
             </p>
@@ -348,42 +353,53 @@ export default function AddressesSection({
         ) : (
           <div className="space-y-4">
             {addresses.map((address) => (
-              <div
+              <Card
                 key={address.id}
-                className="flex items-start justify-between p-4 rounded-lg border border-color-border/50 bg-color-surface/50"
+                className="border-0 shadow-md bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-accent)]/30 hover:shadow-lg transition-all duration-200"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold text-color-text-primary capitalize">
-                      {address.label}
-                    </span>
-                    {address.is_default && (
-                      <span className="text-xs bg-color-primary/10 text-color-primary px-2 py-1 rounded-full font-medium">
-                        Default
-                      </span>
-                    )}
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-lg">
+                          <MapPinIcon className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[var(--color-text-primary)] capitalize">
+                              {address.label}
+                            </span>
+                            {address.is_default && (
+                              <span className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-1 rounded-full font-medium">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2 ml-11">
+                        <p className="text-sm text-[var(--color-text-primary)] font-medium">
+                          {address.street_address}
+                        </p>
+                        <p className="text-sm text-[var(--color-text-secondary)]">
+                          {address.city}, {address.region} {address.postal_code}
+                        </p>
+                        <p className="text-sm text-[var(--color-text-secondary)]">
+                          {address.country}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => address.id && deleteAddress(address.id)}
+                      className="text-[var(--color-error)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-color-text-secondary">
-                      {address.street_address}
-                    </p>
-                    <p className="text-sm text-color-text-secondary">
-                      {address.city}, {address.region} {address.postal_code}
-                    </p>
-                    <p className="text-sm text-color-text-secondary">
-                      {address.country}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => address.id && deleteAddress(address.id)}
-                  className="text-color-error hover:text-color-error hover:bg-color-error/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}

@@ -131,21 +131,26 @@ export default function AvailabilitySection({
   };
 
   return (
-    <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-      <CardHeader>
+    <Card className="border-0 shadow-xl bg-[var(--color-surface)]/80 backdrop-blur-sm">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl text-color-text-primary">
-              Availability
-            </CardTitle>
-            <CardDescription className="text-color-text-secondary">
-              Set your working hours and availability
-            </CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full">
+              <Clock className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-xl text-[var(--color-text-primary)]">
+                Availability
+              </CardTitle>
+              <CardDescription className="text-[var(--color-text-secondary)]">
+                Set your working hours and availability
+              </CardDescription>
+            </div>
           </div>
           {availabilityMissingFields.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-color-error/20 border border-color-error/30">
-              <AlertTriangle className="h-4 w-4 text-color-error" />
-              <span className="text-sm font-medium text-color-error">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
+              <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
+              <span className="text-sm font-medium text-[var(--color-error)]">
                 {availabilityMissingFields.length} missing
               </span>
             </div>

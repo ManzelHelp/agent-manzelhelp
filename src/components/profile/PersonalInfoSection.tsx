@@ -380,195 +380,202 @@ export default function PersonalInfoSection({
   );
 
   return (
-    <Card className="border-0 shadow-lg bg-color-surface/80 backdrop-blur-sm">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl text-color-text-primary">
-              Personal Information
-            </CardTitle>
-            <CardDescription className="text-color-text-secondary">
-              Your basic profile information
-            </CardDescription>
-          </div>
-          {personalMissingFields.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-color-error/20 border border-color-error/30">
-              <AlertTriangle className="h-4 w-4 text-color-error" />
-              <span className="text-sm font-medium text-color-error">
-                {personalMissingFields.length} missing
-              </span>
+    <Card className="border-0 shadow-xl bg-[var(--color-surface)]/80 backdrop-blur-sm">
+      <CardHeader className="pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full">
+              <User className="h-6 w-6 text-white" />
             </div>
-          )}
-          <Dialog open={editPersonalOpen} onOpenChange={setEditPersonalOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Edit Personal Information</DialogTitle>
-                <DialogDescription>
-                  Update your personal information and profile photo
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                {/* Profile Photo */}
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-color-primary/10 to-color-secondary/10 flex items-center justify-center overflow-hidden border-4 border-color-surface shadow-lg">
-                      {user?.avatar_url ? (
-                        <Image
-                          src={user.avatar_url}
-                          alt="Profile"
-                          width={80}
-                          height={80}
-                          className="h-full w-full object-cover rounded-full"
-                          style={{ objectFit: "cover" }}
-                        />
-                      ) : (
-                        <User className="h-8 w-8 text-color-text-secondary" />
-                      )}
+            <div>
+              <CardTitle className="text-xl text-[var(--color-text-primary)]">
+                Personal Information
+              </CardTitle>
+              <CardDescription className="text-[var(--color-text-secondary)]">
+                Your basic profile information
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {personalMissingFields.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
+                <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
+                <span className="text-sm font-medium text-[var(--color-error)]">
+                  {personalMissingFields.length} missing
+                </span>
+              </div>
+            )}
+            <Dialog open={editPersonalOpen} onOpenChange={setEditPersonalOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Edit Personal Information</DialogTitle>
+                  <DialogDescription>
+                    Update your personal information and profile photo
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {/* Profile Photo */}
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 flex items-center justify-center overflow-hidden border-4 border-[var(--color-surface)] shadow-lg">
+                        {user?.avatar_url ? (
+                          <Image
+                            src={user.avatar_url}
+                            alt="Profile"
+                            width={80}
+                            height={80}
+                            className="h-full w-full object-cover rounded-full"
+                            style={{ objectFit: "cover" }}
+                          />
+                        ) : (
+                          <User className="h-8 w-8 text-[var(--color-text-secondary)]" />
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handlePhotoUpload(file);
+                        }}
+                        className="hidden"
+                        id="photo-upload"
+                        disabled={uploadingPhoto || processingPhoto}
+                      />
+                      <label
+                        htmlFor="photo-upload"
+                        className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white cursor-pointer flex items-center justify-center transition-all duration-200 shadow-lg disabled:opacity-50"
+                      >
+                        {uploadingPhoto || processingPhoto ? (
+                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        ) : (
+                          <Camera className="h-3 w-3" />
+                        )}
+                      </label>
                     </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handlePhotoUpload(file);
-                      }}
-                      className="hidden"
-                      id="photo-upload"
-                      disabled={uploadingPhoto || processingPhoto}
-                    />
-                    <label
-                      htmlFor="photo-upload"
-                      className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-r from-color-primary to-color-secondary text-white cursor-pointer flex items-center justify-center transition-all duration-200 shadow-lg disabled:opacity-50"
-                    >
-                      {uploadingPhoto || processingPhoto ? (
-                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      ) : (
-                        <Camera className="h-3 w-3" />
-                      )}
-                    </label>
+                    <div>
+                      <h4 className="font-semibold text-[var(--color-text-primary)]">
+                        Profile Photo
+                      </h4>
+                      <p className="text-sm text-[var(--color-text-secondary)]">
+                        {user?.avatar_url
+                          ? "Click the camera icon to change"
+                          : "Add a profile photo"}
+                      </p>
+                      <div className="mt-2 p-2 rounded-lg bg-[var(--color-accent)]/20 border border-[var(--color-border)]/50">
+                        <p className="text-xs text-[var(--color-text-secondary)]">
+                          <strong>Requirements:</strong> JPEG, PNG, or WebP
+                          format. Max{" "}
+                          {IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)}MB, min{" "}
+                          {IMAGE_CONSTRAINTS.minDimensions.width}x
+                          {IMAGE_CONSTRAINTS.minDimensions.height}px, max{" "}
+                          {IMAGE_CONSTRAINTS.maxDimensions.width}x
+                          {IMAGE_CONSTRAINTS.maxDimensions.height}px. Image will
+                          be automatically resized and compressed.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-color-text-primary">
-                      Profile Photo
-                    </h4>
-                    <p className="text-sm text-color-text-secondary">
-                      {user?.avatar_url
-                        ? "Click the camera icon to change"
-                        : "Add a profile photo"}
-                    </p>
-                    <div className="mt-2 p-2 rounded-lg bg-color-accent/20 border border-color-border/50">
+
+                  {/* Form Fields */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name">First Name</Label>
+                      <Input
+                        id="first_name"
+                        value={personalForm.first_name}
+                        onChange={(e) =>
+                          setPersonalForm((prev) => ({
+                            ...prev,
+                            first_name: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input
+                        id="last_name"
+                        value={personalForm.last_name}
+                        onChange={(e) =>
+                          setPersonalForm((prev) => ({
+                            ...prev,
+                            last_name: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={user?.email || ""}
+                        disabled
+                        className="bg-color-accent/30"
+                      />
                       <p className="text-xs text-color-text-secondary">
-                        <strong>Requirements:</strong> JPEG, PNG, or WebP
-                        format. Max{" "}
-                        {IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)}MB, min{" "}
-                        {IMAGE_CONSTRAINTS.minDimensions.width}x
-                        {IMAGE_CONSTRAINTS.minDimensions.height}px, max{" "}
-                        {IMAGE_CONSTRAINTS.maxDimensions.width}x
-                        {IMAGE_CONSTRAINTS.maxDimensions.height}px. Image will
-                        be automatically resized and compressed.
+                        Email cannot be changed
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={personalForm.phone}
+                        onChange={(e) =>
+                          setPersonalForm((prev) => ({
+                            ...prev,
+                            phone: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="date_of_birth">Date of Birth</Label>
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={personalForm.date_of_birth}
+                        onChange={(e) =>
+                          setPersonalForm((prev) => ({
+                            ...prev,
+                            date_of_birth: e.target.value,
+                          }))
+                        }
+                        max={new Date().toISOString().split("T")[0]}
+                      />
+                      <p className="text-xs text-color-text-secondary">
+                        Leave empty if you don't want to provide your date of
+                        birth
                       </p>
                     </div>
                   </div>
                 </div>
-
-                {/* Form Fields */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name">First Name</Label>
-                    <Input
-                      id="first_name"
-                      value={personalForm.first_name}
-                      onChange={(e) =>
-                        setPersonalForm((prev) => ({
-                          ...prev,
-                          first_name: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter your first name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">Last Name</Label>
-                    <Input
-                      id="last_name"
-                      value={personalForm.last_name}
-                      onChange={(e) =>
-                        setPersonalForm((prev) => ({
-                          ...prev,
-                          last_name: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter your last name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={user?.email || ""}
-                      disabled
-                      className="bg-color-accent/30"
-                    />
-                    <p className="text-xs text-color-text-secondary">
-                      Email cannot be changed
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={personalForm.phone}
-                      onChange={(e) =>
-                        setPersonalForm((prev) => ({
-                          ...prev,
-                          phone: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter your phone number"
-                    />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="date_of_birth">Date of Birth</Label>
-                    <Input
-                      id="date_of_birth"
-                      type="date"
-                      value={personalForm.date_of_birth}
-                      onChange={(e) =>
-                        setPersonalForm((prev) => ({
-                          ...prev,
-                          date_of_birth: e.target.value,
-                        }))
-                      }
-                      max={new Date().toISOString().split("T")[0]}
-                    />
-                    <p className="text-xs text-color-text-secondary">
-                      Leave empty if you don't want to provide your date of
-                      birth
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditPersonalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={updatePersonalInfo} disabled={loading}>
-                  {loading ? "Saving..." : "Save Changes"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditPersonalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={updatePersonalInfo} disabled={loading}>
+                    {loading ? "Saving..." : "Save Changes"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
