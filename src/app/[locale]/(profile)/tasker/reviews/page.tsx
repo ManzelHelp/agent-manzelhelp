@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -16,17 +16,27 @@ import {
   Calendar,
   User,
   Filter,
+  Send,
+  X,
 } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
+import {
+  getTaskerReviews,
+  replyToReview,
+  getReviewStats,
+} from "@/actions/reviews";
+import { toast } from "sonner";
+import type {
+  Review,
+  User as UserType,
+  ServiceBooking,
+  TaskerService,
+} from "@/types/supabase";
 
-interface Review {
-  id: number;
-  client: string;
-  rating: number;
-  comment: string;
-  date: string;
-  service: string;
-  helpful?: number;
-  response?: string;
+interface ReviewWithDetails extends Review {
+  reviewer: UserType;
+  service_booking?: ServiceBooking;
+  tasker_service?: TaskerService;
 }
 
 type FilterType =
@@ -38,72 +48,133 @@ type FilterType =
 
 export default function ReviewsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [reviews, setReviews] = useState<ReviewWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    avgRating: 0,
+    totalReviews: 0,
+    responseRate: 0,
+    fiveStarCount: 0,
+  });
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [submittingReply, setSubmittingReply] = useState(false);
 
-  // Mock data - replace with real data fetching
-  const reviews: Review[] = [
-    {
-      id: 1,
-      client: "Robert S.",
-      rating: 5,
-      comment: "Excellent work! Very thorough and professional.",
-      date: "2024-01-12",
-      service: "Kitchen Deep Clean",
-      helpful: 3,
-    },
-    {
-      id: 2,
-      client: "Anna L.",
-      rating: 4,
-      comment: "Good service, arrived on time.",
-      date: "2024-01-10",
-      service: "Plumbing Fix",
-      helpful: 1,
-      response: "Thank you for your feedback! I'm glad I could help.",
-    },
-    {
-      id: 3,
-      client: "Mike T.",
-      rating: 5,
-      comment: "Highly recommend! Will book again.",
-      date: "2024-01-08",
-      service: "Garden Work",
-      helpful: 4,
-      response: "Looking forward to helping you again!",
-    },
-    {
-      id: 4,
-      client: "Sarah K.",
-      rating: 3,
-      comment: "Service was okay, but could be more detailed.",
-      date: "2024-01-05",
-      service: "House Cleaning",
-      helpful: 1,
-    },
-  ];
+  const { user } = useUserStore();
 
-  const stats = {
-    avgRating: Number(
-      (
-        reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
-      ).toFixed(1)
-    ),
-    totalReviews: reviews.length,
-    responseRate: Math.round(
-      (reviews.filter((r) => r.response).length / reviews.length) * 100
-    ),
-    fiveStarCount: reviews.filter((r) => r.rating === 5).length,
+  useEffect(() => {
+    if (user) {
+      fetchReviews();
+    }
+  }, [user]);
+
+  const fetchReviews = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+
+      // Fetch reviews using server action
+      const { data: reviewsData, error: reviewsError } = await getTaskerReviews(
+        user.id
+      );
+
+      if (reviewsError) {
+        console.error("Error fetching reviews:", reviewsError);
+        toast.error("Failed to load reviews");
+        return;
+      }
+
+      setReviews(reviewsData || []);
+
+      // Get stats using server action
+      const { data: statsData, error: statsError } = await getReviewStats(
+        user.id
+      );
+
+      if (statsError) {
+        console.error("Error fetching stats:", statsError);
+        toast.error("Failed to load review statistics");
+        return;
+      }
+
+      setStats(
+        statsData || {
+          avgRating: 0,
+          totalReviews: 0,
+          responseRate: 0,
+          fiveStarCount: 0,
+        }
+      );
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      toast.error("An unexpected error occurred while loading reviews");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReply = async (reviewId: string) => {
+    if (!replyText.trim() || !user) return;
+
+    try {
+      setSubmittingReply(true);
+
+      const { success, error } = await replyToReview(
+        reviewId,
+        replyText.trim(),
+        user.id
+      );
+
+      if (!success) {
+        toast.error(error || "Failed to submit reply");
+        return;
+      }
+
+      // Optimistic update
+      setReviews((prev) =>
+        prev.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                reply_comment: replyText.trim(),
+                replied_at: new Date().toISOString(),
+              }
+            : review
+        )
+      );
+
+      // Update stats optimistically
+      setStats((prev) => ({
+        ...prev,
+        responseRate: Math.round(
+          ((prev.totalReviews - 1) / prev.totalReviews) * 100
+        ),
+      }));
+
+      toast.success("Reply submitted successfully!");
+
+      // Reset form
+      setReplyingTo(null);
+      setReplyText("");
+    } catch (error) {
+      console.error("Error submitting reply:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setSubmittingReply(false);
+    }
   };
 
   const filteredReviews = reviews.filter((review) => {
     switch (activeFilter) {
       case "positive":
-        return review.rating >= 4;
+        return review.overall_rating >= 4;
       case "negative":
-        return review.rating <= 3;
+        return review.overall_rating <= 3;
       case "with-response":
-        return !!review.response;
+        return !!review.reply_comment;
       case "no-response":
-        return !review.response;
+        return !review.reply_comment;
       default:
         return true;
     }
@@ -120,6 +191,8 @@ export default function ReviewsPage() {
   }) => (
     <button
       onClick={() => setActiveFilter(filter)}
+      aria-pressed={activeFilter === filter}
+      aria-label={`Filter reviews by ${label.toLowerCase()}`}
       className={`touch-target flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out mobile-focus ${
         activeFilter === filter
           ? "bg-[var(--color-primary)] text-white shadow-md"
@@ -133,11 +206,38 @@ export default function ReviewsPage() {
             ? "bg-white/20 text-white"
             : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
         }`}
+        aria-label={`${count} reviews`}
       >
         {count}
       </span>
     </button>
   );
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="mobile-spacing container mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="mobile-text-xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
+            Reviews
+          </h1>
+          <p className="mobile-text-sm md:text-base text-[var(--color-text-secondary)] mobile-leading">
+            Loading your reviews...
+          </p>
+        </div>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mobile-spacing container mx-auto space-y-6">
@@ -196,8 +296,10 @@ export default function ReviewsPage() {
               {stats.fiveStarCount}
             </div>
             <p className="mobile-text-xs text-[var(--color-text-secondary)]">
-              {Math.round((stats.fiveStarCount / stats.totalReviews) * 100)}% of
-              total
+              {stats.totalReviews > 0
+                ? Math.round((stats.fiveStarCount / stats.totalReviews) * 100)
+                : 0}
+              % of total
             </p>
           </CardContent>
         </Card>
@@ -214,7 +316,7 @@ export default function ReviewsPage() {
               {stats.responseRate}%
             </div>
             <p className="mobile-text-xs text-[var(--color-text-secondary)]">
-              Average response time
+              Reviews responded to
             </p>
           </CardContent>
         </Card>
@@ -259,17 +361,17 @@ export default function ReviewsPage() {
               <FilterButton
                 filter="positive"
                 label="4★ & Above"
-                count={reviews.filter((r) => r.rating >= 4).length}
+                count={reviews.filter((r) => r.overall_rating >= 4).length}
               />
               <FilterButton
                 filter="negative"
                 label="3★ & Below"
-                count={reviews.filter((r) => r.rating <= 3).length}
+                count={reviews.filter((r) => r.overall_rating <= 3).length}
               />
               <FilterButton
                 filter="no-response"
                 label="Needs Response"
-                count={reviews.filter((r) => !r.response).length}
+                count={reviews.filter((r) => !r.reply_comment).length}
               />
             </div>
           </div>
@@ -300,28 +402,41 @@ export default function ReviewsPage() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-[var(--color-primary)]" />
+                          {review.reviewer?.avatar_url ? (
+                            <img
+                              src={review.reviewer.avatar_url}
+                              alt={review.reviewer.first_name || "Client"}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-5 w-5 text-[var(--color-primary)]" />
+                          )}
                         </div>
                         <div className="space-y-1">
                           <h3 className="mobile-text-base font-semibold text-[var(--color-text-primary)]">
-                            {review.client}
+                            {review.reviewer?.first_name &&
+                            review.reviewer?.last_name
+                              ? `${review.reviewer.first_name} ${review.reviewer.last_name}`
+                              : review.reviewer?.first_name || "Anonymous"}
                           </h3>
                           <div className="flex items-center gap-2 mobile-text-sm text-[var(--color-text-secondary)]">
                             <Calendar className="h-3 w-3" />
-                            {review.date}
+                            {formatDate(review.created_at || "")}
                           </div>
                         </div>
                       </div>
-                      <p className="mobile-text-sm text-[var(--color-text-secondary)] mobile-leading">
-                        Service: {review.service}
-                      </p>
+                      {review.tasker_service && (
+                        <p className="mobile-text-sm text-[var(--color-text-secondary)] mobile-leading">
+                          Service: {review.tasker_service.title}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
                           className={`h-4 w-4 md:h-5 md:w-5 ${
-                            star <= review.rating
+                            star <= review.overall_rating
                               ? "fill-[var(--color-warning)] text-[var(--color-warning)]"
                               : "text-[var(--color-accent)]"
                           }`}
@@ -333,29 +448,103 @@ export default function ReviewsPage() {
                     <p className="mobile-text-sm mobile-leading text-[var(--color-text-primary)]">
                       {review.comment}
                     </p>
-                    {review.helpful && (
-                      <div className="flex items-center gap-2 mobile-text-sm text-[var(--color-text-secondary)]">
-                        <ThumbsUp className="h-3 w-3" />
-                        {review.helpful} found this helpful
-                      </div>
-                    )}
-                    {review.response ? (
+
+                    {/* Detailed Ratings */}
+                    {review.quality_rating &&
+                      review.communication_rating &&
+                      review.timeliness_rating && (
+                        <div className="grid grid-cols-3 gap-4 mobile-text-xs text-[var(--color-text-secondary)]">
+                          <div>
+                            <div className="font-medium">Quality</div>
+                            <div className="flex items-center gap-1">
+                              {review.quality_rating}/5
+                              <Star className="h-3 w-3 fill-[var(--color-warning)] text-[var(--color-warning)]" />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Communication</div>
+                            <div className="flex items-center gap-1">
+                              {review.communication_rating}/5
+                              <Star className="h-3 w-3 fill-[var(--color-warning)] text-[var(--color-warning)]" />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Timeliness</div>
+                            <div className="flex items-center gap-1">
+                              {review.timeliness_rating}/5
+                              <Star className="h-3 w-3 fill-[var(--color-warning)] text-[var(--color-warning)]" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                    {review.reply_comment ? (
                       <div className="bg-[var(--color-accent-light)] rounded-lg p-4 mt-3 border border-[var(--color-border)]">
                         <p className="mobile-text-sm font-medium mb-2 text-[var(--color-text-primary)]">
                           Your Response:
                         </p>
                         <p className="mobile-text-sm mobile-leading text-[var(--color-text-secondary)]">
-                          {review.response}
+                          {review.reply_comment}
                         </p>
+                        {review.replied_at && (
+                          <p className="mobile-text-xs text-[var(--color-text-secondary)] mt-2">
+                            Replied on {formatDate(review.replied_at)}
+                          </p>
+                        )}
                       </div>
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="touch-target border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200"
-                      >
-                        Reply to Review
-                      </Button>
+                      <div className="space-y-3">
+                        {replyingTo === review.id ? (
+                          <div className="space-y-3">
+                            <textarea
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              placeholder="Write your response..."
+                              aria-label="Reply to review"
+                              maxLength={1000}
+                              className="w-full p-3 border border-[var(--color-border)] rounded-lg resize-none mobile-text-sm bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                              rows={3}
+                            />
+                            <div className="text-xs text-[var(--color-text-secondary)] text-right">
+                              {replyText.length}/1000 characters
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleReply(review.id)}
+                                disabled={submittingReply || !replyText.trim()}
+                                aria-label="Send reply to review"
+                                className="touch-target bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 transition-colors duration-200"
+                              >
+                                <Send className="h-4 w-4 mr-2" />
+                                {submittingReply ? "Sending..." : "Send Reply"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setReplyingTo(null);
+                                  setReplyText("");
+                                }}
+                                className="touch-target border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)] transition-colors duration-200"
+                              >
+                                <X className="h-4 w-4 mr-2" />
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setReplyingTo(review.id)}
+                            className="touch-target border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Reply to Review
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
