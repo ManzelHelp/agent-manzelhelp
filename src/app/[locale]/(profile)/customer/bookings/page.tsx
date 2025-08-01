@@ -253,7 +253,7 @@ export default function CustomerBookingsPage() {
               Track and manage all your service bookings
             </p>
           </div>
-          <Link href="/customer/create-offer">
+          <Link href="/customer/post-service">
             <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Post New Job
@@ -482,7 +482,7 @@ export default function CustomerBookingsPage() {
                 </p>
               </div>
               {activeTab === "pending" && (
-                <Link href="/customer/create-offer">
+                <Link href="/customer/post-service">
                   <Button className="flex items-center gap-2">
                     <Plus className="h-4 w-4" />
                     Post Your First Job

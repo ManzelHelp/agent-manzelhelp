@@ -16,6 +16,7 @@ import {
   Calendar,
   Clock,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/supabase/client";
@@ -45,26 +46,30 @@ export default function DashboardPage() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [notificationsLoading, setNotificationsLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const user = useUserStore((state) => state.user);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const fetchDashboardData = async () => {
+      setError(null);
       const supabase = createClient();
 
       try {
-        // Fetch stats
-        await fetchStats(supabase);
-
-        // Fetch notifications
-        await fetchNotifications(supabase);
-
-        // Fetch recent messages
-        await fetchMessages(supabase);
+        // Fetch all data in parallel for better performance
+        await Promise.allSettled([
+          fetchStats(supabase),
+          fetchNotifications(supabase),
+          fetchMessages(supabase),
+        ]);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        setError("Failed to load dashboard data");
         toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
@@ -79,12 +84,17 @@ export default function DashboardPage() {
 
     setStatsLoading(true);
     try {
-      // Get user stats
+      // Get user stats - handle case where user_stats doesn't exist yet
       const { data: userStats, error: statsError } = await supabase
         .from("user_stats")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle no rows
+
+      if (statsError && statsError.code !== "PGRST116") {
+        console.error("Error fetching user stats:", statsError);
+        throw statsError;
+      }
 
       // Get active bookings (in_progress, confirmed)
       const { data: activeBookings, error: activeError } = await supabase
@@ -93,12 +103,22 @@ export default function DashboardPage() {
         .eq("tasker_id", user.id)
         .in("status", ["confirmed", "in_progress"]);
 
+      if (activeError) {
+        console.error("Error fetching active bookings:", activeError);
+        throw activeError;
+      }
+
       // Get completed bookings
       const { data: completedBookings, error: completedError } = await supabase
         .from("service_bookings")
         .select("id, agreed_price, completed_at")
         .eq("tasker_id", user.id)
         .eq("status", "completed");
+
+      if (completedError) {
+        console.error("Error fetching completed bookings:", completedError);
+        throw completedError;
+      }
 
       // Get this month's earnings
       const currentDate = new Date();
@@ -121,14 +141,12 @@ export default function DashboardPage() {
         .gte("completed_at", firstDayOfMonth.toISOString())
         .lte("completed_at", lastDayOfMonth.toISOString());
 
-      if (statsError) console.error("Error fetching user stats:", statsError);
-      if (activeError)
-        console.error("Error fetching active bookings:", activeError);
-      if (completedError)
-        console.error("Error fetching completed bookings:", completedError);
-      if (monthlyError)
+      if (monthlyError) {
         console.error("Error fetching monthly bookings:", monthlyError);
+        throw monthlyError;
+      }
 
+      // Calculate stats with fallbacks for missing data
       const totalEarnings = userStats?.total_earnings || 0;
       const completedJobs =
         userStats?.completed_jobs || completedBookings?.length || 0;
@@ -147,6 +165,7 @@ export default function DashboardPage() {
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
+      // Don't throw here, just log the error and continue with default values
     } finally {
       setStatsLoading(false);
     }
@@ -168,12 +187,14 @@ export default function DashboardPage() {
 
       if (error) {
         console.error("Error fetching notifications:", error);
-        return;
+        throw error;
       }
 
       setNotifications(data || []);
     } catch (error) {
       console.error("Error fetching notifications:", error);
+      // Continue with empty array
+      setNotifications([]);
     } finally {
       setNotificationsLoading(false);
     }
@@ -200,7 +221,7 @@ export default function DashboardPage() {
 
       if (error) {
         console.error("Error fetching messages:", error);
-        return;
+        throw error;
       }
 
       // Process messages to show the other person's name
@@ -227,6 +248,8 @@ export default function DashboardPage() {
       setMessages(processedMessages);
     } catch (error) {
       console.error("Error fetching messages:", error);
+      // Continue with empty array
+      setMessages([]);
     } finally {
       setMessagesLoading(false);
     }
@@ -290,6 +313,26 @@ export default function DashboardPage() {
           <span className="text-lg text-[var(--color-text-primary)]">
             Loading dashboard...
           </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] to-[var(--color-surface)] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
+            Something went wrong
+          </h2>
+          <p className="text-[var(--color-text-secondary)] max-w-md">{error}</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
+          >
+            Try Again
+          </Button>
         </div>
       </div>
     );
