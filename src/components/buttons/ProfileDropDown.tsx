@@ -5,6 +5,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
+  Bell,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -56,7 +57,7 @@ function ProfileDropDown() {
             href={`/${user?.role}/notifications` || "/customer/notifications"}
             className="flex items-center"
           >
-            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <Bell className="mr-2 h-4 w-4" />
             <span>Notifications</span>
           </Link>
         </DropdownMenuItem>

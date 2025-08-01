@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -33,6 +34,7 @@ interface Message {
 }
 
 export default function MessagesPage() {
+  const router = useRouter();
   const [messageFilter, setMessageFilter] = useState<MessageStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -248,6 +250,9 @@ export default function MessagesPage() {
                         <div className="flex justify-end mt-4">
                           <Button
                             size="sm"
+                            onClick={() =>
+                              router.push(`/tasker/messages/${message.id}`)
+                            }
                             className={`touch-target transition-all duration-200 ${
                               message.unread
                                 ? "bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
