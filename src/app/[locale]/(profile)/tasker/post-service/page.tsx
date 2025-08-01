@@ -59,10 +59,9 @@ interface PricingData {
   pricingType: PricingType;
   basePrice: number;
   hourlyRate: number;
-  minimumBookingHours: number;
+  minimumBookingHours?: number;
   extras: { name: string; price: number }[];
-  estimatedDuration: number;
-  cancellationPolicy: string;
+  estimatedDuration?: number;
 }
 
 interface OfferFormData {
@@ -86,7 +85,6 @@ const INITIAL_PRICING_DATA: PricingData = {
   minimumBookingHours: 1,
   extras: [],
   estimatedDuration: 1,
-  cancellationPolicy: "",
 };
 
 const STEPS = [
@@ -132,8 +130,9 @@ export default function CreateOfferPage() {
   // Form states
   const [newExtra, setNewExtra] = useState({ name: "", price: 0 });
 
-  // Validation errors
+  // Validation errors - only show when user tries to continue
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false);
 
   // Redirect customer users to their dashboard
   useEffect(() => {
@@ -251,6 +250,7 @@ export default function CreateOfferPage() {
     }
 
     setErrors(newErrors);
+    setHasAttemptedValidation(true);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -258,10 +258,14 @@ export default function CreateOfferPage() {
     const newErrors: Record<string, string> = {};
 
     if (
-      formData.pricing.pricingType === "fixed" &&
+      (formData.pricing.pricingType === "fixed" ||
+        formData.pricing.pricingType === "per_item") &&
       formData.pricing.basePrice <= 0
     ) {
-      newErrors.basePrice = "Base price must be greater than 0";
+      newErrors.basePrice =
+        formData.pricing.pricingType === "fixed"
+          ? "Base price must be greater than 0"
+          : "Price per item must be greater than 0";
     }
     if (
       formData.pricing.pricingType === "hourly" &&
@@ -269,12 +273,16 @@ export default function CreateOfferPage() {
     ) {
       newErrors.hourlyRate = "Hourly rate must be greater than 0";
     }
-    if (formData.pricing.minimumBookingHours < 0.5) {
+    if (
+      formData.pricing.minimumBookingHours !== undefined &&
+      formData.pricing.minimumBookingHours < 0.5
+    ) {
       newErrors.minimumBookingHours =
         "Minimum booking must be at least 0.5 hours";
     }
 
     setErrors(newErrors);
+    setHasAttemptedValidation(true);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -348,15 +356,14 @@ export default function CreateOfferPage() {
           title: formData.basicInfo.title,
           description: formData.basicInfo.description,
           pricing_type: formData.pricing.pricingType,
-          base_price:
-            formData.pricing.pricingType === "fixed"
-              ? formData.pricing.basePrice
-              : null,
+          base_price: formData.pricing.basePrice || 0, // Always provide a value since it's NOT NULL
           hourly_rate:
             formData.pricing.pricingType === "hourly"
               ? formData.pricing.hourlyRate
               : null,
-          minimum_duration: formData.pricing.minimumBookingHours,
+          minimum_duration: formData.pricing.minimumBookingHours
+            ? Math.round(formData.pricing.minimumBookingHours)
+            : null, // Round to nearest hour if provided
           service_area: `${selectedAddress.city}, ${selectedAddress.region}`,
           is_available: true,
           created_at: new Date().toISOString(),
@@ -497,9 +504,13 @@ export default function CreateOfferPage() {
                     }))
                   }
                   placeholder="e.g., Professional House Cleaning Service"
-                  className={errors.title ? "border-destructive" : ""}
+                  className={
+                    hasAttemptedValidation && errors.title
+                      ? "border-destructive"
+                      : ""
+                  }
                 />
-                {errors.title && (
+                {hasAttemptedValidation && errors.title && (
                   <p className="text-sm text-destructive">{errors.title}</p>
                 )}
               </div>
@@ -522,12 +533,12 @@ export default function CreateOfferPage() {
                   placeholder="Describe what you'll do, what's included, and any special expertise you have..."
                   rows={4}
                   className={`flex w-full min-h-[80px] px-3 py-2 text-sm bg-transparent border border-input rounded-md shadow-xs transition-[color,box-shadow] outline-none resize-y ${
-                    errors.description
+                    hasAttemptedValidation && errors.description
                       ? "border-destructive focus-visible:ring-destructive/20"
                       : "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                   }`}
                 />
-                {errors.description && (
+                {hasAttemptedValidation && errors.description && (
                   <p className="text-sm text-destructive">
                     {errors.description}
                   </p>
@@ -543,7 +554,9 @@ export default function CreateOfferPage() {
                       <Button
                         variant="outline"
                         className={`w-full justify-between ${
-                          errors.category ? "border-destructive" : ""
+                          hasAttemptedValidation && errors.category
+                            ? "border-destructive"
+                            : ""
                         }`}
                       >
                         {formData.basicInfo.categoryId
@@ -574,7 +587,7 @@ export default function CreateOfferPage() {
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  {errors.category && (
+                  {hasAttemptedValidation && errors.category && (
                     <p className="text-sm text-destructive">
                       {errors.category}
                     </p>
@@ -588,7 +601,9 @@ export default function CreateOfferPage() {
                       <Button
                         variant="outline"
                         className={`w-full justify-between ${
-                          errors.service ? "border-destructive" : ""
+                          hasAttemptedValidation && errors.service
+                            ? "border-destructive"
+                            : ""
                         }`}
                         disabled={!formData.basicInfo.categoryId}
                       >
@@ -619,7 +634,7 @@ export default function CreateOfferPage() {
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  {errors.service && (
+                  {hasAttemptedValidation && errors.service && (
                     <p className="text-sm text-destructive">{errors.service}</p>
                   )}
                 </div>
@@ -704,7 +719,7 @@ export default function CreateOfferPage() {
                     </Button>
                   </div>
                 )}
-                {errors.address && (
+                {hasAttemptedValidation && errors.address && (
                   <p className="text-sm text-destructive">{errors.address}</p>
                 )}
               </div>
@@ -850,9 +865,13 @@ export default function CreateOfferPage() {
                         }))
                       }
                       placeholder="e.g., 50.00"
-                      className={errors.basePrice ? "border-destructive" : ""}
+                      className={
+                        hasAttemptedValidation && errors.basePrice
+                          ? "border-destructive"
+                          : ""
+                      }
                     />
-                    {errors.basePrice && (
+                    {hasAttemptedValidation && errors.basePrice && (
                       <p className="text-sm text-destructive">
                         {errors.basePrice}
                       </p>
@@ -879,9 +898,13 @@ export default function CreateOfferPage() {
                         }))
                       }
                       placeholder="e.g., 25.00"
-                      className={errors.hourlyRate ? "border-destructive" : ""}
+                      className={
+                        hasAttemptedValidation && errors.hourlyRate
+                          ? "border-destructive"
+                          : ""
+                      }
                     />
-                    {errors.hourlyRate && (
+                    {hasAttemptedValidation && errors.hourlyRate && (
                       <p className="text-sm text-destructive">
                         {errors.hourlyRate}
                       </p>
@@ -889,9 +912,42 @@ export default function CreateOfferPage() {
                   </div>
                 )}
 
+                {formData.pricing.pricingType === "per_item" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="basePrice">Price Per Item (€) *</Label>
+                    <Input
+                      id="basePrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.pricing.basePrice || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          pricing: {
+                            ...prev.pricing,
+                            basePrice: parseFloat(e.target.value) || 0,
+                          },
+                        }))
+                      }
+                      placeholder="e.g., 5.00"
+                      className={
+                        hasAttemptedValidation && errors.basePrice
+                          ? "border-destructive"
+                          : ""
+                      }
+                    />
+                    {hasAttemptedValidation && errors.basePrice && (
+                      <p className="text-sm text-destructive">
+                        {errors.basePrice}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="minimumBooking">
-                    Minimum Booking (hours)
+                    Minimum Booking (hours) - Optional
                   </Label>
                   <Input
                     id="minimumBooking"
@@ -904,27 +960,34 @@ export default function CreateOfferPage() {
                         ...prev,
                         pricing: {
                           ...prev.pricing,
-                          minimumBookingHours: parseFloat(e.target.value) || 1,
+                          minimumBookingHours: e.target.value
+                            ? parseFloat(e.target.value)
+                            : undefined,
                         },
                       }))
                     }
-                    placeholder="e.g., 1.0"
+                    placeholder="e.g., 1.0 (optional)"
                     className={
-                      errors.minimumBookingHours ? "border-destructive" : ""
+                      hasAttemptedValidation && errors.minimumBookingHours
+                        ? "border-destructive"
+                        : ""
                     }
                   />
-                  {errors.minimumBookingHours && (
+                  {hasAttemptedValidation && errors.minimumBookingHours && (
                     <p className="text-sm text-destructive">
                       {errors.minimumBookingHours}
                     </p>
                   )}
+                  <p className="text-sm text-muted-foreground">
+                    Leave empty if no minimum booking time required
+                  </p>
                 </div>
               </div>
 
               {/* Estimated Duration */}
               <div className="space-y-2">
                 <Label htmlFor="estimatedDuration">
-                  Estimated Duration (hours)
+                  Estimated Duration (hours) - Optional
                 </Label>
                 <Input
                   id="estimatedDuration"
@@ -937,15 +1000,18 @@ export default function CreateOfferPage() {
                       ...prev,
                       pricing: {
                         ...prev.pricing,
-                        estimatedDuration: parseFloat(e.target.value) || 1,
+                        estimatedDuration: e.target.value
+                          ? parseFloat(e.target.value)
+                          : undefined,
                       },
                     }))
                   }
-                  placeholder="e.g., 2.0"
+                  placeholder="e.g., 2.0 (optional)"
                   className="max-w-xs"
                 />
                 <p className="text-sm text-muted-foreground">
                   How long do you expect this service typically takes?
+                  (optional)
                 </p>
               </div>
 
@@ -1011,31 +1077,6 @@ export default function CreateOfferPage() {
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* Cancellation Policy */}
-              <div className="space-y-2">
-                <Label htmlFor="cancellationPolicy">Cancellation Policy</Label>
-                <textarea
-                  id="cancellationPolicy"
-                  value={formData.pricing.cancellationPolicy}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      pricing: {
-                        ...prev.pricing,
-                        cancellationPolicy: e.target.value,
-                      },
-                    }))
-                  }
-                  placeholder="e.g., Free cancellation up to 24 hours before scheduled time. 50% refund for cancellations within 24 hours."
-                  rows={3}
-                  className="flex w-full min-h-[80px] px-3 py-2 text-sm bg-transparent border border-input rounded-md shadow-xs transition-[color,box-shadow] outline-none resize-y focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-                />
-                <p className="text-sm text-muted-foreground">
-                  Optional: Set clear expectations about cancellations and
-                  refunds
-                </p>
               </div>
             </CardContent>
           </>
@@ -1129,11 +1170,14 @@ export default function CreateOfferPage() {
                     <span className="text-muted-foreground">
                       {formData.pricing.pricingType === "fixed"
                         ? "Fixed Price:"
-                        : "Hourly Rate:"}
+                        : formData.pricing.pricingType === "hourly"
+                        ? "Hourly Rate:"
+                        : "Price Per Item:"}
                     </span>
                     <p className="font-medium">
                       €
-                      {formData.pricing.pricingType === "fixed"
+                      {formData.pricing.pricingType === "fixed" ||
+                      formData.pricing.pricingType === "per_item"
                         ? formData.pricing.basePrice
                         : formData.pricing.hourlyRate}
                     </p>
@@ -1143,7 +1187,9 @@ export default function CreateOfferPage() {
                       Minimum Booking:
                     </span>
                     <p className="font-medium">
-                      {formData.pricing.minimumBookingHours} hours
+                      {formData.pricing.minimumBookingHours
+                        ? `${formData.pricing.minimumBookingHours} hours`
+                        : "Not specified"}
                     </p>
                   </div>
                   <div>
@@ -1151,7 +1197,9 @@ export default function CreateOfferPage() {
                       Estimated Duration:
                     </span>
                     <p className="font-medium">
-                      {formData.pricing.estimatedDuration} hours
+                      {formData.pricing.estimatedDuration
+                        ? `${formData.pricing.estimatedDuration} hours`
+                        : "Not specified"}
                     </p>
                   </div>
                 </div>
@@ -1170,17 +1218,6 @@ export default function CreateOfferPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
-
-                {formData.pricing.cancellationPolicy && (
-                  <div className="mt-4">
-                    <span className="text-muted-foreground">
-                      Cancellation Policy:
-                    </span>
-                    <p className="mt-1 text-sm">
-                      {formData.pricing.cancellationPolicy}
-                    </p>
                   </div>
                 )}
               </div>
