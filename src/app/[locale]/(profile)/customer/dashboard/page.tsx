@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  DollarSign,
   CheckCircle,
   Plus,
   MessageSquare,
@@ -14,12 +13,12 @@ import {
   Users,
   Bell,
   Calendar,
-  Clock,
   Loader2,
   AlertCircle,
   Home,
   Briefcase,
   CreditCard,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/supabase/client";
@@ -35,11 +34,8 @@ import type {
 interface DashboardStats {
   activeBookings: number;
   completedBookings: number;
-  totalSpent: number;
-  monthlySpent: number;
   activeJobs: number;
   completedJobs: number;
-  savedAddresses: number;
 }
 
 interface BookingWithDetails extends ServiceBooking {
@@ -74,11 +70,8 @@ export default function CustomerDashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     activeBookings: 0,
     completedBookings: 0,
-    totalSpent: 0,
-    monthlySpent: 0,
     activeJobs: 0,
     completedJobs: 0,
-    savedAddresses: 0,
   });
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [messages, setMessages] = useState<MessageWithDetails[]>([]);
@@ -132,23 +125,11 @@ export default function CustomerDashboardPage() {
 
     setStatsLoading(true);
     try {
-      // Get user stats
-      const { data: userStats, error: statsError } = await supabase
-        .from("user_stats")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (statsError && statsError.code !== "PGRST116") {
-        console.error("Error fetching user stats:", statsError);
-        throw statsError;
-      }
-
       // Get active bookings (confirmed, in_progress)
       const { data: activeBookings, error: activeBookingsError } =
         await supabase
           .from("service_bookings")
-          .select("id, status, agreed_price")
+          .select("id, status")
           .eq("customer_id", user.id)
           .in("status", ["confirmed", "in_progress"]);
 
@@ -161,7 +142,7 @@ export default function CustomerDashboardPage() {
       const { data: completedBookings, error: completedBookingsError } =
         await supabase
           .from("service_bookings")
-          .select("id, agreed_price, completed_at")
+          .select("id")
           .eq("customer_id", user.id)
           .eq("status", "completed");
 
@@ -188,7 +169,7 @@ export default function CustomerDashboardPage() {
       // Get completed jobs
       const { data: completedJobs, error: completedJobsError } = await supabase
         .from("jobs")
-        .select("id, completed_at")
+        .select("id")
         .eq("customer_id", user.id)
         .eq("status", "completed");
 
@@ -197,65 +178,17 @@ export default function CustomerDashboardPage() {
         throw completedJobsError;
       }
 
-      // Get this month's spending
-      const currentDate = new Date();
-      const firstDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1
-      );
-      const lastDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
-        0
-      );
-
-      const { data: monthlyBookings, error: monthlyBookingsError } =
-        await supabase
-          .from("service_bookings")
-          .select("agreed_price")
-          .eq("customer_id", user.id)
-          .eq("status", "completed")
-          .gte("completed_at", firstDayOfMonth.toISOString())
-          .lte("completed_at", lastDayOfMonth.toISOString());
-
-      if (monthlyBookingsError) {
-        console.error("Error fetching monthly bookings:", monthlyBookingsError);
-        throw monthlyBookingsError;
-      }
-
-      // Get saved addresses
-      const { data: addresses, error: addressesError } = await supabase
-        .from("addresses")
-        .select("id")
-        .eq("user_id", user.id);
-
-      if (addressesError) {
-        console.error("Error fetching addresses:", addressesError);
-        throw addressesError;
-      }
-
       // Calculate stats with fallbacks for missing data
-      const totalSpent = userStats?.total_spent || 0;
       const activeBookingsCount = activeBookings?.length || 0;
       const completedBookingsCount = completedBookings?.length || 0;
       const activeJobsCount = activeJobs?.length || 0;
       const completedJobsCount = completedJobs?.length || 0;
-      const savedAddressesCount = addresses?.length || 0;
-      const monthlySpent =
-        monthlyBookings?.reduce(
-          (sum, booking) => sum + (booking.agreed_price || 0),
-          0
-        ) || 0;
 
       setStats({
         activeBookings: activeBookingsCount,
         completedBookings: completedBookingsCount,
-        totalSpent,
-        monthlySpent,
         activeJobs: activeJobsCount,
         completedJobs: completedJobsCount,
-        savedAddresses: savedAddressesCount,
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -451,7 +384,7 @@ export default function CustomerDashboardPage() {
     switch (type) {
       case "payment_received":
       case "payment_confirmed":
-        return <DollarSign className="h-4 w-4 text-green-600" />;
+        return <CreditCard className="h-4 w-4 text-green-600" />;
       case "booking_confirmed":
       case "booking_created":
       case "booking_accepted":
@@ -550,8 +483,24 @@ export default function CustomerDashboardPage() {
           </div>
         </div>
 
+        {/* Wallet Balance Section */}
+        <Card className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] border-0 shadow-lg text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Wallet className="h-6 w-6" />
+              <h3 className="text-lg font-semibold">Wallet Balance</h3>
+            </div>
+            <div className="text-3xl font-bold mb-2">
+              {user?.wallet_balance ? `${user.wallet_balance} MAD` : "0 MAD"}
+            </div>
+            <p className="text-sm opacity-90">
+              Available for payments and refunds
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Stats Overview - Mobile First Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6 sm:grid-cols-2 lg:grid-cols-2">
           <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-[var(--color-text-primary)]">
@@ -596,56 +545,6 @@ export default function CustomerDashboardPage() {
                   </div>
                   <p className="text-xs text-[var(--color-text-secondary)] mt-1">
                     Posted jobs
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-[var(--color-text-primary)]">
-                Total Spent
-              </CardTitle>
-              <div className="p-2 bg-green-100 rounded-full group-hover:bg-green-200 transition-colors duration-200">
-                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {statsLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
-              ) : (
-                <>
-                  <div className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
-                    {stats.totalSpent.toLocaleString()} MAD
-                  </div>
-                  <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                    All time spending
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-[var(--color-text-primary)]">
-                This Month
-              </CardTitle>
-              <div className="p-2 bg-purple-100 rounded-full group-hover:bg-purple-200 transition-colors duration-200">
-                <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {statsLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
-              ) : (
-                <>
-                  <div className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
-                    {stats.monthlySpent.toLocaleString()} MAD
-                  </div>
-                  <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                    Monthly spending
                   </p>
                 </>
               )}
@@ -708,7 +607,7 @@ export default function CustomerDashboardPage() {
                       <CreditCard className="h-4 w-4 text-green-600" />
                     </div>
                     <span className="text-sm sm:text-base font-medium">
-                      View Spending
+                      View Finance
                     </span>
                   </div>
                   <ChevronRight className="h-4 w-4" />
