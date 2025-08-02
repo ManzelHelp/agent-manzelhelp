@@ -3,7 +3,12 @@
 
 // ENUMS FROM SUPABASE
 export type UserRole = "customer" | "tasker" | "support" | "admin";
-export type VerificationStatus = "pending" | "verified" | "rejected";
+export type VerificationStatus =
+  | "unverified"
+  | "under_review"
+  | "verified"
+  | "rejected"
+  | "suspended";
 export type PricingType = "fixed" | "hourly" | "per_item";
 export type ExperienceLevel = "beginner" | "intermediate" | "expert";
 export type JobStatus =
@@ -13,7 +18,8 @@ export type JobStatus =
   | "in_progress"
   | "completed"
   | "cancelled"
-  | "disputed";
+  | "disputed"
+  | "draft";
 export type ApplicationStatus =
   | "pending"
   | "accepted"
@@ -59,7 +65,7 @@ export type BookingStatus =
 export type BookingType = "instant" | "scheduled" | "recurring";
 export type BookingPaymentMethod = "cash" | "online" | "wallet" | "pending";
 export type ServiceVerificationStatus =
-  | "pending"
+  | "unverified"
   | "under_review"
   | "verified"
   | "rejected"
@@ -69,6 +75,14 @@ export type ServiceAvailabilityStatus =
   | "unavailable"
   | "busy"
   | "on_break";
+export type ServiceStatus =
+  | "draft"
+  | "under_review"
+  | "active"
+  | "paused"
+  | "suspended"
+  | "deleted_pending"
+  | "deleted";
 export type RatingCategory =
   | "quality"
   | "communication"
@@ -91,6 +105,8 @@ export interface User {
   created_at?: string;
   updated_at?: string;
   last_login?: string;
+  verification_status?: VerificationStatus;
+  wallet_balance?: number;
 }
 
 export interface Address {
@@ -142,7 +158,7 @@ export interface TaskerProfile {
   experience_level?: ExperienceLevel;
   bio?: string;
   identity_document_url?: string;
-  verification_status?: VerificationStatus;
+  verification_status?: string;
   service_radius_km?: number;
   is_available?: boolean;
   updated_at?: string;
@@ -170,6 +186,9 @@ export interface TaskerService {
   service_area?: string;
   verification_status?: ServiceVerificationStatus;
   availability_status?: ServiceAvailabilityStatus;
+  extra_fees?: number;
+  service_status?: ServiceStatus;
+  has_active_booking?: boolean;
 }
 
 export interface Job {
@@ -201,6 +220,7 @@ export interface Job {
   max_applications?: number;
   premium_applications_purchased?: number;
   current_applications?: number;
+  verification_status?: VerificationStatus;
 }
 
 export interface JobApplication {
@@ -237,16 +257,25 @@ export interface Review {
   booking_id?: string;
 }
 
-export interface Message {
+export interface Conversation {
   id: string;
   job_id?: string;
+  service_id?: string;
+  booking_id?: string;
+  participant1_id: string;
+  participant2_id: string;
+  last_message_at?: string;
+  created_at?: string;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
   sender_id: string;
-  receiver_id: string;
   content: string;
   attachment_url?: string;
   is_read?: boolean;
   created_at?: string;
-  booking_id?: string;
 }
 
 export interface Transaction {
@@ -456,7 +485,33 @@ export interface ServiceBooking {
   cancellation_fee?: number;
 }
 
-// NEW TABLES AND VIEWS
+export interface JobApplicationCount {
+  id: string;
+  job_id: string;
+  application_count?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UserMonthlyUsage {
+  id: string;
+  user_id: string;
+  month_year: string;
+  applications_count?: number;
+  job_postings_count?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  user_id: string;
+  amount: number;
+  type: string;
+  related_job_id?: string;
+  notes?: string;
+  created_at?: string;
+}
 
 export interface FAQ {
   id: string;
@@ -474,27 +529,6 @@ export interface FAQ {
 
 // VIEWS (for reference - these are read-only)
 export interface ServiceBookingSummary {
-  booking_id?: string;
-  status?: BookingStatus;
-  agreed_price?: number;
-  scheduled_date?: string;
-  scheduled_time_start?: string;
-  scheduled_time_end?: string;
-  customer_first_name?: string;
-  customer_last_name?: string;
-  customer_avatar?: string;
-  tasker_first_name?: string;
-  tasker_last_name?: string;
-  tasker_avatar?: string;
-  service_name?: string;
-  category_name?: string;
-  payment_status?: PaymentStatus;
-  payment_method?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface ServiceBookingSummaryWithReviews {
   booking_id?: string;
   status?: BookingStatus;
   agreed_price?: number;
@@ -528,26 +562,63 @@ export interface ServiceBookingSummaryWithReviews {
   updated_at?: string;
 }
 
-export interface TaskerServicePerformance {
-  service_id?: string;
+export interface ServiceListingView {
+  tasker_service_id?: string;
+  service_id?: number;
   tasker_id?: string;
   title?: string;
-  pricing_type?: PricingType;
+  description?: string;
   base_price?: number;
-  hourly_rate?: number;
+  pricing_type?: PricingType;
+  service_status?: ServiceStatus;
   verification_status?: ServiceVerificationStatus;
-  availability_status?: ServiceAvailabilityStatus;
-  service_name?: string;
-  category_name?: string;
+  has_active_booking?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  service_name_en?: string;
+  service_name_fr?: string;
+  service_name_ar?: string;
+  service_description_en?: string;
+  service_description_fr?: string;
+  service_description_ar?: string;
+  service_is_active?: boolean;
+  service_sort_order?: number;
+  category_id?: number;
+  category_name_en?: string;
+  category_name_fr?: string;
+  category_name_ar?: string;
+  category_description_en?: string;
+  category_description_fr?: string;
+  category_description_ar?: string;
+  category_icon_url?: string;
+  category_is_active?: boolean;
+  category_sort_order?: number;
+  tasker_user_id?: string;
   tasker_first_name?: string;
   tasker_last_name?: string;
-  tasker_avatar?: string;
+  tasker_email?: string;
+  tasker_avatar_url?: string;
+  tasker_phone?: string;
+  tasker_role?: UserRole;
+  tasker_verification_status?: VerificationStatus;
+  tasker_created_at?: string;
+  experience_level?: ExperienceLevel;
+  tasker_bio?: string;
+  operation_hours?: object | null;
+  service_radius_km?: number;
+  tasker_is_available?: boolean;
+  identity_document_url?: string;
+  profile_verification_status?: string;
+  profile_updated_at?: string;
   tasker_rating?: number;
   total_reviews?: number;
   completed_jobs?: number;
   total_earnings?: number;
   response_time_hours?: number;
   cancellation_rate?: number;
+  jobs_posted?: number;
+  total_spent?: number;
+  stats_updated_at?: string;
 }
 
 // Custom type for operation hours
@@ -568,6 +639,7 @@ export interface Database {
   jobs: Job;
   job_applications: JobApplication;
   reviews: Review;
+  conversations: Conversation;
   messages: Message;
   transactions: Transaction;
   notifications: Notification;
@@ -582,5 +654,8 @@ export interface Database {
   tasker_availability: TaskerAvailability;
   tasker_blocked_dates: TaskerBlockedDate;
   service_bookings: ServiceBooking;
+  job_application_counts: JobApplicationCount;
+  user_monthly_usage: UserMonthlyUsage;
+  wallet_transactions: WalletTransaction;
   faq: FAQ;
 }
