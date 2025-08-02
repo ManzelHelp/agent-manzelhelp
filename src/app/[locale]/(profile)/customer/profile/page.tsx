@@ -1,76 +1,89 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "@/i18n/navigation";
+import type { Address } from "@/types/supabase";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   User,
   MapPin,
-  Shield,
   CreditCard,
-  Globe,
-  CheckCircle,
-  AlertCircle,
+  Settings,
+  ChevronDown,
+  Menu,
+  AlertTriangle,
+  Camera,
   Edit,
   Plus,
   X,
-  Camera,
-  Phone,
-  Mail,
   Trash2,
-  Upload,
+  AlertCircle,
+  Wallet,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { createClient } from "@/supabase/client";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
 
-type ProfileSection =
-  | "personal"
-  | "addresses"
-  | "security"
-  | "payment"
-  | "preferences"
-  | "verification";
+type ProfileSection = "personal" | "addresses" | "payment";
 
-interface ProfileCompletionItem {
+interface MissingField {
   id: string;
+  label: string;
   section: ProfileSection;
-  title: string;
-  completed: boolean;
+  icon: React.ReactNode;
+  description: string;
   required: boolean;
 }
 
-interface Address {
-  id?: number;
-  label: string;
-  street_address: string;
-  city: string;
-  region: string;
-  postal_code?: string;
-  country: string;
-  is_default: boolean;
-}
+const SECTIONS = [
+  {
+    id: "personal" as ProfileSection,
+    title: "Personal Information",
+    icon: User,
+    description: "Manage your basic profile details",
+    color: "from-blue-500 to-blue-600",
+  },
+  {
+    id: "addresses" as ProfileSection,
+    title: "Addresses",
+    icon: MapPin,
+    description: "Manage your service locations",
+    color: "from-orange-500 to-orange-600",
+  },
+  {
+    id: "payment" as ProfileSection,
+    title: "Payment Methods",
+    icon: CreditCard,
+    description: "Manage your payment info",
+    color: "from-indigo-500 to-indigo-600",
+  },
+];
 
 export default function CustomerProfilePage() {
+  const router = useRouter();
   const { user, setUser } = useUserStore();
-  const t = useTranslations("profile");
 
+  // Core state
   const [activeSection, setActiveSection] =
     useState<ProfileSection>("personal");
-  const [isEditing, setIsEditing] = useState<Record<string, boolean>>({});
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Dialog state
+  const [personalInfoDialogOpen, setPersonalInfoDialogOpen] = useState(false);
 
   // Form states
   const [personalInfo, setPersonalInfo] = useState({
@@ -82,7 +95,9 @@ export default function CustomerProfilePage() {
     avatar_url: user?.avatar_url || "",
   });
 
-  const [newAddress, setNewAddress] = useState<Address>({
+  const [newAddress, setNewAddress] = useState<
+    Omit<Address, "id" | "user_id" | "created_at" | "updated_at">
+  >({
     label: "home",
     street_address: "",
     city: "",
@@ -92,118 +107,150 @@ export default function CustomerProfilePage() {
     is_default: false,
   });
 
-  // Calculate profile completion
-  const completionItems: ProfileCompletionItem[] = [
-    {
-      id: "basic_info",
-      section: "personal",
-      title: t("completion.basicInfo"),
-      completed: !!(user?.first_name && user?.last_name),
-      required: true,
-    },
-    {
-      id: "contact_info",
-      section: "personal",
-      title: t("completion.contactInfo"),
-      completed: !!(user?.email && user?.phone),
-      required: true,
-    },
-    {
-      id: "profile_photo",
-      section: "personal",
-      title: t("completion.profilePhoto"),
-      completed: !!user?.avatar_url,
-      required: false,
-    },
-    {
-      id: "address",
-      section: "addresses",
-      title: t("completion.address"),
-      completed: addresses.length > 0,
-      required: true,
-    },
-    {
-      id: "email_verified",
-      section: "verification",
-      title: t("completion.emailVerified"),
-      completed: !!user?.email_verified,
-      required: true,
-    },
-    {
-      id: "phone_verified",
-      section: "verification",
-      title: t("completion.phoneVerified"),
-      completed: !!user?.phone,
-      required: false,
-    },
-  ];
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
 
-  const completedCount = completionItems.filter(
-    (item) => item.completed
-  ).length;
-  const completionPercentage = Math.round(
-    (completedCount / completionItems.length) * 100
-  );
+  // Redirect tasker users to their dashboard
+  useEffect(() => {
+    if (user?.role === "tasker") {
+      router.replace("/tasker/profile");
+    }
+  }, [user?.role, router]);
 
-  // Fetch addresses on component mount
-  const fetchAddresses = React.useCallback(async () => {
+  // Data fetching
+  const fetchAddresses = useCallback(async () => {
     if (!user?.id) return;
 
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("addresses")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("is_default", { ascending: false });
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("is_default", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching addresses:", error);
-      toast.error(t("errors.fetchAddresses"));
-    } else {
+      if (error) {
+        console.error("Error fetching addresses:", error);
+        toast.error("Failed to load addresses");
+        return;
+      }
+
       setAddresses(data || []);
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+      toast.error("Failed to load addresses");
     }
-  }, [user?.id, t]);
+  }, [user?.id]);
 
+  // Effects - fetch data when user is available
   useEffect(() => {
     if (user?.id) {
       fetchAddresses();
     }
   }, [user?.id, fetchAddresses]);
 
+  // Missing fields detection
+  const getMissingFields = useCallback((): MissingField[] => {
+    if (!user) return [];
+
+    const missingFields: MissingField[] = [];
+
+    // Personal Information Section
+    if (!user.first_name || !user.last_name) {
+      missingFields.push({
+        id: "full_name",
+        label: "Full Name",
+        section: "personal",
+        icon: <User className="h-4 w-4" />,
+        description: "Complete your name for better recognition",
+        required: true,
+      });
+    }
+
+    if (!user.avatar_url) {
+      missingFields.push({
+        id: "profile_photo",
+        label: "Profile Photo",
+        section: "personal",
+        icon: <Camera className="h-4 w-4" />,
+        description: "Add a profile photo to personalize your account",
+        required: false,
+      });
+    }
+
+    // Addresses Section
+    if (addresses.length === 0) {
+      missingFields.push({
+        id: "address",
+        label: "Address",
+        section: "addresses",
+        icon: <MapPin className="h-4 w-4" />,
+        description: "Add your address for service delivery",
+        required: true,
+      });
+    }
+
+    return missingFields;
+  }, [user, addresses]);
+
+  // Memoized computed values for performance
+  const missingFields = useMemo(() => getMissingFields(), [getMissingFields]);
+
+  // Update personal info
   const updatePersonalInfo = async () => {
     if (!user?.id) return;
 
     setLoading(true);
     const supabase = createClient();
 
+    // Prepare update data, handling empty date_of_birth properly
+    const updateData: {
+      first_name: string;
+      last_name: string;
+      phone: string;
+      date_of_birth?: string | null;
+      updated_at: string;
+    } = {
+      first_name: personalInfo.first_name,
+      last_name: personalInfo.last_name,
+      phone: personalInfo.phone,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only include date_of_birth if it's not empty
+    if (
+      personalInfo.date_of_birth &&
+      personalInfo.date_of_birth.trim() !== ""
+    ) {
+      updateData.date_of_birth = personalInfo.date_of_birth;
+    } else {
+      // Set to null if empty
+      updateData.date_of_birth = null;
+    }
+
     const { error } = await supabase
       .from("users")
-      .update({
-        first_name: personalInfo.first_name,
-        last_name: personalInfo.last_name,
-        phone: personalInfo.phone,
-        date_of_birth: personalInfo.date_of_birth,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", user.id);
 
     if (error) {
-      toast.error(t("errors.updateProfile"));
+      toast.error("Failed to update profile");
       console.error("Error updating profile:", error);
     } else {
       // Update local user state
       setUser({
         ...user,
-        ...personalInfo,
+        ...updateData,
+        date_of_birth: updateData.date_of_birth || undefined,
         updated_at: new Date().toISOString(),
       });
-      toast.success(t("success.profileUpdated"));
-      setIsEditing((prev) => ({ ...prev, personal: false }));
+      toast.success("Profile updated successfully");
+      setPersonalInfoDialogOpen(false);
     }
 
     setLoading(false);
   };
 
+  // Add address
   const addAddress = async () => {
     if (!user?.id || !newAddress.street_address || !newAddress.city) return;
 
@@ -218,10 +265,10 @@ export default function CustomerProfilePage() {
     ]);
 
     if (error) {
-      toast.error(t("errors.addAddress"));
+      toast.error("Failed to add address");
       console.error("Error adding address:", error);
     } else {
-      toast.success(t("success.addressAdded"));
+      toast.success("Address added successfully");
       setNewAddress({
         label: "home",
         street_address: "",
@@ -238,7 +285,8 @@ export default function CustomerProfilePage() {
     setLoading(false);
   };
 
-  const deleteAddress = async (addressId: number) => {
+  // Delete address
+  const deleteAddress = async (addressId: string) => {
     if (!user?.id) return;
 
     setLoading(true);
@@ -251,167 +299,208 @@ export default function CustomerProfilePage() {
       .eq("user_id", user.id);
 
     if (error) {
-      toast.error(t("errors.deleteAddress"));
+      toast.error("Failed to delete address");
       console.error("Error deleting address:", error);
     } else {
-      toast.success(t("success.addressDeleted"));
+      toast.success("Address deleted successfully");
       fetchAddresses();
     }
 
     setLoading(false);
   };
 
-  const sectionIcons: Record<ProfileSection, React.ReactNode> = {
-    personal: <User className="h-4 w-4" />,
-    addresses: <MapPin className="h-4 w-4" />,
-    security: <Shield className="h-4 w-4" />,
-    payment: <CreditCard className="h-4 w-4" />,
-    preferences: <Globe className="h-4 w-4" />,
-    verification: <CheckCircle className="h-4 w-4" />,
-  };
-
-  const sections = [
-    { id: "personal" as ProfileSection, title: t("sections.personal") },
-    { id: "addresses" as ProfileSection, title: t("sections.addresses") },
-    { id: "payment" as ProfileSection, title: t("sections.payment") },
-    { id: "preferences" as ProfileSection, title: t("sections.preferences") },
-  ];
-
+  // Loading state
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">
-            {t("errors.notLoggedIn")}
+          <AlertCircle className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
+            Not Logged In
           </h2>
-          <p className="text-muted-foreground">{t("errors.loginRequired")}</p>
+          <p className="text-[var(--color-text-secondary)]">
+            Please log in to access your profile
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8">
-      {/* Header with completion status */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              {t("title")}
-            </h1>
-            <p className="text-muted-foreground">{t("subtitle")}</p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary mb-1">
-              {completionPercentage}%
+    <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Enhanced Header Section */}
+        <div className="space-y-6">
+          <div className="text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-full">
+                <Settings className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)]">
+                Profile Settings
+              </h1>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t("completion.complete")}
+            <p className="text-[var(--color-text-secondary)] text-lg">
+              Manage your account information and preferences
             </p>
           </div>
         </div>
 
-        {/* Completion Progress Card */}
-        {completionPercentage < 100 && (
-          <Card className="border-primary/20 bg-primary/5">
+        {/* Enhanced Mobile Navigation */}
+        <div className="lg:hidden">
+          <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
             <CardHeader className="pb-4">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg">
-                  {t("completion.title")}
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg text-[var(--color-text-primary)]">
+                  Navigation
                 </CardTitle>
-              </div>
-              <CardDescription>{t("completion.description")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {completionItems
-                  .filter((item) => !item.completed)
-                  .map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-2 p-3 rounded-lg border bg-background cursor-pointer hover:bg-accent/50 transition-colors"
-                      onClick={() => setActiveSection(item.section)}
-                    >
-                      {sectionIcons[item.section]}
-                      <span className="text-sm font-medium">{item.title}</span>
-                      {item.required && (
-                        <span className="text-xs bg-destructive/10 text-destructive px-1.5 py-0.5 rounded">
-                          {t("completion.required")}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar Navigation */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle className="text-lg">{t("navigation.title")}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <nav className="space-y-1">
-                {sections.map((section) => (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center gap-3 px-6 py-3 text-left text-sm font-medium transition-colors hover:bg-accent ${
-                      activeSection === section.id
-                        ? "bg-primary/10 text-primary border-r-2 border-primary"
-                        : "text-muted-foreground hover:text-foreground"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
+                >
+                  <Menu className="h-4 w-4 mr-2" />
+                  {mobileMenuOpen ? "Close" : "Menu"}
+                  <ChevronDown
+                    className={`h-4 w-4 ml-2 transition-transform ${
+                      mobileMenuOpen ? "rotate-180" : ""
                     }`}
-                  >
-                    {sectionIcons[section.id]}
-                    <span>{section.title}</span>
-                    {completionItems.some(
-                      (item) => item.section === section.id && !item.completed
-                    ) && (
-                      <div className="ml-auto h-2 w-2 rounded-full bg-destructive" />
-                    )}
-                  </button>
-                ))}
+                  />
+                </Button>
+              </div>
+            </CardHeader>
+            {mobileMenuOpen && (
+              <CardContent className="pt-0">
+                <nav className="space-y-2">
+                  {SECTIONS.map((section) => {
+                    const sectionMissingFields = missingFields.filter(
+                      (field) => field.section === section.id
+                    );
+                    return (
+                      <button
+                        key={section.id}
+                        onClick={() => {
+                          setActiveSection(section.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between p-4 text-left transition-all duration-200 rounded-xl ${
+                          activeSection === section.id
+                            ? `bg-gradient-to-r ${section.color} text-white shadow-lg`
+                            : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-accent)]/30"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <div
+                            className={`p-2 rounded-lg ${
+                              activeSection === section.id
+                                ? "bg-white/20"
+                                : "bg-[var(--color-accent)]/50"
+                            }`}
+                          >
+                            <section.icon className="h-4 w-4" />
+                          </div>
+                          <div className="text-left flex-1 min-w-0">
+                            <div className="font-medium truncate">
+                              {section.title}
+                            </div>
+                            <div className="text-xs opacity-75 truncate">
+                              {section.description}
+                            </div>
+                          </div>
+                        </div>
+                        {sectionMissingFields.length > 0 && (
+                          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                            <AlertTriangle className="h-3 w-3 text-[var(--color-error)]" />
+                            <span className="text-xs font-medium text-[var(--color-error)]">
+                              {sectionMissingFields.length}
+                            </span>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </CardContent>
+            )}
+          </Card>
+        </div>
+
+        {/* Enhanced Desktop Navigation */}
+        <div className="hidden lg:block">
+          <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <nav className="grid grid-cols-3 gap-3">
+                {SECTIONS.map((section) => {
+                  const sectionMissingFields = missingFields.filter(
+                    (field) => field.section === section.id
+                  );
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={`relative flex flex-col items-center gap-3 p-4 text-center transition-all duration-200 rounded-xl ${
+                        activeSection === section.id
+                          ? `bg-gradient-to-r ${section.color} text-white shadow-lg transform scale-105`
+                          : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-accent)]/30 hover:shadow-md"
+                      }`}
+                    >
+                      <div
+                        className={`p-3 rounded-lg ${
+                          activeSection === section.id
+                            ? "bg-white/20"
+                            : "bg-[var(--color-accent)]/50"
+                        }`}
+                      >
+                        <section.icon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">
+                          {section.title}
+                        </div>
+                        <div className="text-xs opacity-75 mt-1">
+                          {section.description}
+                        </div>
+                      </div>
+                      {sectionMissingFields.length > 0 && (
+                        <div className="absolute top-2 right-2">
+                          <div className="bg-[var(--color-error)] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {sectionMissingFields.length}
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </nav>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Personal Information Section (now includes Verification) */}
+        {/* Content */}
+        <div className="space-y-6">
+          {/* Personal Information Section */}
           {activeSection === "personal" && (
-            <Card>
+            <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                       <User className="h-5 w-5" />
-                      {t("sections.personal")}
+                      Personal Information
                     </CardTitle>
-                    <CardDescription>
-                      {t("personal.description")}
-                    </CardDescription>
+                    <p className="text-[var(--color-text-secondary)] mt-1">
+                      Manage your basic profile details
+                    </p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setIsEditing((prev) => ({
-                        ...prev,
-                        personal: !prev.personal,
-                      }))
-                    }
+                    onClick={() => setPersonalInfoDialogOpen(true)}
+                    className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                   >
                     <Edit className="h-4 w-4 mr-2" />
-                    {isEditing.personal
-                      ? t("actions.cancel")
-                      : t("actions.edit")}
+                    Edit Profile
                   </Button>
                 </div>
               </CardHeader>
@@ -419,11 +508,11 @@ export default function CustomerProfilePage() {
                 {/* Profile Photo Section */}
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="relative">
-                    <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                    <div className="h-20 w-20 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden">
                       {user.avatar_url ? (
                         <Image
                           src={user.avatar_url}
-                          alt={t("personal.avatar")}
+                          alt="Profile"
                           className="h-full w-full object-cover"
                           fill
                           sizes="80px"
@@ -431,218 +520,63 @@ export default function CustomerProfilePage() {
                           priority
                         />
                       ) : (
-                        <User className="h-8 w-8 text-muted-foreground" />
+                        <User className="h-8 w-8 text-white" />
                       )}
                     </div>
-                    {isEditing.personal && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full p-0"
-                      >
-                        <Camera className="h-3 w-3" />
-                      </Button>
-                    )}
                   </div>
                   <div>
-                    <h3 className="font-medium">{t("personal.avatar")}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t("personal.avatarDescription")}
+                    <h3 className="font-medium text-[var(--color-text-primary)]">
+                      Profile Photo
+                    </h3>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      Add a profile photo to personalize your account
                     </p>
                   </div>
                 </div>
 
-                {/* Personal Info Form */}
+                {/* Personal Info Display */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="first_name">
-                      {t("personal.firstName")}
+                    <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
+                      First Name
                     </Label>
-                    <Input
-                      id="first_name"
-                      value={personalInfo.first_name}
-                      onChange={(e) =>
-                        setPersonalInfo((prev) => ({
-                          ...prev,
-                          first_name: e.target.value,
-                        }))
-                      }
-                      disabled={!isEditing.personal}
-                      placeholder={t("personal.firstNamePlaceholder")}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">{t("personal.lastName")}</Label>
-                    <Input
-                      id="last_name"
-                      value={personalInfo.last_name}
-                      onChange={(e) =>
-                        setPersonalInfo((prev) => ({
-                          ...prev,
-                          last_name: e.target.value,
-                        }))
-                      }
-                      disabled={!isEditing.personal}
-                      placeholder={t("personal.lastNamePlaceholder")}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{t("personal.email")}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={personalInfo.email}
-                      disabled={true}
-                      className="bg-muted"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t("personal.emailNote")}
+                    <p className="text-[var(--color-text-primary)] font-medium">
+                      {user.first_name || "Not provided"}
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">{t("personal.phone")}</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={personalInfo.phone}
-                      onChange={(e) =>
-                        setPersonalInfo((prev) => ({
-                          ...prev,
-                          phone: e.target.value,
-                        }))
-                      }
-                      disabled={!isEditing.personal}
-                      placeholder={t("personal.phonePlaceholder")}
-                    />
+                    <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
+                      Last Name
+                    </Label>
+                    <p className="text-[var(--color-text-primary)] font-medium">
+                      {user.last_name || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
+                      Email
+                    </Label>
+                    <p className="text-[var(--color-text-primary)] font-medium">
+                      {user.email}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
+                      Phone Number
+                    </Label>
+                    <p className="text-[var(--color-text-primary)] font-medium">
+                      {user.phone || "Not provided"}
+                    </p>
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="date_of_birth">
-                      {t("personal.birthDate")}
+                    <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
+                      Date of Birth
                     </Label>
-                    <Input
-                      id="date_of_birth"
-                      type="date"
-                      value={personalInfo.date_of_birth}
-                      onChange={(e) =>
-                        setPersonalInfo((prev) => ({
-                          ...prev,
-                          date_of_birth: e.target.value,
-                        }))
-                      }
-                      disabled={!isEditing.personal}
-                    />
-                  </div>
-                </div>
-
-                {isEditing.personal && (
-                  <div className="flex gap-2 pt-4">
-                    <Button onClick={updatePersonalInfo} disabled={loading}>
-                      {loading ? t("actions.saving") : t("actions.save")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setPersonalInfo({
-                          first_name: user?.first_name || "",
-                          last_name: user?.last_name || "",
-                          email: user?.email || "",
-                          phone: user?.phone || "",
-                          date_of_birth: user?.date_of_birth || "",
-                          avatar_url: user?.avatar_url || "",
-                        });
-                        setIsEditing((prev) => ({ ...prev, personal: false }));
-                      }}
-                    >
-                      {t("actions.cancel")}
-                    </Button>
-                  </div>
-                )}
-
-                {/* Verification Section (moved here) */}
-                <div className="mt-8">
-                  <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-                    <CheckCircle className="h-5 w-5 text-primary" />
-                    {t("sections.verification")}
-                  </h2>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {/* Email Verification */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">
-                            {t("verification.email")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {user.email_verified ? (
-                          <div className="flex items-center gap-2 text-green-600">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm font-medium">
-                              {t("verification.verified")}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-destructive" />
-                            <Button size="sm">
-                              {t("verification.verify")}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* Phone Verification */}
-                    <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">
-                            {t("verification.phone")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.phone || t("verification.phoneNotAdded")}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {user.phone ? (
-                          <div className="flex items-center gap-2 text-green-600">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm font-medium">
-                              {t("verification.verified")}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-destructive" />
-                            <Button size="sm" disabled={!user.phone}>
-                              {t("verification.verify")}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* Identity Verification */}
-                    <div className="p-4 border border-dashed rounded-lg bg-background md:col-span-2">
-                      <div className="text-center">
-                        <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                        <h3 className="font-medium mb-1">
-                          {t("verification.identity")}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {t("verification.identityDescription")}
-                        </p>
-                        <Button variant="outline" size="sm">
-                          <Upload className="h-4 w-4 mr-2" />
-                          {t("verification.uploadDocument")}
-                        </Button>
-                      </div>
-                    </div>
+                    <p className="text-[var(--color-text-primary)] font-medium">
+                      {user.date_of_birth
+                        ? new Date(user.date_of_birth).toLocaleDateString()
+                        : "Not provided"}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -651,50 +585,56 @@ export default function CustomerProfilePage() {
 
           {/* Addresses Section */}
           {activeSection === "addresses" && (
-            <Card>
+            <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                       <MapPin className="h-5 w-5" />
-                      {t("sections.addresses")}
+                      Addresses
                     </CardTitle>
-                    <CardDescription>
-                      {t("addresses.description")}
-                    </CardDescription>
+                    <p className="text-[var(--color-text-secondary)] mt-1">
+                      Manage your service locations
+                    </p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowNewAddressForm(true)}
+                    className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    {t("addresses.add")}
+                    Add Address
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {addresses.length === 0 && !showNewAddressForm && (
                   <div className="text-center py-8">
-                    <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-medium mb-2">{t("addresses.empty")}</h3>
-                    <p className="text-muted-foreground mb-4">
-                      {t("addresses.emptyDescription")}
+                    <MapPin className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-4" />
+                    <h3 className="font-medium mb-2 text-[var(--color-text-primary)]">
+                      No Addresses Added
+                    </h3>
+                    <p className="text-[var(--color-text-secondary)] mb-4">
+                      Add your first address to get started
                     </p>
-                    <Button onClick={() => setShowNewAddressForm(true)}>
+                    <Button
+                      onClick={() => setShowNewAddressForm(true)}
+                      className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90"
+                    >
                       <Plus className="h-4 w-4 mr-2" />
-                      {t("addresses.addFirst")}
+                      Add First Address
                     </Button>
                   </div>
                 )}
 
                 {/* New Address Form */}
                 {showNewAddressForm && (
-                  <Card className="border-dashed border-2">
+                  <Card className="border-2 border-dashed border-[var(--color-border)] bg-[var(--color-accent)]/10">
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">
-                          {t("addresses.newAddress")}
+                        <CardTitle className="text-lg text-[var(--color-text-primary)]">
+                          Add New Address
                         </CardTitle>
                         <Button
                           variant="ghost"
@@ -708,8 +648,11 @@ export default function CustomerProfilePage() {
                     <CardContent className="space-y-4">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="address_label">
-                            {t("addresses.label")}
+                          <Label
+                            htmlFor="address_label"
+                            className="text-[var(--color-text-primary)]"
+                          >
+                            Label
                           </Label>
                           <select
                             id="address_label"
@@ -720,18 +663,19 @@ export default function CustomerProfilePage() {
                                 label: e.target.value,
                               }))
                             }
-                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+                            className="flex h-9 w-full rounded-md border border-[var(--color-border)] bg-transparent px-3 py-1 text-sm shadow-xs focus:border-[var(--color-primary)]"
                           >
-                            <option value="home">{t("addresses.home")}</option>
-                            <option value="work">{t("addresses.work")}</option>
-                            <option value="other">
-                              {t("addresses.other")}
-                            </option>
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
                           </select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="country">
-                            {t("addresses.country")}
+                          <Label
+                            htmlFor="country"
+                            className="text-[var(--color-text-primary)]"
+                          >
+                            Country
                           </Label>
                           <select
                             id="country"
@@ -742,7 +686,7 @@ export default function CustomerProfilePage() {
                                 country: e.target.value,
                               }))
                             }
-                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+                            className="flex h-9 w-full rounded-md border border-[var(--color-border)] bg-transparent px-3 py-1 text-sm shadow-xs focus:border-[var(--color-primary)]"
                           >
                             <option value="MA">Morocco</option>
                             <option value="FR">France</option>
@@ -750,8 +694,11 @@ export default function CustomerProfilePage() {
                           </select>
                         </div>
                         <div className="space-y-2 sm:col-span-2">
-                          <Label htmlFor="street_address">
-                            {t("addresses.street")}
+                          <Label
+                            htmlFor="street_address"
+                            className="text-[var(--color-text-primary)]"
+                          >
+                            Street Address *
                           </Label>
                           <Input
                             id="street_address"
@@ -762,11 +709,17 @@ export default function CustomerProfilePage() {
                                 street_address: e.target.value,
                               }))
                             }
-                            placeholder={t("addresses.streetPlaceholder")}
+                            placeholder="Enter street address"
+                            className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="city">{t("addresses.city")}</Label>
+                          <Label
+                            htmlFor="city"
+                            className="text-[var(--color-text-primary)]"
+                          >
+                            City *
+                          </Label>
                           <Input
                             id="city"
                             value={newAddress.city}
@@ -776,12 +729,16 @@ export default function CustomerProfilePage() {
                                 city: e.target.value,
                               }))
                             }
-                            placeholder={t("addresses.cityPlaceholder")}
+                            placeholder="Enter city"
+                            className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="region">
-                            {t("addresses.region")}
+                          <Label
+                            htmlFor="region"
+                            className="text-[var(--color-text-primary)]"
+                          >
+                            Region *
                           </Label>
                           <Input
                             id="region"
@@ -792,12 +749,16 @@ export default function CustomerProfilePage() {
                                 region: e.target.value,
                               }))
                             }
-                            placeholder={t("addresses.regionPlaceholder")}
+                            placeholder="Enter region"
+                            className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="postal_code">
-                            {t("addresses.postalCode")}
+                          <Label
+                            htmlFor="postal_code"
+                            className="text-[var(--color-text-primary)]"
+                          >
+                            Postal Code
                           </Label>
                           <Input
                             id="postal_code"
@@ -808,19 +769,25 @@ export default function CustomerProfilePage() {
                                 postal_code: e.target.value,
                               }))
                             }
-                            placeholder={t("addresses.postalCodePlaceholder")}
+                            placeholder="Enter postal code"
+                            className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
                       </div>
                       <div className="flex gap-2 pt-4">
-                        <Button onClick={addAddress} disabled={loading}>
-                          {loading ? t("actions.saving") : t("actions.save")}
+                        <Button
+                          onClick={addAddress}
+                          disabled={loading}
+                          className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90"
+                        >
+                          {loading ? "Saving..." : "Save Address"}
                         </Button>
                         <Button
                           variant="outline"
                           onClick={() => setShowNewAddressForm(false)}
+                          className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                         >
-                          {t("actions.cancel")}
+                          Cancel
                         </Button>
                       </div>
                     </CardContent>
@@ -829,28 +796,31 @@ export default function CustomerProfilePage() {
 
                 {/* Existing Addresses */}
                 {addresses.map((address) => (
-                  <Card key={address.id} className="relative">
+                  <Card
+                    key={address.id}
+                    className="border-[var(--color-border)] bg-[var(--color-surface)]"
+                  >
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-medium capitalize">
+                            <span className="font-medium capitalize text-[var(--color-text-primary)]">
                               {address.label}
                             </span>
                             {address.is_default && (
-                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                                {t("addresses.default")}
+                              <span className="text-xs bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white px-2 py-1 rounded">
+                                Default
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-[var(--color-text-secondary)]">
                             {address.street_address}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-[var(--color-text-secondary)]">
                             {address.city}, {address.region}{" "}
                             {address.postal_code}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-[var(--color-text-secondary)]">
                             {address.country}
                           </p>
                         </div>
@@ -878,87 +848,212 @@ export default function CustomerProfilePage() {
 
           {/* Payment Methods Section */}
           {activeSection === "payment" && (
-            <Card>
+            <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                       <CreditCard className="h-5 w-5" />
-                      {t("sections.payment")}
+                      Payment Methods
                     </CardTitle>
-                    <CardDescription>
-                      {t("payment.description")}
-                    </CardDescription>
+                    <p className="text-[var(--color-text-secondary)] mt-1">
+                      Manage your payment information
+                    </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
-                    {t("payment.addMethod")}
+                    Add Payment Method
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-medium mb-2">{t("payment.noMethods")}</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {t("payment.noMethodsDescription")}
-                  </p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t("payment.addFirst")}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Preferences Section */}
-          {activeSection === "preferences" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  {t("sections.preferences")}
-                </CardTitle>
-                <CardDescription>
-                  {t("preferences.description")}
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Language */}
-                <div className="space-y-2">
-                  <Label>{t("preferences.language")}</Label>
-                  <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs">
-                    <option value="en">English</option>
-                    <option value="de">Deutsch</option>
-                    <option value="fr">Français</option>
-                  </select>
+                {/* Wallet Balance */}
+                <div className="p-6 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-xl text-white">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Wallet className="h-6 w-6" />
+                    <h3 className="text-lg font-semibold">Wallet Balance</h3>
+                  </div>
+                  <div className="text-3xl font-bold mb-2">
+                    {user.wallet_balance
+                      ? `${user.wallet_balance} MAD`
+                      : "0 MAD"}
+                  </div>
+                  <p className="text-sm opacity-90">
+                    Available for payments and refunds
+                  </p>
                 </div>
 
-                {/* Timezone */}
-                <div className="space-y-2">
-                  <Label>{t("preferences.timezone")}</Label>
-                  <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs">
-                    <option value="GMT">GMT (Greenwich Mean Time)</option>
-                    <option value="CET">CET (Central European Time)</option>
-                    <option value="EST">EST (Eastern Standard Time)</option>
-                  </select>
-                </div>
-
-                {/* Currency */}
-                <div className="space-y-2">
-                  <Label>{t("preferences.currency")}</Label>
-                  <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs">
-                    <option value="EUR">EUR (Euro)</option>
-                    <option value="USD">USD (US Dollar)</option>
-                    <option value="MAD">MAD (Moroccan Dirham)</option>
-                  </select>
+                {/* Payment Methods Placeholder */}
+                <div className="text-center py-8">
+                  <CreditCard className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-4" />
+                  <h3 className="font-medium mb-2 text-[var(--color-text-primary)]">
+                    No Payment Methods
+                  </h3>
+                  <p className="text-[var(--color-text-secondary)] mb-4">
+                    Add a payment method to make purchases
+                  </p>
+                  <Button className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add First Payment Method
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           )}
         </div>
       </div>
+
+      {/* Personal Info Edit Dialog */}
+      <Dialog
+        open={personalInfoDialogOpen}
+        onOpenChange={setPersonalInfoDialogOpen}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Edit Personal Information
+            </DialogTitle>
+            <DialogDescription>
+              Update your personal information. Fields marked with * are
+              required.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="dialog_first_name"
+                  className="text-[var(--color-text-primary)]"
+                >
+                  First Name *
+                </Label>
+                <Input
+                  id="dialog_first_name"
+                  value={personalInfo.first_name}
+                  onChange={(e) =>
+                    setPersonalInfo((prev) => ({
+                      ...prev,
+                      first_name: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter your first name"
+                  className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="dialog_last_name"
+                  className="text-[var(--color-text-primary)]"
+                >
+                  Last Name *
+                </Label>
+                <Input
+                  id="dialog_last_name"
+                  value={personalInfo.last_name}
+                  onChange={(e) =>
+                    setPersonalInfo((prev) => ({
+                      ...prev,
+                      last_name: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter your last name"
+                  className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="dialog_email"
+                  className="text-[var(--color-text-primary)]"
+                >
+                  Email
+                </Label>
+                <Input
+                  id="dialog_email"
+                  type="email"
+                  value={personalInfo.email}
+                  disabled={true}
+                  className="bg-[var(--color-accent)]/30 border-[var(--color-border)]"
+                />
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  Email cannot be changed
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="dialog_phone"
+                  className="text-[var(--color-text-primary)]"
+                >
+                  Phone Number
+                </Label>
+                <Input
+                  id="dialog_phone"
+                  type="tel"
+                  value={personalInfo.phone}
+                  onChange={(e) =>
+                    setPersonalInfo((prev) => ({
+                      ...prev,
+                      phone: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter your phone number"
+                  className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label
+                  htmlFor="dialog_date_of_birth"
+                  className="text-[var(--color-text-primary)]"
+                >
+                  Date of Birth
+                </Label>
+                <Input
+                  id="dialog_date_of_birth"
+                  type="date"
+                  value={personalInfo.date_of_birth}
+                  onChange={(e) =>
+                    setPersonalInfo((prev) => ({
+                      ...prev,
+                      date_of_birth: e.target.value,
+                    }))
+                  }
+                  className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPersonalInfo({
+                  first_name: user?.first_name || "",
+                  last_name: user?.last_name || "",
+                  email: user?.email || "",
+                  phone: user?.phone || "",
+                  date_of_birth: user?.date_of_birth || "",
+                  avatar_url: user?.avatar_url || "",
+                });
+                setPersonalInfoDialogOpen(false);
+              }}
+              className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={updatePersonalInfo}
+              disabled={loading}
+              className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90"
+            >
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
