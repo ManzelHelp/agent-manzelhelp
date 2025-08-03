@@ -2,6 +2,7 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest } from "next/server";
 import { createClient } from "@/supabase/server";
 import { getLocale } from "next-intl/server";
+import { createUserRecordsAction } from "@/actions/users";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -28,16 +29,17 @@ export async function GET(request: NextRequest) {
 
     if (!error && data.session && data.user) {
       try {
-        // Create the user record in the database
+        // Create the user record in the database with proper schema
         const { error: insertError } = await supabase.from("users").insert([
           {
             id: data.user.id,
             email: data.user.email,
-            role: userRole as "customer" | "tasker" | "both" | "admin",
+            role: userRole as "customer" | "tasker" | "support" | "admin",
             email_verified: true,
             is_active: true,
-            created_at: new Date().toISOString(),
             preferred_language: locale,
+            verification_status: "unverified", // Default status
+            wallet_balance: 0, // Required field with default
           },
         ]);
 
@@ -47,6 +49,9 @@ export async function GET(request: NextRequest) {
           redirectTo.pathname = `/${locale}/error`;
           return Response.redirect(redirectTo.toString());
         }
+
+        // Create related records (user_stats, tasker_profile if needed)
+        await createUserRecordsAction(data.user.id, userRole as string);
 
         // User is now authenticated and created, get their profile data
         const { data: profile, error: profileError } = await supabase

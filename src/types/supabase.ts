@@ -171,7 +171,7 @@ export interface TaskerService {
   tasker_id: string;
   service_id: number;
   pricing_type?: PricingType;
-  base_price: number;
+  price?: number;
   hourly_rate?: number;
   is_available?: boolean;
   is_promoted?: boolean;
@@ -183,7 +183,7 @@ export interface TaskerService {
   description?: string;
   portfolio_images?: object | null;
   minimum_duration?: number;
-  service_area?: string;
+  service_area?: object | null;
   verification_status?: ServiceVerificationStatus;
   availability_status?: ServiceAvailabilityStatus;
   extra_fees?: number;
@@ -295,6 +295,7 @@ export interface Transaction {
   cash_payment_confirmed?: boolean;
   cash_payment_confirmed_by?: string;
   cash_payment_confirmed_at?: string;
+  booking_id?: string;
 }
 
 export interface Notification {
@@ -568,7 +569,7 @@ export interface ServiceListingView {
   tasker_id?: string;
   title?: string;
   description?: string;
-  base_price?: number;
+  price?: number;
   pricing_type?: PricingType;
   service_status?: ServiceStatus;
   verification_status?: ServiceVerificationStatus;

@@ -22,8 +22,15 @@ export default function ConfirmSuccessPage() {
           // Store user data in Zustand
           setUser(user);
 
-          // Show success message
-          toast.success("Email confirmed successfully! Welcome!");
+          // Show success message based on user role
+          const roleMessage =
+            user.role === "tasker"
+              ? "Welcome! Your account is ready. Complete your profile to start helping others."
+              : "Welcome! Your account is ready. Start finding help for your tasks.";
+
+          toast.success("Email confirmed successfully!", {
+            description: roleMessage,
+          });
 
           // Redirect to appropriate dashboard based on role from user object
           const role = user.role || "customer";
