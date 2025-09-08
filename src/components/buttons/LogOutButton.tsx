@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
-import { logOutAction } from "@/actions/users";
+import { logOutAction } from "@/actions/auth";
 import { useUserStore } from "@/stores/userStore";
 
 function LogOutButton() {

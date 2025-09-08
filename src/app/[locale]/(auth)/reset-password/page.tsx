@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Lock, ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { updatePasswordAction } from "@/actions/users";
+import { updatePasswordAction } from "@/actions/auth";
 
 export default function ResetPasswordPage() {
   const router = useRouter();

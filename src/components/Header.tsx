@@ -38,7 +38,7 @@ function Header() {
         <div className="flex items-center">
           <Link href="/" className="relative flex items-center">
             <Image
-              src="/logo-manzil.webp"
+              src="/logo-manzelhelp.png"
               alt="ManzelHelp"
               width={120}
               height={100}

@@ -9,7 +9,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Loader2, Mail, Lock, ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { loginAction, resetPasswordAction } from "@/actions/users";
+import { loginAction, resetPasswordAction } from "@/actions/auth";
 import { getProfile } from "@/supabase/client";
 import { useUserStore } from "@/stores/userStore";
 

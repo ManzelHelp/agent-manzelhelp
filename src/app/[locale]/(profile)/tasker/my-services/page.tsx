@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { getUserProfileAction } from "@/actions/users";
+import { getUserProfileAction } from "@/actions/auth";
 import { createClient } from "@/supabase/server";
 import { TaskerService, Service, ServiceCategory } from "@/types/supabase";
 import {

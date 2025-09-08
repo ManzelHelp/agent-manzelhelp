@@ -8,7 +8,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Loader2, Mail, Lock, User } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { signUpAction } from "@/actions/users";
+import { signUpAction } from "@/actions/auth";
 import { useUserStore } from "@/stores/userStore";
 
 function SignUpForm() {

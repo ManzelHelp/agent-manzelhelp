@@ -2,7 +2,7 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest } from "next/server";
 import { createClient } from "@/supabase/server";
 import { getLocale } from "next-intl/server";
-import { createUserRecordsAction } from "@/actions/users";
+import { createUserRecordsAction } from "@/actions/auth";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
