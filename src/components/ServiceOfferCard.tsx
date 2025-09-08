@@ -69,7 +69,7 @@ function ServiceOfferCard({ service, tasker }: ServiceOfferCardProps) {
               )}
             </div>
             <Link
-              href={`/${locale}/taskerOffer/${service.id}`}
+              href={`/${locale}/tasker-offer/${service.id}`}
               className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[var(--color-secondary)] text-white rounded-md hover:bg-[var(--color-secondary-dark)] transition-all duration-200 text-xs sm:text-sm font-medium text-center min-h-[36px] sm:min-h-[40px] flex items-center justify-center"
             >
               View Details
