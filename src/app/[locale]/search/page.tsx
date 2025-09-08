@@ -24,11 +24,10 @@ interface ServiceWithTasker extends TaskerService {
   tasker: User;
 }
 
-async function SearchPage({
-  searchParams,
-  params: { locale },
-}: SearchPageProps) {
+async function SearchPage({ searchParams, params }: SearchPageProps) {
   const resolvedSearchParams = await searchParams;
+  const resolvedParams = await params;
+  const { locale } = resolvedParams;
   const supabase = await createClient();
   const t = await getTranslations("search");
 
@@ -54,7 +53,7 @@ async function SearchPage({
       )
     `
     )
-    .eq("is_available", true);
+    .eq("service_status", "active");
 
   // Apply filters
   if (resolvedSearchParams.q) {
@@ -66,11 +65,11 @@ async function SearchPage({
   }
 
   if (resolvedSearchParams.minPrice) {
-    query = query.gte("base_price", parseFloat(resolvedSearchParams.minPrice));
+    query = query.gte("price", parseFloat(resolvedSearchParams.minPrice));
   }
 
   if (resolvedSearchParams.maxPrice) {
-    query = query.lte("base_price", parseFloat(resolvedSearchParams.maxPrice));
+    query = query.lte("price", parseFloat(resolvedSearchParams.maxPrice));
   }
 
   if (resolvedSearchParams.location) {

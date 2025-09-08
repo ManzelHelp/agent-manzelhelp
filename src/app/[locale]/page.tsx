@@ -107,7 +107,7 @@ export default async function Page({
       id,
       title,
       description,
-      base_price,
+      price,
       pricing_type,
       service_area,
       is_promoted,
@@ -120,7 +120,7 @@ export default async function Page({
       )
     `
     )
-    .eq("is_available", true)
+    .eq("service_status", "active")
     .eq("verification_status", "verified")
     .order("is_promoted", { ascending: false })
     .limit(6);
@@ -132,7 +132,7 @@ export default async function Page({
         id: service.id,
         tasker_id: service.tasker_id,
         service_id: 0, // This would need to be fetched from the actual service relationship
-        base_price: service.base_price,
+        price: service.price,
         pricing_type: service.pricing_type,
         title: service.title,
         description: service.description || "",

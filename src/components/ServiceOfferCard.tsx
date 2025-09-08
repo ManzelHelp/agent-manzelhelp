@@ -34,7 +34,13 @@ function ServiceOfferCard({ service, tasker }: ServiceOfferCardProps) {
             </h3>
             <div className="flex items-center text-xs sm:text-sm text-[var(--color-text-secondary)]">
               <MapPin size={12} className="mr-1 flex-shrink-0" />
-              <span className="truncate">{service.service_area}</span>
+              <span className="truncate">
+                {typeof service.service_area === "string"
+                  ? service.service_area
+                  : service.service_area
+                  ? JSON.stringify(service.service_area)
+                  : "N/A"}
+              </span>
             </div>
           </div>
         </div>
@@ -54,7 +60,7 @@ function ServiceOfferCard({ service, tasker }: ServiceOfferCardProps) {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
             <div className="flex items-center">
               <span className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)]">
-                ${service.base_price}
+                ${service.price}
               </span>
               {service.pricing_type === "hourly" && (
                 <span className="text-xs sm:text-sm text-[var(--color-text-secondary)] ml-1">

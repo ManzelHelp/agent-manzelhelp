@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import type { TaskerService, Service, ServiceCategory } from "@/types/supabase";
+import type {
+  TaskerService,
+  Service,
+  ServiceCategory,
+  ServiceStatus,
+} from "@/types/supabase";
 import {
   Edit,
   Save,
@@ -44,12 +49,11 @@ export default function TaskerServiceDetailPage() {
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
-    base_price: 0,
-    hourly_rate: 0,
+    price: 0,
     pricing_type: "fixed" as "fixed" | "hourly" | "per_item",
     minimum_duration: 0,
     service_area: "",
-    is_available: true,
+    service_status: "active" as ServiceStatus,
   });
 
   useEffect(() => {
@@ -101,12 +105,11 @@ export default function TaskerServiceDetailPage() {
         setEditForm({
           title: taskerServiceData.title || "",
           description: taskerServiceData.description || "",
-          base_price: taskerServiceData.base_price || 0,
-          hourly_rate: taskerServiceData.hourly_rate || 0,
+          price: taskerServiceData.price || 0,
           pricing_type: taskerServiceData.pricing_type || "fixed",
           minimum_duration: taskerServiceData.minimum_duration || 0,
           service_area: taskerServiceData.service_area || "",
-          is_available: taskerServiceData.is_available ?? true,
+          service_status: taskerServiceData.service_status || "active",
         });
       } catch (err) {
         console.error("Error fetching service data:", err);
@@ -121,7 +124,7 @@ export default function TaskerServiceDetailPage() {
     };
 
     fetchServiceData();
-  }, [params["service-id"]]);
+  }, [params]);
 
   const handleSave = async () => {
     if (!data) return;
@@ -133,12 +136,11 @@ export default function TaskerServiceDetailPage() {
         .update({
           title: editForm.title,
           description: editForm.description,
-          base_price: editForm.base_price,
-          hourly_rate: editForm.hourly_rate,
+          price: editForm.price,
           pricing_type: editForm.pricing_type,
           minimum_duration: editForm.minimum_duration,
           service_area: editForm.service_area,
-          is_available: editForm.is_available,
+          service_status: editForm.service_status,
           updated_at: new Date().toISOString(),
         })
         .eq("id", data.taskerService.id);
@@ -180,12 +182,16 @@ export default function TaskerServiceDetailPage() {
       setEditForm({
         title: data.taskerService.title || "",
         description: data.taskerService.description || "",
-        base_price: data.taskerService.base_price || 0,
-        hourly_rate: data.taskerService.hourly_rate || 0,
+        price: data.taskerService.price || 0,
         pricing_type: data.taskerService.pricing_type || "fixed",
         minimum_duration: data.taskerService.minimum_duration || 0,
-        service_area: data.taskerService.service_area || "",
-        is_available: data.taskerService.is_available ?? true,
+        service_area:
+          typeof data.taskerService.service_area === "string"
+            ? data.taskerService.service_area
+            : data.taskerService.service_area
+            ? JSON.stringify(data.taskerService.service_area)
+            : "",
+        service_status: data.taskerService.service_status || "active",
       });
     }
     setIsEditing(false);
@@ -195,11 +201,11 @@ export default function TaskerServiceDetailPage() {
     if (!data?.taskerService) return "€0";
 
     if (data.taskerService.pricing_type === "hourly") {
-      return `€${data.taskerService.hourly_rate}/hr`;
+      return `€${data.taskerService.price}/hr`;
     } else if (data.taskerService.pricing_type === "per_item") {
-      return `€${data.taskerService.base_price}/item`;
+      return `€${data.taskerService.price}/item`;
     } else {
-      return `€${data.taskerService.base_price}`;
+      return `€${data.taskerService.price}`;
     }
   };
 
@@ -358,13 +364,15 @@ export default function TaskerServiceDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    {taskerService.is_available ? (
+                    {taskerService.service_status === "active" ? (
                       <Eye className="h-5 w-5 text-[var(--color-success)]" />
                     ) : (
                       <EyeOff className="h-5 w-5 text-[var(--color-text-secondary)]" />
                     )}
                     <span className="font-medium text-[var(--color-text-primary)]">
-                      {taskerService.is_available ? "Available" : "Unavailable"}
+                      {taskerService.service_status === "active"
+                        ? "Available"
+                        : "Unavailable"}
                     </span>
                   </div>
                 </div>
@@ -468,17 +476,11 @@ export default function TaskerServiceDetailPage() {
                       <input
                         type="number"
                         step="0.01"
-                        value={
-                          editForm.pricing_type === "hourly"
-                            ? editForm.hourly_rate
-                            : editForm.base_price
-                        }
+                        value={editForm.price}
                         onChange={(e) =>
                           setEditForm({
                             ...editForm,
-                            [editForm.pricing_type === "hourly"
-                              ? "hourly_rate"
-                              : "base_price"]: parseFloat(e.target.value) || 0,
+                            price: parseFloat(e.target.value) || 0,
                           })
                         }
                         className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
@@ -526,18 +528,20 @@ export default function TaskerServiceDetailPage() {
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      id="is_available"
-                      checked={editForm.is_available}
+                      id="service_status"
+                      checked={editForm.service_status === "active"}
                       onChange={(e) =>
                         setEditForm({
                           ...editForm,
-                          is_available: e.target.checked,
+                          service_status: e.target.checked
+                            ? "active"
+                            : "paused",
                         })
                       }
                       className="h-4 w-4 text-[var(--color-secondary)] focus:ring-[var(--color-secondary)] border-[var(--color-border)] rounded"
                     />
                     <label
-                      htmlFor="is_available"
+                      htmlFor="service_status"
                       className="text-sm text-[var(--color-text-primary)]"
                     >
                       Service is available for booking
@@ -615,7 +619,11 @@ export default function TaskerServiceDetailPage() {
                             Service Area
                           </p>
                           <p className="text-sm text-[var(--color-text-secondary)]">
-                            {taskerService.service_area}
+                            {typeof taskerService.service_area === "string"
+                              ? taskerService.service_area
+                              : taskerService.service_area
+                              ? JSON.stringify(taskerService.service_area)
+                              : "N/A"}
                           </p>
                         </div>
                       </div>

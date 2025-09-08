@@ -183,11 +183,11 @@ export default function TaskerOfferPage() {
 
   const getPricingDisplay = () => {
     if (taskerService.pricing_type === "hourly") {
-      return `€${taskerService.hourly_rate}/hr`;
+      return `€${taskerService.price}/hr`;
     } else if (taskerService.pricing_type === "per_item") {
-      return `€${taskerService.base_price}/item`;
+      return `€${taskerService.price}/item`;
     } else {
-      return `€${taskerService.base_price}`;
+      return `€${taskerService.price}`;
     }
   };
 
@@ -282,7 +282,11 @@ export default function TaskerOfferPage() {
                     <div>
                       <p className="text-sm font-medium">Service Area</p>
                       <p className="text-sm text-muted-foreground">
-                        {taskerService.service_area}
+                        {typeof taskerService.service_area === "string"
+                          ? taskerService.service_area
+                          : taskerService.service_area
+                          ? JSON.stringify(taskerService.service_area)
+                          : "N/A"}
                       </p>
                     </div>
                   </div>

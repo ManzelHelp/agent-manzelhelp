@@ -172,8 +172,6 @@ export interface TaskerService {
   service_id: number;
   pricing_type?: PricingType;
   price?: number;
-  hourly_rate?: number;
-  is_available?: boolean;
   is_promoted?: boolean;
   promotion_expires_at?: string;
   promotion_boost_score?: number;
@@ -183,12 +181,11 @@ export interface TaskerService {
   description?: string;
   portfolio_images?: object | null;
   minimum_duration?: number;
+  extra_fees?: number;
+  has_active_booking?: boolean;
+  service_status?: ServiceStatus;
   service_area?: object | null;
   verification_status?: ServiceVerificationStatus;
-  availability_status?: ServiceAvailabilityStatus;
-  extra_fees?: number;
-  service_status?: ServiceStatus;
-  has_active_booking?: boolean;
 }
 
 export interface Job {

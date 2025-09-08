@@ -356,16 +356,12 @@ export default function CreateOfferPage() {
           title: formData.basicInfo.title,
           description: formData.basicInfo.description,
           pricing_type: formData.pricing.pricingType,
-          base_price: formData.pricing.basePrice || 0, // Always provide a value since it's NOT NULL
-          hourly_rate:
-            formData.pricing.pricingType === "hourly"
-              ? formData.pricing.hourlyRate
-              : null,
+          price: formData.pricing.basePrice || 0, // Always provide a value since it's NOT NULL
           minimum_duration: formData.pricing.minimumBookingHours
             ? Math.round(formData.pricing.minimumBookingHours)
             : null, // Round to nearest hour if provided
           service_area: `${selectedAddress.city}, ${selectedAddress.region}`,
-          is_available: true,
+          service_status: "active",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           portfolio_images: null, // We can add image upload functionality later

@@ -71,11 +71,11 @@ export default async function MyServicesPage() {
 
   const getPricingDisplay = (service: TaskerService) => {
     if (service.pricing_type === "hourly") {
-      return `€${service.hourly_rate}/hr`;
+      return `€${service.price}/hr`;
     } else if (service.pricing_type === "per_item") {
-      return `€${service.base_price}/item`;
+      return `€${service.price}/item`;
     } else {
-      return `€${service.base_price}`;
+      return `€${service.price}`;
     }
   };
 
@@ -175,7 +175,7 @@ export default async function MyServicesPage() {
                           {serviceWithDetails.title}
                         </h3>
                         <div className="flex items-center gap-1">
-                          {serviceWithDetails.is_available ? (
+                          {serviceWithDetails.service_status === "active" ? (
                             <Eye className="h-4 w-4 text-[var(--color-success)]" />
                           ) : (
                             <EyeOff className="h-4 w-4 text-[var(--color-text-secondary)]" />
@@ -202,7 +202,11 @@ export default async function MyServicesPage() {
                         <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
                           <MapPin className="h-3 w-3" />
                           <span className="truncate">
-                            {serviceWithDetails.service_area}
+                            {typeof serviceWithDetails.service_area === "string"
+                              ? serviceWithDetails.service_area
+                              : serviceWithDetails.service_area
+                              ? JSON.stringify(serviceWithDetails.service_area)
+                              : "N/A"}
                           </span>
                         </div>
                       )}
