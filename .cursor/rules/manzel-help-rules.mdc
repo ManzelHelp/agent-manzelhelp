@@ -1,0 +1,11 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+-always use best practices
+-use existing shedcn components rather than creating new ones
+-use mobile first approach
+-always write modern, responsive and user firendly code
+-always use a visual appealing design and use the global css file
