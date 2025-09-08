@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ServiceCategory } from "@/types/supabase";
 import { useState } from "react";
+import { Filter, X, Star, MapPin, DollarSign, Tag } from "lucide-react";
 
 interface SearchFiltersProps {
   categories: Pick<ServiceCategory, "id" | "name_en" | "name_fr" | "name_ar">[];
@@ -51,6 +52,23 @@ export default function SearchFilters({
     );
   };
 
+  // Clear all filters
+  const clearAllFilters = () => {
+    setMinPrice("");
+    setMaxPrice("");
+    setLocation("");
+    setSelectedCategory("");
+    setSelectedRatings([]);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters =
+    minPrice ||
+    maxPrice ||
+    location ||
+    selectedCategory ||
+    selectedRatings.length > 0;
+
   // Apply filters
   const applyFilters = () => {
     const params = new URLSearchParams(searchParams);
@@ -81,94 +99,142 @@ export default function SearchFilters({
   };
 
   return (
-    <Card className="p-4 sticky top-4">
-      <h2 className="text-xl font-semibold mb-4">{t.filters}</h2>
-
-      {/* Categories */}
-      <div className="space-y-4 mb-6">
-        <Label>{t.categories}</Label>
-        <select
-          className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-2 text-[var(--color-text-primary)]"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="">{t.allCategories}</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category[`name_${locale}` as keyof typeof category] ||
-                category.name_en}
-            </option>
-          ))}
-        </select>
+    <Card className="p-6 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-2xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[var(--color-secondary)]/10 rounded-lg">
+            <Filter className="w-5 h-5 text-[var(--color-secondary)]" />
+          </div>
+          <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+            {t.filters}
+          </h2>
+        </div>
+        {hasActiveFilters && (
+          <button
+            onClick={clearAllFilters}
+            className="flex items-center gap-1 px-3 py-1 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
+        )}
       </div>
 
-      {/* Price Range */}
-      <div className="space-y-4 mb-6">
-        <Label>{t.priceRange}</Label>
-        <div className="space-y-2">
-          <div className="flex gap-4">
-            <div className="flex-1">
+      <div className="space-y-6">
+        {/* Categories */}
+        <div className="space-y-3">
+          <Label className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
+            <Tag className="w-4 h-4" />
+            {t.categories}
+          </Label>
+          <select
+            className="w-full rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] p-3 text-[var(--color-text-primary)] focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]/20 transition-all duration-200"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="">{t.allCategories}</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category[`name_${locale}` as keyof typeof category] ||
+                  category.name_en}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Price Range */}
+        <div className="space-y-3">
+          <Label className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
+            <DollarSign className="w-4 h-4" />
+            {t.priceRange}
+          </Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="relative">
               <Input
                 type="number"
-                placeholder="Min"
+                placeholder="Min $"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 min={0}
+                className="rounded-xl border-2 border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]/20 transition-all duration-200"
               />
             </div>
-            <div className="flex-1">
+            <div className="relative">
               <Input
                 type="number"
-                placeholder="Max"
+                placeholder="Max $"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 min={0}
+                className="rounded-xl border-2 border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]/20 transition-all duration-200"
               />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Service Area */}
-      <div className="space-y-4 mb-6">
-        <Label>{t.location}</Label>
-        <Input
-          placeholder={t.enterLocation}
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        />
-      </div>
-
-      {/* Rating Filter */}
-      <div className="space-y-4 mb-6">
-        <Label>{t.rating}</Label>
-        <div className="space-y-2">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <label key={rating} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                className="rounded border-[var(--color-border)]"
-                checked={selectedRatings.includes(rating.toString())}
-                onChange={() => handleRatingChange(rating.toString())}
-              />
-              <span className="flex items-center">
-                {"★".repeat(rating)}
-                <span className="text-[var(--color-text-secondary)]">
-                  {"☆".repeat(5 - rating)}
-                </span>
-                & up
-              </span>
-            </label>
-          ))}
+        {/* Service Area */}
+        <div className="space-y-3">
+          <Label className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
+            <MapPin className="w-4 h-4" />
+            {t.location}
+          </Label>
+          <Input
+            placeholder={t.enterLocation}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="rounded-xl border-2 border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]/20 transition-all duration-200"
+          />
         </div>
-      </div>
 
-      <Button
-        className="w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white"
-        onClick={applyFilters}
-      >
-        {t.applyFilters}
-      </Button>
+        {/* Rating Filter */}
+        <div className="space-y-3">
+          <Label className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
+            <Star className="w-4 h-4" />
+            {t.rating}
+          </Label>
+          <div className="space-y-3">
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <label
+                key={rating}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-[var(--color-accent)]/5 transition-colors cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-2 border-[var(--color-border)] text-[var(--color-secondary)] focus:ring-[var(--color-secondary)]/20"
+                  checked={selectedRatings.includes(rating.toString())}
+                  onChange={() => handleRatingChange(rating.toString())}
+                />
+                <span className="flex items-center text-sm text-[var(--color-text-primary)]">
+                  <div className="flex items-center mr-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < rating
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[var(--color-text-secondary)]">
+                    {rating} star{rating > 1 ? "s" : ""} & up
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Apply Button */}
+        <Button
+          className="w-full bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          onClick={applyFilters}
+        >
+          {t.applyFilters}
+        </Button>
+      </div>
     </Card>
   );
 }

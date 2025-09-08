@@ -2,6 +2,14 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Star,
+  MessageSquare,
+  Clock,
+} from "lucide-react";
 
 interface SortDropdownProps {
   currentSort?: string;
@@ -29,22 +37,50 @@ export default function SortDropdown({
     router.push(`/${locale}/search?${params.toString()}`);
   };
 
+  const sortOptions = [
+    { value: "created_at", label: "Newest First", icon: Clock },
+    { value: "price_low", label: "Price: Low to High", icon: ArrowUp },
+    { value: "price_high", label: "Price: High to Low", icon: ArrowDown },
+    { value: "rating", label: "Highest Rated", icon: Star },
+    { value: "reviews", label: "Most Reviews", icon: MessageSquare },
+  ];
+
   return (
-    <div className="flex items-center gap-2">
-      <label className="text-sm text-[var(--color-text-secondary)]">
-        Sort by:
-      </label>
-      <select
-        className="px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-[var(--color-text-primary)]"
-        value={currentSort}
-        onChange={(e) => handleSortChange(e.target.value)}
-      >
-        <option value="created_at">Newest First</option>
-        <option value="price_low">Price: Low to High</option>
-        <option value="price_high">Price: High to Low</option>
-        <option value="rating">Highest Rated</option>
-        <option value="reviews">Most Reviews</option>
-      </select>
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-2">
+        <ArrowUpDown className="w-4 h-4 text-[var(--color-text-secondary)]" />
+        <label className="text-sm font-medium text-[var(--color-text-primary)]">
+          Sort by:
+        </label>
+      </div>
+      <div className="relative">
+        <select
+          className="appearance-none w-full sm:w-auto px-4 py-2.5 pr-10 border-2 border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text-primary)] font-medium focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]/20 transition-all duration-200 cursor-pointer min-w-[180px] text-sm sm:text-base"
+          value={currentSort}
+          onChange={(e) => handleSortChange(e.target.value)}
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <svg
+            className="w-4 h-4 text-[var(--color-text-secondary)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   );
 }

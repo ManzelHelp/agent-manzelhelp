@@ -1,8 +1,10 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { createClient } from "@/supabase/server";
 import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
+import ServiceCardSkeleton from "@/components/ServiceCardSkeleton";
 import SearchFilters from "@/components/filters/SearchFilters";
+import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
 import { getTranslations } from "next-intl/server";
 import {
@@ -192,124 +194,238 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const filteredServices = (services || []) as ServiceListing[];
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
-      {/* Search Header */}
-      <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] py-6">
-        <div className="container mx-auto px-4">
-          <ServiceSearchBar defaultValue={resolvedSearchParams.q} />
+    <main className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
+      {/* Enhanced Search Header with Glass Morphism */}
+      <div className="relative bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] py-12 sm:py-16">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 animate-fade-in-up">
+              {resolvedSearchParams.q
+                ? `Search Results for "${resolvedSearchParams.q}"`
+                : "Find Your Perfect Service"}
+            </h1>
+            <p className="text-white/90 text-lg sm:text-xl max-w-2xl mx-auto animate-fade-in-up animate-delay-200">
+              {resolvedSearchParams.q
+                ? "Discover amazing services tailored to your needs"
+                : "Connect with skilled professionals in your area"}
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto animate-fade-in-up animate-delay-300">
+            <ServiceSearchBar defaultValue={resolvedSearchParams.q} />
+          </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="w-full lg:w-64 flex-shrink-0">
-            <SearchFilters
-              categories={categories}
-              locale={locale}
-              translations={{
-                filters: t("filters"),
-                priceRange: t("priceRange"),
-                location: t("location"),
-                enterLocation: t("enterLocation"),
-                rating: t("rating"),
-                applyFilters: t("applyFilters"),
-                categories: t("categories"),
-                allCategories: t("allCategories"),
-              }}
-            />
-          </aside>
-
-          {/* Results Section */}
-          <section className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl font-semibold">
-                  {resolvedSearchParams.q
-                    ? t("searchResults", { query: resolvedSearchParams.q })
-                    : t("allServices")}
-                </h1>
-                <span className="text-[var(--color-text-secondary)]">
-                  {count || filteredServices.length} {t("resultsFound")}
-                </span>
-              </div>
-
-              {/* Sort Dropdown */}
-              <SortDropdown
-                currentSort={resolvedSearchParams.sort || "created_at"}
+      <div className="container mx-auto px-4 py-8 sm:py-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+          {/* Enhanced Filters Sidebar - Desktop Only */}
+          <aside className="hidden lg:block w-full lg:w-80 flex-shrink-0">
+            <div className="sticky top-8">
+              <SearchFilters
+                categories={categories}
+                locale={locale}
+                translations={{
+                  filters: t("filters"),
+                  priceRange: t("priceRange"),
+                  location: t("location"),
+                  enterLocation: t("enterLocation"),
+                  rating: t("rating"),
+                  applyFilters: t("applyFilters"),
+                  categories: t("categories"),
+                  allCategories: t("allCategories"),
+                }}
               />
             </div>
+          </aside>
 
-            {/* Results Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredServices.map((service) => (
-                <ServiceOfferCard
-                  key={service.tasker_service_id}
-                  service={{
-                    id: service.tasker_service_id,
-                    tasker_id: service.tasker_id,
-                    service_id: service.service_id,
-                    title: service.title,
-                    description: service.description,
-                    price: service.price,
-                    pricing_type: service.pricing_type as PricingType,
-                    service_status: service.service_status as ServiceStatus,
-                    service_area: service.service_area as unknown as object,
-                    verification_status:
-                      service.verification_status as ServiceVerificationStatus,
-                    has_active_booking: service.has_active_booking,
-                    created_at: service.created_at,
-                    updated_at: service.updated_at,
-                    portfolio_images: service.portfolio_images,
-                    minimum_duration: service.minimum_duration || undefined,
-                    extra_fees: service.extra_fees || undefined,
-                    is_promoted: false,
-                    promotion_expires_at: undefined,
-                    promotion_boost_score: undefined,
-                  }}
-                  tasker={{
-                    id: service.tasker_id,
-                    first_name: service.tasker_first_name,
-                    last_name: service.tasker_last_name,
-                    avatar_url: service.tasker_avatar_url,
-                    email: service.tasker_phone, // Using phone as fallback since email not in view
-                    phone: service.tasker_phone,
-                    role: service.tasker_role as UserRole,
-                    verification_status:
-                      service.tasker_verification_status as VerificationStatus,
-                    created_at: service.tasker_created_at,
-                  }}
-                />
-              ))}
+          {/* Enhanced Results Section */}
+          <section className="flex-1 min-w-0">
+            {/* Mobile Filters Dropdown */}
+            <div className="relative mb-4 lg:hidden">
+              <MobileFiltersDropdown
+                categories={categories}
+                locale={locale}
+                translations={{
+                  filters: t("filters"),
+                  priceRange: t("priceRange"),
+                  location: t("location"),
+                  enterLocation: t("enterLocation"),
+                  rating: t("rating"),
+                  applyFilters: t("applyFilters"),
+                  categories: t("categories"),
+                  allCategories: t("allCategories"),
+                }}
+              />
+            </div>
+            {/* Results Header with Modern Styling */}
+            <div className="bg-[var(--color-surface)] rounded-2xl p-6 mb-8 shadow-lg border border-[var(--color-border)] animate-fade-in-up">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+                    {resolvedSearchParams.q
+                      ? t("searchResults", { query: resolvedSearchParams.q })
+                      : t("allServices")}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-secondary)]/10 text-[var(--color-secondary)]">
+                      {count || filteredServices.length} {t("resultsFound")}
+                    </span>
+                    {resolvedSearchParams.q && (
+                      <span className="text-[var(--color-text-secondary)] text-sm">
+                        for "{resolvedSearchParams.q}"
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Enhanced Sort Dropdown */}
+                <div className="animate-fade-in-up animate-delay-200">
+                  <SortDropdown
+                    currentSort={resolvedSearchParams.sort || "created_at"}
+                  />
+                </div>
+              </div>
             </div>
 
-            {filteredServices.length === 0 && (
-              <div className="text-center py-12">
-                <h3 className="text-xl font-semibold mb-2">{t("noResults")}</h3>
-                <p className="text-[var(--color-text-secondary)]">
-                  {t("tryAdjustingFilters")}
-                </p>
-              </div>
-            )}
+            {/* Enhanced Results Grid with Staggered Animation */}
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="animate-fade-in-up"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <ServiceCardSkeleton />
+                    </div>
+                  ))}
+                </div>
+              }
+            >
+              {filteredServices.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                  {filteredServices.map((service, index) => (
+                    <div
+                      key={service.tasker_service_id}
+                      className="animate-fade-in-up"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <ServiceOfferCard
+                        service={{
+                          id: service.tasker_service_id,
+                          tasker_id: service.tasker_id,
+                          service_id: service.service_id,
+                          title: service.title,
+                          description: service.description,
+                          price: service.price,
+                          pricing_type: service.pricing_type as PricingType,
+                          service_status:
+                            service.service_status as ServiceStatus,
+                          service_area:
+                            service.service_area as unknown as object,
+                          verification_status:
+                            service.verification_status as ServiceVerificationStatus,
+                          has_active_booking: service.has_active_booking,
+                          created_at: service.created_at,
+                          updated_at: service.updated_at,
+                          portfolio_images: service.portfolio_images,
+                          minimum_duration:
+                            service.minimum_duration || undefined,
+                          extra_fees: service.extra_fees || undefined,
+                          is_promoted: false,
+                          promotion_expires_at: undefined,
+                          promotion_boost_score: undefined,
+                        }}
+                        tasker={{
+                          id: service.tasker_id,
+                          first_name: service.tasker_first_name,
+                          last_name: service.tasker_last_name,
+                          avatar_url: service.tasker_avatar_url,
+                          email: service.tasker_phone, // Using phone as fallback since email not in view
+                          phone: service.tasker_phone,
+                          role: service.tasker_role as UserRole,
+                          verification_status:
+                            service.tasker_verification_status as VerificationStatus,
+                          created_at: service.tasker_created_at,
+                        }}
+                        rating={service.tasker_rating}
+                        totalReviews={service.total_reviews}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 animate-fade-in-up">
+                  <div className="max-w-md mx-auto">
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center">
+                      <svg
+                        className="w-12 h-12 text-[var(--color-accent)]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">
+                      {t("noResults")}
+                    </h3>
+                    <p className="text-[var(--color-text-secondary)] text-lg mb-6">
+                      {t("tryAdjustingFilters")}
+                    </p>
+                    <button
+                      onClick={() =>
+                        (window.location.href = `/${locale}/search`)
+                      }
+                      className="inline-flex items-center px-6 py-3 bg-[var(--color-secondary)] text-white rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium"
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                </div>
+              )}
+            </Suspense>
 
-            {/* Pagination */}
+            {/* Enhanced Pagination */}
             {filteredServices.length > 0 && (count || 0) > limit && (
-              <div className="flex justify-center items-center gap-2 mt-8">
+              <div className="flex justify-center items-center gap-3 mt-12 animate-fade-in-up">
                 {page > 1 && (
                   <a
                     href={`/${locale}/search?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page - 1).toString(),
                     }).toString()}`}
-                    className="px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-accent)] hover:text-white transition-colors"
+                    className="inline-flex items-center px-6 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                   >
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
                     Previous
                   </a>
                 )}
 
-                <span className="px-4 py-2 text-[var(--color-text-secondary)]">
-                  Page {page} of {Math.ceil((count || 0) / limit)}
-                </span>
+                <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-sm">
+                  <span className="text-[var(--color-text-primary)] font-medium">
+                    Page {page} of {Math.ceil((count || 0) / limit)}
+                  </span>
+                </div>
 
                 {page < Math.ceil((count || 0) / limit) && (
                   <a
@@ -317,9 +433,22 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       ...resolvedSearchParams,
                       page: (page + 1).toString(),
                     }).toString()}`}
-                    className="px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-accent)] hover:text-white transition-colors"
+                    className="inline-flex items-center px-6 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                   >
                     Next
+                    <svg
+                      className="w-4 h-4 ml-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </a>
                 )}
               </div>
