@@ -35,6 +35,8 @@ export interface BookingWithDetails {
   customer_first_name: string | null;
   customer_last_name: string | null;
   customer_avatar: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
   tasker_first_name: string | null;
   tasker_last_name: string | null;
   tasker_avatar: string | null;
@@ -148,6 +150,8 @@ export async function getBookingById(
     customer_first_name: data.customer?.first_name,
     customer_last_name: data.customer?.last_name,
     customer_avatar: data.customer?.avatar_url,
+    customer_email: data.customer?.email,
+    customer_phone: data.customer?.phone,
     tasker_first_name: data.tasker?.first_name,
     tasker_last_name: data.tasker?.last_name,
     tasker_avatar: data.tasker?.avatar_url,

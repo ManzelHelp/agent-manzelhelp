@@ -233,32 +233,32 @@ export default function BookingsPage() {
           "bg-color-success text-color-surface hover:bg-color-success-dark",
       },
       completed: {
-        text: "View Details",
+        text: "Completed",
         variant: "default" as const,
-        action: "view",
+        action: "none",
         className:
-          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+          "bg-color-success/10 text-color-success border border-color-success/20",
       },
       cancelled: {
-        text: "View Details",
+        text: "Cancelled",
         variant: "default" as const,
-        action: "view",
+        action: "none",
         className:
-          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+          "bg-color-error/10 text-color-error border border-color-error/20",
       },
       disputed: {
-        text: "View Details",
+        text: "Disputed",
         variant: "default" as const,
-        action: "view",
+        action: "none",
         className:
-          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+          "bg-color-warning/10 text-color-warning border border-color-warning/20",
       },
       refunded: {
-        text: "View Details",
+        text: "Refunded",
         variant: "default" as const,
-        action: "view",
+        action: "none",
         className:
-          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+          "bg-color-info/10 text-color-info border border-color-info/20",
       },
     };
 
@@ -269,9 +269,8 @@ export default function BookingsPage() {
     (booking: BookingWithDetails) => {
       const actionButton = getActionButton(booking);
 
-      if (actionButton.action === "view") {
-        router.push(`/tasker/bookings/${booking.id}`);
-        return;
+      if (actionButton.action === "none") {
+        return; // No action needed for completed/cancelled/disputed/refunded
       }
 
       const actionConfig = {
@@ -322,7 +321,7 @@ export default function BookingsPage() {
         variant: config.variant,
       });
     },
-    [getActionButton, getCustomerName, router]
+    [getActionButton, getCustomerName]
   );
 
   const handleConfirmAction = useCallback(async () => {
@@ -669,14 +668,31 @@ export default function BookingsPage() {
                               booking.currency
                             )}
                           </p>
+
+                          {/* Primary Action Button */}
+                          {actionButton.action !== "none" && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleActionClick(booking)}
+                              disabled={isUpdating}
+                              className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto ${actionButton.className}`}
+                            >
+                              {actionButton.text}
+                            </Button>
+                          )}
+
+                          {/* View Booking Button - Always visible */}
                           <Button
                             size="sm"
-                            onClick={() => handleActionClick(booking)}
-                            disabled={isUpdating}
-                            className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto ${actionButton.className}`}
+                            variant="outline"
+                            onClick={() =>
+                              router.push(`/tasker/bookings/${booking.id}`)
+                            }
+                            className="w-full sm:w-auto touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
                           >
-                            {actionButton.text}
+                            View Booking
                           </Button>
+
                           <div className="flex gap-2 w-full sm:w-auto">
                             <Button
                               size="sm"
