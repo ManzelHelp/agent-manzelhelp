@@ -6,7 +6,7 @@ import ServiceCardSkeleton from "@/components/ServiceCardSkeleton";
 import SearchFilters from "@/components/filters/SearchFilters";
 import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   PricingType,
   ServiceStatus,
@@ -75,10 +75,32 @@ interface ServiceListing {
   is_available_for_booking: boolean;
 }
 
+export async function generateMetadata({
+  searchParams,
+  params,
+}: SearchPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const resolvedParams = await params;
+  const { locale } = resolvedParams;
+  const t = await getTranslations({ locale, namespace: "search" });
+
+  const query = resolvedSearchParams.q;
+  const title = query ? t("searchResults", { query }) : t("allServices");
+
+  return {
+    title,
+    description: t("tryAdjustingFilters"),
+  };
+}
+
 async function SearchPage({ searchParams, params }: SearchPageProps) {
   const resolvedSearchParams = await searchParams;
   const resolvedParams = await params;
   const { locale } = resolvedParams;
+
+  // Enable static rendering
+  setRequestLocale(locale);
+
   const supabase = await createClient();
   const t = await getTranslations("search");
 

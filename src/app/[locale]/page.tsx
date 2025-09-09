@@ -29,9 +29,25 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
+  const homepageT = await getTranslations({ locale, namespace: "homepage" });
 
   return {
     title: t("title"),
+    description: homepageT("description"),
+    openGraph: {
+      title: t("title"),
+      description: homepageT("description"),
+      locale: locale,
+      type: "website",
+    },
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        en: "/en",
+        de: "/de",
+        ar: "/ar",
+      },
+    },
   };
 }
 

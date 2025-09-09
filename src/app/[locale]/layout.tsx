@@ -26,6 +26,17 @@ export default async function LocaleLayout({
 
   const messages = await getMessages();
 
+  // Map locales to appropriate timezones following best practices
+  const getTimezoneForLocale = (locale: string) => {
+    const timezoneMap: Record<string, string> = {
+      de: "Europe/Berlin", // German timezone for German locale
+      en: "America/New_York", // US Eastern time for English locale
+      ar: "Africa/Casablanca", // Moroccan timezone for Arabic locale
+    };
+    // Fallback to UTC if locale not found
+    return timezoneMap[locale] || "UTC";
+  };
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -40,7 +51,12 @@ export default async function LocaleLayout({
       </head>
       <body className="smooth-scroll">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NextIntlClientProvider messages={messages}>
+          <NextIntlClientProvider
+            messages={messages}
+            locale={locale}
+            timeZone={getTimezoneForLocale(locale)}
+            now={new Date()}
+          >
             <Header />
             {children}
             <Footer />

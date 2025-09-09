@@ -1,7 +1,34 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
-export default function AboutUsPage() {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Footer" });
+
+  return {
+    title: t("aboutUs"),
+    description: t("aboutDescription"),
+    openGraph: {
+      title: t("aboutUs"),
+      description: t("aboutDescription"),
+      locale: locale,
+      type: "website",
+    },
+  };
+}
+
+export default async function AboutUsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Hero Section */}
