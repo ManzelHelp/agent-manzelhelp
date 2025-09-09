@@ -2,7 +2,7 @@ import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
-import { User, TaskerService, ServiceCategory } from "@/types/supabase";
+import { User, TaskerService } from "@/types/supabase";
 import PopularServices from "@/components/PopularServices";
 import { createClient } from "@/supabase/server";
 import { Card } from "@/components/ui/card";
@@ -20,61 +20,7 @@ import {
   Heart,
   TrendingUp,
 } from "lucide-react";
-
-// Hardcoded popular service categories
-const popularCategories: Pick<
-  ServiceCategory,
-  "id" | "name_en" | "name_fr" | "name_ar"
->[] = [
-  {
-    id: 1,
-    name_en: "House Cleaning",
-    name_fr: "Nettoyage de maison",
-    name_ar: "تنظيف المنزل",
-  },
-  {
-    id: 2,
-    name_en: "Handyman Services",
-    name_fr: "Services de bricolage",
-    name_ar: "خدمات السباكة والكهرباء",
-  },
-  {
-    id: 3,
-    name_en: "Gardening",
-    name_fr: "Jardinage",
-    name_ar: "البستنة",
-  },
-  {
-    id: 4,
-    name_en: "Pet Care",
-    name_fr: "Soins pour animaux",
-    name_ar: "رعاية الحيوانات الأليفة",
-  },
-  {
-    id: 5,
-    name_en: "Tutoring",
-    name_fr: "Cours particuliers",
-    name_ar: "الدروس الخصوصية",
-  },
-  {
-    id: 6,
-    name_en: "Moving & Packing",
-    name_fr: "Déménagement",
-    name_ar: "النقل والتعبئة",
-  },
-  {
-    id: 7,
-    name_en: "Car Washing",
-    name_fr: "Lavage de voiture",
-    name_ar: "غسيل السيارات",
-  },
-  {
-    id: 8,
-    name_en: "Event Planning",
-    name_fr: "Organisation d'événements",
-    name_ar: "تخطيط الفعاليات",
-  },
-];
+import { getPopularCategories } from "@/lib/categories";
 
 export async function generateMetadata({
   params,
@@ -245,7 +191,7 @@ export default async function Page({
       </section>
 
       {/* Popular Services Section */}
-      <PopularServices categories={popularCategories} locale={locale} />
+      <PopularServices categories={getPopularCategories()} locale={locale} />
 
       {/* Featured Services Section - Modern Design */}
       <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-[var(--color-bg)] to-[var(--color-surface)]">

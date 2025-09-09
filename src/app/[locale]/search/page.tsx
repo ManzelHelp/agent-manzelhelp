@@ -14,6 +14,7 @@ import {
   UserRole,
   VerificationStatus,
 } from "@/types/supabase";
+import { getSearchCategories } from "@/lib/categories";
 
 interface SearchPageProps {
   searchParams: {
@@ -81,45 +82,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
-  // Hardcoded categories based on actual service_ids found in database
-  const categories = [
-    {
-      id: 1,
-      name_en: "House Cleaning",
-      name_fr: "Nettoyage de maison",
-      name_ar: "تنظيف المنزل",
-    },
-    {
-      id: 2,
-      name_en: "Office Cleaning",
-      name_fr: "Nettoyage de bureau",
-      name_ar: "تنظيف المكتب",
-    },
-    {
-      id: 3,
-      name_en: "Deep Cleaning",
-      name_fr: "Grand ménage",
-      name_ar: "تنظيف عميق",
-    },
-    {
-      id: 7,
-      name_en: "Furniture Assembly",
-      name_fr: "Montage de meubles",
-      name_ar: "تجميع الأثاث",
-    },
-    {
-      id: 62,
-      name_en: "Pet Care",
-      name_fr: "Garde d'animaux",
-      name_ar: "رعاية الحيوانات",
-    },
-    {
-      id: 65,
-      name_en: "Event Organization",
-      name_fr: "Organisation d'événements",
-      name_ar: "تنظيم الفعاليات",
-    },
-  ];
+  // Use centralized categories
+  const categories = getSearchCategories();
 
   // Fetch services using the service_listing_view which has all the data we need
   let query = supabase
