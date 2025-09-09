@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Calendar,
   User,
@@ -73,11 +74,6 @@ export default function BookingsPage() {
     }
   }, [user, router]);
 
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   // Fetch bookings on mount
   useEffect(() => {
     const fetchBookings = async () => {
@@ -95,8 +91,6 @@ export default function BookingsPage() {
         setBookings([]); // Set empty array on error
       } finally {
         setIsLoading(false);
-        // Scroll to top after data is loaded
-        window.scrollTo(0, 0);
       }
     };
 
@@ -528,15 +522,62 @@ export default function BookingsPage() {
     bookingCounts,
   ]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-color-bg flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-color-primary mx-auto"></div>
-          <p className="text-color-text-secondary">Loading bookings...</p>
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="min-h-screen bg-color-bg smooth-scroll">
+      <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
+        {/* Page Header Skeleton */}
+        <div className="bg-color-surface border-b border-color-border pb-4">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+
+        {/* Desktop Navigation Tabs Skeleton */}
+        <div className="hidden sm:flex gap-1 bg-color-accent-light p-2 rounded-xl">
+          {Array.from({ length: 7 }).map((_, index) => (
+            <Skeleton key={index} className="h-10 w-24 rounded-lg" />
+          ))}
+        </div>
+
+        {/* Mobile Navigation Skeleton */}
+        <div className="sm:hidden">
+          <Skeleton className="h-12 w-full rounded-lg" />
+        </div>
+
+        {/* Booking Cards Skeleton */}
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Card
+              key={index}
+              className="border-color-border bg-color-surface shadow-sm"
+            >
+              <CardContent className="p-4 mobile-spacing">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                  <Skeleton className="h-4 w-full max-w-md" />
+                  <div className="flex justify-end gap-3">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
-    );
+    </div>
+  );
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
   }
 
   return (
@@ -580,148 +621,117 @@ export default function BookingsPage() {
 
         {/* Booking Cards */}
         <div className="space-y-4">
-          {isLoading
-            ? // Loading skeletons
-              Array.from({ length: 3 }).map((_, index) => (
-                <Card
-                  key={index}
-                  className="border-color-border bg-color-surface shadow-sm"
-                >
-                  <CardContent className="p-4 mobile-spacing">
-                    <div className="animate-pulse space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-5 bg-color-accent rounded w-32"></div>
-                        <div className="h-5 bg-color-accent rounded w-16"></div>
+          {filteredBookings.map((booking) => {
+            const actionButton = getActionButton(booking);
+            const customerName = getCustomerName(booking);
+            const location = getLocation(booking);
+
+            return (
+              <Card
+                key={booking.id}
+                className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
+              >
+                <CardContent className="p-4 mobile-spacing">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-3 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
+                          {booking.service_title || "Service"}
+                        </h3>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            booking.status === "pending"
+                              ? "bg-color-warning/10 text-color-warning"
+                              : booking.status === "completed"
+                              ? "bg-color-success/10 text-color-success"
+                              : "bg-color-accent text-color-text-secondary"
+                          }`}
+                        >
+                          {booking.status.replace("_", " ")}
+                        </span>
                       </div>
-                      <div className="flex flex-wrap gap-4">
-                        <div className="h-4 bg-color-accent rounded w-24"></div>
-                        <div className="h-4 bg-color-accent rounded w-32"></div>
-                        <div className="h-4 bg-color-accent rounded w-20"></div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {customerName}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {location}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(booking.scheduled_date)}
+                        </span>
+                        {booking.scheduled_time_start && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatTime(booking.scheduled_time_start)} -{" "}
+                            {formatTime(booking.scheduled_time_end)}
+                            {booking.estimated_duration &&
+                              ` (${formatDuration(
+                                booking.estimated_duration
+                              )})`}
+                          </span>
+                        )}
                       </div>
-                      <div className="h-4 bg-color-accent rounded w-full max-w-md"></div>
-                      <div className="flex justify-end gap-3">
-                        <div className="h-6 bg-color-accent rounded w-16"></div>
-                        <div className="h-8 bg-color-accent rounded w-24"></div>
+                      {booking.customer_requirements && (
+                        <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2">
+                          {booking.customer_requirements}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end gap-3 min-w-[120px] w-full sm:w-auto">
+                      <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
+                        {formatCurrency(booking.agreed_price, booking.currency)}
+                      </p>
+
+                      {/* Primary Action Button */}
+                      {actionButton.action !== "none" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleActionClick(booking)}
+                          disabled={isUpdating}
+                          className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto ${actionButton.className}`}
+                        >
+                          {actionButton.text}
+                        </Button>
+                      )}
+
+                      {/* View Booking Button - Always visible */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          router.push(`/tasker/bookings/${booking.id}`)
+                        }
+                        className="w-full sm:w-auto touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
+                      >
+                        View Booking
+                      </Button>
+
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 sm:flex-none touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 sm:flex-none touch-target mobile-focus border-color-secondary text-color-secondary hover:bg-color-secondary/10"
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            : filteredBookings.map((booking) => {
-                const actionButton = getActionButton(booking);
-                const customerName = getCustomerName(booking);
-                const location = getLocation(booking);
-
-                return (
-                  <Card
-                    key={booking.id}
-                    className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <CardContent className="p-4 mobile-spacing">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-3 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
-                              {booking.service_title || "Service"}
-                            </h3>
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                booking.status === "pending"
-                                  ? "bg-color-warning/10 text-color-warning"
-                                  : booking.status === "completed"
-                                  ? "bg-color-success/10 text-color-success"
-                                  : "bg-color-accent text-color-text-secondary"
-                              }`}
-                            >
-                              {booking.status.replace("_", " ")}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
-                            <span className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {customerName}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {location}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {formatDate(booking.scheduled_date)}
-                            </span>
-                            {booking.scheduled_time_start && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {formatTime(
-                                  booking.scheduled_time_start
-                                )} - {formatTime(booking.scheduled_time_end)}
-                                {booking.estimated_duration &&
-                                  ` (${formatDuration(
-                                    booking.estimated_duration
-                                  )})`}
-                              </span>
-                            )}
-                          </div>
-                          {booking.customer_requirements && (
-                            <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2">
-                              {booking.customer_requirements}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end gap-3 min-w-[120px] w-full sm:w-auto">
-                          <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
-                            {formatCurrency(
-                              booking.agreed_price,
-                              booking.currency
-                            )}
-                          </p>
-
-                          {/* Primary Action Button */}
-                          {actionButton.action !== "none" && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleActionClick(booking)}
-                              disabled={isUpdating}
-                              className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto ${actionButton.className}`}
-                            >
-                              {actionButton.text}
-                            </Button>
-                          )}
-
-                          {/* View Booking Button - Always visible */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              router.push(`/tasker/bookings/${booking.id}`)
-                            }
-                            className="w-full sm:w-auto touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
-                          >
-                            View Booking
-                          </Button>
-
-                          <div className="flex gap-2 w-full sm:w-auto">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 sm:flex-none touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 sm:flex-none touch-target mobile-focus border-color-secondary text-color-secondary hover:bg-color-secondary/10"
-                            >
-                              <Phone className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Empty State */}
