@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -8,281 +8,202 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
-  DollarSign,
   TrendingUp,
   TrendingDown,
+  DollarSign,
   Calendar,
-  Wallet,
-  BarChart2,
-  ArrowUpRight,
-  ArrowDownRight,
-  Loader2,
+  Clock,
+  Star,
+  Users,
+  CheckCircle,
   AlertCircle,
+  RefreshCw,
+  BarChart3,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useUserStore } from "@/stores/userStore";
 import {
-  getTaskerFinanceData,
-  getTaskerTransactions,
-  getTaskerEarningsByPeriod,
-  type FinanceData,
-  type TransactionWithDetails,
+  getEarningsData,
+  getPerformanceMetrics,
+  getTransactionHistory,
+  getChartData,
+  refreshFinanceData,
+  type EarningsData,
+  type PerformanceMetrics,
+  type Transaction,
+  type ChartData,
 } from "@/actions/finance";
+import { useUserStore } from "@/stores/userStore";
 
 export default function FinancePage() {
-  const [showAllTransactions, setShowAllTransactions] = useState(false);
-  const [financeData, setFinanceData] = useState<FinanceData | null>(null);
+  const { user } = useUserStore();
+  const [earningsData, setEarningsData] = useState<EarningsData | null>(null);
+  const [performanceMetrics, setPerformanceMetrics] =
+    useState<PerformanceMetrics | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [transactions, setTransactions] = useState<TransactionWithDetails[]>(
-    []
-  );
-  const [earningsData, setEarningsData] = useState<
-    { date: string; earnings: number }[]
-  >([]);
   const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month">(
-    "month"
+    "week"
   );
-  const { user } = useUserStore();
+  const [transactionPage, setTransactionPage] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (user?.id) {
-      loadFinanceData();
-    }
-  }, [user?.id, chartPeriod]);
+  const TRANSACTIONS_PER_PAGE = 10;
 
-  const loadFinanceData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!user?.id) return;
 
-    setLoading(true);
-    setError(null);
-
     try {
-      const [data, earnings] = await Promise.all([
-        getTaskerFinanceData(user.id),
-        getTaskerEarningsByPeriod(user.id, chartPeriod, 30),
-      ]);
+      setError(null);
+      const [earnings, performance, transactionHistory, chart] =
+        await Promise.all([
+          getEarningsData(user.id),
+          getPerformanceMetrics(user.id),
+          getTransactionHistory(user.id, TRANSACTIONS_PER_PAGE, 0),
+          getChartData(user.id, chartPeriod),
+        ]);
 
-      setFinanceData(data);
-      setTransactions(data.transactions);
       setEarningsData(earnings);
+      setPerformanceMetrics(performance);
+      setTransactions(transactionHistory);
+      setChartData(chart);
     } catch (err) {
-      console.error("Error loading finance data:", err);
-      setError("Failed to load finance data. Please try again.");
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to load finance data. Please try again.";
+      setError(errorMessage);
+      console.error("Error fetching finance data:", err);
     } finally {
       setLoading(false);
     }
   }, [user?.id, chartPeriod]);
 
-  const loadMoreTransactions = useCallback(async () => {
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    if (user?.id) {
+      await refreshFinanceData();
+      await fetchData();
+    }
+    setRefreshing(false);
+  };
+
+  const loadMoreTransactions = async () => {
     if (!user?.id) return;
 
     try {
-      const moreTransactions = await getTaskerTransactions(
+      const newTransactions = await getTransactionHistory(
         user.id,
-        20,
-        transactions.length
+        TRANSACTIONS_PER_PAGE,
+        (transactionPage + 1) * TRANSACTIONS_PER_PAGE
       );
-      setTransactions((prev) => [...prev, ...moreTransactions]);
-      setShowAllTransactions(true);
+      setTransactions((prev) => [...prev, ...newTransactions]);
+      setTransactionPage((prev) => prev + 1);
     } catch (err) {
       console.error("Error loading more transactions:", err);
-      setError("Failed to load more transactions.");
+      // You could add a toast notification here for better UX
     }
-  }, [user?.id, transactions.length]);
+  };
+
+  const handleChartPeriodChange = async (period: "day" | "week" | "month") => {
+    setChartPeriod(period);
+    if (user?.id) {
+      try {
+        const newChartData = await getChartData(user.id, period);
+        setChartData(newChartData);
+      } catch (err) {
+        console.error("Error fetching chart data:", err);
+        // You could add a toast notification here for better UX
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [user?.id, fetchData]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
     }).format(amount);
   };
 
-  const calculatePercentageChange = (current: number, previous: number) => {
-    if (previous === 0) return 0;
-    return Math.round(((current - previous) / previous) * 100);
+  const formatPercentage = (value: number) => {
+    const sign = value >= 0 ? "+" : "";
+    return `${sign}${value.toFixed(1)}%`;
   };
 
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "Unknown date";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const getTransactionIcon = (transactionType: string) => {
-    switch (transactionType) {
-      case "service_payment":
-      case "booking_payment":
-        return <ArrowUpRight className="h-4 w-4 text-color-success" />;
-      case "platform_fee":
-        return <ArrowDownRight className="h-4 w-4 text-color-warning" />;
-      default:
-        return <ArrowUpRight className="h-4 w-4 text-color-secondary" />;
-    }
-  };
-
-  const getTransactionTypeLabel = (transactionType: string) => {
-    switch (transactionType) {
-      case "service_payment":
-        return "Service Payment";
-      case "booking_payment":
-        return "Booking Payment";
-      case "platform_fee":
-        return "Platform Fee";
-      case "refund":
-        return "Refund";
-      default:
-        return "Payment";
-    }
-  };
-
-  // Earnings Chart Component
-  const EarningsChart = ({
-    data,
-    period,
-  }: {
-    data: { date: string; earnings: number }[];
-    period: "day" | "week" | "month";
-  }) => {
-    if (!data || data.length === 0) {
-      return (
-        <div className="flex items-center justify-center h-48 bg-color-accent-light rounded-lg">
-          <div className="text-center">
-            <div className="text-color-text-secondary text-sm mb-2">
-              No earnings data available
-            </div>
-            <div className="text-color-text-secondary text-xs">
-              Complete bookings to see your earnings chart
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    const maxEarnings = Math.max(...data.map((d) => d.earnings));
-    const minEarnings = Math.min(...data.map((d) => d.earnings));
-    const range = maxEarnings - minEarnings;
-
-    const formatChartDate = (dateStr: string) => {
-      const date = new Date(dateStr);
-      switch (period) {
-        case "day":
-          return date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-        case "week":
-          return `Week ${date.getDate()}`;
-        case "month":
-          return date.toLocaleDateString("en-US", { month: "short" });
-        default:
-          return date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-      }
-    };
-
-    return (
-      <div className="bg-color-surface border border-color-border rounded-lg p-4">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-color-text-primary mb-1">
-            Earnings Trend
-          </h3>
-          <p className="text-sm text-color-text-secondary">
-            {period === "day"
-              ? "Daily"
-              : period === "week"
-              ? "Weekly"
-              : "Monthly"}{" "}
-            earnings overview
-          </p>
-        </div>
-
-        <div className="relative">
-          <div className="h-48 flex items-end justify-between gap-1">
-            {data.map((item, index) => {
-              const height =
-                range > 0 ? ((item.earnings - minEarnings) / range) * 100 : 0;
-              const isHighest = item.earnings === maxEarnings;
-
-              return (
-                <div key={index} className="flex-1 flex flex-col items-center">
-                  <div className="relative w-full">
-                    <div
-                      className={`w-full transition-all duration-300 ease-in-out ${
-                        isHighest
-                          ? "bg-color-secondary"
-                          : "bg-color-secondary/60"
-                      } rounded-t-sm hover:bg-color-secondary/80`}
-                      style={{ height: `${Math.max(height, 2)}%` }}
-                    >
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-color-surface border border-color-border rounded text-xs text-color-text-primary opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        {formatCurrency(item.earnings)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-color-text-secondary mt-2 text-center">
-                    {formatChartDate(item.date)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-color-text-secondary">
-            <span>{formatCurrency(maxEarnings)}</span>
-            <span>{formatCurrency(Math.round(maxEarnings / 2))}</span>
-            <span>{formatCurrency(minEarnings)}</span>
-          </div>
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-color-border">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-sm text-color-text-secondary">Total</div>
-              <div className="text-lg font-semibold text-color-text-primary">
-                {formatCurrency(
-                  data.reduce((sum, item) => sum + item.earnings, 0)
-                )}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-color-text-secondary">Average</div>
-              <div className="text-lg font-semibold text-color-text-primary">
-                {formatCurrency(
-                  Math.round(
-                    data.reduce((sum, item) => sum + item.earnings, 0) /
-                      data.length
-                  )
-                )}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-color-text-secondary">Highest</div>
-              <div className="text-lg font-semibold text-color-success">
-                {formatCurrency(maxEarnings)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  const getTrendIcon = (value: number) => {
+    return value >= 0 ? (
+      <TrendingUp className="h-4 w-4 text-green-500" />
+    ) : (
+      <TrendingDown className="h-4 w-4 text-red-500" />
     );
+  };
+
+  const getTrendColor = (value: number) => {
+    return value >= 0 ? "text-green-600" : "text-red-600";
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-color-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-color-secondary" />
-          <p className="text-color-text-secondary">Loading finance data...</p>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-24" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-20" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-24 mb-2" />
+                <Skeleton className="h-4 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-64 w-full" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -290,387 +211,403 @@ export default function FinancePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-color-bg">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-color-error mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-color-text-primary mb-2">
-                Error Loading Finance Data
-              </h2>
-              <p className="text-color-text-secondary mb-4">{error}</p>
-              <Button onClick={loadFinanceData} className="touch-target">
+      <div className="container mx-auto px-4 py-6">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <AlertCircle className="h-12 w-12 text-red-500" />
+              <div>
+                <h3 className="text-lg font-semibold">Error Loading Data</h3>
+                <p className="text-muted-foreground">{error}</p>
+              </div>
+              <Button onClick={handleRefresh} disabled={refreshing}>
+                {refreshing ? (
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
                 Try Again
               </Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
-
-  if (!financeData) {
-    return (
-      <div className="min-h-screen bg-color-bg">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <Wallet className="h-12 w-12 text-color-secondary mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-color-text-primary mb-2">
-                No Finance Data Available
-              </h2>
-              <p className="text-color-text-secondary">
-                Complete some bookings to see your finance data here.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const { stats, userStats } = financeData;
-  const displayedTransactions = showAllTransactions
-    ? transactions
-    : transactions.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-color-bg">
-      {/* Header Section */}
-      <div className="bg-color-surface border-b border-color-border shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-color-text-primary mobile-text-xl">
-                Finance Overview
-              </h1>
-              <p className="text-color-text-secondary text-sm mt-1">
-                Track your earnings and manage payments
-              </p>
-            </div>
-          </div>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text">
+            Finance Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Track your earnings, performance, and transaction history
+          </p>
         </div>
+        <Button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="mobile-button"
+        >
+          {refreshing ? (
+            <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-2" />
+          )}
+          Refresh
+        </Button>
       </div>
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Quick Stats Grid - Mobile First */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {/* Today's Earnings */}
-          <Card className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
-              <CardTitle className="text-xs font-medium text-color-text-secondary">
-                Today
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-color-secondary" />
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(stats.today)}
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                {stats.today > stats.yesterday ? (
-                  <TrendingUp className="h-3 w-3 text-color-success" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-color-error" />
-                )}
-                <p
-                  className={`text-xs ${
-                    stats.today > stats.yesterday
-                      ? "text-color-success"
-                      : "text-color-error"
-                  }`}
-                >
-                  {calculatePercentageChange(stats.today, stats.yesterday)}%
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Weekly Earnings */}
-          <Card className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
-              <CardTitle className="text-xs font-medium text-color-text-secondary">
-                This Week
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-color-secondary" />
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(stats.thisWeek)}
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                {stats.thisWeek > stats.lastWeek ? (
-                  <TrendingUp className="h-3 w-3 text-color-success" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-color-error" />
-                )}
-                <p
-                  className={`text-xs ${
-                    stats.thisWeek > stats.lastWeek
-                      ? "text-color-success"
-                      : "text-color-error"
-                  }`}
-                >
-                  {calculatePercentageChange(stats.thisWeek, stats.lastWeek)}%
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Monthly Earnings */}
-          <Card className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
-              <CardTitle className="text-xs font-medium text-color-text-secondary">
-                This Month
-              </CardTitle>
-              <BarChart2 className="h-4 w-4 text-color-secondary" />
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(stats.thisMonth)}
-              </div>
-              <div className="flex items-center gap-1 mt-1">
-                {stats.thisMonth > stats.lastMonth ? (
-                  <TrendingUp className="h-3 w-3 text-color-success" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-color-error" />
-                )}
-                <p
-                  className={`text-xs ${
-                    stats.thisMonth > stats.lastMonth
-                      ? "text-color-success"
-                      : "text-color-error"
-                  }`}
-                >
-                  {calculatePercentageChange(stats.thisMonth, stats.lastMonth)}%
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Total Earnings */}
-          <Card className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
-              <CardTitle className="text-xs font-medium text-color-text-secondary">
-                Total
-              </CardTitle>
-              <Wallet className="h-4 w-4 text-color-secondary" />
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="text-xl font-bold text-color-text-primary sm:text-2xl">
-                {formatCurrency(stats.total)}
-              </div>
-              <p className="text-xs text-color-text-secondary mt-1">
-                Lifetime earnings
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* User Stats Summary */}
-        {userStats && (
-          <Card className="border-color-border bg-color-surface shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-color-text-primary">
-                Performance Summary
-              </CardTitle>
-              <CardDescription className="text-color-text-secondary">
-                Your overall performance metrics
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-color-text-primary">
-                    {userStats.completed_jobs || 0}
-                  </div>
-                  <div className="text-sm text-color-text-secondary">
-                    Completed Jobs
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-color-text-primary">
-                    {userStats.total_reviews || 0}
-                  </div>
-                  <div className="text-sm text-color-text-secondary">
-                    Total Reviews
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-color-text-primary">
-                    {userStats.tasker_rating
-                      ? userStats.tasker_rating.toFixed(1)
-                      : "N/A"}
-                  </div>
-                  <div className="text-sm text-color-text-secondary">
-                    Average Rating
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-color-text-primary">
-                    {userStats.response_time_hours || "N/A"}
-                  </div>
-                  <div className="text-sm text-color-text-secondary">
-                    Avg Response (hrs)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Earnings Chart */}
-        <Card className="border-color-border bg-color-surface shadow-sm">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg font-semibold text-color-text-primary">
-                  Earnings Overview
-                </CardTitle>
-                <CardDescription className="text-color-text-secondary">
-                  Visualize your earnings trends
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={chartPeriod === "day" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setChartPeriod("day")}
-                  className="touch-target"
-                >
-                  Day
-                </Button>
-                <Button
-                  variant={chartPeriod === "week" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setChartPeriod("week")}
-                  className="touch-target"
-                >
-                  Week
-                </Button>
-                <Button
-                  variant={chartPeriod === "month" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setChartPeriod("month")}
-                  className="touch-target"
-                >
-                  Month
-                </Button>
-              </div>
-            </div>
+      {/* Earnings Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <Card className="hover-lift">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Today</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <EarningsChart data={earningsData} period={chartPeriod} />
+            <div className="text-2xl font-bold">
+              {formatCurrency(earningsData?.today || 0)}
+            </div>
+            <div className="flex items-center space-x-1 text-xs">
+              {getTrendIcon(earningsData?.todayChange || 0)}
+              <span className={getTrendColor(earningsData?.todayChange || 0)}>
+                {formatPercentage(earningsData?.todayChange || 0)}
+              </span>
+              <span className="text-muted-foreground">vs yesterday</span>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Recent Transactions */}
-        <Card className="border-color-border bg-color-surface shadow-sm">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg font-semibold text-color-text-primary">
-                  Recent Transactions
-                </CardTitle>
-                <CardDescription className="text-color-text-secondary">
-                  Your latest financial activity
-                </CardDescription>
+        <Card className="hover-lift">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">This Week</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(earningsData?.week || 0)}
+            </div>
+            <div className="flex items-center space-x-1 text-xs">
+              {getTrendIcon(earningsData?.weekChange || 0)}
+              <span className={getTrendColor(earningsData?.weekChange || 0)}>
+                {formatPercentage(earningsData?.weekChange || 0)}
+              </span>
+              <span className="text-muted-foreground">vs last week</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover-lift">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">This Month</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(earningsData?.month || 0)}
+            </div>
+            <div className="flex items-center space-x-1 text-xs">
+              {getTrendIcon(earningsData?.monthChange || 0)}
+              <span className={getTrendColor(earningsData?.monthChange || 0)}>
+                {formatPercentage(earningsData?.monthChange || 0)}
+              </span>
+              <span className="text-muted-foreground">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover-lift">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Earnings
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(earningsData?.total || 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">All time earnings</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Metrics */}
+      <Card className="hover-lift">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Star className="h-5 w-5" />
+            <span>Performance Metrics</span>
+          </CardTitle>
+          <CardDescription>
+            Your key performance indicators and customer satisfaction metrics
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">
+                {performanceMetrics?.completedJobs || 0}
               </div>
-              {!showAllTransactions && transactions.length > 4 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden sm:flex touch-target"
-                  onClick={loadMoreTransactions}
-                >
-                  Load More
-                </Button>
-              )}
+              <div className="text-sm text-muted-foreground">
+                Completed Jobs
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">
+                {performanceMetrics?.totalReviews || 0}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Reviews</div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary flex items-center justify-center space-x-1">
+                <Star className="h-6 w-6 fill-current" />
+                <span>{performanceMetrics?.averageRating || 0}</span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Average Rating
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">
+                {performanceMetrics?.responseTime || 0}h
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Avg Response Time
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600">
+                {performanceMetrics?.positiveReviews || 0}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Positive Reviews
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Interactive Chart */}
+        <Card className="hover-lift">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5" />
+                <span>Earnings Trend</span>
+              </CardTitle>
+              <div className="flex space-x-1">
+                {(["day", "week", "month"] as const).map((period) => (
+                  <Button
+                    key={period}
+                    variant={chartPeriod === period ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleChartPeriodChange(period)}
+                    className="mobile-button"
+                  >
+                    {period.charAt(0).toUpperCase() + period.slice(1)}
+                  </Button>
+                ))}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            {displayedTransactions.length === 0 ? (
-              <div className="text-center py-8">
-                <Wallet className="h-12 w-12 text-color-secondary mx-auto mb-4" />
-                <p className="text-color-text-secondary">No transactions yet</p>
-                <p className="text-sm text-color-text-secondary mt-1">
-                  Complete your first booking to see transactions here
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {displayedTransactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-4 bg-color-accent-light rounded-lg border border-color-border hover:shadow-sm transition-shadow"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+            {chartData.length > 0 ? (
+              <div className="space-y-4">
+                <div className="h-64 flex items-end justify-between space-x-1">
+                  {chartData.map((data, index) => {
+                    const maxEarnings = Math.max(
+                      ...chartData.map((d) => d.earnings)
+                    );
+                    const height =
+                      maxEarnings > 0 ? (data.earnings / maxEarnings) * 100 : 0;
+
+                    return (
                       <div
-                        className={`p-2 rounded-full ${
-                          transaction.transaction_type === "platform_fee"
-                            ? "bg-color-warning/10"
-                            : "bg-color-success/10"
-                        }`}
+                        key={index}
+                        className="flex flex-col items-center space-y-2 flex-1"
                       >
-                        {getTransactionIcon(transaction.transaction_type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-color-text-primary text-sm truncate">
-                          {transaction.booking_title ||
-                            getTransactionTypeLabel(
-                              transaction.transaction_type
-                            )}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-color-text-secondary mt-1">
-                          <span>{formatDate(transaction.created_at)}</span>
-                          {transaction.customer_name && (
-                            <>
-                              <span>•</span>
-                              <span className="truncate">
-                                {transaction.customer_name}
-                              </span>
-                            </>
-                          )}
+                        <div
+                          className="w-full bg-gradient-to-t from-primary to-primary/60 rounded-t transition-all duration-300 hover:from-primary/80 hover:to-primary/40"
+                          style={{ height: `${height}%`, minHeight: "4px" }}
+                          title={`${data.date}: ${formatCurrency(
+                            data.earnings
+                          )}`}
+                        />
+                        <div className="text-xs text-muted-foreground text-center">
+                          {chartPeriod === "day"
+                            ? new Date(data.date).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : chartPeriod === "week"
+                            ? new Date(data.date).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : new Date(data.date).toLocaleDateString("en-US", {
+                                month: "short",
+                                year: "2-digit",
+                              })}
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+                <div className="text-center text-sm text-muted-foreground">
+                  Total:{" "}
+                  {formatCurrency(
+                    chartData.reduce((sum, data) => sum + data.earnings, 0)
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No data available for the selected period</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Transaction History */}
+        <Card className="hover-lift">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Clock className="h-5 w-5" />
+              <span>Recent Transactions</span>
+            </CardTitle>
+            <CardDescription>
+              Your latest payment transactions and earnings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {transactions.length > 0 ? (
+              <div className="space-y-4">
+                {transactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-shrink-0">
+                        {transaction.paymentStatus === "paid" ? (
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <Clock className="h-5 w-5 text-yellow-500" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">
+                          {transaction.serviceTitle || "Service Payment"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right ml-3">
-                      <p
-                        className={`text-lg font-bold ${
-                          transaction.transaction_type === "platform_fee"
-                            ? "text-color-warning"
-                            : "text-color-success"
-                        }`}
+                    <div className="text-right">
+                      <p className="text-sm font-semibold">
+                        {formatCurrency(transaction.netAmount)}
+                      </p>
+                      <Badge
+                        variant={
+                          transaction.paymentStatus === "paid"
+                            ? "default"
+                            : "secondary"
+                        }
+                        className="text-xs"
                       >
-                        {transaction.transaction_type === "platform_fee"
-                          ? "-"
-                          : "+"}
-                        {formatCurrency(transaction.amount)}
-                      </p>
-                      <p className="text-xs text-color-text-secondary capitalize">
-                        {transaction.payment_status || "completed"}
-                      </p>
+                        {transaction.paymentStatus}
+                      </Badge>
                     </div>
                   </div>
                 ))}
-              </div>
-            )}
 
-            {/* Mobile Load More Button */}
-            {!showAllTransactions && transactions.length > 4 && (
-              <div className="mt-4 sm:hidden">
-                <Button
-                  variant="outline"
-                  className="w-full touch-target border-color-border text-color-text-primary hover:bg-color-accent-light"
-                  onClick={loadMoreTransactions}
-                >
-                  Load More Transactions
-                </Button>
+                {transactions.length >= TRANSACTIONS_PER_PAGE && (
+                  <Button
+                    variant="outline"
+                    onClick={loadMoreTransactions}
+                    className="w-full mobile-button"
+                  >
+                    Load More Transactions
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No transactions found</p>
+                <p className="text-sm">
+                  Your transaction history will appear here
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <Card className="hover-lift">
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>
+            Manage your finances and view detailed reports
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Button variant="outline" className="h-auto p-4 mobile-button">
+              <div className="text-center">
+                <DollarSign className="h-6 w-6 mx-auto mb-2" />
+                <div className="text-sm font-medium">Withdraw Funds</div>
+                <div className="text-xs text-muted-foreground">
+                  Transfer to bank
+                </div>
+              </div>
+            </Button>
+
+            <Button variant="outline" className="h-auto p-4 mobile-button">
+              <div className="text-center">
+                <BarChart3 className="h-6 w-6 mx-auto mb-2" />
+                <div className="text-sm font-medium">Detailed Reports</div>
+                <div className="text-xs text-muted-foreground">Export data</div>
+              </div>
+            </Button>
+
+            <Button variant="outline" className="h-auto p-4 mobile-button">
+              <div className="text-center">
+                <Users className="h-6 w-6 mx-auto mb-2" />
+                <div className="text-sm font-medium">Tax Documents</div>
+                <div className="text-xs text-muted-foreground">
+                  Download 1099
+                </div>
+              </div>
+            </Button>
+
+            <Button variant="outline" className="h-auto p-4 mobile-button">
+              <div className="text-center">
+                <Calendar className="h-6 w-6 mx-auto mb-2" />
+                <div className="text-sm font-medium">Payment Schedule</div>
+                <div className="text-xs text-muted-foreground">
+                  View calendar
+                </div>
+              </div>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
