@@ -32,6 +32,7 @@ export default async function LocaleLayout({
       de: "Europe/Berlin", // German timezone for German locale
       en: "America/New_York", // US Eastern time for English locale
       ar: "Africa/Casablanca", // Moroccan timezone for Arabic locale
+      fr: "Europe/Paris", // French timezone for French locale
     };
     // Fallback to UTC if locale not found
     return timezoneMap[locale] || "UTC";
