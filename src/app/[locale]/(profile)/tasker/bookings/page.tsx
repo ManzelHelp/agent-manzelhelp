@@ -75,39 +75,44 @@ export default function BookingsPage() {
 
   // Fetch bookings on mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchBookings = async () => {
       if (!user) return; // Let middleware handle auth redirects
 
       try {
+        setIsLoading(true);
         const taskerBookings = await getTaskerBookings(user.id);
         setBookings(taskerBookings);
       } catch (error) {
         console.error("Error fetching bookings:", error);
-        toast.error("Failed to load bookings");
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load bookings";
+        toast.error(errorMessage);
+        setBookings([]); // Set empty array on error
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchBookings();
   }, [user]);
 
   // Memoized utility functions for better performance
   const getStatusIcon = useCallback((status: TaskStatus) => {
-    const iconMap: Record<TaskStatus, React.ReactNode> = {
-      all: <User className="h-4 w-4" />,
-      pending: <AlertCircle className="h-4 w-4" />,
-      accepted: <CheckCircle className="h-4 w-4" />,
-      confirmed: <CheckCircle className="h-4 w-4" />,
-      in_progress: <Play className="h-4 w-4" />,
-      completed: <CheckCircle className="h-4 w-4" />,
-      cancelled: <X className="h-4 w-4" />,
+    const icons = {
+      all: User,
+      pending: AlertCircle,
+      accepted: CheckCircle,
+      confirmed: CheckCircle,
+      in_progress: Play,
+      completed: CheckCircle,
+      cancelled: X,
     };
-    return iconMap[status];
+    const Icon = icons[status];
+    return <Icon className="h-4 w-4" />;
   }, []);
 
   const getStatusLabel = useCallback((status: TaskStatus) => {
-    const labelMap: Record<TaskStatus, string> = {
+    const labels = {
       all: "All Bookings",
       pending: "Pending Requests",
       accepted: "Accepted",
@@ -116,11 +121,11 @@ export default function BookingsPage() {
       completed: "Completed",
       cancelled: "Cancelled",
     };
-    return labelMap[status];
+    return labels[status];
   }, []);
 
   const getStatusColor = useCallback((status: TaskStatus) => {
-    const colorMap: Record<TaskStatus, string> = {
+    const colors = {
       all: "text-color-primary",
       pending: "text-color-warning",
       accepted: "text-color-info",
@@ -129,11 +134,11 @@ export default function BookingsPage() {
       completed: "text-color-success",
       cancelled: "text-color-error",
     };
-    return colorMap[status];
+    return colors[status];
   }, []);
 
   const getStatusBgColor = useCallback((status: TaskStatus) => {
-    const bgColorMap: Record<TaskStatus, string> = {
+    const bgColors = {
       all: "bg-color-primary/10",
       pending: "bg-color-warning/10",
       accepted: "bg-color-info/10",
@@ -142,7 +147,7 @@ export default function BookingsPage() {
       completed: "bg-color-success/10",
       cancelled: "bg-color-error/10",
     };
-    return bgColorMap[status];
+    return bgColors[status];
   }, []);
 
   const formatCurrency = useCallback((amount: number, currency: string) => {
@@ -371,9 +376,10 @@ export default function BookingsPage() {
 
   // Memoized filtered bookings for better performance
   const filteredBookings = useMemo(() => {
-    return activeTab === "all"
-      ? bookings
-      : bookings.filter((booking) => booking.status === activeTab);
+    if (activeTab === "all") {
+      return bookings;
+    }
+    return bookings.filter((booking) => booking.status === activeTab);
   }, [bookings, activeTab]);
 
   // Memoized booking counts for better performance
@@ -568,104 +574,135 @@ export default function BookingsPage() {
 
         {/* Booking Cards */}
         <div className="space-y-4">
-          {filteredBookings.map((booking) => {
-            const actionButton = getActionButton(booking);
-            const customerName = getCustomerName(booking);
-            const location = getLocation(booking);
+          {isLoading
+            ? // Loading skeletons
+              Array.from({ length: 3 }).map((_, index) => (
+                <Card
+                  key={index}
+                  className="border-color-border bg-color-surface shadow-sm"
+                >
+                  <CardContent className="p-4 mobile-spacing">
+                    <div className="animate-pulse space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 bg-color-accent rounded w-32"></div>
+                        <div className="h-5 bg-color-accent rounded w-16"></div>
+                      </div>
+                      <div className="flex flex-wrap gap-4">
+                        <div className="h-4 bg-color-accent rounded w-24"></div>
+                        <div className="h-4 bg-color-accent rounded w-32"></div>
+                        <div className="h-4 bg-color-accent rounded w-20"></div>
+                      </div>
+                      <div className="h-4 bg-color-accent rounded w-full max-w-md"></div>
+                      <div className="flex justify-end gap-3">
+                        <div className="h-6 bg-color-accent rounded w-16"></div>
+                        <div className="h-8 bg-color-accent rounded w-24"></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            : filteredBookings.map((booking) => {
+                const actionButton = getActionButton(booking);
+                const customerName = getCustomerName(booking);
+                const location = getLocation(booking);
 
-            return (
-              <Card
-                key={booking.id}
-                className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
-              >
-                <CardContent className="p-4 mobile-spacing">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-3 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
-                          {booking.service_title || "Service"}
-                        </h3>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            booking.status === "pending"
-                              ? "bg-color-warning/10 text-color-warning"
-                              : booking.status === "completed"
-                              ? "bg-color-success/10 text-color-success"
-                              : "bg-color-accent text-color-text-secondary"
-                          }`}
-                        >
-                          {booking.status.replace("_", " ")}
-                        </span>
+                return (
+                  <Card
+                    key={booking.id}
+                    className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <CardContent className="p-4 mobile-spacing">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-3 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
+                              {booking.service_title || "Service"}
+                            </h3>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                booking.status === "pending"
+                                  ? "bg-color-warning/10 text-color-warning"
+                                  : booking.status === "completed"
+                                  ? "bg-color-success/10 text-color-success"
+                                  : "bg-color-accent text-color-text-secondary"
+                              }`}
+                            >
+                              {booking.status.replace("_", " ")}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
+                            <span className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              {customerName}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {location}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(booking.scheduled_date)}
+                            </span>
+                            {booking.scheduled_time_start && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {formatTime(
+                                  booking.scheduled_time_start
+                                )} - {formatTime(booking.scheduled_time_end)}
+                                {booking.estimated_duration &&
+                                  ` (${formatDuration(
+                                    booking.estimated_duration
+                                  )})`}
+                              </span>
+                            )}
+                          </div>
+                          {booking.customer_requirements && (
+                            <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2">
+                              {booking.customer_requirements}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-3 min-w-[120px] w-full sm:w-auto">
+                          <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
+                            {formatCurrency(
+                              booking.agreed_price,
+                              booking.currency
+                            )}
+                          </p>
+                          <Button
+                            size="sm"
+                            onClick={() => handleActionClick(booking)}
+                            disabled={isUpdating}
+                            className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto ${actionButton.className}`}
+                          >
+                            {actionButton.text}
+                          </Button>
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 sm:flex-none touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 sm:flex-none touch-target mobile-focus border-color-secondary text-color-secondary hover:bg-color-secondary/10"
+                            >
+                              <Phone className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {customerName}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(booking.scheduled_date)}
-                        </span>
-                        {booking.scheduled_time_start && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatTime(booking.scheduled_time_start)} -{" "}
-                            {formatTime(booking.scheduled_time_end)}
-                            {booking.estimated_duration &&
-                              ` (${formatDuration(
-                                booking.estimated_duration
-                              )})`}
-                          </span>
-                        )}
-                      </div>
-                      {booking.customer_requirements && (
-                        <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2">
-                          {booking.customer_requirements}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-end gap-3 min-w-[120px] w-full sm:w-auto">
-                      <p className="text-xl font-bold text-color-text-primary mobile-text-lg">
-                        {formatCurrency(booking.agreed_price, booking.currency)}
-                      </p>
-                      <Button
-                        size="sm"
-                        onClick={() => handleActionClick(booking)}
-                        disabled={isUpdating}
-                        className={`touch-target mobile-focus shadow-sm transition-all duration-200 w-full sm:w-auto ${actionButton.className}`}
-                      >
-                        {actionButton.text}
-                      </Button>
-                      <div className="flex gap-2 w-full sm:w-auto">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 sm:flex-none touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 sm:flex-none touch-target mobile-focus border-color-secondary text-color-secondary hover:bg-color-secondary/10"
-                        >
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                    </CardContent>
+                  </Card>
+                );
+              })}
         </div>
 
         {/* Empty State */}
-        {filteredBookings.length === 0 && (
+        {!isLoading && filteredBookings.length === 0 && (
           <Card className="border-color-border bg-color-surface shadow-sm">
             <CardContent className="py-8 mobile-spacing">
               <div className="text-center space-y-3">

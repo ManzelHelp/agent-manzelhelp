@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, use } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,8 +48,11 @@ interface ConfirmationDialogState {
 export default function TaskDetailPage({
   params,
 }: {
-  params: { "task-id": string };
+  params: Promise<{ "task-id": string }>;
 }) {
+  // Use the use() hook to handle async params in client component
+  const { "task-id": taskId } = use(params);
+
   const [booking, setBooking] = useState<BookingWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -65,33 +68,40 @@ export default function TaskDetailPage({
   const router = useRouter();
   const { user } = useUserStore();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) {
-        router.push("/login");
+  const fetchBookingData = useCallback(async () => {
+    if (!user) {
+      // User store not ready yet, wait for it
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const bookingData = await getBookingById(taskId);
+      if (!bookingData) {
+        toast.error("Booking not found");
+        router.push("/tasker/bookings");
         return;
       }
 
-      try {
-        const bookingData = await getBookingById(params["task-id"]);
-        if (!bookingData) {
-          router.push("/tasker/bookings");
-          return;
-        }
+      setBooking(bookingData);
+    } catch (error) {
+      console.error("Error fetching booking:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to load booking details";
+      toast.error(errorMessage);
+      router.push("/tasker/bookings");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [taskId, user, router]);
 
-        setBooking(bookingData);
-      } catch (error) {
-        console.error("Error fetching booking:", error);
-        router.push("/tasker/bookings");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  useEffect(() => {
+    fetchBookingData();
+  }, [fetchBookingData]);
 
-    fetchData();
-  }, [params["task-id"], user, router]);
-
-  const getStatusInfo = (status: BookingStatus) => {
+  const getStatusInfo = useCallback((status: BookingStatus) => {
     switch (status) {
       case "pending":
         return {
@@ -143,9 +153,9 @@ export default function TaskDetailPage({
           description: "Status unknown",
         };
     }
-  };
+  }, []);
 
-  const getBookingTypeInfo = (type: string) => {
+  const getBookingTypeInfo = useCallback((type: string) => {
     switch (type) {
       case "instant":
         return { label: "Instant", icon: Clock3 };
@@ -156,18 +166,18 @@ export default function TaskDetailPage({
       default:
         return { label: "Scheduled", icon: CalendarDays };
     }
-  };
+  }, []);
 
-  const formatCurrency = (amount: number, currency: string) => {
+  const formatCurrency = useCallback((amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-  };
+  }, []);
 
-  const formatDuration = (minutes: number) => {
+  const formatDuration = useCallback((minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours > 0 && mins > 0) {
@@ -177,77 +187,80 @@ export default function TaskDetailPage({
     } else {
       return `${mins}m`;
     }
-  };
+  }, []);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
+  }, []);
 
-  const formatTime = (timeString: string) => {
+  const formatTime = useCallback((timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
     });
-  };
+  }, []);
 
-  const getCustomerName = () => {
+  const getCustomerName = useCallback(() => {
     if (!booking) return "Customer";
     const firstName = booking.customer_first_name || "";
     const lastName = booking.customer_last_name || "";
     return `${firstName} ${lastName}`.trim() || "Customer";
-  };
+  }, [booking]);
 
-  const getCustomerEmail = () => {
+  const getCustomerEmail = useCallback(() => {
     // This would need to be added to the booking query
     return "customer@example.com";
-  };
+  }, []);
 
-  const getCustomerPhone = () => {
+  const getCustomerPhone = useCallback(() => {
     // This would need to be added to the booking query
     return "+1 (555) 123-4567";
-  };
+  }, []);
 
-  const handleStatusAction = async (action: string) => {
-    if (!user || !booking) return;
+  const handleStatusAction = useCallback(
+    async (action: string) => {
+      if (!booking) return;
 
-    const actionConfig = {
-      start: {
-        title: "Start Task",
-        description: `Are you ready to start the task for ${getCustomerName()}?`,
-        confirmText: "Start Task",
-        variant: "success" as const,
-        status: "in_progress" as BookingStatus,
-      },
-      complete: {
-        title: "Complete Task",
-        description: `Are you sure you want to mark this task as completed for ${getCustomerName()}?`,
-        confirmText: "Complete Task",
-        variant: "success" as const,
-        status: "completed" as BookingStatus,
-      },
-    };
+      const actionConfig = {
+        start: {
+          title: "Start Task",
+          description: `Are you ready to start the task for ${getCustomerName()}?`,
+          confirmText: "Start Task",
+          variant: "success" as const,
+          status: "in_progress" as BookingStatus,
+        },
+        complete: {
+          title: "Complete Task",
+          description: `Are you sure you want to mark this task as completed for ${getCustomerName()}?`,
+          confirmText: "Complete Task",
+          variant: "success" as const,
+          status: "completed" as BookingStatus,
+        },
+      };
 
-    const config = actionConfig[action as keyof typeof actionConfig];
-    if (!config) return;
+      const config = actionConfig[action as keyof typeof actionConfig];
+      if (!config) return;
 
-    setConfirmationDialog({
-      isOpen: true,
-      action,
-      title: config.title,
-      description: config.description,
-      confirmText: config.confirmText,
-      variant: config.variant,
-    });
-  };
+      setConfirmationDialog({
+        isOpen: true,
+        action,
+        title: config.title,
+        description: config.description,
+        confirmText: config.confirmText,
+        variant: config.variant,
+      });
+    },
+    [booking, getCustomerName]
+  );
 
-  const handleConfirmAction = async () => {
-    if (!user || !booking) return;
+  const handleConfirmAction = useCallback(async () => {
+    if (!booking) return;
 
     setIsUpdating(true);
 
@@ -260,7 +273,7 @@ export default function TaskDetailPage({
       const newStatus = statusMap[confirmationDialog.action];
       if (!newStatus) return;
 
-      const result = await updateBookingStatus(booking.id, newStatus, user.id);
+      const result = await updateBookingStatus(booking.id, newStatus, user!.id);
 
       if (result.success) {
         setBooking((prev) => (prev ? { ...prev, status: newStatus } : null));
@@ -276,11 +289,21 @@ export default function TaskDetailPage({
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
     }
-  };
+  }, [user, booking, confirmationDialog]);
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = useCallback(() => {
     setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
-  };
+  }, []);
+
+  // Memoize computed values before early returns
+  const statusInfo = useMemo(
+    () => (booking ? getStatusInfo(booking.status) : null),
+    [booking, getStatusInfo]
+  );
+  const bookingTypeInfo = useMemo(
+    () => (booking ? getBookingTypeInfo(booking.booking_type) : null),
+    [booking, getBookingTypeInfo]
+  );
 
   if (isLoading) {
     return (
@@ -307,9 +330,6 @@ export default function TaskDetailPage({
       </div>
     );
   }
-
-  const statusInfo = getStatusInfo(booking.status);
-  const bookingTypeInfo = getBookingTypeInfo(booking.booking_type);
 
   return (
     <div className="min-h-screen bg-color-bg smooth-scroll">
@@ -349,12 +369,14 @@ export default function TaskDetailPage({
         <Card className="border-color-border bg-color-surface shadow-sm">
           <CardContent className="p-4 mobile-spacing">
             <div className="flex items-center gap-3">
-              <Badge className={`${statusInfo.color} text-sm font-medium`}>
-                <statusInfo.icon className="h-4 w-4 mr-1" />
-                {statusInfo.label}
+              <Badge className={`${statusInfo?.color} text-sm font-medium`}>
+                {statusInfo?.icon && (
+                  <statusInfo.icon className="h-4 w-4 mr-1" />
+                )}
+                {statusInfo?.label}
               </Badge>
               <span className="text-sm text-color-text-secondary mobile-text-sm">
-                {statusInfo.description}
+                {statusInfo?.description}
               </span>
             </div>
           </CardContent>
@@ -469,13 +491,15 @@ export default function TaskDetailPage({
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <bookingTypeInfo.icon className="h-5 w-5 text-color-secondary" />
+                {bookingTypeInfo?.icon && (
+                  <bookingTypeInfo.icon className="h-5 w-5 text-color-secondary" />
+                )}
                 <div>
                   <p className="text-sm text-color-text-secondary mobile-text-sm">
                     Type
                   </p>
                   <p className="font-medium text-color-text-primary mobile-text-base">
-                    {bookingTypeInfo.label}
+                    {bookingTypeInfo?.label}
                   </p>
                 </div>
               </div>

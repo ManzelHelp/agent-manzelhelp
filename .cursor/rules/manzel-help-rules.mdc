@@ -9,3 +9,4 @@ alwaysApply: true
 -use mobile first approach
 -always write modern, responsive and user firendly code
 -always use a visual appealing design and use the global css file
+-middleware protects each page, while userStore is for performance and user experience (like ui or sending user to either customer or tasker pages)

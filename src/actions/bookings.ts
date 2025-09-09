@@ -67,9 +67,7 @@ export async function getTaskerBookings(
       ),
       tasker_service:tasker_services(
         title,
-        service:services(
-          category:service_categories(name_en)
-        )
+        description
       ),
       address:addresses(
         street_address,
@@ -83,7 +81,7 @@ export async function getTaskerBookings(
 
   if (error) {
     console.error("Error fetching bookings:", error);
-    throw new Error("Failed to fetch bookings");
+    throw new Error(`Failed to fetch bookings: ${error.message}`);
   }
 
   return data.map((booking) => ({
@@ -95,7 +93,7 @@ export async function getTaskerBookings(
     tasker_last_name: booking.tasker?.last_name,
     tasker_avatar: booking.tasker?.avatar_url,
     service_title: booking.tasker_service?.title,
-    category_name: booking.tasker_service?.service?.category?.name_en,
+    category_name: null,
     street_address: booking.address?.street_address,
     city: booking.address?.city,
     region: booking.address?.region,
@@ -126,10 +124,7 @@ export async function getBookingById(
       ),
       tasker_service:tasker_services(
         title,
-        description,
-        service:services(
-          category:service_categories(name_en)
-        )
+        description
       ),
       address:addresses(
         street_address,
@@ -157,7 +152,7 @@ export async function getBookingById(
     tasker_last_name: data.tasker?.last_name,
     tasker_avatar: data.tasker?.avatar_url,
     service_title: data.tasker_service?.title,
-    category_name: data.tasker_service?.service?.category?.name_en,
+    category_name: null,
     street_address: data.address?.street_address,
     city: data.address?.city,
     region: data.address?.region,
@@ -215,7 +210,10 @@ export async function updateBookingStatus(
 
   if (error) {
     console.error("Error updating booking status:", error);
-    return { success: false, error: "Failed to update booking status" };
+    return {
+      success: false,
+      error: `Failed to update booking status: ${error.message}`,
+    };
   }
 
   revalidatePath("/tasker/bookings");
