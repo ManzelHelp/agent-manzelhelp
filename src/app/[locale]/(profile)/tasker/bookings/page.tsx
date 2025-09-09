@@ -73,6 +73,11 @@ export default function BookingsPage() {
     }
   }, [user, router]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Fetch bookings on mount
   useEffect(() => {
     const fetchBookings = async () => {
@@ -90,6 +95,8 @@ export default function BookingsPage() {
         setBookings([]); // Set empty array on error
       } finally {
         setIsLoading(false);
+        // Scroll to top after data is loaded
+        window.scrollTo(0, 0);
       }
     };
 
