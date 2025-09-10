@@ -10,10 +10,10 @@ export interface BookingWithDetails {
   tasker_id: string;
   tasker_service_id: string;
   booking_type: "instant" | "scheduled" | "recurring";
-  scheduled_date: string;
-  scheduled_time_start: string;
-  scheduled_time_end: string;
-  estimated_duration: number;
+  scheduled_date: string | null;
+  scheduled_time_start: string | null;
+  scheduled_time_end: string | null;
+  estimated_duration: number | null;
   address_id: string;
   service_address: string | null;
   agreed_price: number;
@@ -48,10 +48,33 @@ export interface BookingWithDetails {
 }
 
 export async function getTaskerBookings(
-  taskerId: string
-): Promise<BookingWithDetails[]> {
+  taskerId: string,
+  limit: number = 20,
+  offset: number = 0,
+  includeTotal: boolean = true
+): Promise<{
+  bookings: BookingWithDetails[];
+  total: number;
+  hasMore: boolean;
+}> {
   const supabase = await createClient();
 
+  // Get total count only when needed (for initial load or when includeTotal is true)
+  let total = 0;
+  if (includeTotal || offset === 0) {
+    const { count, error: countError } = await supabase
+      .from("service_bookings")
+      .select("*", { count: "exact", head: true })
+      .eq("tasker_id", taskerId);
+
+    if (countError) {
+      console.error("Error fetching bookings count:", countError);
+      throw new Error(`Failed to fetch bookings count: ${countError.message}`);
+    }
+    total = count || 0;
+  }
+
+  // Get bookings with pagination - fetch one extra to determine if there are more
   const { data, error } = await supabase
     .from("service_bookings")
     .select(
@@ -60,7 +83,9 @@ export async function getTaskerBookings(
       customer:users!service_bookings_customer_id_fkey(
         first_name,
         last_name,
-        avatar_url
+        avatar_url,
+        email,
+        phone
       ),
       tasker:users!service_bookings_tasker_id_fkey(
         first_name,
@@ -79,18 +104,25 @@ export async function getTaskerBookings(
     `
     )
     .eq("tasker_id", taskerId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit);
 
   if (error) {
     console.error("Error fetching bookings:", error);
     throw new Error(`Failed to fetch bookings: ${error.message}`);
   }
 
-  return data.map((booking) => ({
+  // Check if there are more items
+  const hasMore = data.length > limit;
+  const bookings = data.slice(0, limit); // Remove the extra item if it exists
+
+  const formattedBookings = bookings.map((booking) => ({
     ...booking,
     customer_first_name: booking.customer?.first_name,
     customer_last_name: booking.customer?.last_name,
     customer_avatar: booking.customer?.avatar_url,
+    customer_email: booking.customer?.email,
+    customer_phone: booking.customer?.phone,
     tasker_first_name: booking.tasker?.first_name,
     tasker_last_name: booking.tasker?.last_name,
     tasker_avatar: booking.tasker?.avatar_url,
@@ -100,6 +132,12 @@ export async function getTaskerBookings(
     city: booking.address?.city,
     region: booking.address?.region,
   }));
+
+  return {
+    bookings: formattedBookings,
+    total,
+    hasMore,
+  };
 }
 
 export async function getBookingById(
