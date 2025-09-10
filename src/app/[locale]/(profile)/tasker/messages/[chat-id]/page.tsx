@@ -293,10 +293,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
-      <div className="flex flex-col h-screen max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] px-4 py-3">
+    <div className="h-screen bg-[var(--color-bg)] flex flex-col">
+      <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-10 bg-[var(--color-surface)] border-b border-[var(--color-border)] px-4 py-3">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -365,8 +365,8 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Customer Info Card */}
-        <div className="px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
+        {/* Sticky Customer Info Card */}
+        <div className="sticky top-[73px] z-10 px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
           <Card className="border-[var(--color-border)] bg-[var(--color-accent-light)]/30">
             <CardContent className="p-3">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
@@ -401,10 +401,10 @@ export default function ChatPage() {
           </Card>
         </div>
 
-        {/* Messages */}
+        {/* Scrollable Messages Area */}
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+          className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0"
         >
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
@@ -498,8 +498,8 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Message Input */}
-        <div className="bg-[var(--color-surface)] border-t border-[var(--color-border)] p-4">
+        {/* Sticky Message Input */}
+        <div className="sticky bottom-0 z-10 bg-[var(--color-surface)] border-t border-[var(--color-border)] p-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
               <textarea
