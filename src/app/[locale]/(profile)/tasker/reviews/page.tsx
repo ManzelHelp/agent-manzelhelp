@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -11,20 +12,17 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Star,
-  ThumbsUp,
   MessageSquare,
   Calendar,
   User,
-  Filter,
   Send,
   X,
+  TrendingUp,
+  Award,
+  Clock,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
-import {
-  getTaskerReviews,
-  replyToReview,
-  getReviewStats,
-} from "@/actions/reviews";
+import { getTaskerReviewsWithStats, replyToReview } from "@/actions/reviews";
 import { toast } from "sonner";
 import type {
   Review,
@@ -49,90 +47,64 @@ type FilterType =
   | "with-response"
   | "no-response";
 
+interface ReviewStats {
+  avgRating: number;
+  totalReviews: number;
+  responseRate: number;
+  fiveStarCount: number;
+}
+
 export default function ReviewsPage() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const { user } = useUserStore();
   const [reviews, setReviews] = useState<ReviewWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<ReviewStats>({
     avgRating: 0,
     totalReviews: 0,
     responseRate: 0,
     fiveStarCount: 0,
   });
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
 
-  const { user } = useUserStore();
-
-  useEffect(() => {
-    if (user) {
-      fetchReviews();
-    }
-  }, [user]);
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (!user) return;
 
     try {
       setLoading(true);
+      const { data, error } = await getTaskerReviewsWithStats(user.id);
 
-      // Fetch reviews using server action
-      const { data: reviewsData, error: reviewsError } = await getTaskerReviews(
-        user.id
-      );
-
-      if (reviewsError) {
-        console.error("Error fetching reviews:", reviewsError);
+      if (error) {
+        console.error("Error fetching reviews:", error);
         toast.error("Failed to load reviews");
         return;
       }
 
-      // Transform the data to handle the nested structure properly
-      const transformedReviews = (reviewsData || []).map(
-        (review: ReviewWithDetails) => ({
-          ...review,
-          // Ensure the nested structure is properly handled
-          service_booking: review.service_booking || null,
-          reviewer: review.reviewer || null,
-        })
-      );
-
-      setReviews(transformedReviews);
-
-      // Get stats using server action
-      const { data: statsData, error: statsError } = await getReviewStats(
-        user.id
-      );
-
-      if (statsError) {
-        console.error("Error fetching stats:", statsError);
-        toast.error("Failed to load review statistics");
-        return;
+      if (data) {
+        setReviews(data.reviews as ReviewWithDetails[]);
+        setStats(data.stats);
       }
-
-      setStats(
-        statsData || {
-          avgRating: 0,
-          totalReviews: 0,
-          responseRate: 0,
-          fiveStarCount: 0,
-        }
-      );
     } catch (error) {
       console.error("Error fetching reviews:", error);
       toast.error("An unexpected error occurred while loading reviews");
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchReviews();
+    }
+  }, [user, fetchReviews]);
 
   const handleReply = async (reviewId: string) => {
     if (!replyText.trim() || !user) return;
 
     try {
       setSubmittingReply(true);
-
       const { success, error } = await replyToReview(
         reviewId,
         replyText.trim(),
@@ -166,8 +138,6 @@ export default function ReviewsPage() {
       }));
 
       toast.success("Reply submitted successfully!");
-
-      // Reset form
       setReplyingTo(null);
       setReplyText("");
     } catch (error) {
@@ -178,52 +148,31 @@ export default function ReviewsPage() {
     }
   };
 
-  const filteredReviews = reviews.filter((review) => {
-    switch (activeFilter) {
-      case "positive":
-        return review.overall_rating >= 4;
-      case "negative":
-        return review.overall_rating <= 3;
-      case "with-response":
-        return !!review.reply_comment;
-      case "no-response":
-        return !review.reply_comment;
-      default:
-        return true;
-    }
-  });
+  const filteredReviews = useMemo(() => {
+    return reviews.filter((review) => {
+      switch (activeFilter) {
+        case "positive":
+          return review.overall_rating >= 4;
+        case "negative":
+          return review.overall_rating <= 3;
+        case "with-response":
+          return !!review.reply_comment;
+        case "no-response":
+          return !review.reply_comment;
+        default:
+          return true;
+      }
+    });
+  }, [reviews, activeFilter]);
 
-  const FilterButton = ({
-    filter,
-    label,
-    count,
-  }: {
-    filter: FilterType;
-    label: string;
-    count: number;
-  }) => (
-    <button
-      onClick={() => setActiveFilter(filter)}
-      aria-pressed={activeFilter === filter}
-      aria-label={`Filter reviews by ${label.toLowerCase()}`}
-      className={`touch-target flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out mobile-focus ${
-        activeFilter === filter
-          ? "bg-[var(--color-primary)] text-white shadow-md"
-          : "bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-accent-light)] border border-[var(--color-border)]"
-      }`}
-    >
-      <span className="mobile-text-sm font-medium">{label}</span>
-      <span
-        className={`text-xs rounded-full px-2 py-1 font-medium ${
-          activeFilter === filter
-            ? "bg-white/20 text-white"
-            : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-        }`}
-        aria-label={`${count} reviews`}
-      >
-        {count}
-      </span>
-    </button>
+  const filterCounts = useMemo(
+    () => ({
+      all: reviews.length,
+      positive: reviews.filter((r) => r.overall_rating >= 4).length,
+      negative: reviews.filter((r) => r.overall_rating <= 3).length,
+      noResponse: reviews.filter((r) => !r.reply_comment).length,
+    }),
+    [reviews]
   );
 
   const formatDate = (dateString: string) => {
@@ -234,338 +183,449 @@ export default function ReviewsPage() {
     });
   };
 
+  const getRatingColor = (rating: number) => {
+    if (rating >= 4) return "text-green-600";
+    if (rating >= 3) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const getResponseRateColor = (rate: number) => {
+    if (rate >= 80) return "text-green-600";
+    if (rate >= 60) return "text-yellow-600";
+    return "text-red-600";
+  };
+
   if (loading) {
     return (
-      <div className="mobile-spacing container mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="mobile-text-xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
-            Reviews
-          </h1>
-          <p className="mobile-text-sm md:text-base text-[var(--color-text-secondary)] mobile-leading">
-            Loading your reviews...
-          </p>
-        </div>
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-2"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-8"></div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-32 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                ></div>
+              ))}
+            </div>
+            <div className="h-96 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mobile-spacing container mx-auto space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="mobile-text-xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
-          Reviews
-        </h1>
-        <p className="mobile-text-sm md:text-base text-[var(--color-text-secondary)] mobile-leading">
-          Monitor and manage your client feedback
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4">
+            <Star className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+            Reviews & Feedback
+          </h1>
+          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+            Monitor your performance and build trust with clients through
+            meaningful interactions
+          </p>
+        </div>
 
-      {/* Stats Overview */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
-              Average Rating
-            </CardTitle>
-            <Star className="h-4 w-4 text-[var(--color-secondary)]" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
-                {stats.avgRating}
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-blue-500/10 rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    {stats.avgRating}
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 ${
+                          star <= Math.round(stats.avgRating)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-slate-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="flex -space-x-0.5">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <Star
-                    key={rating}
-                    className={`h-3 w-3 md:h-4 md:w-4 ${
-                      rating <= Math.round(stats.avgRating)
-                        ? "fill-[var(--color-warning)] text-[var(--color-warning)]"
-                        : "text-[var(--color-accent)]"
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                Average Rating
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Based on {stats.totalReviews} reviews
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-green-500/10 rounded-xl">
+                  <Award className="w-6 h-6 text-green-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    {stats.fiveStarCount}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    {stats.totalReviews > 0
+                      ? Math.round(
+                          (stats.fiveStarCount / stats.totalReviews) * 100
+                        )
+                      : 0}
+                    %
+                  </div>
+                </div>
+              </div>
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                5-Star Reviews
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Excellence rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-purple-500/10 rounded-xl">
+                  <MessageSquare className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="text-right">
+                  <div
+                    className={`text-3xl font-bold ${getResponseRateColor(
+                      stats.responseRate
+                    )}`}
+                  >
+                    {stats.responseRate}%
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Response rate
+                  </div>
+                </div>
+              </div>
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                Response Rate
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Client engagement
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-orange-500/10 rounded-xl">
+                  <Clock className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    {stats.totalReviews}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Total reviews
+                  </div>
+                </div>
+              </div>
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                Total Reviews
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                All time feedback
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Reviews Section */}
+        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div className="space-y-2">
+                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  Client Reviews
+                </CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-400">
+                  {filteredReviews.length} review
+                  {filteredReviews.length !== 1 && "s"}
+                  {activeFilter !== "all" &&
+                    ` (${activeFilter} filter applied)`}
+                </CardDescription>
+              </div>
+
+              {/* Filter Buttons */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: "all", label: "All", count: filterCounts.all },
+                  {
+                    key: "positive",
+                    label: "4★+",
+                    count: filterCounts.positive,
+                  },
+                  {
+                    key: "negative",
+                    label: "3★-",
+                    count: filterCounts.negative,
+                  },
+                  {
+                    key: "no-response",
+                    label: "Needs Reply",
+                    count: filterCounts.noResponse,
+                  },
+                ].map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() => setActiveFilter(filter.key as FilterType)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      activeFilter === filter.key
+                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                        : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
                     }`}
-                  />
+                  >
+                    {filter.label}
+                    <span
+                      className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                        activeFilter === filter.key
+                          ? "bg-white/20"
+                          : "bg-slate-200 dark:bg-slate-600"
+                      }`}
+                    >
+                      {filter.count}
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
-            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
-              Based on {stats.totalReviews} reviews
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
-              5-Star Reviews
-            </CardTitle>
-            <ThumbsUp className="h-4 w-4 text-[var(--color-success)]" />
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
-              {stats.fiveStarCount}
-            </div>
-            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
-              {stats.totalReviews > 0
-                ? Math.round((stats.fiveStarCount / stats.totalReviews) * 100)
-                : 0}
-              % of total
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
-              Response Rate
-            </CardTitle>
-            <MessageSquare className="h-4 w-4 text-[var(--color-info)]" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
-              {stats.responseRate}%
-            </div>
-            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
-              Reviews responded to
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:shadow-md transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="mobile-text-sm font-medium text-[var(--color-text-primary)]">
-              Total Reviews
-            </CardTitle>
-            <Filter className="h-4 w-4 text-[var(--color-text-secondary)]" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="mobile-text-lg md:text-2xl font-bold text-[var(--color-text-primary)]">
-              {stats.totalReviews}
-            </div>
-            <p className="mobile-text-xs text-[var(--color-text-secondary)]">
-              All time
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Reviews Section */}
-      <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-        <CardHeader className="space-y-4">
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-            <div className="space-y-1">
-              <CardTitle className="mobile-text-lg md:text-xl text-[var(--color-text-primary)]">
-                Client Reviews
-              </CardTitle>
-              <CardDescription className="mobile-text-sm text-[var(--color-text-secondary)]">
-                {filteredReviews.length} review
-                {filteredReviews.length !== 1 && "s"}
-              </CardDescription>
-            </div>
-            <div className="flex flex-wrap gap-2 scrollbar-hide overflow-x-auto pb-2 md:pb-0">
-              <FilterButton
-                filter="all"
-                label="All Reviews"
-                count={reviews.length}
-              />
-              <FilterButton
-                filter="positive"
-                label="4★ & Above"
-                count={reviews.filter((r) => r.overall_rating >= 4).length}
-              />
-              <FilterButton
-                filter="negative"
-                label="3★ & Below"
-                count={reviews.filter((r) => r.overall_rating <= 3).length}
-              />
-              <FilterButton
-                filter="no-response"
-                label="Needs Response"
-                count={reviews.filter((r) => !r.reply_comment).length}
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
+          <CardContent className="p-6">
             {filteredReviews.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="flex justify-center mb-4">
-                  <Star className="h-12 w-12 text-[var(--color-text-secondary)]" />
+              <div className="text-center py-16">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center">
+                  <Star className="w-12 h-12 text-slate-400" />
                 </div>
-                <h3 className="mobile-text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
                   No reviews found
                 </h3>
-                <p className="mobile-text-sm text-[var(--color-text-secondary)] mobile-leading">
+                <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
                   {activeFilter === "no-response"
-                    ? "You've responded to all reviews!"
-                    : "No reviews match the selected filter."}
+                    ? "Great job! You've responded to all reviews."
+                    : "No reviews match the selected filter. Try adjusting your filter criteria."}
                 </p>
               </div>
             ) : (
-              filteredReviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="space-y-4 pb-6 border-b border-[var(--color-border)] last:border-b-0"
-                >
-                  <div className="flex flex-col space-y-3 md:flex-row md:items-start md:justify-between md:space-y-0">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+              <div className="space-y-8">
+                {filteredReviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="group p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 hover:shadow-lg"
+                  >
+                    <div className="flex flex-col space-y-4 lg:flex-row lg:items-start lg:justify-between lg:space-y-0">
+                      <div className="flex items-start space-x-4">
+                        <div className="relative">
                           {review.reviewer?.avatar_url ? (
-                            <img
+                            <Image
                               src={review.reviewer.avatar_url}
                               alt={review.reviewer.first_name || "Client"}
-                              className="h-10 w-10 rounded-full object-cover"
+                              width={48}
+                              height={48}
+                              className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700"
                             />
                           ) : (
-                            <User className="h-5 w-5 text-[var(--color-primary)]" />
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                              <User className="w-6 h-6 text-white" />
+                            </div>
                           )}
+                          <div
+                            className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                              review.overall_rating >= 4
+                                ? "bg-green-500"
+                                : review.overall_rating >= 3
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                            }`}
+                          >
+                            {review.overall_rating}
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <h3 className="mobile-text-base font-semibold text-[var(--color-text-primary)]">
-                            {review.reviewer?.first_name &&
-                            review.reviewer?.last_name
-                              ? `${review.reviewer.first_name} ${review.reviewer.last_name}`
-                              : review.reviewer?.first_name || "Anonymous"}
-                          </h3>
-                          <div className="flex items-center gap-2 mobile-text-sm text-[var(--color-text-secondary)]">
-                            <Calendar className="h-3 w-3" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+                              {review.reviewer?.first_name &&
+                              review.reviewer?.last_name
+                                ? `${review.reviewer.first_name} ${review.reviewer.last_name}`
+                                : review.reviewer?.first_name || "Anonymous"}
+                            </h3>
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-4 h-4 ${
+                                    star <= review.overall_rating
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-slate-300"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
+                            <Calendar className="w-4 h-4" />
                             {formatDate(review.created_at || "")}
                           </div>
+                          {review.service_booking?.tasker_service && (
+                            <div className="inline-flex items-center px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-xs text-slate-600 dark:text-slate-400">
+                              {review.service_booking.tasker_service.title}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      {review.service_booking?.tasker_service && (
-                        <p className="mobile-text-sm text-[var(--color-text-secondary)] mobile-leading">
-                          Service: {review.service_booking.tasker_service.title}
-                        </p>
-                      )}
                     </div>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`h-4 w-4 md:h-5 md:w-5 ${
-                            star <= review.overall_rating
-                              ? "fill-[var(--color-warning)] text-[var(--color-warning)]"
-                              : "text-[var(--color-accent)]"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="pl-13 md:pl-14 space-y-3">
-                    <p className="mobile-text-sm mobile-leading text-[var(--color-text-primary)]">
-                      {review.comment}
-                    </p>
 
-                    {/* Detailed Ratings */}
-                    {review.quality_rating &&
-                      review.communication_rating &&
-                      review.timeliness_rating && (
-                        <div className="grid grid-cols-3 gap-4 mobile-text-xs text-[var(--color-text-secondary)]">
-                          <div>
-                            <div className="font-medium">Quality</div>
-                            <div className="flex items-center gap-1">
-                              {review.quality_rating}/5
-                              <Star className="h-3 w-3 fill-[var(--color-warning)] text-[var(--color-warning)]" />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="font-medium">Communication</div>
-                            <div className="flex items-center gap-1">
-                              {review.communication_rating}/5
-                              <Star className="h-3 w-3 fill-[var(--color-warning)] text-[var(--color-warning)]" />
-                            </div>
-                          </div>
-                          <div>
-                            <div className="font-medium">Timeliness</div>
-                            <div className="flex items-center gap-1">
-                              {review.timeliness_rating}/5
-                              <Star className="h-3 w-3 fill-[var(--color-warning)] text-[var(--color-warning)]" />
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                    <div className="mt-4 space-y-4">
+                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                        {review.comment}
+                      </p>
 
-                    {review.reply_comment ? (
-                      <div className="bg-[var(--color-accent-light)] rounded-lg p-4 mt-3 border border-[var(--color-border)]">
-                        <p className="mobile-text-sm font-medium mb-2 text-[var(--color-text-primary)]">
-                          Your Response:
-                        </p>
-                        <p className="mobile-text-sm mobile-leading text-[var(--color-text-secondary)]">
-                          {review.reply_comment}
-                        </p>
-                        {review.replied_at && (
-                          <p className="mobile-text-xs text-[var(--color-text-secondary)] mt-2">
-                            Replied on {formatDate(review.replied_at)}
+                      {/* Detailed Ratings */}
+                      {review.quality_rating &&
+                        review.communication_rating &&
+                        review.timeliness_rating && (
+                          <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                            {[
+                              {
+                                label: "Quality",
+                                rating: review.quality_rating,
+                              },
+                              {
+                                label: "Communication",
+                                rating: review.communication_rating,
+                              },
+                              {
+                                label: "Timeliness",
+                                rating: review.timeliness_rating,
+                              },
+                            ].map((item) => (
+                              <div key={item.label} className="text-center">
+                                <div className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                  {item.label}
+                                </div>
+                                <div className="flex items-center justify-center gap-1">
+                                  <span
+                                    className={`text-lg font-bold ${getRatingColor(
+                                      item.rating
+                                    )}`}
+                                  >
+                                    {item.rating}
+                                  </span>
+                                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                      {review.reply_comment ? (
+                        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                              Your Response
+                            </span>
+                          </div>
+                          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                            {review.reply_comment}
                           </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {replyingTo === review.id ? (
-                          <div className="space-y-3">
-                            <textarea
-                              value={replyText}
-                              onChange={(e) => setReplyText(e.target.value)}
-                              placeholder="Write your response..."
-                              aria-label="Reply to review"
-                              maxLength={1000}
-                              className="w-full p-3 border border-[var(--color-border)] rounded-lg resize-none mobile-text-sm bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-                              rows={3}
-                            />
-                            <div className="text-xs text-[var(--color-text-secondary)] text-right">
-                              {replyText.length}/1000 characters
+                          {review.replied_at && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                              Replied on {formatDate(review.replied_at)}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {replyingTo === review.id ? (
+                            <div className="space-y-3">
+                              <textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="Write a thoughtful response to this review..."
+                                maxLength={1000}
+                                className="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg resize-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                rows={4}
+                              />
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                  {replyText.length}/1000 characters
+                                </span>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleReply(review.id)}
+                                    disabled={
+                                      submittingReply || !replyText.trim()
+                                    }
+                                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                                  >
+                                    <Send className="w-4 h-4 mr-2" />
+                                    {submittingReply
+                                      ? "Sending..."
+                                      : "Send Reply"}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setReplyingTo(null);
+                                      setReplyText("");
+                                    }}
+                                    className="border-slate-300 dark:border-slate-600"
+                                  >
+                                    <X className="w-4 h-4 mr-2" />
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleReply(review.id)}
-                                disabled={submittingReply || !replyText.trim()}
-                                aria-label="Send reply to review"
-                                className="touch-target bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 transition-colors duration-200"
-                              >
-                                <Send className="h-4 w-4 mr-2" />
-                                {submittingReply ? "Sending..." : "Send Reply"}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setReplyingTo(null);
-                                  setReplyText("");
-                                }}
-                                className="touch-target border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)] transition-colors duration-200"
-                              >
-                                <X className="h-4 w-4 mr-2" />
-                                Cancel
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setReplyingTo(review.id)}
-                            className="touch-target border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200"
-                          >
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Reply to Review
-                          </Button>
-                        )}
-                      </div>
-                    )}
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setReplyingTo(review.id)}
+                              className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            >
+                              <MessageSquare className="w-4 h-4 mr-2" />
+                              Reply to Review
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

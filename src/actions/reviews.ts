@@ -22,25 +22,31 @@ export async function getTaskerReviews(taskerId: string) {
 
     const supabase = await createClient();
 
+    // Optimized query with better performance
     const { data, error } = await supabase
       .from("reviews")
       .select(
         `
-        *,
+        id,
+        overall_rating,
+        quality_rating,
+        communication_rating,
+        timeliness_rating,
+        comment,
+        created_at,
+        reply_comment,
+        replied_at,
         reviewer:users!reviews_reviewer_id_fkey(
           id,
           first_name,
           last_name,
-          avatar_url,
-          email
+          avatar_url
         ),
         service_booking:service_bookings!reviews_booking_id_fkey(
           id,
-          tasker_service_id,
           tasker_service:tasker_services!service_bookings_tasker_service_id_fkey(
             id,
-            title,
-            description
+            title
           )
         )
       `
@@ -117,6 +123,111 @@ export async function replyToReview(
   } catch (error) {
     console.error("Error in replyToReview:", error);
     return { success: false, error: "Failed to submit reply" };
+  }
+}
+
+// Combined function to get both reviews and stats in one optimized call
+export async function getTaskerReviewsWithStats(taskerId: string) {
+  try {
+    if (!taskerId) {
+      return {
+        data: {
+          reviews: [],
+          stats: {
+            avgRating: 0,
+            totalReviews: 0,
+            responseRate: 0,
+            fiveStarCount: 0,
+          },
+        },
+        error: "Tasker ID is required",
+      };
+    }
+
+    const supabase = await createClient();
+
+    // Get all reviews with related data
+    const { data: reviewsData, error: reviewsError } = await supabase
+      .from("reviews")
+      .select(
+        `
+        id,
+        overall_rating,
+        quality_rating,
+        communication_rating,
+        timeliness_rating,
+        comment,
+        created_at,
+        reply_comment,
+        replied_at,
+        reviewer:users!reviews_reviewer_id_fkey(
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        ),
+        service_booking:service_bookings!reviews_booking_id_fkey(
+          id,
+          tasker_service:tasker_services!service_bookings_tasker_service_id_fkey(
+            id,
+            title
+          )
+        )
+      `
+      )
+      .eq("reviewee_id", taskerId)
+      .order("created_at", { ascending: false });
+
+    if (reviewsError) {
+      console.error("Error fetching reviews:", reviewsError);
+      return { data: null, error: reviewsError.message };
+    }
+
+    // Calculate stats from the same data
+    const reviews = reviewsData || [];
+    const totalReviews = reviews.length;
+
+    if (totalReviews === 0) {
+      return {
+        data: {
+          reviews: [],
+          stats: {
+            avgRating: 0,
+            totalReviews: 0,
+            responseRate: 0,
+            fiveStarCount: 0,
+          },
+        },
+        error: null,
+      };
+    }
+
+    const avgRating = Number(
+      (
+        reviews.reduce((acc, review) => acc + review.overall_rating, 0) /
+        totalReviews
+      ).toFixed(1)
+    );
+    const responseRate = Math.round(
+      (reviews.filter((r) => r.reply_comment).length / totalReviews) * 100
+    );
+    const fiveStarCount = reviews.filter((r) => r.overall_rating === 5).length;
+
+    return {
+      data: {
+        reviews,
+        stats: {
+          avgRating,
+          totalReviews,
+          responseRate,
+          fiveStarCount,
+        },
+      },
+      error: null,
+    };
+  } catch (error) {
+    console.error("Error in getTaskerReviewsWithStats:", error);
+    return { data: null, error: "Failed to fetch reviews and stats" };
   }
 }
 
