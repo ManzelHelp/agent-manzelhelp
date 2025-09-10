@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -19,84 +20,114 @@ import {
   CheckCircle2,
   AlertCircle,
   MessageCircle,
+  Loader2,
 } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
+import {
+  getConversationsAction,
+  type ConversationWithDetails,
+} from "@/actions/messages";
 
 type MessageStatus = "all" | "unread" | "read";
 
-interface Message {
-  id: number;
-  client: string;
-  message: string;
-  time: string;
-  unread: boolean;
-  avatar?: string;
-  service?: string;
-}
-
 export default function MessagesPage() {
   const router = useRouter();
+  const { user } = useUserStore();
   const [messageFilter, setMessageFilter] = useState<MessageStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [conversations, setConversations] = useState<ConversationWithDetails[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - replace with real data fetching
-  const messages: Message[] = [
-    {
-      id: 1,
-      client: "Sarah M.",
-      message: "What cleaning supplies do you need me to provide?",
-      time: "2 hours ago",
-      unread: true,
-      service: "House Cleaning",
-    },
-    {
-      id: 2,
-      client: "Tech Corp",
-      message: "Can we reschedule for tomorrow?",
-      time: "5 hours ago",
-      unread: true,
-      service: "Office Cleaning",
-    },
-    {
-      id: 3,
-      client: "Emma T.",
-      message: "Thank you for the great service!",
-      time: "1 day ago",
-      unread: false,
-      service: "Pet Sitting",
-    },
-    {
-      id: 4,
-      client: "John D.",
-      message: "I've sent the payment for today's service.",
-      time: "2 days ago",
-      unread: false,
-      service: "Furniture Assembly",
-    },
-    {
-      id: 5,
-      client: "Mike R.",
-      message: "Looking forward to our appointment next week.",
-      time: "3 days ago",
-      unread: false,
-      service: "Moving Help",
-    },
-  ];
+  // Fetch conversations from database
+  useEffect(() => {
+    const fetchConversations = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
-  const filteredMessages = messages
-    .filter((message) => {
-      if (messageFilter === "unread") return message.unread;
-      if (messageFilter === "read") return !message.unread;
-      return true;
-    })
-    .filter(
-      (message) =>
-        searchQuery === "" ||
-        message.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        message.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        message.service?.toLowerCase().includes(searchQuery.toLowerCase())
+      try {
+        setIsLoading(true);
+        setError(null);
+        const { conversations: fetchedConversations, errorMessage } =
+          await getConversationsAction();
+
+        if (errorMessage) {
+          setError(errorMessage);
+        } else {
+          setConversations(fetchedConversations);
+        }
+      } catch (err) {
+        console.error("Error fetching conversations:", err);
+        setError("Failed to load messages");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConversations();
+  }, [user]);
+
+  // Helper function to format time
+  const formatTime = (timestamp: string | undefined) => {
+    if (!timestamp) return "Unknown";
+
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-  const unreadCount = messages.filter((m) => m.unread).length;
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24)
+      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7)
+      return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  // Filter conversations based on status and search query
+  const filteredConversations = conversations
+    .filter((conversation) => {
+      const hasUnread = (conversation.unread_count || 0) > 0;
+      if (messageFilter === "unread") return hasUnread;
+      if (messageFilter === "read") return !hasUnread;
+      return true;
+    })
+    .filter((conversation) => {
+      if (searchQuery === "") return true;
+
+      const otherParticipant = conversation.other_participant;
+      const participantName = otherParticipant
+        ? `${otherParticipant.first_name || ""} ${
+            otherParticipant.last_name || ""
+          }`.trim()
+        : "";
+
+      const lastMessage = conversation.last_message?.content || "";
+      const serviceTitle =
+        conversation.service_title ||
+        conversation.job_title ||
+        conversation.booking_title ||
+        "";
+
+      return (
+        participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        serviceTitle.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+
+  const unreadCount = conversations.reduce(
+    (total, conv) => total + (conv.unread_count || 0),
+    0
+  );
 
   const FilterButton = ({
     status,
@@ -180,7 +211,37 @@ export default function MessagesPage() {
 
             {/* Messages List */}
             <div className="space-y-3">
-              {filteredMessages.length === 0 ? (
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="flex justify-center mb-4">
+                    <Loader2 className="h-12 w-12 text-[var(--color-primary)] animate-spin" />
+                  </div>
+                  <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
+                    Loading messages...
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-secondary)] mobile-leading">
+                    Please wait while we fetch your conversations
+                  </p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <div className="flex justify-center mb-4">
+                    <AlertCircle className="h-12 w-12 text-red-500" />
+                  </div>
+                  <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
+                    Error loading messages
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-secondary)] mobile-leading mb-4">
+                    {error}
+                  </p>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="touch-target"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              ) : filteredConversations.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="flex justify-center mb-4">
                     <MessageCircle className="h-12 w-12 text-[var(--color-text-secondary)]" />
@@ -199,73 +260,104 @@ export default function MessagesPage() {
                   </p>
                 </div>
               ) : (
-                filteredMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
-                      message.unread
-                        ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/20"
-                        : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-primary)]/30"
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0 border-2 border-[var(--color-primary)]/20">
-                        {message.avatar ? (
-                          <img
-                            src={message.avatar}
-                            alt={message.client}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <User className="h-6 w-6 text-[var(--color-primary)]" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold truncate text-[var(--color-text-primary)] mobile-text-base">
-                                {message.client}
-                              </h3>
-                              {message.unread && (
-                                <span className="w-3 h-3 bg-[var(--color-primary)] rounded-full flex-shrink-0 animate-pulse"></span>
+                filteredConversations.map((conversation) => {
+                  const otherParticipant = conversation.other_participant;
+                  const participantName = otherParticipant
+                    ? `${otherParticipant.first_name || ""} ${
+                        otherParticipant.last_name || ""
+                      }`.trim() || "Unknown"
+                    : "Unknown";
+
+                  const hasUnread = (conversation.unread_count || 0) > 0;
+                  const lastMessage = conversation.last_message;
+                  const serviceTitle =
+                    conversation.service_title ||
+                    conversation.job_title ||
+                    conversation.booking_title;
+
+                  return (
+                    <div
+                      key={conversation.id}
+                      className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
+                        hasUnread
+                          ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/20"
+                          : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-primary)]/30"
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="h-12 w-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0 border-2 border-[var(--color-primary)]/20">
+                          {otherParticipant?.avatar_url ? (
+                            <Image
+                              src={otherParticipant.avatar_url}
+                              alt={participantName}
+                              width={48}
+                              height={48}
+                              className="h-12 w-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-6 w-6 text-[var(--color-primary)]" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold truncate text-[var(--color-text-primary)] mobile-text-base">
+                                  {participantName}
+                                </h3>
+                                {hasUnread && (
+                                  <span className="w-3 h-3 bg-[var(--color-primary)] rounded-full flex-shrink-0 animate-pulse"></span>
+                                )}
+                                {conversation.unread_count &&
+                                  conversation.unread_count > 1 && (
+                                    <span className="text-xs bg-[var(--color-primary)] text-white rounded-full px-2 py-0.5 font-semibold">
+                                      {conversation.unread_count}
+                                    </span>
+                                  )}
+                              </div>
+                              {serviceTitle && (
+                                <p className="text-xs text-[var(--color-text-secondary)] mb-2">
+                                  Re: {serviceTitle}
+                                </p>
                               )}
                             </div>
-                            {message.service && (
-                              <p className="text-xs text-[var(--color-text-secondary)] mb-2">
-                                Re: {message.service}
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <p className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap flex items-center">
+                                <Clock className="inline-block h-3 w-3 mr-1" />
+                                {formatTime(
+                                  lastMessage?.created_at ||
+                                    conversation.last_message_at
+                                )}
                               </p>
-                            )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <p className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap flex items-center">
-                              <Clock className="inline-block h-3 w-3 mr-1" />
-                              {message.time}
+                          {lastMessage && (
+                            <p className="text-sm mt-2 line-clamp-2 text-[var(--color-text-secondary)] mobile-leading">
+                              {lastMessage.content}
                             </p>
+                          )}
+                          <div className="flex justify-end mt-4">
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                router.push(
+                                  `/tasker/messages/${conversation.id}`
+                                )
+                              }
+                              className={`touch-target transition-all duration-200 ${
+                                hasUnread
+                                  ? "bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
+                                  : "bg-[var(--color-surface)] text-[var(--color-primary)] border border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                              }`}
+                            >
+                              {hasUnread ? "Reply" : "View"}
+                            </Button>
                           </div>
-                        </div>
-                        <p className="text-sm mt-2 line-clamp-2 text-[var(--color-text-secondary)] mobile-leading">
-                          {message.message}
-                        </p>
-                        <div className="flex justify-end mt-4">
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              router.push(`/tasker/messages/${message.id}`)
-                            }
-                            className={`touch-target transition-all duration-200 ${
-                              message.unread
-                                ? "bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
-                                : "bg-[var(--color-surface)] text-[var(--color-primary)] border border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
-                            }`}
-                          >
-                            Reply
-                          </Button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </CardContent>
