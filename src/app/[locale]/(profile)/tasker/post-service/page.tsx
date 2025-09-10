@@ -33,9 +33,19 @@ import {
   ChevronDown,
   AlertCircle,
   Edit,
+  Clock,
+  Star,
+  Shield,
+  Sparkles,
+  Info,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { createClient } from "@/supabase/client";
+import { serviceCategories } from "@/lib/categories";
+import {
+  createTaskerService,
+  type CreateServiceData,
+} from "@/actions/services";
 import type {
   ServiceCategory,
   Service,
@@ -90,21 +100,24 @@ const INITIAL_PRICING_DATA: PricingData = {
 const STEPS = [
   {
     id: 1,
-    title: "Basic Information",
-    description: "Service details and availability",
-    icon: <User className="h-5 w-5" />,
+    title: "Service Details",
+    description: "Tell us about your service",
+    icon: <Sparkles className="h-5 w-5" />,
+    color: "from-blue-500 to-blue-600",
   },
   {
     id: 2,
-    title: "Pricing Details",
-    description: "Set your rates and policies",
+    title: "Pricing & Policies",
+    description: "Set your rates and terms",
     icon: <DollarSign className="h-5 w-5" />,
+    color: "from-green-500 to-green-600",
   },
   {
     id: 3,
-    title: "Review & Submit",
-    description: "Review your offer before publishing",
-    icon: <Check className="h-5 w-5" />,
+    title: "Review & Launch",
+    description: "Review and publish your service",
+    icon: <Shield className="h-5 w-5" />,
+    color: "from-purple-500 to-purple-600",
   },
 ];
 
@@ -113,6 +126,7 @@ export default function CreateOfferPage() {
   const { user } = useUserStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<OfferFormData>({
     basicInfo: INITIAL_BASIC_INFO,
     pricing: INITIAL_PRICING_DATA,
@@ -149,25 +163,40 @@ export default function CreateOfferPage() {
     const supabase = createClient();
 
     try {
-      // Fetch service categories
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from("service_categories")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order");
+      // Use local categories from categories.ts
+      const localCategories = serviceCategories.map((cat) => ({
+        id: cat.id,
+        name_en: cat.name_en,
+        name_fr: cat.name_fr,
+        name_ar: cat.name_ar,
+        description_en: cat.description_en,
+        description_fr: cat.description_fr,
+        description_ar: cat.description_ar,
+        icon_url: cat.icon,
+        is_active: true,
+        sort_order: cat.id,
+      }));
+      setCategories(localCategories);
 
-      if (categoriesError) throw categoriesError;
-      setCategories(categoriesData || []);
-
-      // Fetch all services
-      const { data: servicesData, error: servicesError } = await supabase
-        .from("services")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order");
-
-      if (servicesError) throw servicesError;
-      setServices(servicesData || []);
+      // Get all services from local categories
+      const allServices: Service[] = [];
+      serviceCategories.forEach((category) => {
+        category.services.forEach((service) => {
+          allServices.push({
+            id: service.id,
+            category_id: category.id,
+            name_en: service.name_en,
+            name_fr: service.name_fr,
+            name_ar: service.name_ar,
+            description_en: service.description_en,
+            description_fr: service.description_fr,
+            description_ar: service.description_ar,
+            is_active: true,
+            sort_order: service.id,
+          });
+        });
+      });
+      setServices(allServices);
 
       // Fetch user addresses
       const { data: addressesData, error: addressesError } = await supabase
@@ -334,8 +363,7 @@ export default function CreateOfferPage() {
   const handleSubmit = async () => {
     if (!user?.id || !validateStep2()) return;
 
-    setLoading(true);
-    const supabase = createClient();
+    setSubmitting(true);
 
     try {
       // Get the selected address
@@ -347,959 +375,1210 @@ export default function CreateOfferPage() {
         throw new Error("Selected address not found");
       }
 
-      // Create the tasker service entry
-      const { error: serviceError } = await supabase
-        .from("tasker_services")
-        .insert({
-          tasker_id: user.id,
-          service_id: formData.basicInfo.serviceId,
-          title: formData.basicInfo.title,
-          description: formData.basicInfo.description,
-          pricing_type: formData.pricing.pricingType,
-          price: formData.pricing.basePrice || 0, // Always provide a value since it's NOT NULL
-          minimum_duration: formData.pricing.minimumBookingHours
-            ? Math.round(formData.pricing.minimumBookingHours)
-            : null, // Round to nearest hour if provided
-          service_area: `${selectedAddress.city}, ${selectedAddress.region}`,
-          service_status: "active",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          portfolio_images: null, // We can add image upload functionality later
-        });
+      // Prepare service data
+      const serviceData: CreateServiceData = {
+        title: formData.basicInfo.title,
+        description: formData.basicInfo.description,
+        category_id: formData.basicInfo.categoryId,
+        service_id: formData.basicInfo.serviceId,
+        address_id: selectedAddress.id,
+        pricing_type: formData.pricing.pricingType,
+        base_price: formData.pricing.basePrice,
+        hourly_rate: formData.pricing.hourlyRate,
+        minimum_booking_hours: formData.pricing.minimumBookingHours,
+        estimated_duration: formData.pricing.estimatedDuration,
+        extras: formData.pricing.extras,
+      };
 
-      if (serviceError) throw serviceError;
+      // Create the service using server action
+      const result = await createTaskerService(user.id, serviceData);
 
-      toast.success("Service offer created successfully!");
-      router.push("/tasker/dashboard");
+      if (result.success) {
+        toast.success("Service offer created successfully!");
+        router.push("/tasker/dashboard");
+      } else {
+        toast.error(result.error || "Failed to create service");
+      }
     } catch (error) {
       console.error("Error creating offer:", error);
       toast.error("Failed to create offer. Please try again.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   if (loading && categories.length === 0) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-10 flex items-center justify-center min-h-[60vh]">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading form data...</p>
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-[var(--color-border)] border-t-[var(--color-secondary)] rounded-full animate-spin mx-auto mb-6"></div>
+            <div
+              className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[var(--color-primary)] rounded-full animate-spin mx-auto"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
+          </div>
+          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
+            Loading Your Service Creator
+          </h3>
+          <p className="text-[var(--color-text-secondary)]">
+            Preparing everything you need to create an amazing service
+            listing...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-1 sm:px-4 py-4 sm:py-8 bg-[var(--color-bg)] min-h-screen overflow-x-hidden w-full">
-      {/* Progress Steps */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex flex-row items-center justify-between gap-x-2 sm:gap-x-4 overflow-x-auto scrollbar-hide w-full px-1">
-          {STEPS.map((step, index) => (
-            <React.Fragment key={step.id}>
-              <div className="flex flex-col items-center flex-1 min-w-0">
-                <div
-                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all shadow-md
-                    ${
-                      currentStep >= step.id
-                        ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
-                        : "bg-[var(--color-accent-light)] text-[var(--color-text-secondary)]"
-                    }
-                  `}
-                >
-                  {currentStep > step.id ? (
-                    <Check className="h-6 w-6" />
-                  ) : (
-                    step.icon
-                  )}
-                </div>
-                <div className="mt-2 sm:mt-3 text-center">
-                  <h3
-                    className={`font-semibold text-xs sm:text-sm ${
-                      currentStep >= step.id
-                        ? "text-[var(--color-primary)]"
-                        : "text-[var(--color-text-secondary)]"
-                    }`}
-                  >
-                    {step.title}
-                  </h3>
-                  <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-              {index < STEPS.length - 1 && (
-                <div
-                  className={`flex-1 h-px mx-1 sm:mx-4 transition-all min-w-[16px] ${
-                    currentStep > step.id
-                      ? "bg-[var(--color-primary)]"
-                      : "bg-[var(--color-accent)]"
-                  }`}
-                />
-              )}
-            </React.Fragment>
-          ))}
+    <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)]">
+      {/* Header Section */}
+      <div className="bg-white shadow-sm border-b border-[var(--color-border)]">
+        <div className="container mx-auto max-w-6xl px-4 py-6">
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+              Create Your Service Offer
+            </h1>
+            <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+              Share your skills with customers and start earning. Follow these
+              simple steps to create an attractive service listing.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Form Content */}
-      <Card className="w-full max-w-full bg-[var(--color-surface)] shadow-lg rounded-xl p-2 sm:p-6">
-        {/* Step 1: Basic Information */}
-        {currentStep === 1 && (
-          <>
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
-                Basic Service Information
-              </CardTitle>
-              <CardDescription className="text-[var(--color-text-secondary)]">
-                Tell us about the service you want to offer
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* User Avatar & Info */}
-              <div className="flex items-center gap-4 p-3 sm:p-4 bg-[var(--color-accent-light)] rounded-lg">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--color-accent-dark)] flex items-center justify-center overflow-hidden">
-                  {user?.avatar_url ? (
-                    <Image
-                      src={user.avatar_url}
-                      alt="Profile"
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-8 w-8 text-[var(--color-primary)]" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-[var(--color-primary)]">
-                    {user?.first_name} {user?.last_name}
-                  </h4>
-                  <p className="text-sm text-[var(--color-text-secondary)]">
-                    {user?.email}
-                  </p>
-                  {!user?.avatar_url && (
-                    <p className="text-xs text-[var(--color-warning)] mt-1 flex items-center">
-                      <AlertCircle className="h-3 w-3 inline mr-1" />
-                      Add a profile photo in settings to build trust
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Service Title */}
-              <div className="space-y-2">
-                <Label htmlFor="title">Service Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.basicInfo.title}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      basicInfo: { ...prev.basicInfo, title: e.target.value },
-                    }))
-                  }
-                  placeholder="e.g., Professional House Cleaning Service"
-                  className={
-                    hasAttemptedValidation && errors.title
-                      ? "border-destructive"
-                      : ""
-                  }
-                />
-                {hasAttemptedValidation && errors.title && (
-                  <p className="text-sm text-destructive">{errors.title}</p>
-                )}
-              </div>
-
-              {/* Service Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Service Description *</Label>
-                <textarea
-                  id="description"
-                  value={formData.basicInfo.description}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      basicInfo: {
-                        ...prev.basicInfo,
-                        description: e.target.value,
-                      },
-                    }))
-                  }
-                  placeholder="Describe what you'll do, what's included, and any special expertise you have..."
-                  rows={4}
-                  className={`flex w-full min-h-[80px] px-3 py-2 text-sm bg-transparent border border-input rounded-md shadow-xs transition-[color,box-shadow] outline-none resize-y ${
-                    hasAttemptedValidation && errors.description
-                      ? "border-destructive focus-visible:ring-destructive/20"
-                      : "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-                  }`}
-                />
-                {hasAttemptedValidation && errors.description && (
-                  <p className="text-sm text-destructive">
-                    {errors.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Category & Service Selection */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Service Category *</Label>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={`w-full justify-between ${
-                          hasAttemptedValidation && errors.category
-                            ? "border-destructive"
-                            : ""
-                        }`}
-                      >
-                        {formData.basicInfo.categoryId
-                          ? categories.find(
-                              (c) => c.id === formData.basicInfo.categoryId
-                            )?.name_en || "Select category"
-                          : "Select category"}
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      {categories.map((category) => (
-                        <DropdownMenuItem
-                          key={category.id}
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              basicInfo: {
-                                ...prev.basicInfo,
-                                categoryId: category.id,
-                                serviceId: 0, // Reset service selection
-                              },
-                            }))
-                          }
-                        >
-                          {category.name_en}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  {hasAttemptedValidation && errors.category && (
-                    <p className="text-sm text-destructive">
-                      {errors.category}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Specific Service *</Label>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={`w-full justify-between ${
-                          hasAttemptedValidation && errors.service
-                            ? "border-destructive"
-                            : ""
-                        }`}
-                        disabled={!formData.basicInfo.categoryId}
-                      >
-                        {formData.basicInfo.serviceId
-                          ? services.find(
-                              (s) => s.id === formData.basicInfo.serviceId
-                            )?.name_en || "Select service"
-                          : "Select service"}
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      {filteredServices.map((service) => (
-                        <DropdownMenuItem
-                          key={service.id}
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              basicInfo: {
-                                ...prev.basicInfo,
-                                serviceId: service.id,
-                              },
-                            }))
-                          }
-                        >
-                          {service.name_en}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  {hasAttemptedValidation && errors.service && (
-                    <p className="text-sm text-destructive">{errors.service}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Location Selection */}
-              <div className="space-y-2">
-                <Label>Service Location</Label>
-                {addresses.length > 0 ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between"
-                      >
-                        {formData.basicInfo.selectedAddressId
-                          ? addresses.find(
-                              (a) =>
-                                a.id === formData.basicInfo.selectedAddressId
-                            )
-                            ? `${
-                                addresses.find(
-                                  (a) =>
-                                    a.id ===
-                                    formData.basicInfo.selectedAddressId
-                                )?.street_address
-                              }, ${
-                                addresses.find(
-                                  (a) =>
-                                    a.id ===
-                                    formData.basicInfo.selectedAddressId
-                                )?.city
-                              }`
-                            : "Select location"
-                          : addresses[0]
-                          ? `${addresses[0].street_address}, ${addresses[0].city}`
-                          : "Select location"}
-                        <MapPin className="h-4 w-4 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-80">
-                      {addresses.map((address) => (
-                        <DropdownMenuItem
-                          key={address.id}
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              basicInfo: {
-                                ...prev.basicInfo,
-                                selectedAddressId: address.id,
-                              },
-                            }))
-                          }
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-medium">{address.label}</span>
-                            <span className="text-sm text-muted-foreground">
-                              {address.street_address}, {address.city},{" "}
-                              {address.region}
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <div className="p-4 border border-dashed rounded-lg text-center">
-                    <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      No addresses found. Please add an address in your profile
-                      first.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() =>
-                        router.push("/tasker/profile?section=addresses")
-                      }
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        {/* Modern Progress Steps */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8">
+            {STEPS.map((step, index) => (
+              <React.Fragment key={step.id}>
+                <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
+                  {/* Step Circle */}
+                  <div className="relative">
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+                        currentStep >= step.id
+                          ? `bg-gradient-to-r ${step.color} text-white scale-110`
+                          : "bg-white border-2 border-[var(--color-border)] text-[var(--color-text-secondary)]"
+                      }`}
                     >
-                      Edit Addresses
-                    </Button>
+                      {currentStep > step.id ? (
+                        <Check className="h-6 w-6" />
+                      ) : (
+                        step.icon
+                      )}
+                    </div>
+                    {currentStep === step.id && (
+                      <div
+                        className={`absolute inset-0 rounded-full bg-gradient-to-r ${step.color} animate-pulse opacity-20`}
+                      />
+                    )}
                   </div>
-                )}
-                {hasAttemptedValidation && errors.address && (
-                  <p className="text-sm text-destructive">{errors.address}</p>
-                )}
-              </div>
 
-              {/* Working Hours Display */}
-              <div className="space-y-2">
-                <Label>Your Working Hours</Label>
-                {availability.length > 0 ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {availability
-                        .filter((slot) => slot.enabled)
-                        .map((slot) => (
-                          <div
-                            key={slot.day}
-                            className="flex items-center space-x-2 p-3 rounded-lg border bg-muted/30"
+                  {/* Step Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`font-semibold text-sm sm:text-base transition-colors ${
+                        currentStep >= step.id
+                          ? "text-[var(--color-text-primary)]"
+                          : "text-[var(--color-text-secondary)]"
+                      }`}
+                    >
+                      {step.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Connector Line */}
+                {index < STEPS.length - 1 && (
+                  <div
+                    className={`hidden sm:block flex-1 h-0.5 mx-4 transition-all duration-300 ${
+                      currentStep > step.id
+                        ? `bg-gradient-to-r ${step.color}`
+                        : "bg-[var(--color-border)]"
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2">
+            <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden animate-fade-in-up">
+              {/* Step 1: Service Details */}
+              {currentStep === 1 && (
+                <>
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                        <Sparkles className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
+                          Service Details
+                        </CardTitle>
+                        <CardDescription className="text-[var(--color-text-secondary)]">
+                          Tell us about the service you want to offer
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* User Profile Section */}
+                    <div className="bg-gradient-to-r from-[var(--color-accent-light)] to-blue-50 rounded-xl p-4 border border-[var(--color-border)]">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden shadow-lg">
+                            {user?.avatar_url ? (
+                              <Image
+                                src={user.avatar_url}
+                                alt="Profile"
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <User className="h-8 w-8 text-white" />
+                            )}
+                          </div>
+                          {!user?.avatar_url && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-warning)] rounded-full flex items-center justify-center">
+                              <AlertCircle className="h-3 w-3 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg text-[var(--color-text-primary)]">
+                            {user?.first_name} {user?.last_name}
+                          </h4>
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            {user?.email}
+                          </p>
+                          {!user?.avatar_url && (
+                            <p className="text-xs text-[var(--color-warning)] mt-1 flex items-center">
+                              <Info className="h-3 w-3 inline mr-1" />
+                              Add a profile photo to build trust with customers
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Service Title */}
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="title"
+                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                      >
+                        <Star className="h-4 w-4 text-[var(--color-secondary)]" />
+                        Service Title *
+                      </Label>
+                      <Input
+                        id="title"
+                        value={formData.basicInfo.title}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            basicInfo: {
+                              ...prev.basicInfo,
+                              title: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="e.g., Professional House Cleaning Service"
+                        className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                          hasAttemptedValidation && errors.title
+                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                        }`}
+                      />
+                      {hasAttemptedValidation && errors.title && (
+                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.title}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Service Description */}
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="description"
+                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4 text-[var(--color-secondary)]" />
+                        Service Description *
+                      </Label>
+                      <textarea
+                        id="description"
+                        value={formData.basicInfo.description}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            basicInfo: {
+                              ...prev.basicInfo,
+                              description: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="Describe what you'll do, what's included, and any special expertise you have..."
+                        rows={4}
+                        className={`w-full min-h-[120px] px-4 py-3 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y ${
+                          hasAttemptedValidation && errors.description
+                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                        }`}
+                      />
+                      {hasAttemptedValidation && errors.description && (
+                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Category & Service Selection */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-[var(--color-secondary)]" />
+                          Service Category *
+                        </Label>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
+                                hasAttemptedValidation && errors.category
+                                  ? "border-[var(--color-error)]"
+                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                              }`}
+                            >
+                              <span className="truncate">
+                                {formData.basicInfo.categoryId
+                                  ? categories.find(
+                                      (c) =>
+                                        c.id === formData.basicInfo.categoryId
+                                    )?.name_en || "Select category"
+                                  : "Select category"}
+                              </span>
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full min-w-[200px]">
+                            {categories.map((category) => (
+                              <DropdownMenuItem
+                                key={category.id}
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    basicInfo: {
+                                      ...prev.basicInfo,
+                                      categoryId: category.id,
+                                      serviceId: 0, // Reset service selection
+                                    },
+                                  }))
+                                }
+                                className="cursor-pointer"
+                              >
+                                {category.name_en}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {hasAttemptedValidation && errors.category && (
+                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {errors.category}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                          <User className="h-4 w-4 text-[var(--color-secondary)]" />
+                          Specific Service *
+                        </Label>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
+                                hasAttemptedValidation && errors.service
+                                  ? "border-[var(--color-error)]"
+                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                              } ${
+                                !formData.basicInfo.categoryId
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              disabled={!formData.basicInfo.categoryId}
+                            >
+                              <span className="truncate">
+                                {formData.basicInfo.serviceId
+                                  ? services.find(
+                                      (s) =>
+                                        s.id === formData.basicInfo.serviceId
+                                    )?.name_en || "Select service"
+                                  : "Select service"}
+                              </span>
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full min-w-[200px]">
+                            {filteredServices.map((service) => (
+                              <DropdownMenuItem
+                                key={service.id}
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    basicInfo: {
+                                      ...prev.basicInfo,
+                                      serviceId: service.id,
+                                    },
+                                  }))
+                                }
+                                className="cursor-pointer"
+                              >
+                                {service.name_en}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {hasAttemptedValidation && errors.service && (
+                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {errors.service}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Location Selection */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-[var(--color-secondary)]" />
+                        Service Location
+                      </Label>
+                      {addresses.length > 0 ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="h-12 w-full justify-between text-base border-2 border-[var(--color-border)] rounded-xl hover:border-[var(--color-primary)] transition-all duration-200"
+                            >
+                              <span className="truncate">
+                                {formData.basicInfo.selectedAddressId
+                                  ? addresses.find(
+                                      (a) =>
+                                        a.id ===
+                                        formData.basicInfo.selectedAddressId
+                                    )
+                                    ? `${
+                                        addresses.find(
+                                          (a) =>
+                                            a.id ===
+                                            formData.basicInfo.selectedAddressId
+                                        )?.street_address
+                                      }, ${
+                                        addresses.find(
+                                          (a) =>
+                                            a.id ===
+                                            formData.basicInfo.selectedAddressId
+                                        )?.city
+                                      }`
+                                    : "Select location"
+                                  : addresses[0]
+                                  ? `${addresses[0].street_address}, ${addresses[0].city}`
+                                  : "Select location"}
+                              </span>
+                              <MapPin className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full min-w-[300px]">
+                            {addresses.map((address) => (
+                              <DropdownMenuItem
+                                key={address.id}
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    basicInfo: {
+                                      ...prev.basicInfo,
+                                      selectedAddressId: address.id,
+                                    },
+                                  }))
+                                }
+                                className="cursor-pointer"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">
+                                    {address.label}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {address.street_address}, {address.city},{" "}
+                                    {address.region}
+                                  </span>
+                                </div>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-accent-light)]">
+                          <MapPin className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
+                          <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                            No addresses found. Please add an address in your
+                            profile first.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                            onClick={() =>
+                              router.push("/tasker/profile?section=addresses")
+                            }
                           >
-                            <div className="flex-1">
-                              <div className="font-medium capitalize text-sm">
-                                {slot.day}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {slot.startTime} - {slot.endTime}
+                            <Edit className="h-4 w-4 mr-2" />
+                            Add Address
+                          </Button>
+                        </div>
+                      )}
+                      {hasAttemptedValidation && errors.address && (
+                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.address}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Working Hours Display */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
+                        Your Working Hours
+                      </Label>
+                      {availability.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {availability
+                              .filter((slot) => slot.enabled)
+                              .map((slot) => (
+                                <div
+                                  key={slot.day}
+                                  className="flex items-center space-x-2 p-3 rounded-xl border-2 border-[var(--color-border)] bg-gradient-to-r from-[var(--color-accent-light)] to-white hover:border-[var(--color-primary)] transition-all duration-200"
+                                >
+                                  <div className="flex-1">
+                                    <div className="font-semibold capitalize text-sm text-[var(--color-text-primary)]">
+                                      {slot.day}
+                                    </div>
+                                    <div className="text-xs text-[var(--color-text-secondary)]">
+                                      {slot.startTime} - {slot.endTime}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                          <div className="flex items-center gap-3 p-3 bg-[var(--color-accent-light)] rounded-xl">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                              onClick={() =>
+                                router.push(
+                                  "/tasker/profile?section=availability"
+                                )
+                              }
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Hours
+                            </Button>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              Your working hours are managed in your profile
+                              settings
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-accent-light)]">
+                          <Clock className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
+                          <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                            No availability set. Please add your working hours
+                            in your profile first.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                            onClick={() =>
+                              router.push(
+                                "/tasker/profile?section=availability"
+                              )
+                            }
+                          >
+                            <Clock className="h-4 w-4 mr-2" />
+                            Add Working Hours
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </>
+              )}
+
+              {/* Step 2: Pricing & Policies */}
+              {currentStep === 2 && (
+                <>
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
+                          Pricing & Policies
+                        </CardTitle>
+                        <CardDescription className="text-[var(--color-text-secondary)]">
+                          Set your rates and booking policies
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* Pricing Model */}
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-[var(--color-secondary)]" />
+                        Pricing Model *
+                      </Label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {["fixed", "hourly", "per_item"].map((type) => (
+                          <label
+                            key={type}
+                            className={`flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${
+                              formData.pricing.pricingType === type
+                                ? "border-[var(--color-secondary)] bg-gradient-to-r from-green-50 to-emerald-50"
+                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="radio"
+                                name="pricingType"
+                                value={type}
+                                checked={formData.pricing.pricingType === type}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    pricing: {
+                                      ...prev.pricing,
+                                      pricingType: e.target
+                                        .value as PricingType,
+                                    },
+                                  }))
+                                }
+                                className="w-4 h-4 text-[var(--color-secondary)]"
+                              />
+                              <div>
+                                <div className="font-semibold capitalize text-[var(--color-text-primary)]">
+                                  {type === "per_item" ? "Per Item" : type} Rate
+                                </div>
+                                <div className="text-sm text-[var(--color-text-secondary)] mt-1">
+                                  {type === "fixed" &&
+                                    "One price for the entire job"}
+                                  {type === "hourly" &&
+                                    "Charge per hour worked"}
+                                  {type === "per_item" && "Price per unit/item"}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          </label>
                         ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-fit"
-                        onClick={() =>
-                          router.push("/tasker/profile?section=availability")
-                        }
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Working Hours
-                      </Button>
-                      <p className="text-sm text-muted-foreground">
-                        Your working hours are managed in your profile settings
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 border border-dashed rounded-lg text-center">
-                    <p className="text-sm text-muted-foreground">
-                      No availability set. Please add your working hours in your
-                      profile first.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() =>
-                        router.push("/tasker/profile?section=availability")
-                      }
-                    >
-                      Add Working Hours
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </>
-        )}
 
-        {/* Step 2: Pricing Details */}
-        {currentStep === 2 && (
-          <>
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
-                Pricing Details
-              </CardTitle>
-              <CardDescription className="text-[var(--color-text-secondary)]">
-                Set your rates and booking policies
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Pricing Model */}
-              <div className="space-y-4">
-                <Label className="text-base font-semibold text-[var(--color-primary)]">
-                  Pricing Model *
-                </Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {["fixed", "hourly", "per_item"].map((type) => (
-                    <label
-                      key={type}
-                      className="flex flex-col p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="radio"
-                          name="pricingType"
-                          value={type}
-                          checked={formData.pricing.pricingType === type}
+                    {/* Price Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {formData.pricing.pricingType === "fixed" && (
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="basePrice"
+                            className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                          >
+                            <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
+                            Fixed Price (€) *
+                          </Label>
+                          <Input
+                            id="basePrice"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={formData.pricing.basePrice || ""}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                pricing: {
+                                  ...prev.pricing,
+                                  basePrice: parseFloat(e.target.value) || 0,
+                                },
+                              }))
+                            }
+                            placeholder="e.g., 50.00"
+                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                              hasAttemptedValidation && errors.basePrice
+                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            }`}
+                          />
+                          {hasAttemptedValidation && errors.basePrice && (
+                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" />
+                              {errors.basePrice}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {formData.pricing.pricingType === "hourly" && (
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="hourlyRate"
+                            className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                          >
+                            <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
+                            Hourly Rate (€) *
+                          </Label>
+                          <Input
+                            id="hourlyRate"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={formData.pricing.hourlyRate || ""}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                pricing: {
+                                  ...prev.pricing,
+                                  hourlyRate: parseFloat(e.target.value) || 0,
+                                },
+                              }))
+                            }
+                            placeholder="e.g., 25.00"
+                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                              hasAttemptedValidation && errors.hourlyRate
+                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            }`}
+                          />
+                          {hasAttemptedValidation && errors.hourlyRate && (
+                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" />
+                              {errors.hourlyRate}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {formData.pricing.pricingType === "per_item" && (
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="basePrice"
+                            className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                          >
+                            <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
+                            Price Per Item (€) *
+                          </Label>
+                          <Input
+                            id="basePrice"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={formData.pricing.basePrice || ""}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                pricing: {
+                                  ...prev.pricing,
+                                  basePrice: parseFloat(e.target.value) || 0,
+                                },
+                              }))
+                            }
+                            placeholder="e.g., 5.00"
+                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                              hasAttemptedValidation && errors.basePrice
+                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            }`}
+                          />
+                          {hasAttemptedValidation && errors.basePrice && (
+                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" />
+                              {errors.basePrice}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <Label htmlFor="minimumBooking">
+                          Minimum Booking (hours) - Optional
+                        </Label>
+                        <Input
+                          id="minimumBooking"
+                          type="number"
+                          min="0.5"
+                          step="0.5"
+                          value={formData.pricing.minimumBookingHours || ""}
                           onChange={(e) =>
                             setFormData((prev) => ({
                               ...prev,
                               pricing: {
                                 ...prev.pricing,
-                                pricingType: e.target.value as PricingType,
+                                minimumBookingHours: e.target.value
+                                  ? parseFloat(e.target.value)
+                                  : undefined,
                               },
                             }))
                           }
-                          className="w-4 h-4"
+                          placeholder="e.g., 1.0 (optional)"
+                          className={
+                            hasAttemptedValidation && errors.minimumBookingHours
+                              ? "border-destructive"
+                              : ""
+                          }
                         />
-                        <div>
-                          <div className="font-medium capitalize">
-                            {type === "per_item" ? "Per Item" : type} Rate
-                          </div>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {type === "fixed" && "One price for the entire job"}
-                            {type === "hourly" && "Charge per hour worked"}
-                            {type === "per_item" && "Price per unit/item"}
-                          </div>
-                        </div>
+                        {hasAttemptedValidation &&
+                          errors.minimumBookingHours && (
+                            <p className="text-sm text-destructive">
+                              {errors.minimumBookingHours}
+                            </p>
+                          )}
+                        <p className="text-sm text-muted-foreground">
+                          Leave empty if no minimum booking time required
+                        </p>
                       </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
+                    </div>
 
-              {/* Price Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {formData.pricing.pricingType === "fixed" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="basePrice">Fixed Price (€) *</Label>
-                    <Input
-                      id="basePrice"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.pricing.basePrice || ""}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          pricing: {
-                            ...prev.pricing,
-                            basePrice: parseFloat(e.target.value) || 0,
-                          },
-                        }))
-                      }
-                      placeholder="e.g., 50.00"
-                      className={
-                        hasAttemptedValidation && errors.basePrice
-                          ? "border-destructive"
-                          : ""
-                      }
-                    />
-                    {hasAttemptedValidation && errors.basePrice && (
-                      <p className="text-sm text-destructive">
-                        {errors.basePrice}
+                    {/* Estimated Duration */}
+                    <div className="space-y-2">
+                      <Label htmlFor="estimatedDuration">
+                        Estimated Duration (hours) - Optional
+                      </Label>
+                      <Input
+                        id="estimatedDuration"
+                        type="number"
+                        min="0.5"
+                        step="0.5"
+                        value={formData.pricing.estimatedDuration || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            pricing: {
+                              ...prev.pricing,
+                              estimatedDuration: e.target.value
+                                ? parseFloat(e.target.value)
+                                : undefined,
+                            },
+                          }))
+                        }
+                        placeholder="e.g., 2.0 (optional)"
+                        className="max-w-xs"
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        How long do you expect this service typically takes?
+                        (optional)
                       </p>
-                    )}
-                  </div>
-                )}
+                    </div>
 
-                {formData.pricing.pricingType === "hourly" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="hourlyRate">Hourly Rate (€) *</Label>
-                    <Input
-                      id="hourlyRate"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.pricing.hourlyRate || ""}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          pricing: {
-                            ...prev.pricing,
-                            hourlyRate: parseFloat(e.target.value) || 0,
-                          },
-                        }))
-                      }
-                      placeholder="e.g., 25.00"
-                      className={
-                        hasAttemptedValidation && errors.hourlyRate
-                          ? "border-destructive"
-                          : ""
-                      }
-                    />
-                    {hasAttemptedValidation && errors.hourlyRate && (
-                      <p className="text-sm text-destructive">
-                        {errors.hourlyRate}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {formData.pricing.pricingType === "per_item" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="basePrice">Price Per Item (€) *</Label>
-                    <Input
-                      id="basePrice"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.pricing.basePrice || ""}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          pricing: {
-                            ...prev.pricing,
-                            basePrice: parseFloat(e.target.value) || 0,
-                          },
-                        }))
-                      }
-                      placeholder="e.g., 5.00"
-                      className={
-                        hasAttemptedValidation && errors.basePrice
-                          ? "border-destructive"
-                          : ""
-                      }
-                    />
-                    {hasAttemptedValidation && errors.basePrice && (
-                      <p className="text-sm text-destructive">
-                        {errors.basePrice}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="minimumBooking">
-                    Minimum Booking (hours) - Optional
-                  </Label>
-                  <Input
-                    id="minimumBooking"
-                    type="number"
-                    min="0.5"
-                    step="0.5"
-                    value={formData.pricing.minimumBookingHours || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        pricing: {
-                          ...prev.pricing,
-                          minimumBookingHours: e.target.value
-                            ? parseFloat(e.target.value)
-                            : undefined,
-                        },
-                      }))
-                    }
-                    placeholder="e.g., 1.0 (optional)"
-                    className={
-                      hasAttemptedValidation && errors.minimumBookingHours
-                        ? "border-destructive"
-                        : ""
-                    }
-                  />
-                  {hasAttemptedValidation && errors.minimumBookingHours && (
-                    <p className="text-sm text-destructive">
-                      {errors.minimumBookingHours}
-                    </p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    Leave empty if no minimum booking time required
-                  </p>
-                </div>
-              </div>
-
-              {/* Estimated Duration */}
-              <div className="space-y-2">
-                <Label htmlFor="estimatedDuration">
-                  Estimated Duration (hours) - Optional
-                </Label>
-                <Input
-                  id="estimatedDuration"
-                  type="number"
-                  min="0.5"
-                  step="0.5"
-                  value={formData.pricing.estimatedDuration || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      pricing: {
-                        ...prev.pricing,
-                        estimatedDuration: e.target.value
-                          ? parseFloat(e.target.value)
-                          : undefined,
-                      },
-                    }))
-                  }
-                  placeholder="e.g., 2.0 (optional)"
-                  className="max-w-xs"
-                />
-                <p className="text-sm text-muted-foreground">
-                  How long do you expect this service typically takes?
-                  (optional)
-                </p>
-              </div>
-
-              {/* Extras/Add-ons */}
-              <div className="space-y-4">
-                <Label className="text-base font-semibold text-[var(--color-primary)]">
-                  Extras/Add-ons
-                </Label>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      value={newExtra.name}
-                      onChange={(e) =>
-                        setNewExtra((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g., Deep cleaning, Supply materials"
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={newExtra.price || ""}
-                      onChange={(e) =>
-                        setNewExtra((prev) => ({
-                          ...prev,
-                          price: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      placeholder="Price (€)"
-                      className="w-32"
-                    />
-                    <Button onClick={addExtra} variant="outline" size="icon">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {formData.pricing.extras.length > 0 && (
-                    <div className="space-y-2 mt-4">
-                      {formData.pricing.extras.map((extra, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                        >
-                          <div>
-                            <span className="font-medium">{extra.name}</span>
-                            <span className="text-muted-foreground ml-2">
-                              +€{extra.price}
-                            </span>
-                          </div>
+                    {/* Extras/Add-ons */}
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold text-[var(--color-primary)]">
+                        Extras/Add-ons
+                      </Label>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            value={newExtra.name}
+                            onChange={(e) =>
+                              setNewExtra((prev) => ({
+                                ...prev,
+                                name: e.target.value,
+                              }))
+                            }
+                            placeholder="e.g., Deep cleaning, Supply materials"
+                            className="flex-1"
+                          />
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={newExtra.price || ""}
+                            onChange={(e) =>
+                              setNewExtra((prev) => ({
+                                ...prev,
+                                price: parseFloat(e.target.value) || 0,
+                              }))
+                            }
+                            placeholder="Price (€)"
+                            className="w-32"
+                          />
                           <Button
-                            onClick={() => removeExtra(index)}
-                            variant="ghost"
+                            onClick={addExtra}
+                            variant="outline"
                             size="icon"
                           >
-                            <X className="h-4 w-4" />
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </div>
-                      ))}
+
+                        {formData.pricing.extras.length > 0 && (
+                          <div className="space-y-2 mt-4">
+                            {formData.pricing.extras.map((extra, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                              >
+                                <div>
+                                  <span className="font-medium">
+                                    {extra.name}
+                                  </span>
+                                  <span className="text-muted-foreground ml-2">
+                                    +€{extra.price}
+                                  </span>
+                                </div>
+                                <Button
+                                  onClick={() => removeExtra(index)}
+                                  variant="ghost"
+                                  size="icon"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </>
-        )}
+                  </CardContent>
+                </>
+              )}
 
-        {/* Step 3: Review & Submit */}
-        {currentStep === 3 && (
-          <>
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
-                Review Your Offer
-              </CardTitle>
-              <CardDescription className="text-[var(--color-text-secondary)]">
-                Please review all details before publishing your service
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Service Overview */}
-              <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
-                <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                  Service Overview
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Title:</span>
-                    <p className="font-medium">{formData.basicInfo.title}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Category:</span>
-                    <p className="font-medium">
-                      {
-                        categories.find(
-                          (c) => c.id === formData.basicInfo.categoryId
-                        )?.name_en
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Service:</span>
-                    <p className="font-medium">
-                      {
-                        services.find(
-                          (s) => s.id === formData.basicInfo.serviceId
-                        )?.name_en
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Location:</span>
-                    <p className="font-medium">
-                      {addresses.find(
-                        (a) => a.id === formData.basicInfo.selectedAddressId
-                      )
-                        ? `${
-                            addresses.find(
-                              (a) =>
-                                a.id === formData.basicInfo.selectedAddressId
-                            )?.city
-                          }, ${
-                            addresses.find(
-                              (a) =>
-                                a.id === formData.basicInfo.selectedAddressId
-                            )?.region
-                          }`
-                        : "Not specified"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <span className="text-muted-foreground">Description:</span>
-                  <p className="mt-1">{formData.basicInfo.description}</p>
-                </div>
-              </div>
-
-              {/* Pricing Overview */}
-              <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
-                <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                  Pricing Details
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">
-                      Pricing Model:
-                    </span>
-                    <p className="font-medium capitalize">
-                      {formData.pricing.pricingType}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">
-                      {formData.pricing.pricingType === "fixed"
-                        ? "Fixed Price:"
-                        : formData.pricing.pricingType === "hourly"
-                        ? "Hourly Rate:"
-                        : "Price Per Item:"}
-                    </span>
-                    <p className="font-medium">
-                      €
-                      {formData.pricing.pricingType === "fixed" ||
-                      formData.pricing.pricingType === "per_item"
-                        ? formData.pricing.basePrice
-                        : formData.pricing.hourlyRate}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">
-                      Minimum Booking:
-                    </span>
-                    <p className="font-medium">
-                      {formData.pricing.minimumBookingHours
-                        ? `${formData.pricing.minimumBookingHours} hours`
-                        : "Not specified"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">
-                      Estimated Duration:
-                    </span>
-                    <p className="font-medium">
-                      {formData.pricing.estimatedDuration
-                        ? `${formData.pricing.estimatedDuration} hours`
-                        : "Not specified"}
-                    </p>
-                  </div>
-                </div>
-
-                {formData.pricing.extras.length > 0 && (
-                  <div className="mt-4">
-                    <span className="text-muted-foreground">Extras:</span>
-                    <div className="mt-2 space-y-1">
-                      {formData.pricing.extras.map((extra, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between text-sm"
-                        >
-                          <span>{extra.name}</span>
-                          <span className="font-medium">+€{extra.price}</span>
+              {/* Step 3: Review & Submit */}
+              {currentStep === 3 && (
+                <>
+                  <CardHeader>
+                    <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
+                      Review Your Offer
+                    </CardTitle>
+                    <CardDescription className="text-[var(--color-text-secondary)]">
+                      Please review all details before publishing your service
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Service Overview */}
+                    <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                      <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                        Service Overview
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Title:</span>
+                          <p className="font-medium">
+                            {formData.basicInfo.title}
+                          </p>
                         </div>
-                      ))}
+                        <div>
+                          <span className="text-muted-foreground">
+                            Category:
+                          </span>
+                          <p className="font-medium">
+                            {
+                              categories.find(
+                                (c) => c.id === formData.basicInfo.categoryId
+                              )?.name_en
+                            }
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Service:
+                          </span>
+                          <p className="font-medium">
+                            {
+                              services.find(
+                                (s) => s.id === formData.basicInfo.serviceId
+                              )?.name_en
+                            }
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Location:
+                          </span>
+                          <p className="font-medium">
+                            {addresses.find(
+                              (a) =>
+                                a.id === formData.basicInfo.selectedAddressId
+                            )
+                              ? `${
+                                  addresses.find(
+                                    (a) =>
+                                      a.id ===
+                                      formData.basicInfo.selectedAddressId
+                                  )?.city
+                                }, ${
+                                  addresses.find(
+                                    (a) =>
+                                      a.id ===
+                                      formData.basicInfo.selectedAddressId
+                                  )?.region
+                                }`
+                              : "Not specified"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <span className="text-muted-foreground">
+                          Description:
+                        </span>
+                        <p className="mt-1">{formData.basicInfo.description}</p>
+                      </div>
                     </div>
-                  </div>
+
+                    {/* Pricing Overview */}
+                    <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                      <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                        Pricing Details
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">
+                            Pricing Model:
+                          </span>
+                          <p className="font-medium capitalize">
+                            {formData.pricing.pricingType}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            {formData.pricing.pricingType === "fixed"
+                              ? "Fixed Price:"
+                              : formData.pricing.pricingType === "hourly"
+                              ? "Hourly Rate:"
+                              : "Price Per Item:"}
+                          </span>
+                          <p className="font-medium">
+                            €
+                            {formData.pricing.pricingType === "fixed" ||
+                            formData.pricing.pricingType === "per_item"
+                              ? formData.pricing.basePrice
+                              : formData.pricing.hourlyRate}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Minimum Booking:
+                          </span>
+                          <p className="font-medium">
+                            {formData.pricing.minimumBookingHours
+                              ? `${formData.pricing.minimumBookingHours} hours`
+                              : "Not specified"}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Estimated Duration:
+                          </span>
+                          <p className="font-medium">
+                            {formData.pricing.estimatedDuration
+                              ? `${formData.pricing.estimatedDuration} hours`
+                              : "Not specified"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {formData.pricing.extras.length > 0 && (
+                        <div className="mt-4">
+                          <span className="text-muted-foreground">Extras:</span>
+                          <div className="mt-2 space-y-1">
+                            {formData.pricing.extras.map((extra, index) => (
+                              <div
+                                key={index}
+                                className="flex justify-between text-sm"
+                              >
+                                <span>{extra.name}</span>
+                                <span className="font-medium">
+                                  +€{extra.price}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Availability Overview */}
+                    {availability.length > 0 && (
+                      <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                        <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                          Availability
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          {availability
+                            .filter((slot) => slot.enabled)
+                            .map((slot) => (
+                              <div key={slot.day} className="text-sm">
+                                <div className="font-medium capitalize">
+                                  {slot.day}
+                                </div>
+                                <div className="text-muted-foreground">
+                                  {slot.startTime} - {slot.endTime}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                    {taskerProfile && (
+                      <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
+                        <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
+                          About You
+                        </h3>
+                        <div className="mb-2">
+                          <span className="text-muted-foreground">Bio:</span>
+                          <p className="font-medium">
+                            {taskerProfile.bio || "No bio set."}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Experience Level:
+                          </span>
+                          <p className="font-medium capitalize">
+                            {taskerProfile.experience_level || "Not specified"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </>
+              )}
+
+              {/* Navigation Footer */}
+              <CardFooter className="flex flex-row gap-4 w-full p-6 bg-gradient-to-r from-[var(--color-accent-light)] to-white border-t border-[var(--color-border)]">
+                <Button
+                  variant="outline"
+                  onClick={goToPreviousStep}
+                  disabled={currentStep === 1 || loading}
+                  className="flex-1 sm:flex-none bg-white text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+
+                {currentStep < STEPS.length ? (
+                  <Button
+                    onClick={goToNextStep}
+                    disabled={loading}
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white hover:from-[var(--color-primary-dark)] hover:to-[var(--color-secondary-dark)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-primary)] text-white hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-primary-dark)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    {submitting ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    Publish Service
+                  </Button>
                 )}
-              </div>
+              </CardFooter>
+            </Card>
+          </div>
 
-              {/* Availability Overview */}
-              {availability.length > 0 && (
-                <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
-                  <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                    Availability
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {availability
-                      .filter((slot) => slot.enabled)
-                      .map((slot) => (
-                        <div key={slot.day} className="text-sm">
-                          <div className="font-medium capitalize">
-                            {slot.day}
-                          </div>
-                          <div className="text-muted-foreground">
-                            {slot.startTime} - {slot.endTime}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-              {taskerProfile && (
-                <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
-                  <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                    About You
-                  </h3>
-                  <div className="mb-2">
-                    <span className="text-muted-foreground">Bio:</span>
-                    <p className="font-medium">
-                      {taskerProfile.bio || "No bio set."}
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8 space-y-6 animate-fade-in-up animate-delay-200">
+              {/* Tips Card */}
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-[var(--color-secondary)]" />
+                    Tips for Success
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">1</span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      Be specific about what you offer and what's included
                     </p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">
-                      Experience Level:
-                    </span>
-                    <p className="font-medium capitalize">
-                      {taskerProfile.experience_level || "Not specified"}
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">2</span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      Set competitive but fair pricing based on your experience
                     </p>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </>
-        )}
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">3</span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      Add a professional profile photo to build trust
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
-        {/* Navigation Footer */}
-        <CardFooter className="flex flex-row gap-2 w-full px-0">
-          <Button
-            variant="outline"
-            onClick={goToPreviousStep}
-            disabled={currentStep === 1 || loading}
-            className="w-1/2 sm:w-auto bg-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-lg py-3 px-6 text-base font-semibold transition flex items-center justify-center"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-
-          {currentStep < STEPS.length ? (
-            <Button
-              onClick={goToNextStep}
-              disabled={loading}
-              className="w-1/2 sm:w-auto bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:bg-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-lg py-3 px-6 text-base font-semibold transition flex items-center justify-center"
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-1/2 sm:w-auto bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:bg-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-lg py-3 px-6 text-base font-semibold transition flex items-center justify-center"
-            >
-              {loading ? (
-                <div className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full mr-2" />
-              ) : null}
-              Publish Service
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
+              {/* Support Card */}
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
+                    Need Help?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                    Our support team is here to help you create the perfect
+                    service listing.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-white"
+                  >
+                    Contact Support
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

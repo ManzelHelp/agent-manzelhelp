@@ -227,3 +227,91 @@ export async function toggleServiceStatus(
     service_status: newStatus,
   });
 }
+
+//post-service page
+export interface CreateServiceData {
+  title: string;
+  description: string;
+  category_id: number;
+  service_id: number;
+  address_id: string;
+  pricing_type: "fixed" | "hourly" | "per_item";
+  base_price?: number;
+  hourly_rate?: number;
+  minimum_booking_hours?: number;
+  estimated_duration?: number;
+  extras: Array<{ name: string; price: number }>;
+}
+
+export async function createTaskerService(
+  taskerId: string,
+  serviceData: CreateServiceData
+): Promise<{ success: boolean; serviceId?: string; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Validate required fields
+    if (
+      !serviceData.title ||
+      !serviceData.description ||
+      !serviceData.category_id ||
+      !serviceData.service_id ||
+      !serviceData.address_id
+    ) {
+      return { success: false, error: "Missing required fields" };
+    }
+
+    // Validate pricing based on type
+    if (serviceData.pricing_type === "fixed" && !serviceData.base_price) {
+      return {
+        success: false,
+        error: "Base price is required for fixed pricing",
+      };
+    }
+    if (serviceData.pricing_type === "hourly" && !serviceData.hourly_rate) {
+      return {
+        success: false,
+        error: "Hourly rate is required for hourly pricing",
+      };
+    }
+
+    // Create the service
+    const { data, error } = await supabase
+      .from("tasker_services")
+      .insert({
+        tasker_id: taskerId,
+        title: serviceData.title,
+        description: serviceData.description,
+        category_id: serviceData.category_id,
+        service_id: serviceData.service_id,
+        address_id: serviceData.address_id,
+        pricing_type: serviceData.pricing_type,
+        base_price: serviceData.base_price,
+        hourly_rate: serviceData.hourly_rate,
+        minimum_booking_hours: serviceData.minimum_booking_hours,
+        estimated_duration: serviceData.estimated_duration,
+        extras: serviceData.extras,
+        service_status: "active",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error creating service:", error);
+      return {
+        success: false,
+        error: `Failed to create service: ${error.message}`,
+      };
+    }
+
+    revalidatePath("/tasker/my-services");
+    revalidatePath("/tasker/dashboard");
+
+    return { success: true, serviceId: data.id };
+  } catch (error) {
+    console.error("Error in createTaskerService:", error);
+    return { success: false, error: "Failed to create service" };
+  }
+}
