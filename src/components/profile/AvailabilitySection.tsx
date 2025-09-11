@@ -20,14 +20,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Edit, Clock, AlertTriangle } from "lucide-react";
-import { createClient } from "@/supabase/client";
 import { toast } from "sonner";
 import type { TaskerProfile, AvailabilitySlot } from "@/types/supabase";
+import { updateTaskerAvailability } from "@/actions/profile";
 
 interface AvailabilitySectionProps {
   taskerProfile: TaskerProfile | null;
   loading: boolean;
   onProfileUpdate: (updatedProfile: TaskerProfile) => void;
+  onProfileRefresh: () => Promise<void>;
   missingFields: Array<{
     id: string;
     label: string;
@@ -52,6 +53,7 @@ export default function AvailabilitySection({
   taskerProfile,
   loading,
   onProfileUpdate,
+  onProfileRefresh,
   missingFields,
 }: AvailabilitySectionProps) {
   const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
@@ -100,33 +102,19 @@ export default function AvailabilitySection({
     }
 
     try {
-      const supabase = createClient();
+      const result = await updateTaskerAvailability(
+        taskerProfile.id,
+        availabilityForm
+      );
 
-      const updateData = {
-        operation_hours: availabilityForm,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { data, error } = await supabase
-        .from("tasker_profiles")
-        .update(updateData)
-        .eq("id", taskerProfile.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error updating availability:", error);
-        toast.error("Failed to update availability");
-        return;
+      if (result.success && result.taskerProfile) {
+        onProfileUpdate(result.taskerProfile);
+        await onProfileRefresh(); // Refresh profile data
+        toast.success("Availability updated successfully");
+        setEditAvailabilityOpen(false);
+      } else {
+        toast.error(result.error || "Failed to update availability");
       }
-
-      // Update the profile in parent component
-      if (data) {
-        onProfileUpdate(data);
-      }
-
-      toast.success("Availability updated successfully");
-      setEditAvailabilityOpen(false);
     } catch (error) {
       console.error("Error updating availability:", error);
       toast.error("Failed to update availability");

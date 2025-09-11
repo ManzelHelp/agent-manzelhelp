@@ -29,15 +29,22 @@ import {
   CheckCircle,
   AlertTriangle,
 } from "lucide-react";
-import { createClient } from "@/supabase/client";
 import { toast } from "sonner";
 import Image from "next/image";
 import type { User as UserType } from "@/types/supabase";
+import {
+  updateUserPersonalInfo,
+  updateUserAvatar,
+  uploadProfileImage,
+  uploadVerificationDocument,
+  updateVerificationDocument,
+} from "@/actions/profile";
 
 interface PersonalInfoSectionProps {
   user: UserType | null;
   loading: boolean;
   onUserUpdate: (updatedUser: UserType) => void;
+  onProfileRefresh: () => Promise<void>;
   missingFields: Array<{
     id: string;
     label: string;
@@ -68,11 +75,13 @@ export default function PersonalInfoSection({
   user,
   loading,
   onUserUpdate,
+  onProfileRefresh,
   missingFields,
 }: PersonalInfoSectionProps) {
   const [editPersonalOpen, setEditPersonalOpen] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [processingPhoto, setProcessingPhoto] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
 
   const [personalForm, setPersonalForm] = useState<PersonalFormData>({
     first_name: user?.first_name || "",
@@ -225,46 +234,24 @@ export default function PersonalInfoSection({
 
     setUploadingPhoto(true);
     try {
-      const supabase = createClient();
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      // Upload to Supabase storage using server action
+      const uploadResult = await uploadProfileImage(user.id, file);
 
-      const { error: uploadError } = await supabase.storage
-        .from("user-uploads")
-        .upload(filePath, file, { cacheControl: "3600", upsert: true });
-
-      if (uploadError) {
-        console.error("Error uploading photo:", uploadError);
-        throw uploadError;
+      if (!uploadResult.success) {
+        toast.error(uploadResult.error || "Failed to upload image");
+        return;
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("user-uploads").getPublicUrl(filePath);
+      // Update user avatar using server action
+      const result = await updateUserAvatar(user.id, uploadResult.url!);
 
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({
-          avatar_url: publicUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-
-      if (updateError) {
-        console.error("Error updating user avatar:", updateError);
-        throw updateError;
+      if (result.success && result.user) {
+        onUserUpdate(result.user);
+        await onProfileRefresh(); // Refresh profile data
+        toast.success("Profile photo updated successfully");
+      } else {
+        toast.error(result.error || "Failed to update profile photo");
       }
-
-      // Update userStore with new avatar
-      if (user) {
-        onUserUpdate({
-          ...user,
-          avatar_url: publicUrl,
-          updated_at: new Date().toISOString(),
-        });
-      }
-      toast.success("Profile photo updated successfully");
     } catch (error) {
       console.error("Error uploading photo:", error);
       toast.error("Failed to upload photo");
@@ -273,85 +260,65 @@ export default function PersonalInfoSection({
     }
   };
 
+  const handleVerificationDocumentUpload = async (
+    file: File,
+    documentType: "id-front" | "id-back"
+  ) => {
+    if (!user?.id) return;
+
+    setUploadingDocument(true);
+    try {
+      // Upload verification document using server action
+      const uploadResult = await uploadVerificationDocument(
+        user.id,
+        file,
+        documentType
+      );
+
+      if (!uploadResult.success) {
+        toast.error(uploadResult.error || "Failed to upload document");
+        return;
+      }
+
+      // Update tasker profile with document URL
+      const result = await updateVerificationDocument(
+        user.id,
+        uploadResult.url!
+      );
+
+      if (result.success) {
+        await onProfileRefresh(); // Refresh profile data
+        toast.success("Verification document uploaded successfully");
+      } else {
+        toast.error(result.error || "Failed to update verification document");
+      }
+    } catch (error) {
+      console.error("Error uploading verification document:", error);
+      toast.error("Failed to upload verification document");
+    } finally {
+      setUploadingDocument(false);
+    }
+  };
+
   const updatePersonalInfo = async () => {
     if (!user?.id) return;
 
-    // Basic validation
-    if (!personalForm.first_name.trim() || !personalForm.last_name.trim()) {
-      toast.error("First name and last name are required");
-      return;
-    }
-
-    // Validate phone number format if provided
-    if (personalForm.phone.trim()) {
-      const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
-      if (!phoneRegex.test(personalForm.phone.trim())) {
-        toast.error("Please enter a valid phone number");
-        return;
-      }
-    }
-
-    // Validate date format if provided
-    if (
-      personalForm.date_of_birth &&
-      personalForm.date_of_birth.trim() !== ""
-    ) {
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (!dateRegex.test(personalForm.date_of_birth)) {
-        toast.error("Please enter a valid date in YYYY-MM-DD format");
-        return;
-      }
-    }
-
     try {
-      const supabase = createClient();
-
-      const updateData: {
-        first_name: string;
-        last_name: string;
-        phone: string | null;
-        date_of_birth?: string | null;
-        updated_at: string;
-      } = {
+      const result = await updateUserPersonalInfo(user.id, {
         first_name: personalForm.first_name.trim(),
         last_name: personalForm.last_name.trim(),
-        phone: personalForm.phone.trim() || null,
-        updated_at: new Date().toISOString(),
-      };
+        phone: personalForm.phone.trim() || undefined,
+        date_of_birth: personalForm.date_of_birth || undefined,
+      });
 
-      if (
-        personalForm.date_of_birth &&
-        personalForm.date_of_birth.trim() !== ""
-      ) {
-        updateData.date_of_birth = personalForm.date_of_birth;
+      if (result.success && result.user) {
+        onUserUpdate(result.user);
+        await onProfileRefresh(); // Refresh profile data
+        toast.success("Personal information updated successfully");
+        setEditPersonalOpen(false);
       } else {
-        updateData.date_of_birth = null;
+        toast.error(result.error || "Failed to update personal information");
       }
-
-      const { error } = await supabase
-        .from("users")
-        .update(updateData)
-        .eq("id", user.id);
-
-      if (error) {
-        console.error("Error updating personal info:", error);
-        toast.error("Failed to update personal information");
-        return;
-      }
-
-      // Update userStore with new data
-      if (user) {
-        onUserUpdate({
-          ...user,
-          first_name: personalForm.first_name.trim(),
-          last_name: personalForm.last_name.trim(),
-          phone: personalForm.phone.trim() || undefined,
-          date_of_birth: updateData.date_of_birth || undefined,
-          updated_at: new Date().toISOString(),
-        });
-      }
-      toast.success("Personal information updated successfully");
-      setEditPersonalOpen(false);
     } catch (error) {
       console.error("Error updating personal info:", error);
       toast.error("Failed to update personal information");
@@ -468,17 +435,31 @@ export default function PersonalInfoSection({
                           ? "Click the camera icon to change"
                           : "Add a profile photo"}
                       </p>
-                      <div className="mt-2 p-2 rounded-lg bg-[var(--color-accent)]/20 border border-[var(--color-border)]/50">
+                      <div className="mt-2 p-3 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
                         <p className="text-xs text-[var(--color-text-secondary)]">
-                          <strong>Requirements:</strong> JPEG, PNG, or WebP
-                          format. Max{" "}
-                          {IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)}MB, min{" "}
-                          {IMAGE_CONSTRAINTS.minDimensions.width}x
-                          {IMAGE_CONSTRAINTS.minDimensions.height}px, max{" "}
-                          {IMAGE_CONSTRAINTS.maxDimensions.width}x
-                          {IMAGE_CONSTRAINTS.maxDimensions.height}px. Image will
-                          be automatically resized and compressed.
+                          <strong>📸 Photo Requirements:</strong>
                         </p>
+                        <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
+                          <li>• Formats: JPEG, PNG, or WebP</li>
+                          <li>
+                            • Max size:{" "}
+                            {IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)}MB
+                          </li>
+                          <li>
+                            • Min dimensions:{" "}
+                            {IMAGE_CONSTRAINTS.minDimensions.width}x
+                            {IMAGE_CONSTRAINTS.minDimensions.height}px
+                          </li>
+                          <li>
+                            • Max dimensions:{" "}
+                            {IMAGE_CONSTRAINTS.maxDimensions.width}x
+                            {IMAGE_CONSTRAINTS.maxDimensions.height}px
+                          </li>
+                          <li>
+                            • Auto-resized and compressed for optimal
+                            performance
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </div>
@@ -662,17 +643,74 @@ export default function PersonalInfoSection({
                 </div>
                 <div>
                   <p className="font-medium text-color-text-primary">
-                    Identity
+                    Identity Verification
                   </p>
                   <p className="text-sm text-color-text-secondary">
-                    Not verified
+                    Upload clear photos of your ID (front and back) for
+                    verification
                   </p>
+                  <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
+                    <p className="text-xs text-[var(--color-text-secondary)]">
+                      <strong>📋 Document Requirements:</strong>
+                    </p>
+                    <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
+                      <li>• Clear, high-quality photos or PDFs</li>
+                      <li>• Max size: 5MB per document</li>
+                      <li>• Formats: JPEG, PNG, WebP, or PDF</li>
+                      <li>• All text must be clearly readable</li>
+                      <li>• Documents will be reviewed within 24-48 hours</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline">
-                  Upload
-                </Button>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file)
+                      handleVerificationDocumentUpload(file, "id-front");
+                  }}
+                  className="hidden"
+                  id="id-front-upload"
+                  disabled={uploadingDocument}
+                />
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleVerificationDocumentUpload(file, "id-back");
+                  }}
+                  className="hidden"
+                  id="id-back-upload"
+                  disabled={uploadingDocument}
+                />
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      document.getElementById("id-front-upload")?.click()
+                    }
+                    disabled={uploadingDocument}
+                    className="text-xs"
+                  >
+                    {uploadingDocument ? "Uploading..." : "📄 Upload ID Front"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      document.getElementById("id-back-upload")?.click()
+                    }
+                    disabled={uploadingDocument}
+                    className="text-xs"
+                  >
+                    {uploadingDocument ? "Uploading..." : "📄 Upload ID Back"}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

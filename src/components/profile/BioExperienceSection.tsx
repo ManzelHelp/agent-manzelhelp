@@ -20,15 +20,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Edit, AlertTriangle, FileText } from "lucide-react";
-import { createClient } from "@/supabase/client";
+import { Edit, AlertTriangle, FileText, MapPin, Star } from "lucide-react";
 import { toast } from "sonner";
 import type { TaskerProfile, ExperienceLevel } from "@/types/supabase";
+import { updateTaskerBio } from "@/actions/profile";
 
 interface BioExperienceSectionProps {
   taskerProfile: TaskerProfile | null;
   loading: boolean;
   onProfileUpdate: (updatedProfile: TaskerProfile) => void;
+  onProfileRefresh: () => Promise<void>;
   missingFields: Array<{
     id: string;
     label: string;
@@ -55,6 +56,7 @@ export default function BioExperienceSection({
   taskerProfile,
   loading,
   onProfileUpdate,
+  onProfileRefresh,
   missingFields,
 }: BioExperienceSectionProps) {
   const [editBioOpen, setEditBioOpen] = useState(false);
@@ -119,32 +121,19 @@ export default function BioExperienceSection({
     }
 
     try {
-      const supabase = createClient();
-
-      const updateData = {
+      const result = await updateTaskerBio(taskerProfile.id, {
         bio: bioForm.bio.trim(),
         experience_level: bioForm.experience_level,
         service_radius_km: bioForm.service_radius_km,
-        updated_at: new Date().toISOString(),
-      };
+      });
 
-      const { data, error } = await supabase
-        .from("tasker_profiles")
-        .update(updateData)
-        .eq("id", taskerProfile.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error updating bio info:", error);
-        toast.error("Failed to update bio information");
-        return;
-      }
-
-      if (data) {
-        onProfileUpdate(data);
+      if (result.success && result.taskerProfile) {
+        onProfileUpdate(result.taskerProfile);
+        await onProfileRefresh(); // Refresh profile data
         setEditBioOpen(false);
         toast.success("Bio information updated successfully");
+      } else {
+        toast.error(result.error || "Failed to update bio information");
       }
     } catch (error) {
       console.error("Error updating bio info:", error);
@@ -228,6 +217,20 @@ export default function BioExperienceSection({
                           : "border-[var(--color-border)]"
                       }`}
                     />
+                    <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
+                      <p className="text-xs text-[var(--color-text-secondary)]">
+                        <strong>💡 Tips for a great bio:</strong>
+                      </p>
+                      <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
+                        <li>• Mention your relevant experience and skills</li>
+                        <li>• Highlight what makes you unique</li>
+                        <li>• Be specific about the services you offer</li>
+                        <li>• Keep it professional but friendly</li>
+                        <li>
+                          • Aim for 2-3 sentences that capture your expertise
+                        </li>
+                      </ul>
+                    </div>
                     {bioFormErrors.bio && (
                       <p className="text-xs text-[var(--color-error)]">
                         {bioFormErrors.bio}
@@ -289,6 +292,19 @@ export default function BioExperienceSection({
                           : ""
                       }
                     />
+                    <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
+                      <p className="text-xs text-[var(--color-text-secondary)]">
+                        <strong>📍 Service Area Guidelines:</strong>
+                      </p>
+                      <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
+                        <li>• 10-25 km: Local neighborhood service</li>
+                        <li>• 25-50 km: City-wide coverage</li>
+                        <li>• 50-100 km: Regional service area</li>
+                        <li>
+                          • 100+ km: Extended coverage (consider travel costs)
+                        </li>
+                      </ul>
+                    </div>
                     {bioFormErrors.service_radius_km && (
                       <p className="text-xs text-[var(--color-error)]">
                         {bioFormErrors.service_radius_km}
@@ -333,7 +349,7 @@ export default function BioExperienceSection({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-lg">
-                <FileText className="h-4 w-4 text-white" />
+                <Star className="h-4 w-4 text-white" />
               </div>
               <div>
                 <h4 className="font-semibold text-[var(--color-text-primary)]">
@@ -349,7 +365,7 @@ export default function BioExperienceSection({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-lg">
-                <FileText className="h-4 w-4 text-white" />
+                <MapPin className="h-4 w-4 text-white" />
               </div>
               <div>
                 <h4 className="font-semibold text-[var(--color-text-primary)]">

@@ -6,7 +6,7 @@ import type { TaskerProfile, Address } from "@/types/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  User,
+  User as UserIcon,
   MapPin,
   CreditCard,
   FileText,
@@ -17,16 +17,19 @@ import {
   AlertTriangle,
   Camera,
   Settings,
+  TrendingUp,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
-import { createClient } from "@/supabase/client";
 import { toast } from "sonner";
 import PersonalInfoSection from "@/components/profile/PersonalInfoSection";
 import BioExperienceSection from "@/components/profile/BioExperienceSection";
 import AvailabilitySection from "@/components/profile/AvailabilitySection";
 import AddressesSection from "@/components/profile/AddressesSection";
-
 import PaymentSection from "@/components/profile/PaymentSection";
+import {
+  getCompleteProfileData,
+  getProfileCompletion,
+} from "@/actions/profile";
 
 type ProfileSection =
   | "personal"
@@ -44,11 +47,21 @@ interface MissingField {
   required: boolean;
 }
 
+interface ProfileStats {
+  completionPercentage: number;
+  missingFields: Array<{
+    id: string;
+    label: string;
+    section: string;
+    required: boolean;
+  }>;
+}
+
 const SECTIONS = [
   {
     id: "personal" as ProfileSection,
     title: "Personal Information",
-    icon: User,
+    icon: UserIcon,
     description: "Manage your basic profile details",
     color: "from-blue-500 to-blue-600",
   },
@@ -95,6 +108,10 @@ export default function TaskerProfilePage() {
   );
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileStats, setProfileStats] = useState<ProfileStats>({
+    completionPercentage: 0,
+    missingFields: [],
+  });
 
   // Redirect customer users to their dashboard
   useEffect(() => {
@@ -103,139 +120,84 @@ export default function TaskerProfilePage() {
     }
   }, [user?.role, router]);
 
-  // Data fetching
-  const fetchTaskerData = useCallback(async () => {
+  // Optimized data fetching with single query
+  const fetchProfileData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
       setLoading(true);
-      const supabase = createClient();
-      const { data: profile, error } = await supabase
-        .from("tasker_profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      const result = await getCompleteProfileData(user.id);
 
-      if (error) {
-        console.error("Error fetching tasker data:", error);
-        toast.error("Failed to load profile data");
+      if (result.error) {
+        toast.error(result.error);
         return;
       }
 
-      if (profile) {
-        setTaskerProfile(profile);
+      if (result.user) {
+        setUser(result.user);
       }
+      setTaskerProfile(result.taskerProfile);
+      setAddresses(result.addresses);
+
+      // Fetch profile completion stats
+      const stats = await getProfileCompletion(user.id);
+      setProfileStats(stats);
     } catch (error) {
-      console.error("Error fetching tasker data:", error);
+      console.error("Error fetching profile data:", error);
       toast.error("Failed to load profile data");
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
-
-  const fetchAddresses = useCallback(async () => {
-    if (!user?.id) return;
-
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("is_default", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching addresses:", error);
-        toast.error("Failed to load addresses");
-        return;
-      }
-
-      setAddresses(data || []);
-    } catch (error) {
-      console.error("Error fetching addresses:", error);
-      toast.error("Failed to load addresses");
-    }
-  }, [user?.id]);
+  }, [user?.id, setUser]);
 
   // Effects - fetch data when user is available
   useEffect(() => {
     if (user?.id) {
-      fetchTaskerData();
-      fetchAddresses();
+      fetchProfileData();
     }
-  }, [user?.id, fetchTaskerData, fetchAddresses]);
+  }, [user?.id, fetchProfileData]);
 
-  // Missing fields detection
-  const getMissingFields = useCallback((): MissingField[] => {
-    if (!user || !taskerProfile) return [];
+  // Helper function to get field icons
+  const getFieldIcon = useCallback((fieldId: string): React.ReactNode => {
+    const iconMap: Record<string, React.ReactNode> = {
+      profile_photo: <Camera className="h-4 w-4" />,
+      full_name: <UserIcon className="h-4 w-4" />,
+      identity_verification: <BadgeCheck className="h-4 w-4" />,
+      bio: <FileText className="h-4 w-4" />,
+      service_area: <MapPin className="h-4 w-4" />,
+      availability: <Clock className="h-4 w-4" />,
+      addresses: <MapPin className="h-4 w-4" />,
+    };
+    return iconMap[fieldId] || <AlertTriangle className="h-4 w-4" />;
+  }, []);
 
-    const missingFields: MissingField[] = [];
+  // Helper function to get field descriptions
+  const getFieldDescription = useCallback((fieldId: string): string => {
+    const descriptionMap: Record<string, string> = {
+      profile_photo: "Add a professional profile photo to build trust",
+      full_name: "Complete your name for better recognition",
+      identity_verification: "Verify your identity to increase trust",
+      bio: "Tell customers about your experience and skills",
+      service_area: "Define your service coverage area",
+      availability: "Set your working hours and availability",
+      addresses: "Add service locations where you work",
+    };
+    return (
+      descriptionMap[fieldId] || "Complete this field to improve your profile"
+    );
+  }, []);
 
-    // Personal Information Section
-    if (!user.avatar_url) {
-      missingFields.push({
-        id: "profile_photo",
-        label: "Profile Photo",
-        section: "personal",
-        icon: <Camera className="h-4 w-4" />,
-        description: "Add a professional profile photo to build trust",
-        required: true,
-      });
-    }
-
-    if (!user.first_name || !user.last_name) {
-      missingFields.push({
-        id: "full_name",
-        label: "Full Name",
-        section: "personal",
-        icon: <User className="h-4 w-4" />,
-        description: "Complete your name for better recognition",
-        required: true,
-      });
-    }
-
-    if (taskerProfile.verification_status !== "verified") {
-      missingFields.push({
-        id: "identity_verification",
-        label: "Identity Verification",
-        section: "personal",
-        icon: <BadgeCheck className="h-4 w-4" />,
-        description: "Verify your identity to increase trust",
-        required: true,
-      });
-    }
-
-    // Bio & Experience Section
-    if (!taskerProfile.bio || taskerProfile.bio.trim().length === 0) {
-      missingFields.push({
-        id: "bio",
-        label: "Bio & Experience",
-        section: "bio",
-        icon: <FileText className="h-4 w-4" />,
-        description: "Tell customers about your experience and skills",
-        required: true,
-      });
-    }
-
-    if (
-      !taskerProfile.service_radius_km ||
-      taskerProfile.service_radius_km <= 0
-    ) {
-      missingFields.push({
-        id: "service_area",
-        label: "Service Area",
-        section: "bio",
-        icon: <MapPin className="h-4 w-4" />,
-        description: "Define your service coverage area",
-        required: true,
-      });
-    }
-
-    return missingFields;
-  }, [user, taskerProfile]);
-
-  // Memoized computed values for performance
-  const missingFields = useMemo(() => getMissingFields(), [getMissingFields]);
+  // Convert server missing fields to client format
+  const missingFields = useMemo((): MissingField[] => {
+    return profileStats.missingFields.map((field) => ({
+      id: field.id,
+      label: field.label,
+      section: field.section as ProfileSection,
+      icon: getFieldIcon(field.id),
+      description: getFieldDescription(field.id),
+      required: field.required,
+    }));
+  }, [profileStats.missingFields, getFieldIcon, getFieldDescription]);
 
   // Loading state
   if (loading && !taskerProfile) {
@@ -259,7 +221,7 @@ export default function TaskerProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Enhanced Header Section */}
+        {/* Enhanced Header Section with Progress */}
         <div className="space-y-6">
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
@@ -274,6 +236,48 @@ export default function TaskerProfilePage() {
               Manage your account information and preferences
             </p>
           </div>
+
+          {/* Profile Completion Progress */}
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-accent)]/20 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center">
+                      <TrendingUp className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[var(--color-success)] rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">
+                        {profileStats.completionPercentage}%
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-[var(--color-text-primary)] text-lg">
+                      Profile Completion
+                    </h3>
+                    <p className="text-[var(--color-text-secondary)]">
+                      {profileStats.completionPercentage === 100
+                        ? "Your profile is complete! 🎉"
+                        : `${profileStats.missingFields.length} fields remaining`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex-1 max-w-xs">
+                  <div className="w-full bg-[var(--color-accent)]/30 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${profileStats.completionPercentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-1 text-center">
+                    {profileStats.completionPercentage}% complete
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Enhanced Mobile Navigation */}
@@ -415,6 +419,7 @@ export default function TaskerProfilePage() {
               user={user}
               loading={loading}
               onUserUpdate={setUser}
+              onProfileRefresh={fetchProfileData}
               missingFields={missingFields}
             />
           )}
@@ -425,6 +430,7 @@ export default function TaskerProfilePage() {
               taskerProfile={taskerProfile}
               loading={loading}
               onProfileUpdate={setTaskerProfile}
+              onProfileRefresh={fetchProfileData}
               missingFields={missingFields}
             />
           )}
@@ -435,6 +441,7 @@ export default function TaskerProfilePage() {
               taskerProfile={taskerProfile}
               loading={loading}
               onProfileUpdate={setTaskerProfile}
+              onProfileRefresh={fetchProfileData}
               missingFields={missingFields}
             />
           )}
@@ -445,6 +452,7 @@ export default function TaskerProfilePage() {
               addresses={addresses}
               loading={loading}
               onAddressesUpdate={setAddresses}
+              onProfileRefresh={fetchProfileData}
               missingFields={missingFields}
               userId={user?.id}
             />

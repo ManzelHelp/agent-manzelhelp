@@ -21,14 +21,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Trash2, MapPinIcon, AlertTriangle } from "lucide-react";
-import { createClient } from "@/supabase/client";
 import { toast } from "sonner";
 import type { Address } from "@/types/supabase";
+import { addAddress, deleteAddress } from "@/actions/profile";
 
 interface AddressesSectionProps {
   addresses: Address[];
   loading: boolean;
   onAddressesUpdate: (addresses: Address[]) => void;
+  onProfileRefresh: () => Promise<void>;
   missingFields: Array<{
     id: string;
     label: string;
@@ -53,7 +54,7 @@ interface NewAddressForm {
 export default function AddressesSection({
   addresses,
   loading,
-  onAddressesUpdate,
+  onProfileRefresh,
   missingFields,
   userId,
 }: AddressesSectionProps) {
@@ -73,114 +74,61 @@ export default function AddressesSection({
     (field) => field.section === "addresses"
   );
 
-  const addAddress = async () => {
+  const handleAddAddress = async () => {
     // Check if we have a valid user ID
     if (!userId) {
       toast.error("User not found. Please refresh the page and try again.");
       return;
     }
 
-    // Basic validation
-    if (
-      !newAddressForm.street_address.trim() ||
-      !newAddressForm.city.trim() ||
-      !newAddressForm.region.trim()
-    ) {
-      toast.error("Street address, city, and region are required");
-      return;
-    }
-
-    // Validate country code format (2 characters)
-    if (newAddressForm.country && newAddressForm.country.length !== 2) {
-      toast.error("Country code must be exactly 2 characters");
-      return;
-    }
-
     try {
-      const supabase = createClient();
-
-      const { error } = await supabase.from("addresses").insert([
-        {
-          user_id: userId,
-          label: newAddressForm.label,
-          street_address: newAddressForm.street_address.trim(),
-          city: newAddressForm.city.trim(),
-          region: newAddressForm.region.trim(),
-          postal_code: newAddressForm.postal_code?.trim() || null,
-          country: newAddressForm.country,
-          is_default: newAddressForm.is_default,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ]);
-
-      if (error) {
-        console.error("Error adding address:", error);
-        toast.error("Failed to add address");
-        return;
-      }
-
-      toast.success("Address added successfully");
-      setAddAddressOpen(false);
-      // Reset form
-      setNewAddressForm({
-        label: "home",
-        street_address: "",
-        city: "",
-        region: "",
-        postal_code: "",
-        country: "MA",
-        is_default: false,
+      const result = await addAddress(userId, {
+        label: newAddressForm.label,
+        street_address: newAddressForm.street_address.trim(),
+        city: newAddressForm.city.trim(),
+        region: newAddressForm.region.trim(),
+        postal_code: newAddressForm.postal_code?.trim(),
+        country: newAddressForm.country,
+        is_default: newAddressForm.is_default,
       });
 
-      // Refresh addresses list
-      const { data: updatedAddresses, error: fetchError } = await supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", userId)
-        .order("is_default", { ascending: false });
+      if (result.success && result.address) {
+        toast.success("Address added successfully");
+        setAddAddressOpen(false);
 
-      if (fetchError) {
-        console.error("Error fetching addresses:", fetchError);
-        return;
+        // Reset form
+        setNewAddressForm({
+          label: "home",
+          street_address: "",
+          city: "",
+          region: "",
+          postal_code: "",
+          country: "MA",
+          is_default: false,
+        });
+
+        // Refresh profile data
+        await onProfileRefresh();
+      } else {
+        toast.error(result.error || "Failed to add address");
       }
-
-      onAddressesUpdate(updatedAddresses || []);
     } catch (error) {
       console.error("Error adding address:", error);
       toast.error("Failed to add address");
     }
   };
 
-  const deleteAddress = async (addressId: string) => {
+  const handleDeleteAddress = async (addressId: string) => {
     try {
-      const supabase = createClient();
+      const result = await deleteAddress(addressId);
 
-      const { error } = await supabase
-        .from("addresses")
-        .delete()
-        .eq("id", addressId);
-
-      if (error) {
-        console.error("Error deleting address:", error);
-        toast.error("Failed to delete address");
-        return;
+      if (result.success) {
+        toast.success("Address deleted successfully");
+        // Refresh profile data
+        await onProfileRefresh();
+      } else {
+        toast.error(result.error || "Failed to delete address");
       }
-
-      toast.success("Address deleted successfully");
-
-      // Refresh addresses list
-      const { data: updatedAddresses, error: fetchError } = await supabase
-        .from("addresses")
-        .select("*")
-        .order("is_default", { ascending: false });
-
-      if (fetchError) {
-        console.error("Error fetching addresses:", fetchError);
-        return;
-      }
-
-      onAddressesUpdate(updatedAddresses || []);
     } catch (error) {
       console.error("Error deleting address:", error);
       toast.error("Failed to delete address");
@@ -334,7 +282,7 @@ export default function AddressesSection({
                 >
                   Cancel
                 </Button>
-                <Button onClick={addAddress} disabled={loading}>
+                <Button onClick={handleAddAddress} disabled={loading}>
                   {loading ? "Adding..." : "Add Location"}
                 </Button>
               </DialogFooter>
@@ -402,7 +350,9 @@ export default function AddressesSection({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => address.id && deleteAddress(address.id)}
+                      onClick={() =>
+                        address.id && handleDeleteAddress(address.id)
+                      }
                       className="text-[var(--color-error)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10"
                     >
                       <Trash2 className="h-4 w-4" />
