@@ -229,7 +229,17 @@ export default function CreateOfferPage() {
       if (profileError && profileError.code !== "PGRST116") {
         console.error("Error fetching availability:", profileError);
       } else if (profileData?.operation_hours) {
-        setAvailability(profileData.operation_hours as AvailabilitySlot[]);
+        // Filter out null values and ensure all slots have required properties
+        const validSlots = (
+          profileData.operation_hours as AvailabilitySlot[]
+        ).filter(
+          (slot): slot is AvailabilitySlot =>
+            slot !== null && typeof slot === "object" && "enabled" in slot
+        );
+        setAvailability(validSlots);
+      } else {
+        // Ensure availability is always an array, even if operation_hours is null
+        setAvailability([]);
       }
     } catch (error) {
       console.error("Error fetching initial data:", error);
@@ -379,9 +389,8 @@ export default function CreateOfferPage() {
       const serviceData: CreateServiceData = {
         title: formData.basicInfo.title,
         description: formData.basicInfo.description,
-        category_id: formData.basicInfo.categoryId,
         service_id: formData.basicInfo.serviceId,
-        address_id: selectedAddress.id,
+        service_area: `${selectedAddress.city}, ${selectedAddress.region}`,
         pricing_type: formData.pricing.pricingType,
         base_price: formData.pricing.basePrice,
         hourly_rate: formData.pricing.hourlyRate,
@@ -395,7 +404,7 @@ export default function CreateOfferPage() {
 
       if (result.success) {
         toast.success("Service offer created successfully!");
-        router.push("/tasker/dashboard");
+        router.push("/tasker/my-services");
       } else {
         toast.error(result.error || "Failed to create service");
       }
@@ -868,11 +877,11 @@ export default function CreateOfferPage() {
                         <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
                         Your Working Hours
                       </Label>
-                      {availability.length > 0 ? (
+                      {availability && availability.length > 0 ? (
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {availability
-                              .filter((slot) => slot.enabled)
+                              .filter((slot) => slot && slot.enabled)
                               .map((slot) => (
                                 <div
                                   key={slot.day}
@@ -1429,14 +1438,14 @@ export default function CreateOfferPage() {
                     </div>
 
                     {/* Availability Overview */}
-                    {availability.length > 0 && (
+                    {availability && availability.length > 0 && (
                       <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
                         <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
                           Availability
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           {availability
-                            .filter((slot) => slot.enabled)
+                            .filter((slot) => slot && slot.enabled)
                             .map((slot) => (
                               <div key={slot.day} className="text-sm">
                                 <div className="font-medium capitalize">

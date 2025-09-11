@@ -232,9 +232,8 @@ export async function toggleServiceStatus(
 export interface CreateServiceData {
   title: string;
   description: string;
-  category_id: number;
-  service_id: number;
-  address_id: string;
+  service_id: number; // This maps to the service ID from local categories
+  service_area?: string;
   pricing_type: "fixed" | "hourly" | "per_item";
   base_price?: number;
   hourly_rate?: number;
@@ -254,9 +253,7 @@ export async function createTaskerService(
     if (
       !serviceData.title ||
       !serviceData.description ||
-      !serviceData.category_id ||
-      !serviceData.service_id ||
-      !serviceData.address_id
+      !serviceData.service_id
     ) {
       return { success: false, error: "Missing required fields" };
     }
@@ -282,15 +279,12 @@ export async function createTaskerService(
         tasker_id: taskerId,
         title: serviceData.title,
         description: serviceData.description,
-        category_id: serviceData.category_id,
         service_id: serviceData.service_id,
-        address_id: serviceData.address_id,
+        service_area: serviceData.service_area,
         pricing_type: serviceData.pricing_type,
-        base_price: serviceData.base_price,
-        hourly_rate: serviceData.hourly_rate,
-        minimum_booking_hours: serviceData.minimum_booking_hours,
-        estimated_duration: serviceData.estimated_duration,
-        extras: serviceData.extras,
+        price: serviceData.base_price || serviceData.hourly_rate,
+        minimum_duration: serviceData.minimum_booking_hours,
+        extra_fees: serviceData.extras.length,
         service_status: "active",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

@@ -64,7 +64,12 @@ export default function AvailabilitySection({
   // Update form when profile changes
   useEffect(() => {
     if (taskerProfile) {
-      setAvailabilityForm(taskerProfile.operation_hours || []);
+      // Filter out null values and ensure all slots have required properties
+      const validSlots = (taskerProfile.operation_hours || []).filter(
+        (slot): slot is AvailabilitySlot =>
+          slot !== null && typeof slot === "object" && "enabled" in slot
+      );
+      setAvailabilityForm(validSlots);
     }
   }, [taskerProfile]);
 
@@ -75,7 +80,7 @@ export default function AvailabilitySection({
 
   const updateAvailability = async () => {
     // Validate that at least one day is enabled
-    const enabledDays = availabilityForm.filter((slot) => slot.enabled);
+    const enabledDays = availabilityForm.filter((slot) => slot && slot.enabled);
     if (enabledDays.length === 0) {
       toast.error("Please enable at least one day of availability");
       return;
@@ -83,7 +88,7 @@ export default function AvailabilitySection({
 
     // Validate time format for enabled days
     for (const slot of enabledDays) {
-      if (!slot.startTime || !slot.endTime) {
+      if (!slot || !slot.startTime || !slot.endTime) {
         toast.error("Please set start and end times for all enabled days");
         return;
       }
@@ -165,12 +170,16 @@ export default function AvailabilitySection({
               </DialogHeader>
               <div className="space-y-4">
                 {WEEKDAYS.map((day, index) => {
-                  const slot = availabilityForm[index] || {
-                    day: day.key,
-                    enabled: false,
-                    startTime: "09:00",
-                    endTime: "17:00",
-                  };
+                  const slot =
+                    availabilityForm[index] &&
+                    typeof availabilityForm[index] === "object"
+                      ? availabilityForm[index]
+                      : {
+                          day: day.key,
+                          enabled: false,
+                          startTime: "09:00",
+                          endTime: "17:00",
+                        };
                   return (
                     <div
                       key={day.key}
@@ -247,12 +256,16 @@ export default function AvailabilitySection({
       <CardContent>
         <div className="space-y-3">
           {WEEKDAYS.map((day, index) => {
-            const slot = availabilityForm[index] || {
-              day: day.key,
-              enabled: false,
-              startTime: "09:00",
-              endTime: "17:00",
-            };
+            const slot =
+              availabilityForm[index] &&
+              typeof availabilityForm[index] === "object"
+                ? availabilityForm[index]
+                : {
+                    day: day.key,
+                    enabled: false,
+                    startTime: "09:00",
+                    endTime: "17:00",
+                  };
             return (
               <div
                 key={day.key}
