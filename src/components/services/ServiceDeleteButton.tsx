@@ -1,72 +1,92 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { deleteTaskerService } from "@/actions/services";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface ServiceDeleteButtonProps {
   serviceId: string;
   taskerId: string;
-  onDeleted?: () => void;
 }
 
-export function ServiceDeleteButton({
+export default function ServiceDeleteButton({
   serviceId,
   taskerId,
-  onDeleted,
 }: ServiceDeleteButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleDelete = async () => {
-    if (!showConfirm) {
-      setShowConfirm(true);
-      return;
-    }
-
     setIsDeleting(true);
     try {
       const result = await deleteTaskerService(serviceId, taskerId);
 
       if (result.success) {
         toast.success("Service deleted successfully");
-        onDeleted?.();
+        setShowConfirmDialog(false);
+        // The page will revalidate automatically due to revalidatePath in the action
       } else {
         toast.error(result.error || "Failed to delete service");
       }
     } catch (error) {
       console.error("Error deleting service:", error);
-      toast.error("Failed to delete service");
+      toast.error("An unexpected error occurred");
     } finally {
       setIsDeleting(false);
-      setShowConfirm(false);
     }
   };
 
   return (
-    <div className="relative">
+    <>
       <button
-        onClick={handleDelete}
+        onClick={() => setShowConfirmDialog(true)}
+        className="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px] flex items-center justify-center"
+        title="Delete service"
         disabled={isDeleting}
-        className={`p-2 rounded-lg border transition-all ${
-          showConfirm
-            ? "border-red-600 bg-red-600 text-white"
-            : "border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white"
-        } ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
-        title={
-          showConfirm ? "Click again to confirm deletion" : "Delete service"
-        }
       >
         <Trash2 className="h-4 w-4" />
       </button>
 
-      {showConfirm && (
-        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-          Click again to confirm
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-800"></div>
-        </div>
-      )}
-    </div>
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Service</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this service? This action cannot
+              be undone. If there are any active bookings for this service, it
+              cannot be deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={isDeleting}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="w-full sm:w-auto"
+            >
+              {isDeleting ? "Deleting..." : "Delete Service"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

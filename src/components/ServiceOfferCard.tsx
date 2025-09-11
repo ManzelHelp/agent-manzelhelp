@@ -50,14 +50,15 @@ function ServiceOfferCard({
                 )}
               </div>
               <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 min-w-0">
                   <MapPin size={14} className="flex-shrink-0" />
                   <span className="truncate">
-                    {typeof service.service_area === "string"
+                    {service.service_area &&
+                    typeof service.service_area === "string"
                       ? service.service_area
                       : service.service_area
-                      ? JSON.stringify(service.service_area)
-                      : "N/A"}
+                      ? "Multiple areas"
+                      : "Area not specified"}
                   </span>
                 </div>
               </div>
@@ -100,8 +101,18 @@ function ServiceOfferCard({
                 Hourly Rate
               </div>
             )}
+            {service.pricing_type === "per_item" && (
+              <div className="px-2 py-1 bg-[var(--color-primary)]/10 rounded-full text-xs text-[var(--color-primary)] font-medium">
+                Per Item
+              </div>
+            )}
+            {service.pricing_type === "fixed" && (
+              <div className="px-2 py-1 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)] font-medium">
+                Fixed Price
+              </div>
+            )}
             {service.verification_status === "verified" && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+              <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
                 <Shield size={12} />
                 <span>Verified</span>
               </div>
@@ -119,6 +130,11 @@ function ServiceOfferCard({
               {service.pricing_type === "hourly" && (
                 <span className="text-sm text-[var(--color-text-secondary)] font-medium">
                   /hour
+                </span>
+              )}
+              {service.pricing_type === "per_item" && (
+                <span className="text-sm text-[var(--color-text-secondary)] font-medium">
+                  /item
                 </span>
               )}
               {service.extra_fees && service.extra_fees > 0 && (

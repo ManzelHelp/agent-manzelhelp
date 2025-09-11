@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { getUserProfileAction } from "@/actions/auth";
 import { getTaskerServices, ServiceWithDetails } from "@/actions/services";
-import { ServiceDeleteButton } from "@/components/services/ServiceDeleteButton";
 import {
   Plus,
   Edit,
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Suspense } from "react";
+import ServiceDeleteButton from "@/components/services/ServiceDeleteButton";
 
 // Loading component for better UX
 function ServicesLoadingSkeleton() {
@@ -87,6 +87,21 @@ function ServiceCard({
     }
   };
 
+  const getStatusLabel = (status?: string) => {
+    switch (status) {
+      case "verified":
+        return "Verified";
+      case "pending":
+        return "Pending";
+      case "rejected":
+        return "Rejected";
+      case "under_review":
+        return "Under Review";
+      default:
+        return "Pending";
+    }
+  };
+
   return (
     <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
       {/* Service Header */}
@@ -117,18 +132,17 @@ function ServiceCard({
             </div>
 
             {/* Service Area */}
-            {service.service_area && (
-              <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
-                <MapPin className="h-3 w-3" />
-                <span className="truncate">
-                  {typeof service.service_area === "string"
-                    ? service.service_area
-                    : service.service_area
-                    ? JSON.stringify(service.service_area)
-                    : "N/A"}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
+              <MapPin className="h-3 w-3" />
+              <span className="truncate">
+                {service.service_area &&
+                typeof service.service_area === "string"
+                  ? service.service_area
+                  : service.service_area
+                  ? "Multiple areas"
+                  : "Area not specified"}
+              </span>
+            </div>
           </div>
 
           {/* Price Display */}
@@ -189,7 +203,7 @@ function ServiceCard({
                 service.verification_status
               )}`}
             >
-              {service.verification_status || "pending"}
+              {getStatusLabel(service.verification_status)}
             </span>
             {service.is_promoted && (
               <span className="px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-secondary)] text-white">
@@ -202,7 +216,7 @@ function ServiceCard({
           <div className="flex items-center gap-2">
             <Link
               href={`./my-services/${service.id}`}
-              className="p-2 rounded-lg bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] transition-all"
+              className="p-2 rounded-lg bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
               title="Edit service"
             >
               <Edit className="h-4 w-4" />
@@ -278,12 +292,12 @@ async function ServicesList({ taskerId }: { taskerId: string }) {
           There was an error loading your services. Please try refreshing the
           page.
         </p>
-        <button
-          onClick={() => window.location.reload()}
+        <Link
+          href="/tasker/my-services"
           className="px-5 py-2.5 rounded-lg bg-[var(--color-secondary)] text-white font-semibold hover:bg-[var(--color-secondary-dark)] transition-all text-base shadow"
         >
           Refresh Page
-        </button>
+        </Link>
       </div>
     );
   }

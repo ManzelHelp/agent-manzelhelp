@@ -3,6 +3,24 @@
 import { createClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import { TaskerService, ServiceStatus } from "@/types/supabase";
+import { serviceCategories } from "@/lib/categories";
+
+// Helper function to get category and service names by service ID
+function getCategoryAndServiceNames(serviceId: number) {
+  for (const category of serviceCategories) {
+    const foundService = category.services.find((s) => s.id === serviceId);
+    if (foundService) {
+      return {
+        categoryName: category.name_en,
+        serviceName: foundService.name_en,
+      };
+    }
+  }
+  return {
+    categoryName: "Unknown Category",
+    serviceName: "Unknown Service",
+  };
+}
 
 export interface ServiceWithDetails extends TaskerService {
   booking_count: number;
@@ -36,11 +54,19 @@ export async function getTaskerServices(
       throw new Error(`Failed to fetch services: ${error.message}`);
     }
 
-    // Format the data
-    const services: ServiceWithDetails[] = (data || []).map((service) => ({
-      ...service,
-      booking_count: service.booking_count?.[0]?.count || 0,
-    }));
+    // Format the data and add category names from local categories
+    const services: ServiceWithDetails[] = (data || []).map((service) => {
+      const { categoryName, serviceName } = getCategoryAndServiceNames(
+        service.service_id
+      );
+
+      return {
+        ...service,
+        booking_count: service.booking_count?.[0]?.count || 0,
+        category_name_en: categoryName,
+        service_name_en: serviceName,
+      };
+    });
 
     return services;
   } catch (error) {
@@ -76,9 +102,15 @@ export async function getTaskerServiceById(
       throw new Error(`Failed to fetch service: ${error.message}`);
     }
 
+    const { categoryName, serviceName } = getCategoryAndServiceNames(
+      data.service_id
+    );
+
     return {
       ...data,
       booking_count: data.booking_count?.[0]?.count || 0,
+      category_name_en: categoryName,
+      service_name_en: serviceName,
     };
   } catch (error) {
     console.error("Error in getTaskerServiceById:", error);
