@@ -7,12 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import type {
-  TaskerService,
-  Service,
-  ServiceCategory,
-  ServiceStatus,
-} from "@/types/supabase";
+import type { ServiceStatus } from "@/types/supabase";
 import {
   Edit,
   Save,
@@ -29,20 +24,60 @@ import {
   Star,
   Trash2,
   ArrowLeft,
-  TrendingUp,
 } from "lucide-react";
 import { format } from "date-fns";
+import { serviceCategories } from "@/lib/categories";
 
-interface ServiceData {
-  taskerService: TaskerService;
-  service: Service;
-  category: ServiceCategory;
+interface ServiceDetailsData {
+  tasker_service_id: string;
+  service_id: number;
+  tasker_id: string;
+  title: string;
+  description: string;
+  price: string;
+  pricing_type: "fixed" | "hourly" | "per_item";
+  service_status: ServiceStatus;
+  verification_status: "verified" | "pending" | "rejected" | "under_review";
+  has_active_booking: boolean;
+  portfolio_images: string[] | null;
+  minimum_duration: number;
+  service_area: string;
+  extra_fees: number | null;
+  created_at: string;
+  updated_at: string;
+  tasker_first_name: string;
+  tasker_last_name: string;
+  tasker_avatar_url: string;
+  tasker_phone: string;
+  tasker_created_at: string;
+  tasker_role: string;
+  experience_level: string | null;
+  tasker_bio: string;
+  tasker_verification_status: string;
+  service_radius_km: number;
+  tasker_is_available: boolean;
+  operation_hours: Record<string, unknown> | null;
+  company_id: string | null;
+  tasker_rating: string;
+  total_reviews: number;
+  completed_jobs: number;
+  total_earnings: string;
+  response_time_hours: number;
+  cancellation_rate: string;
+  company_name: string | null;
+  company_city: string | null;
+  company_verification_status: string | null;
+  is_available_for_booking: boolean;
+  category_id: string;
+  category_name_en: string;
+  category_name_fr: string;
+  category_name_ar: string;
 }
 
 export default function TaskerServiceDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [data, setData] = useState<ServiceData | null>(null);
+  const [data, setData] = useState<ServiceDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -67,49 +102,36 @@ export default function TaskerServiceDetailPage() {
       try {
         const supabase = createClient();
 
-        // Fetch tasker service with related data
-        const { data: taskerServiceData, error: taskerServiceError } =
-          await supabase
-            .from("tasker_services")
-            .select(
-              `
-            *,
-            service:service_id (
-              *,
-              category:category_id (*)
-            )
-          `
-            )
-            .eq("id", params["service-id"])
-            .single();
+        // Fetch service details from the view
+        const { data: serviceData, error: serviceError } = await supabase
+          .from("service_details_view")
+          .select("*")
+          .eq("tasker_service_id", params["service-id"])
+          .single();
 
-        if (taskerServiceError) {
-          console.error("Tasker service error:", taskerServiceError);
-          if (taskerServiceError.code === "PGRST116") {
+        if (serviceError) {
+          console.error("Service fetch error:", serviceError);
+          if (serviceError.code === "PGRST116") {
             throw new Error("Service not found");
           }
-          throw taskerServiceError;
+          throw new Error(`Failed to fetch service: ${serviceError.message}`);
         }
 
-        if (!taskerServiceData) {
+        if (!serviceData) {
           throw new Error("Service not found");
         }
 
-        setData({
-          taskerService: taskerServiceData,
-          service: taskerServiceData.service,
-          category: taskerServiceData.service.category,
-        });
+        setData(serviceData);
 
         // Initialize edit form
         setEditForm({
-          title: taskerServiceData.title || "",
-          description: taskerServiceData.description || "",
-          price: taskerServiceData.price || 0,
-          pricing_type: taskerServiceData.pricing_type || "fixed",
-          minimum_duration: taskerServiceData.minimum_duration || 0,
-          service_area: taskerServiceData.service_area || "",
-          service_status: taskerServiceData.service_status || "active",
+          title: serviceData.title || "",
+          description: serviceData.description || "",
+          price: parseFloat(serviceData.price) || 0,
+          pricing_type: serviceData.pricing_type || "fixed",
+          minimum_duration: serviceData.minimum_duration || 0,
+          service_area: serviceData.service_area || "",
+          service_status: serviceData.service_status || "active",
         });
       } catch (err) {
         console.error("Error fetching service data:", err);
@@ -143,69 +165,61 @@ export default function TaskerServiceDetailPage() {
           service_status: editForm.service_status,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", data.taskerService.id);
+        .eq("id", data.tasker_service_id);
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(`Failed to update service: ${error.message}`);
+      }
 
       // Refresh data
-      const { data: updatedData } = await supabase
-        .from("tasker_services")
-        .select(
-          `
-          *,
-          service:service_id (
-            *,
-            category:category_id (*)
-          )
-        `
-        )
-        .eq("id", data.taskerService.id)
+      const { data: updatedData, error: refreshError } = await supabase
+        .from("service_details_view")
+        .select("*")
+        .eq("tasker_service_id", data.tasker_service_id)
         .single();
 
-      if (updatedData) {
-        setData({
-          taskerService: updatedData,
-          service: updatedData.service,
-          category: updatedData.service.category,
-        });
+      if (refreshError) {
+        console.error("Error refreshing data:", refreshError);
+        // Don't throw here, just log the error
+      } else if (updatedData) {
+        setData(updatedData);
       }
 
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating service:", err);
-      setError("Failed to update service. Please try again.");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to update service. Please try again.");
+      }
     }
   };
 
   const handleCancel = () => {
-    if (data?.taskerService) {
+    if (data) {
       setEditForm({
-        title: data.taskerService.title || "",
-        description: data.taskerService.description || "",
-        price: data.taskerService.price || 0,
-        pricing_type: data.taskerService.pricing_type || "fixed",
-        minimum_duration: data.taskerService.minimum_duration || 0,
-        service_area:
-          typeof data.taskerService.service_area === "string"
-            ? data.taskerService.service_area
-            : data.taskerService.service_area
-            ? JSON.stringify(data.taskerService.service_area)
-            : "",
-        service_status: data.taskerService.service_status || "active",
+        title: data.title || "",
+        description: data.description || "",
+        price: parseFloat(data.price) || 0,
+        pricing_type: data.pricing_type || "fixed",
+        minimum_duration: data.minimum_duration || 0,
+        service_area: data.service_area || "",
+        service_status: data.service_status || "active",
       });
     }
     setIsEditing(false);
   };
 
   const getPricingDisplay = () => {
-    if (!data?.taskerService) return "€0";
+    if (!data) return "€0";
 
-    if (data.taskerService.pricing_type === "hourly") {
-      return `€${data.taskerService.price}/hr`;
-    } else if (data.taskerService.pricing_type === "per_item") {
-      return `€${data.taskerService.price}/item`;
+    if (data.pricing_type === "hourly") {
+      return `€${data.price}/hr`;
+    } else if (data.pricing_type === "per_item") {
+      return `€${data.price}/item`;
     } else {
-      return `€${data.taskerService.price}`;
+      return `€${data.price}`;
     }
   };
 
@@ -298,7 +312,10 @@ export default function TaskerServiceDetailPage() {
     );
   }
 
-  const { taskerService, service, category } = data;
+  // Get category information from local data
+  const category = serviceCategories.find(
+    (cat) => cat.id.toString() === data.category_id
+  );
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
@@ -364,24 +381,22 @@ export default function TaskerServiceDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    {taskerService.service_status === "active" ? (
+                    {data.service_status === "active" ? (
                       <Eye className="h-5 w-5 text-[var(--color-success)]" />
                     ) : (
                       <EyeOff className="h-5 w-5 text-[var(--color-text-secondary)]" />
                     )}
                     <span className="font-medium text-[var(--color-text-primary)]">
-                      {taskerService.service_status === "active"
+                      {data.service_status === "active"
                         ? "Available"
                         : "Unavailable"}
                     </span>
                   </div>
                 </div>
-                <Badge
-                  className={getStatusColor(taskerService.verification_status)}
-                >
-                  {getStatusIcon(taskerService.verification_status)}
+                <Badge className={getStatusColor(data.verification_status)}>
+                  {getStatusIcon(data.verification_status)}
                   <span className="ml-1 capitalize">
-                    {taskerService.verification_status || "pending"}
+                    {data.verification_status || "pending"}
                   </span>
                 </Badge>
               </div>
@@ -391,16 +406,13 @@ export default function TaskerServiceDetailPage() {
           {/* Service Details Card */}
           <Card className="overflow-hidden border-[var(--color-border)] bg-[var(--color-surface)]">
             {/* Service Image */}
-            {taskerService.portfolio_images &&
-              Array.isArray(taskerService.portfolio_images) &&
-              taskerService.portfolio_images.length > 0 && (
+            {data.portfolio_images &&
+              Array.isArray(data.portfolio_images) &&
+              data.portfolio_images.length > 0 && (
                 <div className="relative h-48 w-full">
                   <Image
-                    src={
-                      taskerService.portfolio_images[0] ||
-                      "/placeholder-service.jpg"
-                    }
-                    alt={taskerService.title || "Service image"}
+                    src={data.portfolio_images[0] || "/placeholder-service.jpg"}
+                    alt={data.title || "Service image"}
                     fill
                     className="object-cover"
                     priority
@@ -554,16 +566,13 @@ export default function TaskerServiceDetailPage() {
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="space-y-2">
                       <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
-                        {taskerService.title}
+                        {data.title}
                       </h2>
                       <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
                         <Calendar className="h-4 w-4" />
                         <span className="text-sm">
                           Listed on{" "}
-                          {format(
-                            new Date(taskerService.created_at!),
-                            "MMMM d, yyyy"
-                          )}
+                          {format(new Date(data.created_at), "MMMM d, yyyy")}
                         </span>
                       </div>
                     </div>
@@ -575,10 +584,10 @@ export default function TaskerServiceDetailPage() {
                           {getPricingDisplay()}
                         </span>
                       </div>
-                      {taskerService.minimum_duration && (
+                      {data.minimum_duration && (
                         <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
                           <Clock className="h-4 w-4" />
-                          <span>Min. {taskerService.minimum_duration}h</span>
+                          <span>Min. {data.minimum_duration}h</span>
                         </div>
                       )}
                     </div>
@@ -591,10 +600,10 @@ export default function TaskerServiceDetailPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                        {service.name_en}
+                        {category?.name_en || "Service"}
                       </p>
                       <p className="text-sm text-[var(--color-text-secondary)]">
-                        {category.name_en}
+                        {category?.name_en || "Category"}
                       </p>
                     </div>
                   </div>
@@ -605,13 +614,13 @@ export default function TaskerServiceDetailPage() {
                       Description
                     </h3>
                     <p className="text-[var(--color-text-secondary)] leading-relaxed">
-                      {taskerService.description || "No description available"}
+                      {data.description || "No description available"}
                     </p>
                   </div>
 
                   {/* Service Details Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {taskerService.service_area && (
+                    {data.service_area && (
                       <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
                         <MapPin className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                         <div>
@@ -619,11 +628,7 @@ export default function TaskerServiceDetailPage() {
                             Service Area
                           </p>
                           <p className="text-sm text-[var(--color-text-secondary)]">
-                            {typeof taskerService.service_area === "string"
-                              ? taskerService.service_area
-                              : taskerService.service_area
-                              ? JSON.stringify(taskerService.service_area)
-                              : "N/A"}
+                            {data.service_area}
                           </p>
                         </div>
                       </div>
@@ -636,9 +641,9 @@ export default function TaskerServiceDetailPage() {
                           Pricing Type
                         </p>
                         <p className="text-sm text-[var(--color-text-secondary)]">
-                          {taskerService.pricing_type === "hourly"
+                          {data.pricing_type === "hourly"
                             ? "Hourly Rate"
-                            : taskerService.pricing_type === "per_item"
+                            : data.pricing_type === "per_item"
                             ? "Per Item"
                             : "Fixed Price"}
                         </p>
@@ -650,39 +655,8 @@ export default function TaskerServiceDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Promotion Status */}
-          {taskerService.is_promoted && (
-            <Card className="border-[var(--color-border)] bg-[var(--color-surface)]">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="h-5 w-5 text-[var(--color-secondary)]" />
-                    <div>
-                      <p className="font-medium text-[var(--color-text-primary)]">
-                        Promoted Service
-                      </p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        Boost score: {taskerService.promotion_boost_score || 0}
-                      </p>
-                    </div>
-                  </div>
-                  {taskerService.promotion_expires_at && (
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                        Expires
-                      </p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        {format(
-                          new Date(taskerService.promotion_expires_at),
-                          "MMM d, yyyy"
-                        )}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Promotion Status - Note: promotion data not available in service_details_view */}
+          {/* This section would need to be implemented separately if promotion data is needed */}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
