@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
           {
             id: data.user.id,
             email: data.user.email,
-            role: userRole as "customer" | "tasker" | "support" | "admin",
+            role: userRole as "customer" | "tasker",
             email_verified: true,
             is_active: true,
             preferred_language: locale,
