@@ -31,7 +31,7 @@ function ServiceOfferCard({
               <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] p-0.5">
                 <div className="h-full w-full rounded-full bg-[var(--color-surface)] p-0.5">
                   <Image
-                    src={tasker.avatar_url || "/default-avatar.png"}
+                    src={tasker.avatar_url || "/default-avatar.svg"}
                     alt={`${tasker.first_name}'s profile`}
                     className="rounded-full object-cover"
                     fill

@@ -1,4 +1,5 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
+import Link from "next/link";
 import { createClient } from "@/supabase/server";
 import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
@@ -366,14 +367,12 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                     <p className="text-[var(--color-text-secondary)] text-lg mb-6">
                       {t("tryAdjustingFilters")}
                     </p>
-                    <button
-                      onClick={() =>
-                        (window.location.href = `/${locale}/search`)
-                      }
+                    <Link
+                      href={`/${locale}/search`}
                       className="inline-flex items-center px-6 py-3 bg-[var(--color-secondary)] text-white rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium"
                     >
                       Clear All Filters
-                    </button>
+                    </Link>
                   </div>
                 </div>
               )}
@@ -383,7 +382,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
             {filteredServices.length > 0 && (count || 0) > limit && (
               <div className="flex justify-center items-center gap-3 mt-12 animate-fade-in-up">
                 {page > 1 && (
-                  <a
+                  <Link
                     href={`/${locale}/search?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page - 1).toString(),
@@ -404,7 +403,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       />
                     </svg>
                     Previous
-                  </a>
+                  </Link>
                 )}
 
                 <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-sm">
@@ -414,7 +413,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                 </div>
 
                 {page < Math.ceil((count || 0) / limit) && (
-                  <a
+                  <Link
                     href={`/${locale}/search?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page + 1).toString(),
@@ -435,7 +434,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                         d="M9 5l7 7-7 7"
                       />
                     </svg>
-                  </a>
+                  </Link>
                 )}
               </div>
             )}
