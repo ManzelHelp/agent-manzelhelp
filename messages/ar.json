@@ -44,6 +44,87 @@
     "noResults": "لم يتم العثور على نتائج",
     "tryAdjustingFilters": "حاول تعديل مرشحاتك أو معايير البحث"
   },
+  "notifications": {
+    "title": "الإشعارات",
+    "description": "ابق على اطلاع بآخر أنشطتك وتحديثاتك",
+    "empty": {
+      "title": "لا توجد إشعارات بعد",
+      "description": "عندما تتلقى إشعارات، ستظهر هنا"
+    },
+    "filters": {
+      "all": "جميع الإشعارات",
+      "unread": "غير مقروءة",
+      "read": "مقروءة"
+    },
+    "actions": {
+      "markAllRead": "تحديد الكل كمقروء",
+      "viewJob": "عرض تفاصيل العمل",
+      "viewProfile": "عرض الملف الشخصي",
+      "view": "عرض",
+      "refresh": "تحديث",
+      "refreshing": "جاري التحديث...",
+      "retry": "إعادة المحاولة",
+      "markAsRead": "تحديد كمقروء",
+      "markAsUnread": "تحديد كغير مقروء",
+      "delete": "حذف",
+      "viewDetails": "عرض التفاصيل",
+      "selectMultiple": "تحديد متعدد",
+      "cancelSelection": "إلغاء التحديد",
+      "selectAll": "تحديد الكل",
+      "clearSelection": "مسح التحديد",
+      "selected": "محدد",
+      "markRead": "تحديد كمقروء",
+      "markUnread": "تحديد كغير مقروء"
+    },
+    "badges": {
+      "new": "جديد"
+    },
+    "search": {
+      "placeholder": "البحث في الإشعارات...",
+      "noResults": "لم يتم العثور على إشعارات",
+      "noResultsDescription": "حاول تعديل مصطلحات البحث أو المرشحات",
+      "clearFilters": "مسح المرشحات"
+    },
+    "sort": {
+      "newest": "الأحدث أولاً",
+      "oldest": "الأقدم أولاً"
+    },
+    "stats": {
+      "total": "المجموع",
+      "unread": "غير مقروءة",
+      "read": "مقروءة"
+    },
+    "loading": {
+      "title": "جاري تحميل الإشعارات",
+      "description": "يرجى الانتظار بينما نجلب إشعاراتك"
+    },
+    "errors": {
+      "notLoggedIn": "غير مسجل الدخول",
+      "loginRequired": "يرجى تسجيل الدخول لعرض إشعاراتك",
+      "fetchFailed": "فشل في تحميل الإشعارات",
+      "markReadFailed": "فشل في تحديد الإشعار كمقروء",
+      "markAllReadFailed": "فشل في تحديد جميع الإشعارات كمقروءة",
+      "deleteFailed": "فشل في حذف الإشعار",
+      "bulkDeleteFailed": "فشل في حذف الإشعارات",
+      "bulkMarkreadFailed": "فشل في تحديد الإشعارات كمقروءة",
+      "bulkMarkunreadFailed": "فشل في تحديد الإشعارات كغير مقروءة",
+      "bulkActionFailed": "فشل في تنفيذ الإجراء المجمع"
+    },
+    "success": {
+      "markedAsRead": "تم تحديد الإشعار كمقروء",
+      "allMarkedAsRead": "تم تحديد جميع الإشعارات كمقروءة",
+      "deleted": "تم حذف الإشعار",
+      "bulkDeleted": "تم حذف {count} إشعار",
+      "bulkMarkedread": "تم تحديد {count} إشعار كمقروء",
+      "bulkMarkedunread": "تم تحديد {count} إشعار كغير مقروء"
+    },
+    "time": {
+      "justNow": "الآن",
+      "minutesAgo": "منذ {minutes} دقيقة",
+      "hoursAgo": "منذ {hours} ساعة",
+      "daysAgo": "منذ {days} يوم"
+    }
+  },
   "Footer": {
     "about": "من نحن",
     "aboutDescription": "مانزل هيلب يربط الأشخاص الذين يحتاجون خدمات مع أولئك الذين يمكنهم تقديمها. مهمتنا هي جعل المساعدة متاحة، ودودة، وآمنة للجميع.",

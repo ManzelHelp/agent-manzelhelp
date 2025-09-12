@@ -484,11 +484,38 @@
       "refreshing": "Aktualisiere...",
       "retry": "Wiederholen",
       "markAsRead": "Als gelesen markieren",
+      "markAsUnread": "Als ungelesen markieren",
       "delete": "Löschen",
-      "viewDetails": "Details anzeigen"
+      "viewDetails": "Details anzeigen",
+      "selectMultiple": "Mehrere auswählen",
+      "cancelSelection": "Auswahl abbrechen",
+      "selectAll": "Alle auswählen",
+      "clearSelection": "Auswahl löschen",
+      "selected": "ausgewählt",
+      "markRead": "Als gelesen markieren",
+      "markUnread": "Als ungelesen markieren"
     },
     "badges": {
       "new": "Neu"
+    },
+    "search": {
+      "placeholder": "Benachrichtigungen durchsuchen...",
+      "noResults": "Keine Benachrichtigungen gefunden",
+      "noResultsDescription": "Versuchen Sie, Ihre Suchbegriffe oder Filter anzupassen",
+      "clearFilters": "Filter löschen"
+    },
+    "sort": {
+      "newest": "Neueste zuerst",
+      "oldest": "Älteste zuerst"
+    },
+    "stats": {
+      "total": "Gesamt",
+      "unread": "Ungelesen",
+      "read": "Gelesen"
+    },
+    "loading": {
+      "title": "Benachrichtigungen werden geladen",
+      "description": "Bitte warten Sie, während wir Ihre Benachrichtigungen abrufen"
     },
     "errors": {
       "notLoggedIn": "Nicht eingeloggt",
@@ -496,12 +523,19 @@
       "fetchFailed": "Benachrichtigungen konnten nicht geladen werden",
       "markReadFailed": "Benachrichtigung konnte nicht als gelesen markiert werden",
       "markAllReadFailed": "Alle Benachrichtigungen konnten nicht als gelesen markiert werden",
-      "deleteFailed": "Benachrichtigung konnte nicht gelöscht werden"
+      "deleteFailed": "Benachrichtigung konnte nicht gelöscht werden",
+      "bulkDeleteFailed": "Benachrichtigungen konnten nicht gelöscht werden",
+      "bulkMarkreadFailed": "Benachrichtigungen konnten nicht als gelesen markiert werden",
+      "bulkMarkunreadFailed": "Benachrichtigungen konnten nicht als ungelesen markiert werden",
+      "bulkActionFailed": "Massenaktion konnte nicht ausgeführt werden"
     },
     "success": {
       "markedAsRead": "Benachrichtigung als gelesen markiert",
       "allMarkedAsRead": "Alle Benachrichtigungen als gelesen markiert",
-      "deleted": "Benachrichtigung gelöscht"
+      "deleted": "Benachrichtigung gelöscht",
+      "bulkDeleted": "{count} Benachrichtigungen gelöscht",
+      "bulkMarkedread": "{count} Benachrichtigungen als gelesen markiert",
+      "bulkMarkedunread": "{count} Benachrichtigungen als ungelesen markiert"
     },
     "time": {
       "justNow": "Gerade eben",

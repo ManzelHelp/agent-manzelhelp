@@ -496,11 +496,38 @@
       "refreshing": "Refreshing...",
       "retry": "Retry",
       "markAsRead": "Mark as read",
+      "markAsUnread": "Mark as unread",
       "delete": "Delete",
-      "viewDetails": "View details"
+      "viewDetails": "View details",
+      "selectMultiple": "Select multiple",
+      "cancelSelection": "Cancel selection",
+      "selectAll": "Select all",
+      "clearSelection": "Clear selection",
+      "selected": "selected",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread"
     },
     "badges": {
       "new": "New"
+    },
+    "search": {
+      "placeholder": "Search notifications...",
+      "noResults": "No notifications found",
+      "noResultsDescription": "Try adjusting your search terms or filters",
+      "clearFilters": "Clear filters"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "stats": {
+      "total": "Total",
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "loading": {
+      "title": "Loading notifications",
+      "description": "Please wait while we fetch your notifications"
     },
     "errors": {
       "notLoggedIn": "Not logged in",
@@ -508,12 +535,19 @@
       "fetchFailed": "Failed to load notifications",
       "markReadFailed": "Failed to mark notification as read",
       "markAllReadFailed": "Failed to mark all notifications as read",
-      "deleteFailed": "Failed to delete notification"
+      "deleteFailed": "Failed to delete notification",
+      "bulkDeleteFailed": "Failed to delete notifications",
+      "bulkMarkreadFailed": "Failed to mark notifications as read",
+      "bulkMarkunreadFailed": "Failed to mark notifications as unread",
+      "bulkActionFailed": "Failed to perform bulk action"
     },
     "success": {
       "markedAsRead": "Notification marked as read",
       "allMarkedAsRead": "All notifications marked as read",
-      "deleted": "Notification deleted"
+      "deleted": "Notification deleted",
+      "bulkDeleted": "{count} notifications deleted",
+      "bulkMarkedread": "{count} notifications marked as read",
+      "bulkMarkedunread": "{count} notifications marked as unread"
     },
     "time": {
       "justNow": "Just now",

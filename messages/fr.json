@@ -44,6 +44,87 @@
     "noResults": "Aucun résultat trouvé",
     "tryAdjustingFilters": "Essayez d'ajuster vos filtres ou critères de recherche"
   },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Restez informé de vos dernières activités et mises à jour",
+    "empty": {
+      "title": "Aucune notification pour le moment",
+      "description": "Lorsque vous recevrez des notifications, elles apparaîtront ici"
+    },
+    "filters": {
+      "all": "Toutes les notifications",
+      "unread": "Non lues",
+      "read": "Lues"
+    },
+    "actions": {
+      "markAllRead": "Tout marquer comme lu",
+      "viewJob": "Voir les détails du travail",
+      "viewProfile": "Voir le profil",
+      "view": "Voir",
+      "refresh": "Actualiser",
+      "refreshing": "Actualisation...",
+      "retry": "Réessayer",
+      "markAsRead": "Marquer comme lu",
+      "markAsUnread": "Marquer comme non lu",
+      "delete": "Supprimer",
+      "viewDetails": "Voir les détails",
+      "selectMultiple": "Sélectionner plusieurs",
+      "cancelSelection": "Annuler la sélection",
+      "selectAll": "Tout sélectionner",
+      "clearSelection": "Effacer la sélection",
+      "selected": "sélectionné",
+      "markRead": "Marquer comme lu",
+      "markUnread": "Marquer comme non lu"
+    },
+    "badges": {
+      "new": "Nouveau"
+    },
+    "search": {
+      "placeholder": "Rechercher des notifications...",
+      "noResults": "Aucune notification trouvée",
+      "noResultsDescription": "Essayez d'ajuster vos termes de recherche ou filtres",
+      "clearFilters": "Effacer les filtres"
+    },
+    "sort": {
+      "newest": "Plus récent en premier",
+      "oldest": "Plus ancien en premier"
+    },
+    "stats": {
+      "total": "Total",
+      "unread": "Non lues",
+      "read": "Lues"
+    },
+    "loading": {
+      "title": "Chargement des notifications",
+      "description": "Veuillez patienter pendant que nous récupérons vos notifications"
+    },
+    "errors": {
+      "notLoggedIn": "Non connecté",
+      "loginRequired": "Veuillez vous connecter pour voir vos notifications",
+      "fetchFailed": "Échec du chargement des notifications",
+      "markReadFailed": "Échec du marquage de la notification comme lue",
+      "markAllReadFailed": "Échec du marquage de toutes les notifications comme lues",
+      "deleteFailed": "Échec de la suppression de la notification",
+      "bulkDeleteFailed": "Échec de la suppression des notifications",
+      "bulkMarkreadFailed": "Échec du marquage des notifications comme lues",
+      "bulkMarkunreadFailed": "Échec du marquage des notifications comme non lues",
+      "bulkActionFailed": "Échec de l'action en lot"
+    },
+    "success": {
+      "markedAsRead": "Notification marquée comme lue",
+      "allMarkedAsRead": "Toutes les notifications marquées comme lues",
+      "deleted": "Notification supprimée",
+      "bulkDeleted": "{count} notifications supprimées",
+      "bulkMarkedread": "{count} notifications marquées comme lues",
+      "bulkMarkedunread": "{count} notifications marquées comme non lues"
+    },
+    "time": {
+      "justNow": "À l'instant",
+      "minutesAgo": "Il y a {minutes} minutes",
+      "hoursAgo": "Il y a {hours} heures",
+      "daysAgo": "Il y a {days} jours"
+    }
+  },
   "Footer": {
     "about": "À propos",
     "aboutDescription": "ManzelHelp connecte les personnes qui ont besoin de services avec celles qui peuvent les fournir. Notre mission est de rendre l'aide accessible, conviviale et sécurisée pour tous.",
