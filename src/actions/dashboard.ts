@@ -18,6 +18,7 @@ export interface DashboardStats {
   activeServices: number;
   upcomingBookings: number;
   recentBookings: number;
+  walletBalance: number;
 }
 
 export interface RecentActivity {
@@ -44,16 +45,33 @@ export async function fetchDashboardStats(
   const supabase = await createClient();
 
   try {
-    // Get comprehensive user stats
-    const { data: userStats, error: statsError } = await supabase
-      .from("user_stats")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle();
+    // Get user wallet balance and comprehensive user stats
+    const [userResult, userStatsResult] = await Promise.allSettled([
+      supabase.from("users").select("wallet_balance").eq("id", userId).single(),
+      supabase.from("user_stats").select("*").eq("id", userId).maybeSingle(),
+    ]);
 
-    if (statsError && statsError.code !== "PGRST116") {
-      console.error("Error fetching user stats:", statsError);
-      throw statsError;
+    const user =
+      userResult.status === "fulfilled" ? userResult.value.data : null;
+    const userStats =
+      userStatsResult.status === "fulfilled"
+        ? userStatsResult.value.data
+        : null;
+
+    if (
+      userResult.status === "rejected" &&
+      userResult.reason.code !== "PGRST116"
+    ) {
+      console.error("Error fetching user data:", userResult.reason);
+      throw userResult.reason;
+    }
+
+    if (
+      userStatsResult.status === "rejected" &&
+      userStatsResult.reason.code !== "PGRST116"
+    ) {
+      console.error("Error fetching user stats:", userStatsResult.reason);
+      throw userStatsResult.reason;
     }
 
     // Get all bookings data in parallel
@@ -192,6 +210,7 @@ export async function fetchDashboardStats(
       activeServices,
       upcomingBookings: upcomingBookings.length,
       recentBookings: recentBookings.length,
+      walletBalance: user?.wallet_balance || 0,
     };
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);

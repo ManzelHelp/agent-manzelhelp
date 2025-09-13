@@ -29,6 +29,7 @@ import {
   ArrowDownRight,
   Sparkles,
   Briefcase,
+  Wallet,
 } from "lucide-react";
 
 // Utils and Types
@@ -67,6 +68,7 @@ export default function DashboardPage() {
     activeServices: 0,
     upcomingBookings: 0,
     recentBookings: 0,
+    walletBalance: 0,
   });
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -263,6 +265,26 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Wallet Balance Section */}
+        <Card className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] border-0 shadow-lg text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Wallet className="h-6 w-6" />
+              <h3 className="text-lg font-semibold">Wallet Balance</h3>
+            </div>
+            <div className="text-3xl font-bold mb-2">
+              {statsLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                `${stats.walletBalance.toLocaleString()} MAD`
+              )}
+            </div>
+            <p className="text-sm opacity-90">
+              Available for withdrawals and payments
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
