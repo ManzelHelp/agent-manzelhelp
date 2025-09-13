@@ -201,6 +201,104 @@ export async function getBookingById(
   };
 }
 
+export async function getCustomerBookings(
+  customerId: string,
+  limit: number = 20,
+  offset: number = 0,
+  includeTotal: boolean = true
+): Promise<{
+  bookings: BookingWithDetails[];
+  total: number;
+  hasMore: boolean;
+}> {
+  const supabase = await createClient();
+
+  // Get total count only when needed (for initial load or when includeTotal is true)
+  let total = 0;
+  if (includeTotal || offset === 0) {
+    const { count, error: countError } = await supabase
+      .from("service_bookings")
+      .select("*", { count: "exact", head: true })
+      .eq("customer_id", customerId);
+
+    if (countError) {
+      console.error("Error fetching customer bookings count:", countError);
+      throw new Error(
+        `Failed to fetch customer bookings count: ${countError.message}`
+      );
+    }
+    total = count || 0;
+  }
+
+  // Get bookings with pagination - fetch one extra to determine if there are more
+  const { data, error } = await supabase
+    .from("service_bookings")
+    .select(
+      `
+      *,
+      customer:users!service_bookings_customer_id_fkey(
+        first_name,
+        last_name,
+        avatar_url,
+        email,
+        phone
+      ),
+      tasker:users!service_bookings_tasker_id_fkey(
+        first_name,
+        last_name,
+        avatar_url
+      ),
+      tasker_service:tasker_services(
+        title,
+        description
+      ),
+      address:addresses(
+        street_address,
+        city,
+        region
+      )
+    `
+    )
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit);
+
+  if (error) {
+    console.error("Error fetching customer bookings:", error);
+    throw new Error(`Failed to fetch customer bookings: ${error.message}`);
+  }
+
+  // Check if there are more items by fetching one extra record
+  const hasMore = data.length > limit;
+  const bookings = hasMore ? data.slice(0, limit) : data; // Remove the extra item if it exists
+
+  // Ensure hasMore is false if we have no bookings at all
+  const finalHasMore = bookings.length > 0 ? hasMore : false;
+
+  const formattedBookings = bookings.map((booking) => ({
+    ...booking,
+    customer_first_name: booking.customer?.first_name,
+    customer_last_name: booking.customer?.last_name,
+    customer_avatar: booking.customer?.avatar_url,
+    customer_email: booking.customer?.email,
+    customer_phone: booking.customer?.phone,
+    tasker_first_name: booking.tasker?.first_name,
+    tasker_last_name: booking.tasker?.last_name,
+    tasker_avatar: booking.tasker?.avatar_url,
+    service_title: booking.tasker_service?.title,
+    category_name: null,
+    street_address: booking.address?.street_address,
+    city: booking.address?.city,
+    region: booking.address?.region,
+  }));
+
+  return {
+    bookings: formattedBookings,
+    total,
+    hasMore: finalHasMore,
+  };
+}
+
 export async function updateBookingStatus(
   bookingId: string,
   status: BookingStatus,
@@ -260,6 +358,60 @@ export async function updateBookingStatus(
 
   revalidatePath("/tasker/bookings");
   revalidatePath(`/tasker/bookings/${bookingId}`);
+
+  return { success: true };
+}
+
+export async function cancelCustomerBooking(
+  bookingId: string,
+  customerId: string,
+  reason?: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  // Verify the booking belongs to the customer
+  const { data: booking, error: fetchError } = await supabase
+    .from("service_bookings")
+    .select("customer_id, status")
+    .eq("id", bookingId)
+    .single();
+
+  if (fetchError || !booking) {
+    return { success: false, error: "Booking not found" };
+  }
+
+  if (booking.customer_id !== customerId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // Check if booking can be cancelled
+  if (["completed", "cancelled", "disputed"].includes(booking.status)) {
+    return { success: false, error: "Cannot cancel booking in current status" };
+  }
+
+  // Prepare update data
+  const updateData = {
+    status: "cancelled" as BookingStatus,
+    cancelled_at: new Date().toISOString(),
+    cancelled_by: customerId,
+    cancellation_reason: reason || "Cancelled by customer",
+  };
+
+  const { error } = await supabase
+    .from("service_bookings")
+    .update(updateData)
+    .eq("id", bookingId);
+
+  if (error) {
+    console.error("Error cancelling booking:", error);
+    return {
+      success: false,
+      error: `Failed to cancel booking: ${error.message}`,
+    };
+  }
+
+  revalidatePath("/customer/bookings");
+  revalidatePath(`/customer/bookings/${bookingId}`);
 
   return { success: true };
 }

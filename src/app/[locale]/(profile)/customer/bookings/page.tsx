@@ -1,526 +1,454 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useUserStore } from "@/stores/userStore";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { CustomerBookingCard } from "@/components/bookings/CustomerBookingCard";
+import { BookingTabs } from "@/components/bookings/BookingTabs";
+import { EmptyState } from "@/components/bookings/EmptyState";
+import { BookingLoadingSkeleton } from "@/components/bookings/BookingLoadingSkeleton";
 import {
-  Calendar,
-  Star,
-  User,
-  Clock,
-  MapPin,
-  CheckCircle,
-  AlertCircle,
-  MessageSquare,
-  Eye,
-  Plus,
-  Filter,
-  Search,
-} from "lucide-react";
-import Link from "next/link";
+  getCustomerBookings,
+  cancelCustomerBooking,
+  type BookingWithDetails,
+} from "@/actions/bookings";
+import { BookingStatus } from "@/types/supabase";
 
-type TaskStatus = "active" | "pending" | "completed" | "cancelled";
+type TaskStatus =
+  | "all"
+  | "pending"
+  | "accepted"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
-interface JobItem {
-  id: string;
+interface ConfirmationDialogState {
+  isOpen: boolean;
+  bookingId: string;
+  action: string;
   title: string;
-  service: string;
-  tasker: string;
-  price: number;
-  location: string;
-  date: string;
-  time?: string;
-  status: TaskStatus;
-  rating?: number;
-  urgent?: boolean;
-  progress?: number;
-  description?: string;
-  duration?: string;
+  description: string;
+  confirmText: string;
+  variant: "default" | "success" | "warning" | "danger";
 }
 
+// Utility functions moved outside component to avoid re-creation
+const getActionButton = (booking: BookingWithDetails) => {
+  const { status } = booking;
+
+  const actionConfig = {
+    pending: {
+      text: "Cancel Booking",
+      variant: "danger" as const,
+      action: "cancel",
+      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+    },
+    accepted: {
+      text: "Cancel Booking",
+      variant: "danger" as const,
+      action: "cancel",
+      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+    },
+    confirmed: {
+      text: "Cancel Booking",
+      variant: "danger" as const,
+      action: "cancel",
+      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+    },
+    in_progress: {
+      text: "Cancel Booking",
+      variant: "danger" as const,
+      action: "cancel",
+      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+    },
+    completed: {
+      text: "Completed",
+      variant: "default" as const,
+      action: "none",
+      className:
+        "bg-color-success/10 text-color-success border border-color-success/20",
+    },
+    cancelled: {
+      text: "Cancelled",
+      variant: "default" as const,
+      action: "none",
+      className:
+        "bg-color-error/10 text-color-error border border-color-error/20",
+    },
+    disputed: {
+      text: "Disputed",
+      variant: "default" as const,
+      action: "none",
+      className:
+        "bg-color-warning/10 text-color-warning border border-color-warning/20",
+    },
+    refunded: {
+      text: "Refunded",
+      variant: "default" as const,
+      action: "none",
+      className: "bg-color-info/10 text-color-info border border-color-info/20",
+    },
+  };
+
+  return actionConfig[status] || actionConfig.completed;
+};
+
+const getTaskerName = (booking: BookingWithDetails) => {
+  const firstName = booking.tasker_first_name || "";
+  const lastName = booking.tasker_last_name || "";
+  return `${firstName} ${lastName}`.trim() || "Tasker";
+};
+
 export default function CustomerBookingsPage() {
-  const [activeTab, setActiveTab] = useState<TaskStatus>("active");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState<TaskStatus>("all");
+  const [isNavExpanded, setIsNavExpanded] = useState(false);
+  const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [paginationError, setPaginationError] = useState<string | null>(null);
+  const [confirmationDialog, setConfirmationDialog] =
+    useState<ConfirmationDialogState>({
+      isOpen: false,
+      bookingId: "",
+      action: "",
+      title: "",
+      description: "",
+      confirmText: "",
+      variant: "default",
+    });
 
-  // Mock data - replace with real data fetching
-  const jobs: Record<TaskStatus, JobItem[]> = {
-    active: [
-      {
-        id: "1",
-        title: "House Deep Clean",
-        service: "Cleaning",
-        tasker: "Maria S.",
-        price: 120,
-        location: "Downtown",
-        date: "2024-01-16",
-        time: "09:00",
-        status: "active",
-        progress: 60,
-        description:
-          "Complete house cleaning including kitchen, bathrooms, and living areas",
-        duration: "4 hours",
-      },
-      {
-        id: "2",
-        title: "Furniture Assembly",
-        service: "Handyman",
-        tasker: "John D.",
-        price: 80,
-        location: "Westside",
-        date: "2024-01-17",
-        time: "14:00",
-        status: "active",
-        progress: 25,
-        description:
-          "Assembly of new furniture including bed frame and dresser",
-        duration: "2 hours",
-      },
-    ],
-    pending: [
-      {
-        id: "3",
-        title: "Garden Maintenance",
-        service: "Gardening",
-        tasker: "Lisa K.",
-        price: 65,
-        location: "Suburbs",
-        date: "2024-01-18",
-        time: "10:00",
-        status: "pending",
-        urgent: true,
-        description: "Regular garden maintenance including pruning and weeding",
-        duration: "3 hours",
-      },
-      {
-        id: "4",
-        title: "Window Cleaning",
-        service: "Cleaning",
-        tasker: "Emma T.",
-        price: 45,
-        location: "Midtown",
-        date: "2024-01-19",
-        time: "11:00",
-        status: "pending",
-        description: "Exterior and interior window cleaning",
-        duration: "2 hours",
-      },
-    ],
-    completed: [
-      {
-        id: "5",
-        title: "Kitchen Deep Clean",
-        service: "Cleaning",
-        tasker: "Robert S.",
-        price: 95,
-        location: "Downtown",
-        date: "2024-01-12",
-        status: "completed",
-        rating: 5,
-        description:
-          "Deep cleaning of kitchen including appliances and cabinets",
-        duration: "3 hours",
-      },
-      {
-        id: "6",
-        title: "Plumbing Repair",
-        service: "Plumbing",
-        tasker: "Anna L.",
-        price: 150,
-        location: "Suburbs",
-        date: "2024-01-10",
-        status: "completed",
-        rating: 4,
-        description: "Fixing leaky faucet and replacing shower head",
-        duration: "1.5 hours",
-      },
-      {
-        id: "7",
-        title: "Moving Help",
-        service: "Moving",
-        tasker: "Mike R.",
-        price: 200,
-        location: "Eastside",
-        date: "2024-01-08",
-        status: "completed",
-        rating: 5,
-        description: "Assistance with moving furniture and boxes",
-        duration: "6 hours",
-      },
-    ],
-    cancelled: [
-      {
-        id: "8",
-        title: "Window Cleaning",
-        service: "Cleaning",
-        tasker: "Emma T.",
-        price: 60,
-        location: "Midtown",
-        date: "2024-01-05",
-        status: "cancelled",
-        description: "Exterior window cleaning service",
-        duration: "2 hours",
-      },
-    ],
-  };
+  const router = useRouter();
+  const { user } = useUserStore();
 
-  const getStatusIcon = (status: TaskStatus) => {
-    switch (status) {
-      case "active":
-        return <Clock className="h-4 w-4" />;
-      case "pending":
-        return <AlertCircle className="h-4 w-4" />;
-      case "completed":
-        return <CheckCircle className="h-4 w-4" />;
-      case "cancelled":
-        return <AlertCircle className="h-4 w-4" />;
+  // Redirect tasker users
+  useEffect(() => {
+    if (user && user.role === "tasker") {
+      router.replace("/tasker/dashboard");
     }
-  };
+  }, [user, router]);
 
-  const getStatusLabel = (status: TaskStatus) => {
-    switch (status) {
-      case "active":
-        return "Active Jobs";
-      case "pending":
-        return "Pending Jobs";
-      case "completed":
-        return "Completed Jobs";
-      case "cancelled":
-        return "Cancelled Jobs";
-    }
-  };
+  // Fetch bookings with pagination
+  const fetchBookings = useCallback(
+    async (page: number = 0, append: boolean = false) => {
+      if (!user) return;
 
-  const getStatusColor = (status: TaskStatus) => {
-    switch (status) {
-      case "active":
-        return "bg-blue-100 text-blue-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-    }
-  };
+      try {
+        if (append) {
+          setIsLoadingMore(true);
+        } else {
+          setIsLoading(true);
+        }
 
-  const TabButton = ({
-    status,
-    count,
-  }: {
-    status: TaskStatus;
-    count: number;
-  }) => (
-    <button
-      onClick={() => setActiveTab(status)}
-      className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-colors ${
-        activeTab === status
-          ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-      }`}
-    >
-      {getStatusIcon(status)}
-      <span className="hidden sm:inline">{getStatusLabel(status)}</span>
-      <span className="inline sm:hidden capitalize">{status}</span>
-      {count > 0 && (
-        <span
-          className={`text-xs rounded-full px-2 py-0.5 ${
-            activeTab === status
-              ? "bg-primary-foreground/20 text-primary-foreground"
-              : "bg-muted-foreground/20"
-          }`}
-        >
-          {count}
-        </span>
-      )}
-    </button>
+        // Clear any previous pagination errors
+        setPaginationError(null);
+
+        const result = await getCustomerBookings(
+          user.id,
+          20,
+          page * 20,
+          !append
+        );
+
+        if (append) {
+          // Append new bookings to existing ones
+          setBookings((prev) => [...prev, ...result.bookings]);
+        } else {
+          // Replace bookings for initial load or refresh
+          setBookings(result.bookings);
+        }
+
+        setCurrentPage(page);
+        setHasMore(result.hasMore);
+        setTotalCount(result.total);
+      } catch (error) {
+        console.error("Error fetching customer bookings:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load bookings";
+
+        // Set pagination error for better UX
+        setPaginationError(errorMessage);
+
+        // Only show toast for initial load errors, not for load more errors
+        if (!append) {
+          toast.error(errorMessage);
+          setBookings([]);
+        }
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [user]
   );
 
-  const filteredJobs = jobs[activeTab].filter(
-    (job) =>
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.tasker.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.service.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Initial data fetch
+  useEffect(() => {
+    fetchBookings(0);
+  }, [fetchBookings]);
+
+  // Memoized filtered bookings for better performance
+  const filteredBookings = useMemo(() => {
+    if (activeTab === "all") {
+      return bookings;
+    }
+    return bookings.filter((booking) => booking.status === activeTab);
+  }, [bookings, activeTab]);
+
+  // Memoized booking counts for better performance
+  const bookingCounts = useMemo(() => {
+    const counts: Record<TaskStatus, number> = {
+      all: bookings.length,
+      pending: bookings.filter((b) => b.status === "pending").length,
+      accepted: bookings.filter((b) => b.status === "accepted").length,
+      confirmed: bookings.filter((b) => b.status === "confirmed").length,
+      in_progress: bookings.filter((b) => b.status === "in_progress").length,
+      completed: bookings.filter((b) => b.status === "completed").length,
+      cancelled: bookings.filter((b) => b.status === "cancelled").length,
+    };
+    return counts;
+  }, [bookings]);
+
+  const handleActionClick = useCallback((booking: BookingWithDetails) => {
+    const actionButton = getActionButton(booking);
+
+    if (actionButton.action === "none") {
+      return;
+    }
+
+    const actionConfig = {
+      cancel: {
+        title: "Cancel Booking",
+        description: `Are you sure you want to cancel this booking with ${getTaskerName(
+          booking
+        )}? This action cannot be undone.`,
+        confirmText: "Cancel Booking",
+        variant: "danger" as const,
+      },
+    };
+
+    const config =
+      actionConfig[actionButton.action as keyof typeof actionConfig];
+
+    setConfirmationDialog({
+      isOpen: true,
+      bookingId: booking.id,
+      action: actionButton.action,
+      title: config.title,
+      description: config.description,
+      confirmText: config.confirmText,
+      variant: config.variant,
+    });
+  }, []);
+
+  const handleConfirmAction = useCallback(async () => {
+    if (!user) return;
+
+    setIsUpdating(true);
+
+    try {
+      if (confirmationDialog.action === "cancel") {
+        const result = await cancelCustomerBooking(
+          confirmationDialog.bookingId,
+          user.id,
+          "Cancelled by customer"
+        );
+
+        if (result.success) {
+          // Update local state
+          setBookings((prev) =>
+            prev.map((booking) =>
+              booking.id === confirmationDialog.bookingId
+                ? { ...booking, status: "cancelled" as BookingStatus }
+                : booking
+            )
+          );
+          toast.success("Booking cancelled successfully");
+        } else {
+          console.error("Failed to cancel booking:", result.error);
+          toast.error(result.error || "Failed to cancel booking");
+        }
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsUpdating(false);
+      setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
+    }
+  }, [confirmationDialog, user]);
+
+  const handleCloseDialog = useCallback(() => {
+    setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
+  }, []);
+
+  const handleTabChange = useCallback((tab: TaskStatus) => {
+    setActiveTab(tab);
+    setIsNavExpanded(false);
+    // Reset pagination when changing tabs
+    setCurrentPage(0);
+    setHasMore(false);
+    setPaginationError(null);
+    // Note: We don't refetch here since filtering is done client-side
+    // If you want server-side filtering, you'd need to refetch here
+  }, []);
+
+  const handleNavToggle = useCallback(() => {
+    setIsNavExpanded((prev) => !prev);
+  }, []);
+
+  const handleRetryLoadMore = useCallback(() => {
+    setPaginationError(null);
+    fetchBookings(currentPage + 1, true);
+  }, [fetchBookings, currentPage]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore) {
+      fetchBookings(currentPage + 1, true);
+    }
+  }, [fetchBookings, currentPage, isLoadingMore, hasMore]);
+
+  if (isLoading) {
+    return <BookingLoadingSkeleton />;
+  }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* Header */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="min-h-screen bg-color-bg smooth-scroll">
+      <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
+        {/* Page Header */}
+        <div className="bg-color-surface border-b border-color-border pb-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Jobs</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold text-color-text-primary mobile-text-xl mobile-leading">
+              My Bookings
+            </h1>
+            <p className="text-color-text-secondary text-sm mt-1 mobile-leading">
               Track and manage all your service bookings
             </p>
           </div>
-          <Link href="/customer/post-service">
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Post New Job
-            </Button>
-          </Link>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search jobs, taskers, or services..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+        {/* Navigation Tabs */}
+        <BookingTabs
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          bookingCounts={bookingCounts}
+          isNavExpanded={isNavExpanded}
+          onNavToggle={handleNavToggle}
+          filteredBookingsLength={filteredBookings.length}
+        />
+
+        {/* Booking Cards */}
+        <div className="space-y-4">
+          {filteredBookings.map((booking) => {
+            const actionButton = getActionButton(booking);
+
+            return (
+              <CustomerBookingCard
+                key={booking.id}
+                booking={booking}
+                onActionClick={handleActionClick}
+                isUpdating={isUpdating}
+                actionButton={actionButton}
+              />
+            );
+          })}
+
+          {/* Loading indicator for new items */}
+          {isLoadingMore && (
+            <div className="flex justify-center py-4">
+              <div className="flex items-center space-x-2 text-color-text-secondary">
+                <div className="w-4 h-4 border-2 border-color-primary border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Loading more bookings...</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Filter Options */}
-        {showFilters && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Service Type
-                  </label>
-                  <select className="w-full p-2 border rounded-lg">
-                    <option value="">All Services</option>
-                    <option value="cleaning">Cleaning</option>
-                    <option value="handyman">Handyman</option>
-                    <option value="gardening">Gardening</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="moving">Moving</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Price Range
-                  </label>
-                  <select className="w-full p-2 border rounded-lg">
-                    <option value="">All Prices</option>
-                    <option value="0-50">$0 - $50</option>
-                    <option value="50-100">$50 - $100</option>
-                    <option value="100-200">$100 - $200</option>
-                    <option value="200+">$200+</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Date Range
-                  </label>
-                  <select className="w-full p-2 border rounded-lg">
-                    <option value="">All Dates</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="past">Past Jobs</option>
-                  </select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Empty State */}
+        {!isLoading && filteredBookings.length === 0 && (
+          <EmptyState activeTab={activeTab} />
         )}
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 bg-muted p-2 rounded-lg">
-        {(["active", "pending", "completed", "cancelled"] as TaskStatus[]).map(
-          (status) => (
-            <TabButton
-              key={status}
-              status={status}
-              count={jobs[status].length}
-            />
-          )
-        )}
-      </div>
-
-      {/* Job Cards */}
-      <div className="grid gap-4">
-        {filteredJobs.map((job) => (
-          <Card key={job.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-lg">{job.title}</h3>
-                        {job.urgent && (
-                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                            Urgent
-                          </span>
-                        )}
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                            job.status
-                          )}`}
-                        >
-                          {job.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {job.description}
-                      </p>
-                    </div>
-                    {job.rating && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">
-                          {job.rating}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      {job.tasker}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {job.location}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {job.date}
-                    </span>
-                    {job.time && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {job.time}
-                      </span>
-                    )}
-                    {job.duration && (
-                      <span className="text-xs bg-muted px-2 py-1 rounded">
-                        {job.duration}
-                      </span>
-                    )}
-                  </div>
-
-                  {job.progress !== undefined && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          Progress
-                        </span>
-                        <span className="text-xs font-medium">
-                          {job.progress}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div
-                          className="bg-primary h-2 rounded-full transition-all"
-                          style={{ width: `${job.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
+        {/* Load More Section - Only show if there are bookings and more to load */}
+        {hasMore &&
+          !isLoading &&
+          bookings.length > 0 &&
+          totalCount > bookings.length && (
+            <div className="flex flex-col items-center pt-6 space-y-4">
+              {/* Error State */}
+              {paginationError && (
+                <div className="text-center p-4 bg-color-error/5 border border-color-error/20 rounded-lg max-w-md">
+                  <p className="text-color-error text-sm mb-3">
+                    {paginationError}
+                  </p>
+                  <button
+                    onClick={handleRetryLoadMore}
+                    className="text-color-primary hover:text-color-primary-dark text-sm font-medium underline transition-colors"
+                  >
+                    Try again
+                  </button>
                 </div>
+              )}
 
-                <div className="flex flex-col items-end gap-4 min-w-[140px]">
-                  <div className="text-right">
-                    <p className="text-2xl font-bold">${job.price}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {job.service}
-                    </p>
-                  </div>
+              {/* Load More Button */}
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="group relative inline-flex items-center justify-center px-8 py-3 text-sm font-medium text-color-primary bg-transparent border border-color-primary rounded-lg hover:bg-color-primary hover:text-color-surface focus:outline-none focus:ring-2 focus:ring-color-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out"
+                aria-label="Load more bookings"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Loading more...
+                  </>
+                ) : (
+                  <>
+                    <span>Load More Bookings</span>
+                    <svg
+                      className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </>
+                )}
+              </button>
 
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    {job.status === "active" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex items-center gap-1"
-                      >
-                        <MessageSquare className="h-3 w-3" />
-                        Message
-                      </Button>
-                    )}
-                    <Button size="sm" className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredJobs.length === 0 && (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center space-y-4">
-              <div className="flex justify-center">
-                {getStatusIcon(activeTab)}
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg">
-                  No {getStatusLabel(activeTab).toLowerCase()}
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  {activeTab === "active"
-                    ? "You have no jobs currently in progress."
-                    : activeTab === "pending"
-                    ? "You have no pending job requests."
-                    : activeTab === "completed"
-                    ? "You haven't completed any jobs yet."
-                    : "You have no cancelled jobs."}
+              {/* Results Count - Only show if there are bookings */}
+              {totalCount > 0 && (
+                <p className="text-color-text-secondary text-xs text-center">
+                  Showing {bookings.length} of {totalCount} bookings
                 </p>
-              </div>
-              {activeTab === "pending" && (
-                <Link href="/customer/post-service">
-                  <Button className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Post Your First Job
-                  </Button>
-                </Link>
               )}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+      </div>
 
-      {/* Stats Summary */}
-      {filteredJobs.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold">{jobs.active.length}</p>
-                <p className="text-xs text-muted-foreground">Active</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{jobs.pending.length}</p>
-                <p className="text-xs text-muted-foreground">Pending</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{jobs.completed.length}</p>
-                <p className="text-xs text-muted-foreground">Completed</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  ${jobs.completed.reduce((sum, job) => sum + job.price, 0)}
-                </p>
-                <p className="text-xs text-muted-foreground">Total Spent</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmationDialog.isOpen}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmAction}
+        title={confirmationDialog.title}
+        description={confirmationDialog.description}
+        confirmText={confirmationDialog.confirmText}
+        variant={confirmationDialog.variant}
+        isLoading={isUpdating}
+      />
     </div>
   );
 }
