@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -17,101 +19,115 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  MessageSquare,
+  MessageCircle,
+  Loader2,
 } from "lucide-react";
-import Image from "next/image";
+import { useUserStore } from "@/stores/userStore";
+import {
+  getConversationsAction,
+  type ConversationWithDetails,
+} from "@/actions/messages";
 
 type MessageStatus = "all" | "unread" | "read";
 
-interface Message {
-  id: number;
-  tasker: string;
-  message: string;
-  time: string;
-  unread: boolean;
-  avatar?: string;
-  service?: string;
-  jobTitle?: string;
-}
-
-export default function CustomerMessagesPage() {
+export default function MessagesPage() {
+  const router = useRouter();
+  const { user } = useUserStore();
   const [messageFilter, setMessageFilter] = useState<MessageStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [conversations, setConversations] = useState<ConversationWithDetails[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - replace with real data fetching
-  const messages: Message[] = [
-    {
-      id: 1,
-      tasker: "Maria S.",
-      message: "I'll arrive 10 minutes early to set up my equipment.",
-      time: "1 hour ago",
-      unread: true,
-      service: "House Deep Clean",
-      jobTitle: "House Deep Clean",
-    },
-    {
-      id: 2,
-      tasker: "John D.",
-      message: "Could you confirm the furniture pieces that need assembly?",
-      time: "3 hours ago",
-      unread: true,
-      service: "Furniture Assembly",
-      jobTitle: "Furniture Assembly",
-    },
-    {
-      id: 3,
-      tasker: "Lisa K.",
-      message: "Thanks for booking! I'll bring all necessary tools.",
-      time: "1 day ago",
-      unread: false,
-      service: "Garden Maintenance",
-      jobTitle: "Garden Maintenance",
-    },
-    {
-      id: 4,
-      tasker: "Robert S.",
-      message: "The kitchen cleaning is complete. Please review the work.",
-      time: "2 days ago",
-      unread: false,
-      service: "Kitchen Deep Clean",
-      jobTitle: "Kitchen Deep Clean",
-    },
-    {
-      id: 5,
-      tasker: "Anna L.",
-      message: "I've fixed the plumbing issue. Everything should work now.",
-      time: "3 days ago",
-      unread: false,
-      service: "Plumbing Repair",
-      jobTitle: "Plumbing Repair",
-    },
-    {
-      id: 6,
-      tasker: "Mike R.",
-      message: "All items have been moved safely. The job is complete.",
-      time: "1 week ago",
-      unread: false,
-      service: "Moving Help",
-      jobTitle: "Moving Help",
-    },
-  ];
+  // Fetch conversations from database
+  useEffect(() => {
+    const fetchConversations = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
-  const filteredMessages = messages
-    .filter((message) => {
-      if (messageFilter === "unread") return message.unread;
-      if (messageFilter === "read") return !message.unread;
-      return true;
-    })
-    .filter(
-      (message) =>
-        searchQuery === "" ||
-        message.tasker.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        message.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        message.service?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        message.jobTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+      try {
+        setIsLoading(true);
+        setError(null);
+        const { conversations: fetchedConversations, errorMessage } =
+          await getConversationsAction();
+
+        if (errorMessage) {
+          setError(errorMessage);
+        } else {
+          setConversations(fetchedConversations);
+        }
+      } catch (err) {
+        console.error("Error fetching conversations:", err);
+        setError("Failed to load messages");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConversations();
+  }, [user]);
+
+  // Helper function to format time
+  const formatTime = (timestamp: string | undefined) => {
+    if (!timestamp) return "Unknown";
+
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-  const unreadCount = messages.filter((m) => m.unread).length;
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24)
+      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7)
+      return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  // Filter conversations based on status and search query
+  const filteredConversations = conversations
+    .filter((conversation) => {
+      const hasUnread = (conversation.unread_count || 0) > 0;
+      if (messageFilter === "unread") return hasUnread;
+      if (messageFilter === "read") return !hasUnread;
+      return true;
+    })
+    .filter((conversation) => {
+      if (searchQuery === "") return true;
+
+      const otherParticipant = conversation.other_participant;
+      const participantName = otherParticipant
+        ? `${otherParticipant.first_name || ""} ${
+            otherParticipant.last_name || ""
+          }`.trim()
+        : "";
+
+      const lastMessage = conversation.last_message?.content || "";
+      const serviceTitle =
+        conversation.service_title ||
+        conversation.job_title ||
+        conversation.booking_title ||
+        "";
+
+      return (
+        participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        serviceTitle.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+
+  const unreadCount = conversations.reduce(
+    (total, conv) => total + (conv.unread_count || 0),
+    0
+  );
 
   const FilterButton = ({
     status,
@@ -122,10 +138,10 @@ export default function CustomerMessagesPage() {
   }) => (
     <button
       onClick={() => setMessageFilter(status)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 touch-target mobile-focus ${
         messageFilter === status
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground hover:text-foreground"
+          ? "bg-[var(--color-primary)] text-white shadow-md"
+          : "bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-accent-light)] border border-[var(--color-border)]"
       }`}
     >
       {status === "unread" ? (
@@ -135,13 +151,13 @@ export default function CustomerMessagesPage() {
       ) : (
         <AlertCircle className="h-4 w-4" />
       )}
-      <span className="capitalize">{status}</span>
+      <span className="capitalize font-medium mobile-text-sm">{status}</span>
       {count !== undefined && count > 0 && (
         <span
-          className={`text-xs rounded-full px-2 py-0.5 ${
+          className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
             messageFilter === status
-              ? "bg-primary-foreground/20 text-primary-foreground"
-              : "bg-muted-foreground/20"
+              ? "bg-white/20 text-white"
+              : "bg-[var(--color-primary)] text-white"
           }`}
         >
           {count}
@@ -151,167 +167,202 @@ export default function CustomerMessagesPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Messages</h1>
-        <p className="text-muted-foreground">
-          Communicate with your taskers and manage your conversations
-        </p>
-      </div>
+    <div className="min-h-screen bg-[var(--color-bg)]">
+      <div className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
+        {/* Header */}
+        <div className="mobile-spacing">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)] mobile-leading">
+            Messages
+          </h1>
+          <p className="text-[var(--color-text-secondary)] mobile-leading mt-2">
+            Manage your communications with clients
+          </p>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <CardTitle>Inbox</CardTitle>
-              <CardDescription>
-                {unreadCount} unread message{unreadCount !== 1 && "s"}
-              </CardDescription>
-            </div>
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search messages, taskers, or services..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Message Filters */}
-          <div className="flex flex-wrap gap-2">
-            <FilterButton status="all" />
-            <FilterButton status="unread" count={unreadCount} />
-            <FilterButton status="read" />
-          </div>
-
-          {/* Messages List */}
-          <div className="space-y-4">
-            {filteredMessages.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="flex justify-center mb-4">
-                  <MessageSquare className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">
-                  No messages found
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  {searchQuery
-                    ? "Try adjusting your search terms"
-                    : messageFilter === "unread"
-                    ? "You have no unread messages"
-                    : messageFilter === "read"
-                    ? "You have no read messages"
-                    : "Your inbox is empty. Start a conversation with your taskers!"}
-                </p>
+        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+          <CardHeader className="mobile-spacing">
+            <div className="flex flex-col gap-4">
+              <div>
+                <CardTitle className="text-[var(--color-text-primary)] mobile-text-lg">
+                  Inbox
+                </CardTitle>
+                <CardDescription className="text-[var(--color-text-secondary)] mobile-text-sm">
+                  {unreadCount} unread message{unreadCount !== 1 && "s"}
+                </CardDescription>
               </div>
-            ) : (
-              filteredMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`p-4 rounded-lg border transition-colors hover:shadow-sm ${
-                    message.unread
-                      ? "bg-blue-50 border-blue-200"
-                      : "bg-muted hover:bg-muted/80"
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-full bg-muted-foreground/10 flex items-center justify-center flex-shrink-0">
-                      {message.avatar ? (
-                        <Image
-                          src={message.avatar}
-                          alt={message.tasker}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="h-5 w-5 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-semibold truncate">
-                              {message.tasker}
-                            </h3>
-                            {message.unread && (
-                              <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
-                            )}
-                          </div>
-                          {message.jobTitle && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              Re: {message.jobTitle}
-                            </p>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
+                <Input
+                  placeholder="Search messages..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] mobile-focus touch-target"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="mobile-spacing space-y-6">
+            {/* Message Filters */}
+            <div className="flex flex-wrap gap-2">
+              <FilterButton status="all" />
+              <FilterButton status="unread" count={unreadCount} />
+              <FilterButton status="read" />
+            </div>
+
+            {/* Messages List */}
+            <div className="space-y-3">
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="flex justify-center mb-4">
+                    <Loader2 className="h-12 w-12 text-[var(--color-primary)] animate-spin" />
+                  </div>
+                  <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
+                    Loading messages...
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-secondary)] mobile-leading">
+                    Please wait while we fetch your conversations
+                  </p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <div className="flex justify-center mb-4">
+                    <AlertCircle className="h-12 w-12 text-red-500" />
+                  </div>
+                  <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
+                    Error loading messages
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-secondary)] mobile-leading mb-4">
+                    {error}
+                  </p>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="touch-target"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              ) : filteredConversations.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="flex justify-center mb-4">
+                    <MessageCircle className="h-12 w-12 text-[var(--color-text-secondary)]" />
+                  </div>
+                  <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
+                    No messages found
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-secondary)] mobile-leading">
+                    {searchQuery
+                      ? "Try adjusting your search terms"
+                      : messageFilter === "unread"
+                      ? "You have no unread messages"
+                      : messageFilter === "read"
+                      ? "You have no read messages"
+                      : "Your inbox is empty"}
+                  </p>
+                </div>
+              ) : (
+                filteredConversations.map((conversation) => {
+                  const otherParticipant = conversation.other_participant;
+                  const participantName = otherParticipant
+                    ? `${otherParticipant.first_name || ""} ${
+                        otherParticipant.last_name || ""
+                      }`.trim() || "Unknown"
+                    : "Unknown";
+
+                  const hasUnread = (conversation.unread_count || 0) > 0;
+                  const lastMessage = conversation.last_message;
+                  const serviceTitle =
+                    conversation.service_title ||
+                    conversation.job_title ||
+                    conversation.booking_title;
+
+                  return (
+                    <div
+                      key={conversation.id}
+                      className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
+                        hasUnread
+                          ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/20"
+                          : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-primary)]/30"
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="h-12 w-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0 border-2 border-[var(--color-primary)]/20">
+                          {otherParticipant?.avatar_url ? (
+                            <Image
+                              src={otherParticipant.avatar_url}
+                              alt={participantName}
+                              width={48}
+                              height={48}
+                              className="h-12 w-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-6 w-6 text-[var(--color-primary)]" />
                           )}
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <p className="text-xs text-muted-foreground whitespace-nowrap">
-                            <Clock className="inline-block h-3 w-3 mr-1" />
-                            {message.time}
-                          </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold truncate text-[var(--color-text-primary)] mobile-text-base">
+                                  {participantName}
+                                </h3>
+                                {hasUnread && (
+                                  <span className="w-3 h-3 bg-[var(--color-primary)] rounded-full flex-shrink-0 animate-pulse"></span>
+                                )}
+                                {conversation.unread_count &&
+                                  conversation.unread_count > 1 && (
+                                    <span className="text-xs bg-[var(--color-primary)] text-white rounded-full px-2 py-0.5 font-semibold">
+                                      {conversation.unread_count}
+                                    </span>
+                                  )}
+                              </div>
+                              {serviceTitle && (
+                                <p className="text-xs text-[var(--color-text-secondary)] mb-2">
+                                  Re: {serviceTitle}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <p className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap flex items-center">
+                                <Clock className="inline-block h-3 w-3 mr-1" />
+                                {formatTime(
+                                  lastMessage?.created_at ||
+                                    conversation.last_message_at
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          {lastMessage && (
+                            <p className="text-sm mt-2 line-clamp-2 text-[var(--color-text-secondary)] mobile-leading">
+                              {lastMessage.content}
+                            </p>
+                          )}
+                          <div className="flex justify-end mt-4">
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                router.push(
+                                  `/tasker/messages/${conversation.id}`
+                                )
+                              }
+                              className={`touch-target transition-all duration-200 ${
+                                hasUnread
+                                  ? "bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
+                                  : "bg-[var(--color-surface)] text-[var(--color-primary)] border border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                              }`}
+                            >
+                              {hasUnread ? "Reply" : "View"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm mt-2 line-clamp-2">
-                        {message.message}
-                      </p>
-                      <div className="flex justify-between items-center mt-3">
-                        {message.service && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                            {message.service}
-                          </span>
-                        )}
-                        <Button
-                          size="sm"
-                          variant={message.unread ? "default" : "outline"}
-                          className="flex items-center gap-1"
-                        >
-                          <MessageSquare className="h-3 w-3" />
-                          Reply
-                        </Button>
-                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Stats */}
-      {filteredMessages.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold">{messages.length}</p>
-                <p className="text-xs text-muted-foreground">Total Messages</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{unreadCount}</p>
-                <p className="text-xs text-muted-foreground">Unread</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {messages.filter((m) => !m.unread).length}
-                </p>
-                <p className="text-xs text-muted-foreground">Read</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {new Set(messages.map((m) => m.tasker)).size}
-                </p>
-                <p className="text-xs text-muted-foreground">Taskers</p>
-              </div>
+                  );
+                })
+              )}
             </div>
           </CardContent>
         </Card>
-      )}
+      </div>
     </div>
   );
 }
