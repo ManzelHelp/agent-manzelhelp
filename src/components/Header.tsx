@@ -138,8 +138,12 @@ function Header() {
                 size="sm"
                 className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <Link href={`/${user.role}/my-services`}>
-                  {t("myServices")}
+                <Link
+                  href={`/${user.role}/${
+                    user.role === "tasker" ? "my-services" : "my-jobs"
+                  }`}
+                >
+                  {user.role === "tasker" ? t("myServices") : t("myJobs")}
                 </Link>
               </Button>
             ) : (
@@ -349,8 +353,12 @@ function Header() {
                   className="w-full justify-center font-medium mb-3 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Link href={`/${user.role}/my-services`}>
-                    {t("myServices")}
+                  <Link
+                    href={`/${user.role}/${
+                      user.role === "tasker" ? "my-services" : "my-jobs"
+                    }`}
+                  >
+                    {user.role === "tasker" ? t("myServices") : t("myJobs")}
                   </Link>
                 </Button>
                 <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200">

@@ -15,7 +15,9 @@
     "bookings": "الحجوزات",
     "finance": "المالية",
     "messages": "الرسائل",
-    "reviews": "التقييمات"
+    "reviews": "التقييمات",
+    "myServices": "خدماتي",
+    "myJobs": "وظائفي"
   },
   "homepage": {
     "title": "مرحباً بك في مانزل هيلب",

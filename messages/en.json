@@ -16,7 +16,8 @@
     "finance": "Finance",
     "messages": "Messages",
     "reviews": "Reviews",
-    "myServices": "My Services"
+    "myServices": "My Services",
+    "myJobs": "My Jobs"
   },
   "homepage": {
     "title": "Welcome to ManzelHelp",

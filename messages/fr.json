@@ -15,7 +15,9 @@
     "bookings": "Réservations",
     "finance": "Finance",
     "messages": "Messages",
-    "reviews": "Avis"
+    "reviews": "Avis",
+    "myServices": "Mes Services",
+    "myJobs": "Mes Emplois"
   },
   "homepage": {
     "title": "Bienvenue sur ManzelHelp",
