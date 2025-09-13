@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  User,
+  User as UserIcon,
   MapPin,
   CreditCard,
   Settings,
@@ -30,11 +30,18 @@ import {
   Trash2,
   AlertCircle,
   Wallet,
+  TrendingUp,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
-import { createClient } from "@/supabase/client";
 import { toast } from "sonner";
 import Image from "next/image";
+import {
+  getCustomerProfileData,
+  getCustomerProfileCompletion,
+  updateCustomerPersonalInfo,
+  addCustomerAddress,
+  deleteCustomerAddress,
+} from "@/actions/profile";
 
 type ProfileSection = "personal" | "addresses" | "payment";
 
@@ -47,11 +54,21 @@ interface MissingField {
   required: boolean;
 }
 
+interface ProfileStats {
+  completionPercentage: number;
+  missingFields: Array<{
+    id: string;
+    label: string;
+    section: string;
+    required: boolean;
+  }>;
+}
+
 const SECTIONS = [
   {
     id: "personal" as ProfileSection,
     title: "Personal Information",
-    icon: User,
+    icon: UserIcon,
     description: "Manage your basic profile details",
     color: "from-blue-500 to-blue-600",
   },
@@ -81,6 +98,10 @@ export default function CustomerProfilePage() {
   const [loading, setLoading] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileStats, setProfileStats] = useState<ProfileStats>({
+    completionPercentage: 0,
+    missingFields: [],
+  });
 
   // Dialog state
   const [personalInfoDialogOpen, setPersonalInfoDialogOpen] = useState(false);
@@ -95,9 +116,15 @@ export default function CustomerProfilePage() {
     avatar_url: user?.avatar_url || "",
   });
 
-  const [newAddress, setNewAddress] = useState<
-    Omit<Address, "id" | "user_id" | "created_at" | "updated_at">
-  >({
+  const [newAddress, setNewAddress] = useState<{
+    label: string;
+    street_address: string;
+    city: string;
+    region: string;
+    postal_code?: string;
+    country: string;
+    is_default: boolean;
+  }>({
     label: "home",
     street_address: "",
     city: "",
@@ -117,134 +144,98 @@ export default function CustomerProfilePage() {
   }, [user?.role, router]);
 
   // Data fetching
-  const fetchAddresses = useCallback(async () => {
+  const fetchProfileData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("is_default", { ascending: false });
+      setLoading(true);
+      const result = await getCustomerProfileData(user.id);
 
-      if (error) {
-        console.error("Error fetching addresses:", error);
-        toast.error("Failed to load addresses");
+      if (result.error) {
+        toast.error(result.error);
         return;
       }
 
-      setAddresses(data || []);
+      if (result.user) {
+        setUser(result.user);
+      }
+      setAddresses(result.addresses);
+
+      // Fetch profile completion stats
+      const stats = await getCustomerProfileCompletion(user.id);
+      setProfileStats(stats);
     } catch (error) {
-      console.error("Error fetching addresses:", error);
-      toast.error("Failed to load addresses");
+      console.error("Error fetching profile data:", error);
+      toast.error("Failed to load profile data");
+    } finally {
+      setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, setUser]);
 
   // Effects - fetch data when user is available
   useEffect(() => {
     if (user?.id) {
-      fetchAddresses();
+      fetchProfileData();
     }
-  }, [user?.id, fetchAddresses]);
+  }, [user?.id, fetchProfileData]);
 
-  // Missing fields detection
-  const getMissingFields = useCallback((): MissingField[] => {
-    if (!user) return [];
+  // Helper function to get field icons
+  const getFieldIcon = useCallback((fieldId: string): React.ReactNode => {
+    const iconMap: Record<string, React.ReactNode> = {
+      profile_photo: <Camera className="h-4 w-4" />,
+      full_name: <UserIcon className="h-4 w-4" />,
+      phone: <UserIcon className="h-4 w-4" />,
+      address: <MapPin className="h-4 w-4" />,
+    };
+    return iconMap[fieldId] || <AlertTriangle className="h-4 w-4" />;
+  }, []);
 
-    const missingFields: MissingField[] = [];
+  // Helper function to get field descriptions
+  const getFieldDescription = useCallback((fieldId: string): string => {
+    const descriptionMap: Record<string, string> = {
+      profile_photo: "Add a profile photo to personalize your account",
+      full_name: "Complete your name for better recognition",
+      phone: "Add your phone number for contact purposes",
+      address: "Add your address for service delivery",
+    };
+    return (
+      descriptionMap[fieldId] || "Complete this field to improve your profile"
+    );
+  }, []);
 
-    // Personal Information Section
-    if (!user.first_name || !user.last_name) {
-      missingFields.push({
-        id: "full_name",
-        label: "Full Name",
-        section: "personal",
-        icon: <User className="h-4 w-4" />,
-        description: "Complete your name for better recognition",
-        required: true,
-      });
-    }
-
-    if (!user.avatar_url) {
-      missingFields.push({
-        id: "profile_photo",
-        label: "Profile Photo",
-        section: "personal",
-        icon: <Camera className="h-4 w-4" />,
-        description: "Add a profile photo to personalize your account",
-        required: false,
-      });
-    }
-
-    // Addresses Section
-    if (addresses.length === 0) {
-      missingFields.push({
-        id: "address",
-        label: "Address",
-        section: "addresses",
-        icon: <MapPin className="h-4 w-4" />,
-        description: "Add your address for service delivery",
-        required: true,
-      });
-    }
-
-    return missingFields;
-  }, [user, addresses]);
-
-  // Memoized computed values for performance
-  const missingFields = useMemo(() => getMissingFields(), [getMissingFields]);
+  // Convert server missing fields to client format
+  const missingFields = useMemo((): MissingField[] => {
+    return profileStats.missingFields.map((field) => ({
+      id: field.id,
+      label: field.label,
+      section: field.section as ProfileSection,
+      icon: getFieldIcon(field.id),
+      description: getFieldDescription(field.id),
+      required: field.required,
+    }));
+  }, [profileStats.missingFields, getFieldIcon, getFieldDescription]);
 
   // Update personal info
   const updatePersonalInfo = async () => {
     if (!user?.id) return;
 
     setLoading(true);
-    const supabase = createClient();
 
-    // Prepare update data, handling empty date_of_birth properly
-    const updateData: {
-      first_name: string;
-      last_name: string;
-      phone: string;
-      date_of_birth?: string | null;
-      updated_at: string;
-    } = {
+    const result = await updateCustomerPersonalInfo(user.id, {
       first_name: personalInfo.first_name,
       last_name: personalInfo.last_name,
       phone: personalInfo.phone,
-      updated_at: new Date().toISOString(),
-    };
+      date_of_birth: personalInfo.date_of_birth || undefined,
+    });
 
-    // Only include date_of_birth if it's not empty
-    if (
-      personalInfo.date_of_birth &&
-      personalInfo.date_of_birth.trim() !== ""
-    ) {
-      updateData.date_of_birth = personalInfo.date_of_birth;
-    } else {
-      // Set to null if empty
-      updateData.date_of_birth = null;
-    }
-
-    const { error } = await supabase
-      .from("users")
-      .update(updateData)
-      .eq("id", user.id);
-
-    if (error) {
-      toast.error("Failed to update profile");
-      console.error("Error updating profile:", error);
-    } else {
-      // Update local user state
-      setUser({
-        ...user,
-        ...updateData,
-        date_of_birth: updateData.date_of_birth || undefined,
-        updated_at: new Date().toISOString(),
-      });
+    if (result.success && result.user) {
+      setUser(result.user);
       toast.success("Profile updated successfully");
       setPersonalInfoDialogOpen(false);
+      // Refresh profile data to update completion stats
+      fetchProfileData();
+    } else {
+      toast.error(result.error || "Failed to update profile");
     }
 
     setLoading(false);
@@ -255,19 +246,10 @@ export default function CustomerProfilePage() {
     if (!user?.id || !newAddress.street_address || !newAddress.city) return;
 
     setLoading(true);
-    const supabase = createClient();
 
-    const { error } = await supabase.from("addresses").insert([
-      {
-        ...newAddress,
-        user_id: user.id,
-      },
-    ]);
+    const result = await addCustomerAddress(user.id, newAddress);
 
-    if (error) {
-      toast.error("Failed to add address");
-      console.error("Error adding address:", error);
-    } else {
+    if (result.success) {
       toast.success("Address added successfully");
       setNewAddress({
         label: "home",
@@ -279,7 +261,10 @@ export default function CustomerProfilePage() {
         is_default: false,
       });
       setShowNewAddressForm(false);
-      fetchAddresses();
+      // Refresh profile data to update completion stats
+      fetchProfileData();
+    } else {
+      toast.error(result.error || "Failed to add address");
     }
 
     setLoading(false);
@@ -290,20 +275,15 @@ export default function CustomerProfilePage() {
     if (!user?.id) return;
 
     setLoading(true);
-    const supabase = createClient();
 
-    const { error } = await supabase
-      .from("addresses")
-      .delete()
-      .eq("id", addressId)
-      .eq("user_id", user.id);
+    const result = await deleteCustomerAddress(addressId, user.id);
 
-    if (error) {
-      toast.error("Failed to delete address");
-      console.error("Error deleting address:", error);
-    } else {
+    if (result.success) {
       toast.success("Address deleted successfully");
-      fetchAddresses();
+      // Refresh profile data to update completion stats
+      fetchProfileData();
+    } else {
+      toast.error(result.error || "Failed to delete address");
     }
 
     setLoading(false);
@@ -329,7 +309,7 @@ export default function CustomerProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Enhanced Header Section */}
+        {/* Enhanced Header Section with Progress */}
         <div className="space-y-6">
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
@@ -344,6 +324,51 @@ export default function CustomerProfilePage() {
               Manage your account information and preferences
             </p>
           </div>
+
+          {/* Profile Completion Progress */}
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-accent)]/20 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center">
+                      <TrendingUp className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[var(--color-success)] rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">
+                        {profileStats.completionPercentage}%
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-[var(--color-text-primary)] text-lg">
+                      Profile Completion
+                    </h3>
+                    <p className="text-[var(--color-text-secondary)]">
+                      {profileStats.completionPercentage === 100
+                        ? "Your profile is complete! 🎉"
+                        : `${
+                            profileStats.missingFields.filter((f) => f.required)
+                              .length
+                          } required fields remaining`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex-1 max-w-xs">
+                  <div className="w-full bg-[var(--color-accent)]/30 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${profileStats.completionPercentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-1 text-center">
+                    {profileStats.completionPercentage}% complete
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Enhanced Mobile Navigation */}
@@ -486,7 +511,7 @@ export default function CustomerProfilePage() {
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
-                      <User className="h-5 w-5" />
+                      <UserIcon className="h-5 w-5" />
                       Personal Information
                     </CardTitle>
                     <p className="text-[var(--color-text-secondary)] mt-1">
@@ -520,7 +545,7 @@ export default function CustomerProfilePage() {
                           priority
                         />
                       ) : (
-                        <User className="h-8 w-8 text-white" />
+                        <UserIcon className="h-8 w-8 text-white" />
                       )}
                     </div>
                   </div>
@@ -915,7 +940,7 @@ export default function CustomerProfilePage() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <UserIcon className="h-5 w-5" />
               Edit Personal Information
             </DialogTitle>
             <DialogDescription>

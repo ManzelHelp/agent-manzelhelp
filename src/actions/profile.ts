@@ -552,7 +552,7 @@ export async function updateVerificationDocument(
   }
 }
 
-// Get profile completion percentage
+// Get profile completion percentage for taskers
 export async function getProfileCompletion(userId: string): Promise<{
   completionPercentage: number;
   missingFields: Array<{
@@ -667,5 +667,299 @@ export async function getProfileCompletion(userId: string): Promise<{
       completionPercentage: 0,
       missingFields: [],
     };
+  }
+}
+
+// ===== CUSTOMER PROFILE FUNCTIONS =====
+
+// Get customer profile data (user + addresses only)
+export async function getCustomerProfileData(userId: string): Promise<{
+  user: User | null;
+  addresses: Address[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Get user data
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (userError) {
+      console.error("Error fetching user:", userError);
+      return {
+        user: null,
+        addresses: [],
+        error: "Failed to fetch user data",
+      };
+    }
+
+    // Get addresses
+    const { data: addresses, error: addressesError } = await supabase
+      .from("addresses")
+      .select("*")
+      .eq("user_id", userId)
+      .order("is_default", { ascending: false });
+
+    if (addressesError) {
+      console.error("Error fetching addresses:", addressesError);
+      return {
+        user,
+        addresses: [],
+        error: "Failed to fetch addresses",
+      };
+    }
+
+    return {
+      user,
+      addresses: addresses || [],
+    };
+  } catch (error) {
+    console.error("Error in getCustomerProfileData:", error);
+    return {
+      user: null,
+      addresses: [],
+      error: "An unexpected error occurred",
+    };
+  }
+}
+
+// Get customer profile completion percentage
+export async function getCustomerProfileCompletion(userId: string): Promise<{
+  completionPercentage: number;
+  missingFields: Array<{
+    id: string;
+    label: string;
+    section: string;
+    required: boolean;
+  }>;
+}> {
+  try {
+    const { user, addresses } = await getCustomerProfileData(userId);
+
+    const missingFields: Array<{
+      id: string;
+      label: string;
+      section: string;
+      required: boolean;
+    }> = [];
+
+    // Personal Information Section
+    if (!user?.first_name || !user?.last_name) {
+      missingFields.push({
+        id: "full_name",
+        label: "Full Name",
+        section: "personal",
+        required: true,
+      });
+    }
+
+    if (!user?.avatar_url) {
+      missingFields.push({
+        id: "profile_photo",
+        label: "Profile Photo",
+        section: "personal",
+        required: false,
+      });
+    }
+
+    if (!user?.phone) {
+      missingFields.push({
+        id: "phone",
+        label: "Phone Number",
+        section: "personal",
+        required: true,
+      });
+    }
+
+    // Addresses Section
+    if (!addresses || addresses.length === 0) {
+      missingFields.push({
+        id: "address",
+        label: "Address",
+        section: "addresses",
+        required: true,
+      });
+    }
+
+    // Calculate completion percentage (only required fields)
+    const totalRequiredFields = 3; // full_name, phone, address
+    const completedFields =
+      totalRequiredFields - missingFields.filter((f) => f.required).length;
+    const completionPercentage = Math.round(
+      (completedFields / totalRequiredFields) * 100
+    );
+
+    return {
+      completionPercentage,
+      missingFields,
+    };
+  } catch (error) {
+    console.error("Error in getCustomerProfileCompletion:", error);
+    return {
+      completionPercentage: 0,
+      missingFields: [],
+    };
+  }
+}
+
+// Update customer personal information
+export async function updateCustomerPersonalInfo(
+  userId: string,
+  updates: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+    date_of_birth?: string;
+  }
+): Promise<{ success: boolean; user?: User; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    // Validate required fields
+    if (updates.first_name && !updates.first_name.trim()) {
+      return { success: false, error: "First name cannot be empty" };
+    }
+    if (updates.last_name && !updates.last_name.trim()) {
+      return { success: false, error: "Last name cannot be empty" };
+    }
+
+    // Validate phone number format if provided
+    if (updates.phone && updates.phone.trim()) {
+      const phoneRegex = /^\+?[\d\s\-\(\)]{7,20}$/;
+      if (!phoneRegex.test(updates.phone.trim())) {
+        return { success: false, error: "Please enter a valid phone number" };
+      }
+    }
+
+    // Validate date format if provided
+    if (updates.date_of_birth && updates.date_of_birth.trim()) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(updates.date_of_birth)) {
+        return {
+          success: false,
+          error: "Please enter a valid date in YYYY-MM-DD format",
+        };
+      }
+    }
+
+    const updateData = {
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from("users")
+      .update(updateData)
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating customer personal info:", error);
+      return { success: false, error: "Failed to update personal information" };
+    }
+
+    revalidatePath("/[locale]/(profile)/customer/profile", "layout");
+    return { success: true, user: data };
+  } catch (error) {
+    console.error("Error in updateCustomerPersonalInfo:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// Add customer address
+export async function addCustomerAddress(
+  userId: string,
+  addressData: {
+    label: string;
+    street_address: string;
+    city: string;
+    region: string;
+    postal_code?: string;
+    country: string;
+    is_default: boolean;
+  }
+): Promise<{ success: boolean; address?: Address; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    // Validate required fields
+    if (
+      !addressData.street_address.trim() ||
+      !addressData.city.trim() ||
+      !addressData.region.trim()
+    ) {
+      return {
+        success: false,
+        error: "Street address, city, and region are required",
+      };
+    }
+
+    // Validate country code format
+    if (addressData.country && addressData.country.length !== 2) {
+      return {
+        success: false,
+        error: "Country code must be exactly 2 characters",
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("addresses")
+      .insert({
+        user_id: userId,
+        label: addressData.label,
+        street_address: addressData.street_address.trim(),
+        city: addressData.city.trim(),
+        region: addressData.region.trim(),
+        postal_code: addressData.postal_code?.trim() || null,
+        country: addressData.country,
+        is_default: addressData.is_default,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error adding customer address:", error);
+      return { success: false, error: "Failed to add address" };
+    }
+
+    revalidatePath("/[locale]/(profile)/customer/profile", "layout");
+    return { success: true, address: data };
+  } catch (error) {
+    console.error("Error in addCustomerAddress:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// Delete customer address
+export async function deleteCustomerAddress(
+  addressId: string,
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from("addresses")
+      .delete()
+      .eq("id", addressId)
+      .eq("user_id", userId); // Ensure user can only delete their own addresses
+
+    if (error) {
+      console.error("Error deleting customer address:", error);
+      return { success: false, error: "Failed to delete address" };
+    }
+
+    revalidatePath("/[locale]/(profile)/customer/profile", "layout");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in deleteCustomerAddress:", error);
+    return { success: false, error: "An unexpected error occurred" };
   }
 }
