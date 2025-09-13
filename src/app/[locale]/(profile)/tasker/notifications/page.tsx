@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useUserStore } from "@/stores/userStore";
 import type { Notification, NotificationType } from "@/types/supabase";
