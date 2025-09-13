@@ -36,6 +36,20 @@ export interface ProcessedMessage extends Message {
   unread: boolean;
 }
 
+// Customer-specific dashboard stats
+export interface CustomerDashboardStats {
+  activeBookings: number;
+  completedBookings: number;
+  activeJobs: number;
+  completedJobs: number;
+  totalSpent: number;
+  monthlySpent: number;
+  weeklySpent: number;
+  upcomingBookings: number;
+  recentBookings: number;
+  walletBalance: number;
+}
+
 /**
  * Fetch comprehensive dashboard statistics for a tasker
  */
@@ -460,7 +474,330 @@ export async function fetchDashboardRecentActivity(
 }
 
 /**
- * Fetch all dashboard data in parallel
+ * Fetch comprehensive dashboard statistics for a customer
+ */
+export async function fetchCustomerDashboardStats(
+  userId: string
+): Promise<CustomerDashboardStats> {
+  const supabase = await createClient();
+
+  try {
+    // Get user wallet balance
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("wallet_balance")
+      .eq("id", userId)
+      .single();
+
+    if (userError && userError.code !== "PGRST116") {
+      console.error("Error fetching user data:", userError);
+      throw userError;
+    }
+
+    // Get all customer data in parallel
+    const [
+      activeBookingsResult,
+      completedBookingsResult,
+      activeJobsResult,
+      completedJobsResult,
+      upcomingBookingsResult,
+      recentBookingsResult,
+    ] = await Promise.allSettled([
+      // Active bookings (confirmed, in_progress)
+      supabase
+        .from("service_bookings")
+        .select("id, status, agreed_price")
+        .eq("customer_id", userId)
+        .in("status", ["confirmed", "in_progress"]),
+
+      // Completed bookings
+      supabase
+        .from("service_bookings")
+        .select("id, agreed_price, completed_at")
+        .eq("customer_id", userId)
+        .eq("status", "completed"),
+
+      // Active jobs (active, assigned, in_progress)
+      supabase
+        .from("jobs")
+        .select("id, status, customer_budget")
+        .eq("customer_id", userId)
+        .in("status", ["active", "assigned", "in_progress"]),
+
+      // Completed jobs
+      supabase
+        .from("jobs")
+        .select("id, final_price, completed_at")
+        .eq("customer_id", userId)
+        .eq("status", "completed"),
+
+      // Upcoming bookings (next 7 days)
+      supabase
+        .from("service_bookings")
+        .select("id, scheduled_date")
+        .eq("customer_id", userId)
+        .in("status", ["confirmed", "in_progress"])
+        .gte("scheduled_date", new Date().toISOString().split("T")[0])
+        .lte(
+          "scheduled_date",
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split("T")[0]
+        ),
+
+      // Recent bookings (last 7 days)
+      supabase
+        .from("service_bookings")
+        .select("id, created_at")
+        .eq("customer_id", userId)
+        .gte(
+          "created_at",
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        ),
+    ]);
+
+    // Process results
+    const activeBookings =
+      activeBookingsResult.status === "fulfilled"
+        ? activeBookingsResult.value.data || []
+        : [];
+    const completedBookings =
+      completedBookingsResult.status === "fulfilled"
+        ? completedBookingsResult.value.data || []
+        : [];
+    const activeJobs =
+      activeJobsResult.status === "fulfilled"
+        ? activeJobsResult.value.data || []
+        : [];
+    const completedJobs =
+      completedJobsResult.status === "fulfilled"
+        ? completedJobsResult.value.data || []
+        : [];
+    const upcomingBookings =
+      upcomingBookingsResult.status === "fulfilled"
+        ? upcomingBookingsResult.value.data || []
+        : [];
+    const recentBookings =
+      recentBookingsResult.status === "fulfilled"
+        ? recentBookingsResult.value.data || []
+        : [];
+
+    // Calculate spending data for different periods
+    const currentDate = new Date();
+    const firstDayOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+    const firstDayOfWeek = new Date(
+      currentDate.setDate(currentDate.getDate() - currentDate.getDay())
+    );
+
+    const [monthlySpentResult, weeklySpentResult] = await Promise.allSettled([
+      supabase
+        .from("service_bookings")
+        .select("agreed_price")
+        .eq("customer_id", userId)
+        .eq("status", "completed")
+        .gte("completed_at", firstDayOfMonth.toISOString()),
+
+      supabase
+        .from("service_bookings")
+        .select("agreed_price")
+        .eq("customer_id", userId)
+        .eq("status", "completed")
+        .gte("completed_at", firstDayOfWeek.toISOString()),
+    ]);
+
+    const monthlySpent =
+      monthlySpentResult.status === "fulfilled"
+        ? (monthlySpentResult.value.data || []).reduce(
+            (sum, booking) => sum + (booking.agreed_price || 0),
+            0
+          )
+        : 0;
+    const weeklySpent =
+      weeklySpentResult.status === "fulfilled"
+        ? (weeklySpentResult.value.data || []).reduce(
+            (sum, booking) => sum + (booking.agreed_price || 0),
+            0
+          )
+        : 0;
+
+    // Calculate total spent
+    const totalSpent = (completedBookings || []).reduce(
+      (sum, booking) => sum + (booking.agreed_price || 0),
+      0
+    );
+
+    return {
+      activeBookings: activeBookings.length,
+      completedBookings: completedBookings.length,
+      activeJobs: activeJobs.length,
+      completedJobs: completedJobs.length,
+      totalSpent,
+      monthlySpent,
+      weeklySpent,
+      upcomingBookings: upcomingBookings.length,
+      recentBookings: recentBookings.length,
+      walletBalance: user?.wallet_balance || 0,
+    };
+  } catch (error) {
+    console.error("Error fetching customer dashboard stats:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch customer-specific recent activity
+ */
+export async function fetchCustomerRecentActivity(
+  userId: string
+): Promise<RecentActivity[]> {
+  const supabase = await createClient();
+
+  try {
+    // Get recent bookings, jobs, and messages
+    const [bookingsResult, jobsResult, messagesResult] =
+      await Promise.allSettled([
+        supabase
+          .from("service_bookings")
+          .select("id, status, agreed_price, created_at, scheduled_date")
+          .eq("customer_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(3),
+
+        supabase
+          .from("jobs")
+          .select("id, status, customer_budget, created_at, preferred_date")
+          .eq("customer_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(3),
+
+        supabase
+          .from("conversations")
+          .select(
+            `
+            id,
+            messages!inner(
+              id, 
+              content, 
+              created_at, 
+              sender_id,
+              sender:users!messages_sender_id_fkey(first_name, last_name)
+            )
+          `
+          )
+          .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`)
+          .order("messages(created_at)", { ascending: false })
+          .limit(3),
+      ]);
+
+    const activities: RecentActivity[] = [];
+
+    // Process bookings
+    if (bookingsResult.status === "fulfilled" && bookingsResult.value.data) {
+      bookingsResult.value.data.forEach((booking) => {
+        activities.push({
+          id: booking.id,
+          type: "booking",
+          title: `Booking ${booking.status}`,
+          description: `Service booking for ${booking.agreed_price} MAD`,
+          timestamp: booking.created_at,
+          status: booking.status,
+          amount: booking.agreed_price,
+        });
+      });
+    }
+
+    // Process jobs
+    if (jobsResult.status === "fulfilled" && jobsResult.value.data) {
+      jobsResult.value.data.forEach((job) => {
+        activities.push({
+          id: job.id,
+          type: "booking", // Using booking type for consistency
+          title: `Job ${job.status}`,
+          description: `Posted job with budget ${job.customer_budget} MAD`,
+          timestamp: job.created_at,
+          status: job.status,
+          amount: job.customer_budget,
+        });
+      });
+    }
+
+    // Process messages
+    if (messagesResult.status === "fulfilled" && messagesResult.value.data) {
+      const conversations = messagesResult.value.data as Array<{
+        id: string;
+        messages: Array<{
+          id: string;
+          content: string;
+          created_at: string;
+          sender_id: string;
+          sender?: { first_name?: string; last_name?: string };
+        }>;
+      }>;
+
+      conversations.forEach((conversation) => {
+        conversation.messages.forEach((message) => {
+          if (message.sender_id !== userId) {
+            // Only show messages from others
+            activities.push({
+              id: message.id,
+              type: "message",
+              title: `Message from ${message.sender?.first_name || "Tasker"}`,
+              description:
+                message.content.substring(0, 50) +
+                (message.content.length > 50 ? "..." : ""),
+              timestamp: message.created_at,
+            });
+          }
+        });
+      });
+    }
+
+    // Sort by timestamp and take the most recent 6
+    activities.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    return activities.slice(0, 6);
+  } catch (error) {
+    console.error("Error fetching customer recent activity:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch all customer dashboard data in parallel
+ */
+export async function fetchAllCustomerDashboardData(userId: string) {
+  try {
+    const [stats, notifications, messages, recentActivity] =
+      await Promise.allSettled([
+        fetchCustomerDashboardStats(userId),
+        fetchDashboardNotifications(userId),
+        fetchDashboardMessages(userId),
+        fetchCustomerRecentActivity(userId),
+      ]);
+
+    return {
+      stats: stats.status === "fulfilled" ? stats.value : null,
+      notifications:
+        notifications.status === "fulfilled" ? notifications.value : [],
+      messages: messages.status === "fulfilled" ? messages.value : [],
+      recentActivity:
+        recentActivity.status === "fulfilled" ? recentActivity.value : [],
+    };
+  } catch (error) {
+    console.error("Error fetching customer dashboard data:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch all dashboard data in parallel (for taskers)
  */
 export async function fetchAllDashboardData(userId: string) {
   try {

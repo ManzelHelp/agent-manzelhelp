@@ -1,90 +1,84 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { toast } from "sonner";
+
+// UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
+// Icons
 import {
+  DollarSign,
   CheckCircle,
   Plus,
   MessageSquare,
   Eye,
   ChevronRight,
-  TrendingUp,
-  Users,
   Bell,
   Calendar,
   Loader2,
   AlertCircle,
-  Home,
+  Star,
+  Award,
+  Target,
+  Activity,
+  Zap,
+  ArrowUpRight,
+  ArrowDownRight,
+  Sparkles,
   Briefcase,
-  CreditCard,
   Wallet,
+  Home,
+  CreditCard,
 } from "lucide-react";
-import Link from "next/link";
-import { createClient } from "@/supabase/client";
+
+// Utils and Types
 import { useUserStore } from "@/stores/userStore";
-import { toast } from "sonner";
-import type {
-  Notification,
-  Message,
-  ServiceBooking,
-  Job,
-} from "@/types/supabase";
+import type { Notification } from "@/types/supabase";
+import {
+  fetchAllCustomerDashboardData,
+  type CustomerDashboardStats,
+  type RecentActivity,
+  type ProcessedMessage,
+} from "@/actions/dashboard";
 
-interface DashboardStats {
-  activeBookings: number;
-  completedBookings: number;
-  activeJobs: number;
-  completedJobs: number;
-}
-
-interface BookingWithDetails extends ServiceBooking {
-  tasker?: {
-    first_name?: string;
-    last_name?: string;
-    avatar_url?: string;
-  };
-  tasker_service?: {
-    title?: string;
-  };
-}
-
-interface JobWithDetails extends Job {
-  service?: {
-    name_en?: string;
-    name_fr?: string;
-    name_ar?: string;
-  };
-}
-
-interface MessageWithDetails extends Message {
-  client: string;
-  unread: boolean;
-  conversation?: {
-    participant1_id: string;
-    participant2_id: string;
-  };
-}
-
+/**
+ * Modern Customer Dashboard Component
+ *
+ * Features:
+ * - Comprehensive service metrics and spending analytics
+ * - Real-time activity feed
+ * - Mobile-first responsive design
+ * - Optimized Supabase data fetching
+ * - Modern UI with animations and interactions
+ */
 export default function CustomerDashboardPage() {
-  const [stats, setStats] = useState<DashboardStats>({
+  // State management for dashboard data
+  const [stats, setStats] = useState<CustomerDashboardStats>({
     activeBookings: 0,
     completedBookings: 0,
     activeJobs: 0,
     completedJobs: 0,
+    totalSpent: 0,
+    monthlySpent: 0,
+    weeklySpent: 0,
+    upcomingBookings: 0,
+    recentBookings: 0,
+    walletBalance: 0,
   });
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [messages, setMessages] = useState<MessageWithDetails[]>([]);
-  const [activeBookings, setActiveBookings] = useState<BookingWithDetails[]>(
-    []
-  );
-  const [activeJobs, setActiveJobs] = useState<JobWithDetails[]>([]);
+  const [messages, setMessages] = useState<ProcessedMessage[]>([]);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+
+  // Loading states for different sections
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
   const [notificationsLoading, setNotificationsLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(true);
-  const [bookingsLoading, setBookingsLoading] = useState(true);
-  const [jobsLoading, setJobsLoading] = useState(true);
+  const [activityLoading, setActivityLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const user = useUserStore((state) => state.user);
@@ -97,323 +91,68 @@ export default function CustomerDashboardPage() {
 
     const fetchDashboardData = async () => {
       setError(null);
-      const supabase = createClient();
+      setStatsLoading(true);
+      setNotificationsLoading(true);
+      setMessagesLoading(true);
+      setActivityLoading(true);
 
       try {
-        // Fetch all data in parallel for better performance
-        await Promise.allSettled([
-          fetchStats(supabase),
-          fetchNotifications(supabase),
-          fetchMessages(supabase),
-          fetchActiveBookings(supabase),
-          fetchActiveJobs(supabase),
-        ]);
+        const data = await fetchAllCustomerDashboardData(user.id);
+
+        if (data.stats) {
+          setStats(data.stats);
+        }
+        setNotifications(data.notifications);
+        setMessages(data.messages);
+        setRecentActivity(data.recentActivity);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setError("Failed to load dashboard data");
         toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
+        setStatsLoading(false);
+        setNotificationsLoading(false);
+        setMessagesLoading(false);
+        setActivityLoading(false);
       }
     };
 
     fetchDashboardData();
   }, [user]);
 
-  const fetchStats = async (supabase: ReturnType<typeof createClient>) => {
-    if (!user) return;
-
-    setStatsLoading(true);
-    try {
-      // Get active bookings (confirmed, in_progress)
-      const { data: activeBookings, error: activeBookingsError } =
-        await supabase
-          .from("service_bookings")
-          .select("id, status")
-          .eq("customer_id", user.id)
-          .in("status", ["confirmed", "in_progress"]);
-
-      if (activeBookingsError) {
-        console.error("Error fetching active bookings:", activeBookingsError);
-        throw activeBookingsError;
-      }
-
-      // Get completed bookings
-      const { data: completedBookings, error: completedBookingsError } =
-        await supabase
-          .from("service_bookings")
-          .select("id")
-          .eq("customer_id", user.id)
-          .eq("status", "completed");
-
-      if (completedBookingsError) {
-        console.error(
-          "Error fetching completed bookings:",
-          completedBookingsError
-        );
-        throw completedBookingsError;
-      }
-
-      // Get active jobs (active, assigned, in_progress)
-      const { data: activeJobs, error: activeJobsError } = await supabase
-        .from("jobs")
-        .select("id, status")
-        .eq("customer_id", user.id)
-        .in("status", ["active", "assigned", "in_progress"]);
-
-      if (activeJobsError) {
-        console.error("Error fetching active jobs:", activeJobsError);
-        throw activeJobsError;
-      }
-
-      // Get completed jobs
-      const { data: completedJobs, error: completedJobsError } = await supabase
-        .from("jobs")
-        .select("id")
-        .eq("customer_id", user.id)
-        .eq("status", "completed");
-
-      if (completedJobsError) {
-        console.error("Error fetching completed jobs:", completedJobsError);
-        throw completedJobsError;
-      }
-
-      // Calculate stats with fallbacks for missing data
-      const activeBookingsCount = activeBookings?.length || 0;
-      const completedBookingsCount = completedBookings?.length || 0;
-      const activeJobsCount = activeJobs?.length || 0;
-      const completedJobsCount = completedJobs?.length || 0;
-
-      setStats({
-        activeBookings: activeBookingsCount,
-        completedBookings: completedBookingsCount,
-        activeJobs: activeJobsCount,
-        completedJobs: completedJobsCount,
-      });
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-      // Don't throw here, just log the error and continue with default values
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  const fetchNotifications = async (
-    supabase: ReturnType<typeof createClient>
-  ) => {
-    if (!user) return;
-
-    setNotificationsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (error) {
-        console.error("Error fetching notifications:", error);
-        throw error;
-      }
-
-      setNotifications(data || []);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      // Continue with empty array
-      setNotifications([]);
-    } finally {
-      setNotificationsLoading(false);
-    }
-  };
-
-  const fetchMessages = async (supabase: ReturnType<typeof createClient>) => {
-    if (!user) return;
-
-    setMessagesLoading(true);
-    try {
-      // Get conversations where user is a participant
-      const { data: conversations, error: conversationsError } = await supabase
-        .from("conversations")
-        .select("*")
-        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
-        .order("last_message_at", { ascending: false })
-        .limit(5);
-
-      if (conversationsError) {
-        console.error("Error fetching conversations:", conversationsError);
-        throw conversationsError;
-      }
-
-      if (!conversations || conversations.length === 0) {
-        setMessages([]);
-        return;
-      }
-
-      // Get recent messages from these conversations
-      const conversationIds = conversations.map((c) => c.id);
-      const { data: messages, error: messagesError } = await supabase
-        .from("messages")
-        .select(
-          `
-          *,
-          sender:users!messages_sender_id_fkey(first_name, last_name, avatar_url),
-          conversation:conversations!messages_conversation_id_fkey(participant1_id, participant2_id)
-        `
-        )
-        .in("conversation_id", conversationIds)
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (messagesError) {
-        console.error("Error fetching messages:", messagesError);
-        throw messagesError;
-      }
-
-      // Process messages to show the other person's name and determine if unread
-      const processedMessages = (messages || []).map(
-        (
-          message: Message & {
-            sender?: { first_name?: string; last_name?: string };
-            conversation?: { participant1_id: string; participant2_id: string };
-          }
-        ) => {
-          return {
-            ...message,
-            client:
-              `${message.sender?.first_name || ""} ${
-                message.sender?.last_name || ""
-              }`.trim() || "Unknown",
-            unread: !message.is_read && message.sender_id !== user.id,
-          };
-        }
-      );
-
-      // Sort by conversation and take the latest message from each
-      const latestMessages = processedMessages
-        .sort(
-          (a, b) =>
-            new Date(b.created_at || "").getTime() -
-            new Date(a.created_at || "").getTime()
-        )
-        .filter(
-          (message, index, self) =>
-            index ===
-            self.findIndex((m) => m.conversation_id === message.conversation_id)
-        )
-        .slice(0, 5);
-
-      setMessages(latestMessages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      // Continue with empty array
-      setMessages([]);
-    } finally {
-      setMessagesLoading(false);
-    }
-  };
-
-  const fetchActiveBookings = async (
-    supabase: ReturnType<typeof createClient>
-  ) => {
-    if (!user) return;
-
-    setBookingsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("service_bookings")
-        .select(
-          `
-          *,
-          tasker:users!service_bookings_tasker_id_fkey(first_name, last_name, avatar_url),
-          tasker_service:tasker_services!service_bookings_tasker_service_id_fkey(title)
-        `
-        )
-        .eq("customer_id", user.id)
-        .in("status", ["confirmed", "in_progress"])
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      if (error) {
-        console.error("Error fetching active bookings:", error);
-        throw error;
-      }
-
-      setActiveBookings(data || []);
-    } catch (error) {
-      console.error("Error fetching active bookings:", error);
-      setActiveBookings([]);
-    } finally {
-      setBookingsLoading(false);
-    }
-  };
-
-  const fetchActiveJobs = async (supabase: ReturnType<typeof createClient>) => {
-    if (!user) return;
-
-    setJobsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("jobs")
-        .select(
-          `
-          *,
-          service:services!jobs_service_id_fkey(name_en, name_fr, name_ar)
-        `
-        )
-        .eq("customer_id", user.id)
-        .in("status", ["active", "assigned", "in_progress"])
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      if (error) {
-        console.error("Error fetching active jobs:", error);
-        throw error;
-      }
-
-      setActiveJobs(data || []);
-    } catch (error) {
-      console.error("Error fetching active jobs:", error);
-      setActiveJobs([]);
-    } finally {
-      setJobsLoading(false);
-    }
-  };
-
+  // Helper functions for notification display
   const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "payment_received":
-      case "payment_confirmed":
-        return <CreditCard className="h-4 w-4 text-green-600" />;
-      case "booking_confirmed":
-      case "booking_created":
-      case "booking_accepted":
-        return <Calendar className="h-4 w-4 text-blue-600" />;
-      case "message_received":
-        return <MessageSquare className="h-4 w-4 text-purple-600" />;
-      case "job_completed":
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      default:
-        return <Bell className="h-4 w-4 text-gray-600" />;
-    }
+    const iconMap = {
+      payment_received: <DollarSign className="h-4 w-4 text-green-600" />,
+      payment_confirmed: <DollarSign className="h-4 w-4 text-green-600" />,
+      booking_confirmed: <Calendar className="h-4 w-4 text-blue-600" />,
+      booking_created: <Calendar className="h-4 w-4 text-blue-600" />,
+      booking_accepted: <Calendar className="h-4 w-4 text-blue-600" />,
+      message_received: <MessageSquare className="h-4 w-4 text-purple-600" />,
+      job_completed: <CheckCircle className="h-4 w-4 text-green-600" />,
+    };
+    return (
+      iconMap[type as keyof typeof iconMap] || (
+        <Bell className="h-4 w-4 text-gray-600" />
+      )
+    );
   };
 
   const getNotificationBgColor = (type: string) => {
-    switch (type) {
-      case "payment_received":
-      case "payment_confirmed":
-        return "bg-green-100 group-hover:bg-green-200";
-      case "booking_confirmed":
-      case "booking_created":
-      case "booking_accepted":
-        return "bg-blue-100 group-hover:bg-blue-200";
-      case "message_received":
-        return "bg-purple-100 group-hover:bg-purple-200";
-      case "job_completed":
-        return "bg-green-100 group-hover:bg-green-200";
-      default:
-        return "bg-gray-100 group-hover:bg-gray-200";
-    }
+    const colorMap = {
+      payment_received: "bg-green-100 group-hover:bg-green-200",
+      payment_confirmed: "bg-green-100 group-hover:bg-green-200",
+      booking_confirmed: "bg-blue-100 group-hover:bg-blue-200",
+      booking_created: "bg-blue-100 group-hover:bg-blue-200",
+      booking_accepted: "bg-blue-100 group-hover:bg-blue-200",
+      message_received: "bg-purple-100 group-hover:bg-purple-200",
+      job_completed: "bg-green-100 group-hover:bg-green-200",
+    };
+    return (
+      colorMap[type as keyof typeof colorMap] ||
+      "bg-gray-100 group-hover:bg-gray-200"
+    );
   };
 
   const formatTimeAgo = (dateString: string | undefined) => {
@@ -430,9 +169,41 @@ export default function CustomerDashboardPage() {
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "No date";
-    return new Date(dateString).toLocaleDateString();
+  // Helper functions for activity display
+  const getActivityIcon = (type: string) => {
+    const iconMap = {
+      booking: <Calendar className="h-4 w-4 text-blue-600" />,
+      message: <MessageSquare className="h-4 w-4 text-purple-600" />,
+      review: <Star className="h-4 w-4 text-yellow-600" />,
+      payment: <DollarSign className="h-4 w-4 text-green-600" />,
+    };
+    return (
+      iconMap[type as keyof typeof iconMap] || (
+        <Activity className="h-4 w-4 text-gray-600" />
+      )
+    );
+  };
+
+  const getActivityBgColor = (type: string) => {
+    const colorMap = {
+      booking: "bg-blue-100 group-hover:bg-blue-200",
+      message: "bg-purple-100 group-hover:bg-purple-200",
+      review: "bg-yellow-100 group-hover:bg-yellow-200",
+      payment: "bg-green-100 group-hover:bg-green-200",
+    };
+    return (
+      colorMap[type as keyof typeof colorMap] ||
+      "bg-gray-100 group-hover:bg-gray-200"
+    );
+  };
+
+  const getTrendIcon = (current: number, previous: number) => {
+    if (current > previous) {
+      return <ArrowUpRight className="h-4 w-4 text-green-600" />;
+    } else if (current < previous) {
+      return <ArrowDownRight className="h-4 w-4 text-red-600" />;
+    }
+    return <Activity className="h-4 w-4 text-gray-600" />;
   };
 
   if (loading) {
@@ -470,16 +241,26 @@ export default function CustomerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] to-[var(--color-surface)]">
-      <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
-        {/* Header Section */}
-        <div className="space-y-4">
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[var(--color-text-primary)] mobile-text-optimized">
-              Customer Dashboard
-            </h1>
-            <p className="text-sm sm:text-base text-[var(--color-text-secondary)] mt-2 mobile-leading">
-              Welcome back! Here's an overview of your service requests
-            </p>
+      <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
+        {/* Modern Header Section */}
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--color-text-primary)] mobile-text-optimized">
+                Welcome back! 👋
+              </h1>
+              <p className="text-base sm:text-lg text-[var(--color-text-secondary)] mobile-leading">
+                Here's an overview of your jobs and bookings
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/customer/my-jobs">
+                <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white shadow-lg hover:shadow-xl transition-all duration-300 mobile-button">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Post Job
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -491,7 +272,11 @@ export default function CustomerDashboardPage() {
               <h3 className="text-lg font-semibold">Wallet Balance</h3>
             </div>
             <div className="text-3xl font-bold mb-2">
-              {user?.wallet_balance ? `${user.wallet_balance} MAD` : "0 MAD"}
+              {statsLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                `${stats.walletBalance.toLocaleString()} MAD`
+              )}
             </div>
             <p className="text-sm opacity-90">
               Available for payments and refunds
@@ -499,169 +284,289 @@ export default function CustomerDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Stats Overview - Mobile First Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6 sm:grid-cols-2 lg:grid-cols-2">
-          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-[var(--color-text-primary)]">
+        {/* Key Metrics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Active Bookings */}
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-blue-800">
                 Active Bookings
               </CardTitle>
-              <div className="p-2 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors duration-200">
-                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+              <div className="p-3 bg-blue-500 rounded-xl group-hover:bg-blue-600 transition-colors duration-200">
+                <Calendar className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
               ) : (
                 <>
-                  <div className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
+                  <div className="text-3xl font-bold text-blue-900 mb-1">
                     {stats.activeBookings}
                   </div>
-                  <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                    Currently in progress
-                  </p>
+                  <p className="text-sm text-blue-700">Currently in progress</p>
+                  <div className="flex items-center gap-1 mt-2">
+                    {getTrendIcon(stats.activeBookings, 0)}
+                    <span className="text-xs text-blue-600">Active now</span>
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-[var(--color-text-primary)]">
-                Active Jobs
+          {/* Total Spent */}
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-green-800">
+                Total Spent
               </CardTitle>
-              <div className="p-2 bg-green-100 rounded-full group-hover:bg-green-200 transition-colors duration-200">
-                <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+              <div className="p-3 bg-green-500 rounded-xl group-hover:bg-green-600 transition-colors duration-200">
+                <DollarSign className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
+                <Loader2 className="h-8 w-8 animate-spin text-green-600" />
               ) : (
                 <>
-                  <div className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
+                  <div className="text-3xl font-bold text-green-900 mb-1">
+                    {stats.totalSpent.toLocaleString()} MAD
+                  </div>
+                  <p className="text-sm text-green-700">All time spending</p>
+                  <div className="flex items-center gap-1 mt-2">
+                    <Sparkles className="h-3 w-3 text-green-600" />
+                    <span className="text-xs text-green-600">
+                      Lifetime total
+                    </span>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Active Jobs */}
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-purple-800">
+                Active Jobs
+              </CardTitle>
+              <div className="p-3 bg-purple-500 rounded-xl group-hover:bg-purple-600 transition-colors duration-200">
+                <Briefcase className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {statsLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+              ) : (
+                <>
+                  <div className="text-3xl font-bold text-purple-900 mb-1">
                     {stats.activeJobs}
                   </div>
-                  <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                    Posted jobs
-                  </p>
+                  <p className="text-sm text-purple-700">Posted jobs</p>
+                  <div className="flex items-center gap-1 mt-2">
+                    <Target className="h-3 w-3 text-purple-600" />
+                    <span className="text-xs text-purple-600">In progress</span>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Completed Jobs */}
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-yellow-800">
+                Completed Jobs
+              </CardTitle>
+              <div className="p-3 bg-yellow-500 rounded-xl group-hover:bg-yellow-600 transition-colors duration-200">
+                <CheckCircle className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {statsLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-yellow-600" />
+              ) : (
+                <>
+                  <div className="text-3xl font-bold text-yellow-900 mb-1">
+                    {stats.completedJobs}
+                  </div>
+                  <p className="text-sm text-yellow-700">Jobs completed</p>
+                  <div className="flex items-center gap-1 mt-2">
+                    <Award className="h-3 w-3 text-yellow-600" />
+                    <span className="text-xs text-yellow-600">Great work!</span>
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Quick Actions and Notifications - Mobile Optimized Layout */}
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Quick Actions */}
-          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-[var(--color-secondary)]" />
+              <CardTitle className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
+                <div className="p-2 bg-[var(--color-primary)] rounded-lg">
+                  <Zap className="h-5 w-5 text-white" />
+                </div>
                 Quick Actions
               </CardTitle>
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Manage your jobs and bookings efficiently
+              </p>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/customer/create-offer" className="block">
+              <Link href="/customer/my-jobs" className="block">
                 <Button
-                  className="w-full justify-between h-12 sm:h-14 bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white border-[var(--color-primary)] hover:border-[var(--color-primary-light)] transition-all duration-200 mobile-button mobile-focus-ring"
+                  className="w-full justify-between h-14 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] hover:from-[var(--color-primary-light)] hover:to-[var(--color-primary)] text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 mobile-button mobile-focus-ring"
                   variant="default"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-full">
-                      <Plus className="h-4 w-4" />
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <Plus className="h-5 w-5" />
                     </div>
-                    <span className="text-sm sm:text-base font-medium">
+                    <span className="text-base font-semibold">
                       Post New Job
                     </span>
                   </div>
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </Button>
               </Link>
 
-              <Link href="/customer/bookings" className="block">
-                <Button
-                  className="w-full justify-between h-12 sm:h-14 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
-                  variant="outline"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[var(--color-secondary)]/10 rounded-full">
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/customer/bookings" className="block">
+                  <Button
+                    className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
+                    variant="outline"
+                  >
+                    <div className="flex flex-col items-center gap-1">
                       <Eye className="h-4 w-4 text-[var(--color-secondary)]" />
+                      <span className="text-xs font-medium">Bookings</span>
                     </div>
-                    <span className="text-sm sm:text-base font-medium">
-                      View Bookings
-                    </span>
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
+                  </Button>
+                </Link>
 
-              <Link href="/customer/finance" className="block">
-                <Button
-                  className="w-full justify-between h-12 sm:h-14 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
-                  variant="outline"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-full">
+                <Link href="/customer/finance" className="block">
+                  <Button
+                    className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
+                    variant="outline"
+                  >
+                    <div className="flex flex-col items-center gap-1">
                       <CreditCard className="h-4 w-4 text-green-600" />
+                      <span className="text-xs font-medium">Finance</span>
                     </div>
-                    <span className="text-sm sm:text-base font-medium">
-                      View Finance
-                    </span>
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
+                  </Button>
+                </Link>
 
-              <Link href="/customer/messages" className="block">
-                <Button
-                  className="w-full justify-between h-12 sm:h-14 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
-                  variant="outline"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-full relative">
+                <Link href="/customer/messages" className="block">
+                  <Button
+                    className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring relative"
+                    variant="outline"
+                  >
+                    <div className="flex flex-col items-center gap-1">
                       <MessageSquare className="h-4 w-4 text-blue-600" />
-                      {messages.filter((m) => m.unread).length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          {messages.filter((m) => m.unread).length}
-                        </span>
-                      )}
+                      <span className="text-xs font-medium">Messages</span>
                     </div>
-                    <span className="text-sm sm:text-base font-medium">
-                      Check Messages
-                    </span>
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
+                    {messages.filter((m) => m.unread).length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {messages.filter((m) => m.unread).length}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
 
-              <Link href="/customer/profile#addresses" className="block">
-                <Button
-                  className="w-full justify-between h-12 sm:h-14 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
-                  variant="outline"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-yellow-100 rounded-full">
+                <Link href="/customer/profile#addresses" className="block">
+                  <Button
+                    className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
+                    variant="outline"
+                  >
+                    <div className="flex flex-col items-center gap-1">
                       <Home className="h-4 w-4 text-yellow-600" />
+                      <span className="text-xs font-medium">Addresses</span>
                     </div>
-                    <span className="text-sm sm:text-base font-medium">
-                      Manage Addresses
-                    </span>
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Recent Notifications */}
-          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300">
+          {/* Recent Activity */}
+          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                <Bell className="h-5 w-5 text-[var(--color-secondary)]" />
-                Recent Notifications
+              <CardTitle className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
+                <div className="p-2 bg-[var(--color-secondary)] rounded-lg">
+                  <Activity className="h-5 w-5 text-white" />
+                </div>
+                Recent Activity
               </CardTitle>
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Latest updates from your services
+              </p>
+            </CardHeader>
+            <CardContent>
+              {activityLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
+                </div>
+              ) : recentActivity.length === 0 ? (
+                <div className="text-center py-8 text-[var(--color-text-secondary)]">
+                  <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>No recent activity</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentActivity.slice(0, 4).map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="p-4 rounded-xl border border-[var(--color-border)] hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`p-2 rounded-lg ${getActivityBgColor(
+                            activity.type
+                          )} transition-colors duration-200`}
+                        >
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
+                              {activity.title}
+                            </h3>
+                            {activity.amount && (
+                              <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                                {activity.amount} MAD
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                            {activity.description}
+                          </p>
+                          <p className="text-xs text-[var(--color-text-secondary)] opacity-75">
+                            {formatTimeAgo(activity.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notifications */}
+          <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
+                <div className="p-2 bg-orange-500 rounded-lg">
+                  <Bell className="h-5 w-5 text-white" />
+                </div>
+                Notifications
+              </CardTitle>
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Stay updated with important alerts
+              </p>
             </CardHeader>
             <CardContent>
               {notificationsLoading ? (
@@ -674,11 +579,11 @@ export default function CustomerDashboardPage() {
                   <p>No notifications yet</p>
                 </div>
               ) : (
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-3">
                   {notifications.slice(0, 3).map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-3 sm:p-4 rounded-xl border transition-all duration-200 hover:shadow-sm cursor-pointer ${
+                      className={`p-3 rounded-xl border transition-all duration-200 hover:shadow-sm cursor-pointer ${
                         !notification.is_read
                           ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"
                           : "bg-[var(--color-accent)] border-[var(--color-border)]"
@@ -686,22 +591,22 @@ export default function CustomerDashboardPage() {
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`p-2 rounded-full ${getNotificationBgColor(
+                          className={`p-2 rounded-lg ${getNotificationBgColor(
                             notification.type
                           )} transition-colors duration-200`}
                         >
                           {getNotificationIcon(notification.type)}
                         </div>
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-sm sm:text-base text-[var(--color-text-primary)]">
+                            <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
                               {notification.title}
                             </h3>
                             {!notification.is_read && (
                               <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
                             )}
                           </div>
-                          <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
                             {notification.message}
                           </p>
                           <p className="text-xs text-[var(--color-text-secondary)] opacity-75">
@@ -715,7 +620,7 @@ export default function CustomerDashboardPage() {
                     <Link href="/customer/notifications" className="block">
                       <Button
                         variant="ghost"
-                        className="w-full h-12 sm:h-14 text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] hover:bg-[var(--color-secondary)]/10 transition-all duration-200 mobile-button"
+                        className="w-full h-12 text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] hover:bg-[var(--color-secondary)]/10 transition-all duration-200 mobile-button"
                       >
                         View All Notifications
                       </Button>
@@ -727,168 +632,31 @@ export default function CustomerDashboardPage() {
           </Card>
         </div>
 
-        {/* Active Bookings Section */}
-        <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-[var(--color-secondary)]" />
-              Active Bookings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {bookingsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
-              </div>
-            ) : activeBookings.length === 0 ? (
-              <div className="text-center py-8 text-[var(--color-text-secondary)]">
-                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No active bookings</p>
-                <Link href="/customer/create-offer">
-                  <Button className="mt-4 bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]">
-                    Book a Service
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3 sm:space-y-4">
-                {activeBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="p-3 sm:p-4 rounded-xl border bg-[var(--color-accent)] border-[var(--color-border)] transition-all duration-200 hover:shadow-sm"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-sm sm:text-base text-[var(--color-text-primary)]">
-                            {booking.tasker_service?.title || "Service"}
-                          </h3>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              booking.status === "confirmed"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
-                          >
-                            {booking.status}
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
-                          {booking.tasker?.first_name}{" "}
-                          {booking.tasker?.last_name}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-secondary)] opacity-75">
-                          {formatDate(booking.scheduled_date)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-sm sm:text-base text-[var(--color-text-primary)]">
-                          {booking.agreed_price} MAD
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {activeBookings.length > 3 && (
-                  <Link href="/customer/bookings" className="block">
-                    <Button
-                      variant="ghost"
-                      className="w-full h-12 sm:h-14 text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] hover:bg-[var(--color-secondary)]/10 transition-all duration-200 mobile-button"
-                    >
-                      View All Bookings
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Active Jobs Section */}
-        <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-[var(--color-secondary)]" />
-              Active Jobs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {jobsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
-              </div>
-            ) : activeJobs.length === 0 ? (
-              <div className="text-center py-8 text-[var(--color-text-secondary)]">
-                <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No active jobs</p>
-                <Link href="/customer/create-offer">
-                  <Button className="mt-4 bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]">
-                    Post a Job
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3 sm:space-y-4">
-                {activeJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="p-3 sm:p-4 rounded-xl border bg-[var(--color-accent)] border-[var(--color-border)] transition-all duration-200 hover:shadow-sm"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-sm sm:text-base text-[var(--color-text-primary)]">
-                            {job.title}
-                          </h3>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              job.status === "active"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : job.status === "assigned"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
-                          >
-                            {job.status}
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
-                          {job.service?.name_en || "Service"}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-secondary)] opacity-75">
-                          {formatDate(job.preferred_date)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-sm sm:text-base text-[var(--color-text-primary)]">
-                          {job.customer_budget} MAD
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {activeJobs.length > 3 && (
-                  <Link href="/customer/create-offer" className="block">
-                    <Button
-                      variant="ghost"
-                      className="w-full h-12 sm:h-14 text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] hover:bg-[var(--color-secondary)]/10 transition-all duration-200 mobile-button"
-                    >
-                      View All Jobs
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Recent Messages Section */}
-        <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-sm hover:shadow-md transition-all duration-300">
+        <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-              <Users className="h-5 w-5 text-[var(--color-secondary)]" />
-              Recent Messages
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
+                  <div className="p-2 bg-blue-500 rounded-lg">
+                    <MessageSquare className="h-5 w-5 text-white" />
+                  </div>
+                  Recent Messages
+                </CardTitle>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                  Latest conversations with taskers
+                </p>
+              </div>
+              <Link href="/customer/messages">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-[var(--color-primary)] border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all duration-200"
+                >
+                  View All
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
             {messagesLoading ? (
@@ -899,29 +667,35 @@ export default function CustomerDashboardPage() {
               <div className="text-center py-8 text-[var(--color-text-secondary)]">
                 <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No messages yet</p>
+                <p className="text-xs mt-1">
+                  Start conversations with your taskers
+                </p>
               </div>
             ) : (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-3">
                 {messages.slice(0, 3).map((message) => (
                   <div
                     key={message.id}
-                    className={`p-3 sm:p-4 rounded-xl border transition-all duration-200 hover:shadow-sm cursor-pointer ${
+                    className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md cursor-pointer group ${
                       message.unread
                         ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"
-                        : "bg-[var(--color-accent)] border-[var(--color-border)]"
+                        : "bg-[var(--color-accent)] border-[var(--color-border)] hover:border-[var(--color-secondary)]"
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        {message.client.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-sm sm:text-base text-[var(--color-text-primary)]">
+                          <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
                             {message.client}
                           </h3>
                           {message.unread && (
                             <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
                           )}
                         </div>
-                        <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
                           {message.content}
                         </p>
                         <p className="text-xs text-[var(--color-text-secondary)] opacity-75">
@@ -931,16 +705,6 @@ export default function CustomerDashboardPage() {
                     </div>
                   </div>
                 ))}
-                {messages.length > 3 && (
-                  <Link href="/customer/messages" className="block">
-                    <Button
-                      variant="ghost"
-                      className="w-full h-12 sm:h-14 text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] hover:bg-[var(--color-secondary)]/10 transition-all duration-200 mobile-button"
-                    >
-                      View All Messages
-                    </Button>
-                  </Link>
-                )}
               </div>
             )}
           </CardContent>
