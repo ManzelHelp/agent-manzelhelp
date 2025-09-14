@@ -29,7 +29,8 @@
     "whyTitle": "Why ManzelHelp?",
     "why1": "Connect with trusted local helpers",
     "why2": "Offer your skills and earn extra income",
-    "why3": "Easy, friendly, and secure"
+    "why3": "Easy, friendly, and secure",
+    "trustedBy": "Trusted by 1000+ customers"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -181,6 +182,12 @@
       "cancel": "Cancel",
       "save": "Save Changes",
       "saving": "Saving..."
+    },
+    "common": {
+      "notProvided": "Not provided",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "saveAddress": "Save Address"
     },
     "success": {
       "profileUpdated": "Profile updated successfully!",

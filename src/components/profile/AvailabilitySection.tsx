@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -56,6 +57,7 @@ export default function AvailabilitySection({
   onProfileRefresh,
   missingFields,
 }: AvailabilitySectionProps) {
+  const tCommon = useTranslations("common");
   const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
   const [availabilityForm, setAvailabilityForm] = useState<AvailabilitySlot[]>(
     []
@@ -246,7 +248,7 @@ export default function AvailabilitySection({
                   Cancel
                 </Button>
                 <Button onClick={updateAvailability} disabled={loading}>
-                  {loading ? "Saving..." : "Save Changes"}
+                  {loading ? tCommon("saving") : tCommon("saveChanges")}
                 </Button>
               </DialogFooter>
             </DialogContent>

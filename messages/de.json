@@ -29,7 +29,8 @@
     "whyTitle": "Warum ManzelHelp?",
     "why1": "Verbindung zu vertrauenswürdigen lokalen Helfern",
     "why2": "Ihre Fähigkeiten anbieten und zusätzliches Einkommen erzielen",
-    "why3": "Einfach, freundlich und sicher"
+    "why3": "Einfach, freundlich und sicher",
+    "trustedBy": "Vertraut von über 1000 Kunden"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -182,6 +183,12 @@
       "save": "Änderungen Speichern",
       "saving": "Speichern..."
     },
+    "common": {
+      "notProvided": "Nicht angegeben",
+      "saving": "Speichern...",
+      "saveChanges": "Änderungen Speichern",
+      "saveAddress": "Adresse Speichern"
+    },
     "success": {
       "profileUpdated": "Profil erfolgreich aktualisiert!",
       "addressAdded": "Adresse erfolgreich hinzugefügt!",
@@ -207,8 +214,19 @@
     "joinUs": "Mitmachen",
     "signUp": "Registrieren",
     "becomeHelper": "Helfer werden",
+    "findHelper": "Helfer finden",
+    "searchServices": "Dienste suchen",
     "newsletter": "Newsletter",
     "popularServices": "Beliebte Dienstleistungen",
+    "support": "Support",
+    "helpCenter": "Hilfezentrum",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "termsOfService": "Nutzungsbedingungen",
+    "cookiePolicy": "Cookie-Richtlinie",
+    "blog": "Blog",
+    "allRightsReserved": "Alle Rechte vorbehalten.",
+    "sitemap": "Sitemap",
+    "accessibility": "Barrierefreiheit",
     "housekeeping": "Haushaltsführung",
     "tutoring": "Nachhilfe",
     "petCare": "Tierpflege",

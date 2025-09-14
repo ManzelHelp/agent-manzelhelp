@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -59,6 +60,7 @@ export default function BioExperienceSection({
   onProfileRefresh,
   missingFields,
 }: BioExperienceSectionProps) {
+  const tCommon = useTranslations("common");
   const [editBioOpen, setEditBioOpen] = useState(false);
   const [bioForm, setBioForm] = useState<BioFormData>({
     bio: "",
@@ -320,7 +322,7 @@ export default function BioExperienceSection({
                     Cancel
                   </Button>
                   <Button onClick={updateBioInfo} disabled={loading}>
-                    {loading ? "Saving..." : "Save Changes"}
+                    {loading ? tCommon("saving") : tCommon("saveChanges")}
                   </Button>
                 </DialogFooter>
               </DialogContent>

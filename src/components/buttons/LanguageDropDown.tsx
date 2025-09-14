@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 const languages = [
   { code: "en", label: "English", short: "EN" },
   { code: "de", label: "Deutsch", short: "DE" },
+  { code: "fr", label: "Français", short: "FR" },
 ];
 
 export default function LanguageDropDown({

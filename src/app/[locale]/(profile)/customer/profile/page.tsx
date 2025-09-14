@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import type { Address } from "@/types/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,8 @@ const SECTIONS = [
 export default function CustomerProfilePage() {
   const router = useRouter();
   const { user, setUser } = useUserStore();
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
 
   // Core state
   const [activeSection, setActiveSection] =
@@ -566,7 +569,7 @@ export default function CustomerProfilePage() {
                       First Name
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
-                      {user.first_name || "Not provided"}
+                      {user.first_name || tCommon("notProvided")}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -574,7 +577,7 @@ export default function CustomerProfilePage() {
                       Last Name
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
-                      {user.last_name || "Not provided"}
+                      {user.last_name || tCommon("notProvided")}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -590,7 +593,7 @@ export default function CustomerProfilePage() {
                       Phone Number
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
-                      {user.phone || "Not provided"}
+                      {user.phone || tCommon("notProvided")}
                     </p>
                   </div>
                   <div className="space-y-2 sm:col-span-2">
@@ -600,7 +603,7 @@ export default function CustomerProfilePage() {
                     <p className="text-[var(--color-text-primary)] font-medium">
                       {user.date_of_birth
                         ? new Date(user.date_of_birth).toLocaleDateString()
-                        : "Not provided"}
+                        : tCommon("notProvided")}
                     </p>
                   </div>
                 </div>
@@ -805,7 +808,7 @@ export default function CustomerProfilePage() {
                           disabled={loading}
                           className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90"
                         >
-                          {loading ? "Saving..." : "Save Address"}
+                          {loading ? tCommon("saving") : tCommon("saveAddress")}
                         </Button>
                         <Button
                           variant="outline"
@@ -1074,7 +1077,7 @@ export default function CustomerProfilePage() {
               disabled={loading}
               className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90"
             >
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? tCommon("saving") : tCommon("saveChanges")}
             </Button>
           </DialogFooter>
         </DialogContent>

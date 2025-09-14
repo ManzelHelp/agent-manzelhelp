@@ -135,7 +135,7 @@ export default async function Page({
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 border border-white/20">
             <Sparkles className="h-4 w-4 text-[var(--color-secondary)]" />
             <span className="text-sm font-medium text-white/90">
-              Trusted by 1000+ customers
+              {t("trustedBy")}
             </span>
           </div>
 
