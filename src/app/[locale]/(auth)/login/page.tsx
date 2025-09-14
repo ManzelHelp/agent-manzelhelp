@@ -13,6 +13,13 @@ export default async function LoginPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] flex flex-col">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-white text-[var(--color-primary)] px-4 py-2 rounded-md font-medium z-50"
+      >
+        Skip to main content
+      </a>
       {/* Background Pattern - Reduced opacity and size for mobile */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 right-1/4 w-48 h-48 sm:w-72 sm:h-72 bg-[var(--color-secondary)] rounded-full opacity-5 sm:opacity-10 translate-x-1/2 -translate-y-1/2"></div>
@@ -31,7 +38,10 @@ export default async function LoginPage({
       </div>
 
       {/* Main Content - Mobile-first approach */}
-      <div className="relative z-10 flex-1 flex flex-col justify-start sm:justify-center px-4 sm:px-6 pt-4 sm:pt-8 pb-6">
+      <main
+        id="main-content"
+        className="relative z-10 flex-1 flex flex-col justify-start sm:justify-center px-4 sm:px-6 pt-4 sm:pt-8 pb-6"
+      >
         <div className="w-full max-w-md mx-auto">
           {/* Card - More compact on mobile */}
           <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl sm:shadow-2xl">
@@ -51,7 +61,7 @@ export default async function LoginPage({
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
 
       {/* Compact Footer */}
       <div className="relative z-10 px-4 sm:px-6 py-3 sm:py-6 text-center">

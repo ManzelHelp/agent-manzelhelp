@@ -7,10 +7,13 @@ import { toast } from "sonner";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Loader2, Mail, Lock, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { loginAction, resetPasswordAction } from "@/actions/auth";
-import { getProfile } from "@/supabase/client";
+import {
+  loginAction,
+  resetPasswordAction,
+  getUserProfileAction,
+} from "@/actions/auth";
 import { useUserStore } from "@/stores/userStore";
 
 function LoginForm({ showToast }: { showToast?: boolean }) {
@@ -18,6 +21,7 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [isPending, startTransition] = useTransition();
 
@@ -39,19 +43,21 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
 
-      const errorMessage = (await loginAction(email, password)).errorMessage;
+      const result = await loginAction(email, password);
 
-      if (!errorMessage) {
-        const user = await getProfile();
+      if (result.success) {
+        // Get user profile after successful login
+        const profileResult = await getUserProfileAction();
 
-        if (user) {
-          setUser(user);
+        if (profileResult.success && profileResult.user) {
+          setUser(profileResult.user);
+          toast.success("Login successful");
+          router.replace(`/${profileResult.user.role}/dashboard`);
+        } else {
+          toast.error("Failed to load user profile");
         }
-
-        toast.success("Login successful");
-        router.replace(`/${user?.role}/dashboard`);
       } else {
-        toast.error(errorMessage);
+        toast.error(result.errorMessage);
       }
     });
   };
@@ -140,7 +146,12 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
   }
 
   return (
-    <form action={handleLoginSubmit} className="space-y-4 sm:space-y-6">
+    <form
+      action={handleLoginSubmit}
+      className="space-y-4 sm:space-y-6"
+      role="form"
+      aria-label="Login form"
+    >
       <div className="space-y-3 sm:space-y-4">
         <div className="space-y-1.5 sm:space-y-2">
           <Label
@@ -177,12 +188,25 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
               id="password"
               name="password"
               placeholder="Enter your password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               disabled={isPending}
-              className="pl-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              className="pl-10 pr-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
               autoComplete="current-password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-200"
+              disabled={isPending}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
           </div>
         </div>
       </div>

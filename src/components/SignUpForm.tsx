@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter } from "@/i18n/navigation";
-import { useTransition, useEffect } from "react";
+import { useTransition, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Loader2, Mail, Lock, User } from "lucide-react";
+import { Loader2, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { signUpAction } from "@/actions/auth";
 import { useUserStore } from "@/stores/userStore";
@@ -16,6 +16,7 @@ function SignUpForm() {
   const user = useUserStore((state) => state.user);
 
   const [isPending, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Redirect if user already exists
   useEffect(() => {
@@ -30,21 +31,10 @@ function SignUpForm() {
       const password = formData.get("password") as string;
       const userRole = formData.get("userRole") as string;
 
-      // Validate inputs
-      if (!email || !password || !userRole) {
-        toast.error("Please fill in all fields");
-        return;
-      }
-
-      if (password.length < 6) {
-        toast.error("Password must be at least 6 characters long");
-        return;
-      }
-
       try {
         const result = await signUpAction(email, password, userRole);
 
-        if (!result.errorMessage) {
+        if (result.success) {
           toast.success("Sign up successful", {
             description: "Please check your email for verification",
           });
@@ -60,7 +50,12 @@ function SignUpForm() {
   };
 
   return (
-    <form action={handleSubmit} className="space-y-4 sm:space-y-6">
+    <form
+      action={handleSubmit}
+      className="space-y-4 sm:space-y-6"
+      role="form"
+      aria-label="Sign up form"
+    >
       <div className="space-y-3 sm:space-y-4">
         <div className="space-y-1.5 sm:space-y-2">
           <Label
@@ -96,14 +91,42 @@ function SignUpForm() {
             <Input
               id="password"
               name="password"
-              placeholder="Enter your password (min. 6 characters)"
-              type="password"
+              placeholder="Enter your password (min. 8 characters)"
+              type={showPassword ? "text" : "password"}
               required
               disabled={isPending}
-              minLength={6}
-              className="pl-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
+              minLength={8}
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+              className="pl-10 pr-10 h-11 sm:h-12 text-base border-[var(--color-border)] focus:border-[var(--color-secondary)] focus:ring-[var(--color-secondary)] transition-all duration-200"
               autoComplete="new-password"
+              aria-describedby="password-requirements"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-200"
+              disabled={isPending}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          <div
+            id="password-requirements"
+            className="text-xs text-[var(--color-text-secondary)] space-y-1"
+          >
+            <p>Password must contain:</p>
+            <ul className="list-disc list-inside space-y-0.5 ml-2">
+              <li>At least 8 characters</li>
+              <li>One uppercase letter</li>
+              <li>One lowercase letter</li>
+              <li>One number</li>
+              <li>One special character (@$!%*?&)</li>
+            </ul>
           </div>
         </div>
 

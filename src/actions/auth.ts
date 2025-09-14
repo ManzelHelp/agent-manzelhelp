@@ -6,6 +6,17 @@ import { headers } from "next/headers";
 
 export const loginAction = async (email: string, password: string) => {
   try {
+    // Enhanced server-side validation
+    if (!email || !password) {
+      throw new Error("Email and password are required");
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error("Please enter a valid email address");
+    }
+
     const { auth } = await createClient();
 
     const { error } = await auth.signInWithPassword({
@@ -26,9 +37,17 @@ export const loginAction = async (email: string, password: string) => {
         .eq("id", user.id);
     }
 
-    return { errorMessage: null };
+    return {
+      success: true,
+      errorMessage: null,
+      user: user,
+    };
   } catch (error) {
-    return handleError(error);
+    return {
+      success: false,
+      ...handleError(error),
+      user: null,
+    };
   }
 };
 
@@ -39,9 +58,17 @@ export const logOutAction = async () => {
     const { error } = await auth.signOut();
     if (error) throw error;
 
-    return { errorMessage: null };
+    return {
+      success: true,
+      errorMessage: null,
+      user: null,
+    };
   } catch (error) {
-    return handleError(error);
+    return {
+      success: false,
+      ...handleError(error),
+      user: null,
+    };
   }
 };
 
@@ -53,6 +80,26 @@ export const signUpAction = async (
   try {
     const supabase = await createClient();
     const headersList = await headers();
+
+    // Enhanced server-side validation
+    if (!email || !password || !userRole) {
+      throw new Error("All fields are required");
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error("Please enter a valid email address");
+    }
+
+    // Enhanced password validation
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      throw new Error(
+        "Password must be at least 8 characters with uppercase, lowercase, number, and special character"
+      );
+    }
 
     // Validate user role against schema
     const validRoles = ["customer", "tasker", "support", "admin"];
@@ -82,10 +129,18 @@ export const signUpAction = async (
     });
     if (error) throw error;
 
-    return { errorMessage: null };
+    return {
+      success: true,
+      errorMessage: null,
+      user: null,
+    };
   } catch (error) {
     console.error("Sign up error:", error);
-    return handleError(error);
+    return {
+      success: false,
+      ...handleError(error),
+      user: null,
+    };
   }
 };
 
@@ -132,7 +187,7 @@ export const updatePasswordAction = async (password: string) => {
   }
 };
 
-// New server action to get user profile after authentication
+// Server action to get user profile after authentication
 export const getUserProfileAction = async () => {
   try {
     const supabase = await createClient();
@@ -157,9 +212,17 @@ export const getUserProfileAction = async () => {
       throw profileError;
     }
 
-    return { user: profile, errorMessage: null };
+    return {
+      success: true,
+      user: profile,
+      errorMessage: null,
+    };
   } catch (error) {
-    return { user: null, ...handleError(error) };
+    return {
+      success: false,
+      user: null,
+      ...handleError(error),
+    };
   }
 };
 

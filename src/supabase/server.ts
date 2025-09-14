@@ -1,6 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { User } from "@supabase/supabase-js";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -29,43 +28,43 @@ export async function createClient() {
   );
 }
 
-export async function getUser() {
-  try {
-    const supabase = await createClient();
-    const userObj = await supabase.auth.getUser();
+// export async function getUser() {
+//   try {
+//     const supabase = await createClient();
+//     const userObj = await supabase.auth.getUser();
 
-    if (userObj.error) {
-      return null;
-    }
-    return userObj.data.user;
-  } catch (error) {
-    console.warn("Error getting user:", error);
-    return null;
-  }
-}
+//     if (userObj.error) {
+//       return null;
+//     }
+//     return userObj.data.user;
+//   } catch (error) {
+//     console.warn("Error getting user:", error);
+//     return null;
+//   }
+// }
 
-export async function getProfile(user?: User | null) {
-  if (!user) {
-    user = await getUser();
-    if (!user) return null;
-  }
-  try {
-    const supabase = await createClient();
+// export async function getProfile(user?: User | null) {
+//   if (!user) {
+//     user = await getUser();
+//     if (!user) return null;
+//   }
+//   try {
+//     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+//     const { data, error } = await supabase
+//       .from("users")
+//       .select("*")
+//       .eq("id", user.id)
+//       .single();
 
-    if (error) {
-      console.warn("Error fetching user profile:", error);
-      return null;
-    }
+//     if (error) {
+//       console.warn("Error fetching user profile:", error);
+//       return null;
+//     }
 
-    return data;
-  } catch (error) {
-    console.warn("Error in getProfile:", error);
-    return null;
-  }
-}
+//     return data;
+//   } catch (error) {
+//     console.warn("Error in getProfile:", error);
+//     return null;
+//   }
+// }
