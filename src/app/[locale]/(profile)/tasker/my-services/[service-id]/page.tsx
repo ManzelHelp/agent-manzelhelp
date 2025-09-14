@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { createClient } from "@/supabase/client";
+import {
+  getServiceDetails,
+  updateTaskerService,
+  ServiceDetailsData,
+} from "@/actions/services";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,52 +31,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { serviceCategories } from "@/lib/categories";
-
-interface ServiceDetailsData {
-  tasker_service_id: string;
-  service_id: number;
-  tasker_id: string;
-  title: string;
-  description: string;
-  price: string;
-  pricing_type: "fixed" | "hourly" | "per_item";
-  service_status: ServiceStatus;
-  verification_status: "verified" | "pending" | "rejected" | "under_review";
-  has_active_booking: boolean;
-  portfolio_images: string[] | null;
-  minimum_duration: number;
-  service_area: string;
-  extra_fees: number | null;
-  created_at: string;
-  updated_at: string;
-  tasker_first_name: string;
-  tasker_last_name: string;
-  tasker_avatar_url: string;
-  tasker_phone: string;
-  tasker_created_at: string;
-  tasker_role: string;
-  experience_level: string | null;
-  tasker_bio: string;
-  tasker_verification_status: string;
-  service_radius_km: number;
-  tasker_is_available: boolean;
-  operation_hours: Record<string, unknown> | null;
-  company_id: string | null;
-  tasker_rating: string;
-  total_reviews: number;
-  completed_jobs: number;
-  total_earnings: string;
-  response_time_hours: number;
-  cancellation_rate: string;
-  company_name: string | null;
-  company_city: string | null;
-  company_verification_status: string | null;
-  is_available_for_booking: boolean;
-  category_id: string;
-  category_name_en: string;
-  category_name_fr: string;
-  category_name_ar: string;
-}
 
 export default function TaskerServiceDetailPage() {
   const params = useParams();
@@ -100,25 +58,19 @@ export default function TaskerServiceDetailPage() {
       }
 
       try {
-        const supabase = createClient();
+        const result = await getServiceDetails(params["service-id"]);
 
-        // Fetch service details from the view
-        const { data: serviceData, error: serviceError } = await supabase
-          .from("service_details_view")
-          .select("*")
-          .eq("tasker_service_id", params["service-id"])
-          .single();
-
-        if (serviceError) {
-          console.error("Service fetch error:", serviceError);
-          if (serviceError.code === "PGRST116") {
-            throw new Error("Service not found");
-          }
-          throw new Error(`Failed to fetch service: ${serviceError.message}`);
+        if (!result.success) {
+          setError(result.error || "Failed to load service");
+          setLoading(false);
+          return;
         }
 
+        const serviceData = result.data;
         if (!serviceData) {
-          throw new Error("Service not found");
+          setError("Service data not found");
+          setLoading(false);
+          return;
         }
 
         setData(serviceData);
@@ -130,16 +82,17 @@ export default function TaskerServiceDetailPage() {
           price: parseFloat(serviceData.price) || 0,
           pricing_type: serviceData.pricing_type || "fixed",
           minimum_duration: serviceData.minimum_duration || 0,
-          service_area: serviceData.service_area || "",
+          service_area:
+            typeof serviceData.service_area === "string"
+              ? serviceData.service_area
+              : serviceData.service_area
+              ? JSON.stringify(serviceData.service_area)
+              : "",
           service_status: serviceData.service_status || "active",
         });
       } catch (err) {
         console.error("Error fetching service data:", err);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Failed to load the service. Please try again later.");
-        }
+        setError("Failed to load the service. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -152,47 +105,37 @@ export default function TaskerServiceDetailPage() {
     if (!data) return;
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("tasker_services")
-        .update({
+      const result = await updateTaskerService(
+        data.tasker_service_id,
+        data.tasker_id,
+        {
           title: editForm.title,
           description: editForm.description,
           price: editForm.price,
           pricing_type: editForm.pricing_type,
           minimum_duration: editForm.minimum_duration,
-          service_area: editForm.service_area,
+          service_area: editForm.service_area
+            ? { address: editForm.service_area }
+            : null,
           service_status: editForm.service_status,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", data.tasker_service_id);
+        }
+      );
 
-      if (error) {
-        throw new Error(`Failed to update service: ${error.message}`);
+      if (!result.success) {
+        setError(result.error || "Failed to update service");
+        return;
       }
 
       // Refresh data
-      const { data: updatedData, error: refreshError } = await supabase
-        .from("service_details_view")
-        .select("*")
-        .eq("tasker_service_id", data.tasker_service_id)
-        .single();
-
-      if (refreshError) {
-        console.error("Error refreshing data:", refreshError);
-        // Don't throw here, just log the error
-      } else if (updatedData) {
-        setData(updatedData);
+      const refreshResult = await getServiceDetails(data.tasker_service_id);
+      if (refreshResult.success && refreshResult.data) {
+        setData(refreshResult.data);
       }
 
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating service:", err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to update service. Please try again.");
-      }
+      setError("Failed to update service. Please try again.");
     }
   };
 
@@ -204,7 +147,12 @@ export default function TaskerServiceDetailPage() {
         price: parseFloat(data.price) || 0,
         pricing_type: data.pricing_type || "fixed",
         minimum_duration: data.minimum_duration || 0,
-        service_area: data.service_area || "",
+        service_area:
+          typeof data.service_area === "string"
+            ? data.service_area
+            : data.service_area
+            ? JSON.stringify(data.service_area)
+            : "",
         service_status: data.service_status || "active",
       });
     }
@@ -628,7 +576,11 @@ export default function TaskerServiceDetailPage() {
                             Service Area
                           </p>
                           <p className="text-sm text-[var(--color-text-secondary)]">
-                            {data.service_area}
+                            {typeof data.service_area === "string"
+                              ? data.service_area
+                              : data.service_area
+                              ? JSON.stringify(data.service_area)
+                              : "Area not specified"}
                           </p>
                         </div>
                       </div>

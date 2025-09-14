@@ -5,6 +5,52 @@ import { revalidatePath } from "next/cache";
 import { TaskerService, ServiceStatus } from "@/types/supabase";
 import { serviceCategories } from "@/lib/categories";
 
+export interface ServiceDetailsData {
+  tasker_service_id: string;
+  service_id: number;
+  tasker_id: string;
+  title: string;
+  description: string;
+  price: string;
+  pricing_type: "fixed" | "hourly" | "per_item";
+  service_status: ServiceStatus;
+  verification_status: "verified" | "pending" | "rejected" | "under_review";
+  has_active_booking: boolean;
+  portfolio_images: string[] | null;
+  minimum_duration: number;
+  service_area: object | null;
+  extra_fees: number | null;
+  created_at: string;
+  updated_at: string;
+  tasker_first_name: string;
+  tasker_last_name: string;
+  tasker_avatar_url: string;
+  tasker_phone: string;
+  tasker_created_at: string;
+  tasker_role: string;
+  experience_level: string | null;
+  tasker_bio: string;
+  tasker_verification_status: string;
+  service_radius_km: number;
+  tasker_is_available: boolean;
+  operation_hours: Record<string, unknown> | null;
+  company_id: string | null;
+  tasker_rating: string;
+  total_reviews: number;
+  completed_jobs: number;
+  total_earnings: string;
+  response_time_hours: number;
+  cancellation_rate: string;
+  company_name: string | null;
+  company_city: string | null;
+  company_verification_status: string | null;
+  is_available_for_booking: boolean;
+  category_id: string;
+  category_name_en: string;
+  category_name_fr: string;
+  category_name_ar: string;
+}
+
 // Helper function to get category and service names by service ID
 function getCategoryAndServiceNames(serviceId: number) {
   for (const category of serviceCategories) {
@@ -272,6 +318,43 @@ export interface CreateServiceData {
   minimum_booking_hours?: number;
   estimated_duration?: number;
   extras: Array<{ name: string; price: number }>;
+}
+
+export async function getServiceDetails(
+  serviceId: string
+): Promise<{ success: boolean; data?: ServiceDetailsData; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("service_details_view")
+      .select("*")
+      .eq("tasker_service_id", serviceId)
+      .single();
+
+    if (error) {
+      console.error("Service fetch error:", error);
+      if (error.code === "PGRST116") {
+        return { success: false, error: "Service not found" };
+      }
+      return {
+        success: false,
+        error: `Failed to fetch service: ${error.message}`,
+      };
+    }
+
+    if (!data) {
+      return { success: false, error: "Service not found" };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error in getServiceDetails:", error);
+    return {
+      success: false,
+      error: "Failed to load the service. Please try again later.",
+    };
+  }
 }
 
 export async function createTaskerService(

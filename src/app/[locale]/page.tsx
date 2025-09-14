@@ -80,6 +80,7 @@ export default async function Page({
       service_area,
       is_promoted,
       tasker_id,
+      service_id,
       users!inner (
         id,
         first_name,
@@ -99,7 +100,7 @@ export default async function Page({
       service: {
         id: service.id,
         tasker_id: service.tasker_id,
-        service_id: 0, // This would need to be fetched from the actual service relationship
+        service_id: service.service_id, // Use the actual service_id from database
         price: service.price,
         pricing_type: service.pricing_type,
         title: service.title,
