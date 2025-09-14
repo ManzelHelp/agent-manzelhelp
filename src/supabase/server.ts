@@ -29,31 +29,6 @@ export async function createClient() {
   );
 }
 
-// export async function getUserWithProfile(): Promise<
-//   (SupabaseAuthUser & { profile: DBUser | null }) | null
-// > {
-//   try {
-//     const supabase = await createClient();
-//     const { data: authData, error: authError } = await supabase.auth.getUser();
-//     if (authError || !authData.user) {
-//       return null;
-//     }
-//     // Fetch user profile from your own users table
-//     const { data: userProfile, error: profileError } = await supabase
-//       .from("users")
-//       .select("*")
-//       .eq("id", authData.user.id)
-//       .single();
-//     if (profileError) {
-//       return { ...authData.user, profile: null };
-//     }
-//     return { ...authData.user, profile: userProfile };
-//   } catch (error) {
-//     console.warn("Error getting user with profile:", error);
-//     return null;
-//   }
-// }
-
 export async function getUser() {
   try {
     const supabase = await createClient();

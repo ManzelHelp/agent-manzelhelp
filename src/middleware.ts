@@ -5,31 +5,30 @@ import { routing } from "./i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
 
-// Routes that don't need auth checks - performance optimization
-const PUBLIC_ROUTES = [
-  "/api/webhook",
-  "/api/health",
+// Static/system routes that should skip all processing for performance
+const SYSTEM_ROUTES = [
   "/_next",
   "/_vercel",
   "/favicon.ico",
   "/robots.txt",
   "/sitemap.xml",
+  "/api/webhook",
+  "/api/health",
 ];
 
 // Routes that need auth checks
-const PROTECTED_ROUTES = [
-  // "/admin",
-  "/customer",
-  "/tasker",
-];
+const PROTECTED_ROUTES = ["/customer", "/tasker"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Early return for public routes - avoid unnecessary processing
-  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
+  // Early return for system routes - skip all processing for performance
+  if (SYSTEM_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
+
+  // Extract locale info for route checking
+  const { locale, pathname: cleanPathname } = getLocaleInfo(request);
 
   // Run intl middleware first
   const intlResponse = intlMiddleware(request);
@@ -39,24 +38,28 @@ export async function middleware(request: NextRequest) {
     return intlResponse;
   }
 
-  // Extract locale info for auth checks
-  const { locale, pathname: cleanPathname } = getLocaleInfo(request);
-
-  // Only run auth checks for routes that actually need them
-  const needsAuthCheck = PROTECTED_ROUTES.some((route) =>
+  // Check if this is a protected route that needs auth
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
     cleanPathname.startsWith(route)
   );
 
-  if (!needsAuthCheck) {
+  // If not a protected route, just return the intl response
+  if (!isProtectedRoute) {
     return intlResponse || NextResponse.next();
   }
 
-  // Run Supabase auth only when needed
-  return await updateSession(request, intlResponse, {
-    locale,
-    pathname: cleanPathname,
-    protectedRoutes: PROTECTED_ROUTES,
-  });
+  // Run Supabase auth only for protected routes
+  try {
+    return await updateSession(request, intlResponse, {
+      locale,
+      pathname: cleanPathname,
+      protectedRoutes: PROTECTED_ROUTES,
+    });
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    // Fallback to login page on auth errors
+    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+  }
 }
 
 // Helper function to extract locale and clean pathname
@@ -77,7 +80,11 @@ function getLocaleInfo(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // More specific matcher to avoid processing static files
-    "/((?!api/webhook|api/health|_next/static|_next/image|_vercel|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)",
+    // Skip all internal paths (_next, _vercel)
+    "/((?!_next/static|_next/image|_vercel|favicon.ico).*)",
+    // Skip all file extensions (images, fonts, etc.)
+    "/((?!.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|css|js|woff|woff2|ttf|eot)$).*)",
+    // Include API routes we want to process
+    "/api/((?!webhook|health).*)",
   ],
 };

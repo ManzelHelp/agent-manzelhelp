@@ -52,14 +52,26 @@ export async function updateSession(
   }
 
   // Only call getUser() when we actually need to check auth status
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  // Handle protected routes
-  if (!user && isProtectedRoute) {
+    // Handle auth errors
+    if (error) {
+      console.error("Auth error in middleware:", error);
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    }
+
+    // Handle protected routes
+    if (!user && isProtectedRoute) {
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    }
+
+    return supabaseResponse;
+  } catch (error) {
+    console.error("Unexpected auth error:", error);
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
-
-  return supabaseResponse;
 }
