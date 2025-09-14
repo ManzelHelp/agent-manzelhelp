@@ -415,3 +415,116 @@ export async function cancelCustomerBooking(
 
   return { success: true };
 }
+
+// Create a new service booking
+export interface CreateBookingData {
+  tasker_service_id: string;
+  booking_type: "instant" | "scheduled" | "recurring";
+  scheduled_date?: string;
+  scheduled_time_start?: string;
+  scheduled_time_end?: string;
+  estimated_duration?: number;
+  address_id?: string;
+  service_address?: string;
+  agreed_price: number;
+  customer_requirements?: string;
+  payment_method?: "cash" | "online" | "wallet" | "pending";
+}
+
+export async function createServiceBooking(
+  customerId: string,
+  bookingData: CreateBookingData
+): Promise<{ success: boolean; bookingId?: string; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Validate required fields
+    if (!bookingData.tasker_service_id) {
+      return { success: false, error: "Missing required fields" };
+    }
+
+    // Get tasker service details to get tasker_id
+    const { data: serviceData, error: serviceError } = await supabase
+      .from("tasker_services")
+      .select("tasker_id, title, price")
+      .eq("id", bookingData.tasker_service_id)
+      .single();
+
+    if (serviceError || !serviceData) {
+      return { success: false, error: "Service not found" };
+    }
+
+    // Get customer's default address if no address_id provided
+    let addressId = bookingData.address_id;
+    if (!addressId) {
+      const { data: defaultAddress, error: addressError } = await supabase
+        .from("addresses")
+        .select("id")
+        .eq("user_id", customerId)
+        .eq("is_default", true)
+        .single();
+
+      if (addressError || !defaultAddress) {
+        // If no default address, get any address for the user
+        const { data: anyAddress, error: anyAddressError } = await supabase
+          .from("addresses")
+          .select("id")
+          .eq("user_id", customerId)
+          .limit(1)
+          .single();
+
+        if (anyAddressError || !anyAddress) {
+          return {
+            success: false,
+            error:
+              "No address found. Please add an address to your profile first.",
+          };
+        }
+        addressId = anyAddress.id;
+      } else {
+        addressId = defaultAddress.id;
+      }
+    }
+
+    // Create the booking
+    const { data: booking, error: bookingError } = await supabase
+      .from("service_bookings")
+      .insert({
+        customer_id: customerId,
+        tasker_id: serviceData.tasker_id,
+        tasker_service_id: bookingData.tasker_service_id,
+        booking_type: bookingData.booking_type,
+        scheduled_date: bookingData.scheduled_date || null,
+        scheduled_time_start: bookingData.scheduled_time_start || null,
+        scheduled_time_end: bookingData.scheduled_time_end || null,
+        estimated_duration: bookingData.estimated_duration || null,
+        address_id: addressId,
+        service_address: bookingData.service_address || null,
+        agreed_price: bookingData.agreed_price,
+        currency: "EUR",
+        status: "pending",
+        customer_requirements: bookingData.customer_requirements || null,
+        payment_method: bookingData.payment_method || "pending",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (bookingError) {
+      console.error("Error creating booking:", bookingError);
+      return {
+        success: false,
+        error: `Failed to create booking: ${bookingError.message}`,
+      };
+    }
+
+    revalidatePath("/customer/bookings");
+    revalidatePath("/tasker/bookings");
+
+    return { success: true, bookingId: booking.id };
+  } catch (error) {
+    console.error("Error in createServiceBooking:", error);
+    return { success: false, error: "Failed to create booking" };
+  }
+}

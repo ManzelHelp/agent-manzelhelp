@@ -563,5 +563,36 @@
       "hoursAgo": "Il y a {hours} heures",
       "daysAgo": "Il y a {days} jours"
     }
+  },
+  "taskerOffer": {
+    "title": "Offre de Service",
+    "bookService": "Réserver le Service",
+    "contactTasker": "Contacter l'Assistant",
+    "aboutService": "À propos de ce service",
+    "aboutTasker": "À propos de l'Assistant",
+    "serviceArea": "Zone de Service",
+    "pricingType": "Type de Prix",
+    "experienceLevel": "Niveau d'Expérience",
+    "rating": "Note",
+    "jobsCompleted": "Emplois terminés",
+    "avgResponse": "Réponse moy.",
+    "memberSince": "Membre depuis",
+    "jobs": "Emplois",
+    "reviews": "Avis",
+    "professionalServiceProvider": "Fournisseur de Services Professionnel",
+    "notLoggedIn": "Non Connecté",
+    "loginRequired": "Veuillez vous connecter pour réserver des services",
+    "onlyCustomersCanBook": "Seuls les clients peuvent réserver des services",
+    "taskersCannotBook": "Les assistants ne peuvent pas réserver de services. Veuillez passer à un compte client.",
+    "bookingSuccess": "Service réservé avec succès !",
+    "bookingError": "Échec de la réservation du service",
+    "contactSuccess": "Conversation démarrée avec succès !",
+    "contactError": "Échec du démarrage de la conversation",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "tryAgain": "Réessayer",
+    "serviceNotFound": "Service non trouvé",
+    "failedToLoad": "Échec du chargement de l'offre de service. Veuillez réessayer plus tard.",
+    "goToDashboard": "Aller au Tableau de Bord"
   }
 }

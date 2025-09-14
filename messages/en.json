@@ -563,6 +563,37 @@
       "hoursAgo": "{hours} hours ago",
       "daysAgo": "{days} days ago"
     }
+  },
+  "taskerOffer": {
+    "title": "Service Offer",
+    "bookService": "Book Service",
+    "contactTasker": "Contact Tasker",
+    "aboutService": "About this service",
+    "aboutTasker": "About the Tasker",
+    "serviceArea": "Service Area",
+    "pricingType": "Pricing Type",
+    "experienceLevel": "Experience Level",
+    "rating": "Rating",
+    "jobsCompleted": "Jobs completed",
+    "avgResponse": "Avg response",
+    "memberSince": "Member since",
+    "jobs": "Jobs",
+    "reviews": "Reviews",
+    "professionalServiceProvider": "Professional Service Provider",
+    "notLoggedIn": "Not Logged In",
+    "loginRequired": "Please log in to book services",
+    "onlyCustomersCanBook": "Only customers can book services",
+    "taskersCannotBook": "Taskers cannot book services. Please switch to customer account.",
+    "bookingSuccess": "Service booked successfully!",
+    "bookingError": "Failed to book service",
+    "contactSuccess": "Conversation started successfully!",
+    "contactError": "Failed to start conversation",
+    "loading": "Loading...",
+    "error": "Error",
+    "tryAgain": "Try Again",
+    "serviceNotFound": "Service not found",
+    "failedToLoad": "Failed to load the service offer. Please try again later.",
+    "goToDashboard": "Go to Dashboard"
   }
 }
   

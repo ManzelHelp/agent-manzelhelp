@@ -424,3 +424,114 @@ export async function createTaskerService(
     return { success: false, error: "Failed to create service" };
   }
 }
+
+// Get tasker service offer details for public viewing
+export interface TaskerServiceOffer {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  pricing_type: "fixed" | "hourly" | "per_item";
+  minimum_duration: number | null;
+  service_area: Record<string, unknown> | null;
+  portfolio_images: string[] | null;
+  created_at: string;
+  tasker: {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+    created_at: string;
+    profile: {
+      bio: string | null;
+      experience_level: string | null;
+    } | null;
+  };
+  stats: {
+    tasker_rating: number | null;
+    completed_jobs: number | null;
+    total_reviews: number | null;
+    response_time_hours: number | null;
+  } | null;
+}
+
+export async function getTaskerServiceOffer(
+  serviceId: string
+): Promise<{ success: boolean; data?: TaskerServiceOffer; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    if (!serviceId || typeof serviceId !== "string") {
+      return { success: false, error: "Invalid service ID" };
+    }
+
+    // Fetch tasker service with related data
+    const { data: taskerServiceData, error: taskerServiceError } =
+      await supabase
+        .from("tasker_services")
+        .select(
+          `
+          *,
+          tasker:tasker_id (
+            id,
+            first_name,
+            last_name,
+            avatar_url,
+            created_at,
+            profile:tasker_profiles (
+              bio,
+              experience_level
+            )
+          )
+        `
+        )
+        .eq("id", serviceId)
+        .single();
+
+    if (taskerServiceError) {
+      console.error("Tasker service error:", taskerServiceError);
+      if (taskerServiceError.code === "PGRST116") {
+        return { success: false, error: "Service not found" };
+      }
+      return { success: false, error: taskerServiceError.message };
+    }
+
+    if (!taskerServiceData) {
+      return { success: false, error: "Service not found" };
+    }
+
+    // Fetch tasker stats
+    const { data: statsData, error: statsError } = await supabase
+      .from("user_stats")
+      .select("*")
+      .eq("id", taskerServiceData.tasker_id)
+      .single();
+
+    // Stats error is not critical, we can continue without stats
+    if (statsError && statsError.code !== "PGRST116") {
+      console.warn("Failed to fetch user stats:", statsError);
+    }
+
+    const result: TaskerServiceOffer = {
+      id: taskerServiceData.id,
+      title: taskerServiceData.title,
+      description: taskerServiceData.description,
+      price: taskerServiceData.price,
+      pricing_type: taskerServiceData.pricing_type,
+      minimum_duration: taskerServiceData.minimum_duration,
+      service_area: taskerServiceData.service_area,
+      portfolio_images: taskerServiceData.portfolio_images,
+      created_at: taskerServiceData.created_at,
+      tasker: taskerServiceData.tasker,
+      stats: statsData || null,
+    };
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error fetching tasker service offer:", error);
+    return {
+      success: false,
+      error: "Failed to load the service offer. Please try again later.",
+    };
+  }
+}

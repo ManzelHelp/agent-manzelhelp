@@ -563,6 +563,37 @@
       "hoursAgo": "vor {hours} Stunden",
       "daysAgo": "vor {days} Tagen"
     }
+  },
+  "taskerOffer": {
+    "title": "Service-Angebot",
+    "bookService": "Service Buchen",
+    "contactTasker": "Tasker Kontaktieren",
+    "aboutService": "Über diesen Service",
+    "aboutTasker": "Über den Tasker",
+    "serviceArea": "Servicegebiet",
+    "pricingType": "Preistyp",
+    "experienceLevel": "Erfahrungslevel",
+    "rating": "Bewertung",
+    "jobsCompleted": "Abgeschlossene Jobs",
+    "avgResponse": "Durchschn. Antwort",
+    "memberSince": "Mitglied seit",
+    "jobs": "Jobs",
+    "reviews": "Bewertungen",
+    "professionalServiceProvider": "Professioneller Serviceanbieter",
+    "notLoggedIn": "Nicht Angemeldet",
+    "loginRequired": "Bitte melden Sie sich an, um Services zu buchen",
+    "onlyCustomersCanBook": "Nur Kunden können Services buchen",
+    "taskersCannotBook": "Tasker können keine Services buchen. Bitte wechseln Sie zu einem Kundenkonto.",
+    "bookingSuccess": "Service erfolgreich gebucht!",
+    "bookingError": "Service konnte nicht gebucht werden",
+    "contactSuccess": "Unterhaltung erfolgreich gestartet!",
+    "contactError": "Unterhaltung konnte nicht gestartet werden",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "tryAgain": "Erneut Versuchen",
+    "serviceNotFound": "Service nicht gefunden",
+    "failedToLoad": "Service-Angebot konnte nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "goToDashboard": "Zum Dashboard"
   }
 }
   
