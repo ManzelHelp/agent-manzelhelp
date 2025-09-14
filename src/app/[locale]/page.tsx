@@ -7,6 +7,7 @@ import PopularServices from "@/components/PopularServices";
 import { createClient } from "@/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   Star,
   Clock,
@@ -147,7 +148,7 @@ export default async function Page({
           </p>
 
           {/* Enhanced Search Bar */}
-          <div className="max-w-3xl mx-auto mb-8 sm:mb-12 px-2">
+          <div className="max-w-3xl mx-auto mb-8 sm:mb-12 px-2 relative z-10">
             <div className="relative">
               <ServiceSearchBar />
               <div className="absolute -top-2 -right-2 w-4 h-4 bg-[var(--color-secondary)] rounded-full animate-ping"></div>
@@ -267,15 +268,17 @@ export default async function Page({
 
           {/* Enhanced View All Services Button */}
           <div className="text-center mt-12 sm:mt-16">
-            <Button
-              size="lg"
-              className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0"
-            >
-              <span className="flex items-center gap-3">
-                View All Services
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </span>
-            </Button>
+            <Link href={`/${locale}/search`}>
+              <Button
+                size="lg"
+                className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0"
+              >
+                <span className="flex items-center gap-3">
+                  View All Services
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </span>
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -451,26 +454,30 @@ export default async function Page({
 
               {/* Enhanced Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-2 max-w-2xl mx-auto">
-                <Button
-                  size="lg"
-                  className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0 flex-1"
-                >
-                  <span className="flex items-center justify-center gap-3">
-                    <Users className="h-5 w-5" />
-                    Find a Tasker
-                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                  </span>
-                </Button>
-                <Button
-                  size="lg"
-                  className="group bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border-2 border-white/30 hover:border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl flex-1"
-                >
-                  <span className="flex items-center justify-center gap-3">
-                    <Star className="h-5 w-5" />
-                    Become a Tasker
-                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                  </span>
-                </Button>
+                <Link href={`/${locale}/search`}>
+                  <Button
+                    size="lg"
+                    className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0 flex-1"
+                  >
+                    <span className="flex items-center justify-center gap-3">
+                      <Users className="h-5 w-5" />
+                      Find a Tasker
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    </span>
+                  </Button>
+                </Link>
+                <Link href={`/${locale}/become-a-helper`}>
+                  <Button
+                    size="lg"
+                    className="group bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border-2 border-white/30 hover:border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl flex-1"
+                  >
+                    <span className="flex items-center justify-center gap-3">
+                      <Star className="h-5 w-5" />
+                      Become a Tasker
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    </span>
+                  </Button>
+                </Link>
               </div>
 
               {/* Trust Indicators */}

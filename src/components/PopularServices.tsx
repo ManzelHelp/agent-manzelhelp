@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { ServiceCategory } from "@/types/supabase";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
@@ -46,7 +45,7 @@ export default function PopularServices({
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
       <h2
         className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center px-2"
         style={{ fontFamily: "var(--font-sans)" }}
@@ -88,15 +87,14 @@ export default function PopularServices({
           }}
         >
           {categories.slice(0, 8).map((category) => (
-            <Badge
+            <button
               key={category.id}
-              variant="default"
               onClick={() => handleCategoryClick(category.id)}
-              className="text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-2.5 hover:scale-105 transition-transform cursor-pointer bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white border-0 shadow-sm hover:shadow-md flex-shrink-0 lg:flex-shrink"
+              className="text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-2.5 hover:scale-105 transition-all duration-200 cursor-pointer bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white border-0 shadow-sm hover:shadow-md flex-shrink-0 lg:flex-shrink rounded-full font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/50 focus:ring-offset-2"
             >
               {category[`name_${locale}` as keyof typeof category] ||
                 category.name_en}
-            </Badge>
+            </button>
           ))}
         </div>
       </div>

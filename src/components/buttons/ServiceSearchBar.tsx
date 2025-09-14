@@ -37,7 +37,7 @@ export default function ServiceSearchBar({
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder="Search for services, professionals, or skills..."
-            className={`h-14 sm:h-16 text-base sm:text-lg px-6 sm:px-8 pr-16 sm:pr-20 rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl focus:shadow-2xl ${
+            className={`h-14 sm:h-16 text-base sm:text-lg px-6 sm:px-8 pr-16 sm:pr-20 rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl focus:shadow-2xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] ${
               isFocused
                 ? "border-[var(--color-secondary)] ring-4 ring-[var(--color-secondary)]/20"
                 : "border-white/20 hover:border-[var(--color-secondary)]/50"
@@ -83,8 +83,13 @@ export default function ServiceSearchBar({
               ].map((term) => (
                 <button
                   key={term}
-                  onClick={() => setSearchQuery(term)}
-                  className="px-3 py-1.5 text-xs sm:text-sm bg-[var(--color-accent)]/10 hover:bg-[var(--color-secondary)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-secondary)] rounded-lg transition-colors duration-200"
+                  onClick={() => {
+                    setSearchQuery(term);
+                    router.push(
+                      `/${locale}/search?q=${encodeURIComponent(term)}`
+                    );
+                  }}
+                  className="px-3 py-1.5 text-xs sm:text-sm bg-[var(--color-accent)]/10 hover:bg-[var(--color-secondary)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-secondary)] rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/50"
                 >
                   {term}
                 </button>
