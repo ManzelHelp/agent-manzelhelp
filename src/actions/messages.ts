@@ -401,8 +401,13 @@ export const createConversationAction = async (
       };
     }
 
-    // Note: Self-messaging check removed as taskers cannot contact other taskers
-    // This is handled at the UI level by role-based access control
+    // Prevent self-messaging
+    if (otherParticipantId === user.id) {
+      return {
+        conversation: null,
+        errorMessage: "You cannot message yourself",
+      };
+    }
 
     // Validate initial message if provided
     if (initialMessage) {

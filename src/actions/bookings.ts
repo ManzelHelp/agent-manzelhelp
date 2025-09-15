@@ -482,6 +482,12 @@ async function validateBookingData(
     return { isValid: false, errors, warnings };
   }
 
+  // Prevent self-booking
+  if (serviceData.tasker_id === customerId) {
+    errors.push("You cannot book your own service");
+    return { isValid: false, errors, warnings };
+  }
+
   // Service status validation
   if (serviceData.service_status !== "active") {
     errors.push("Service is not currently available");

@@ -119,39 +119,6 @@ export default function TaskerOfferPage() {
     router.push(`/customer/messages/${conversationId}`);
   };
 
-  // Show tasker restriction message if user is a tasker
-  if (user && user.role === "tasker") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20 flex items-center justify-center">
-        <div className="container mx-auto px-4 max-w-md">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 text-center p-12">
-            <div className="space-y-8">
-              <div className="flex justify-center">
-                <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
-                  <AlertCircle className="h-12 w-12 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {t("onlyCustomersCanBook")}
-                </h2>
-                <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
-                  {t("taskersCannotBook")}
-                </p>
-              </div>
-              <Button
-                onClick={() => router.push("/tasker/dashboard")}
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {t("goToDashboard")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20 flex items-center justify-center">
