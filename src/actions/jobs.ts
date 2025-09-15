@@ -152,10 +152,19 @@ export async function getCustomerJobs(
 }
 
 export async function getJobById(
-  jobId: string,
-  customerId: string
+  jobId: string
 ): Promise<JobWithDetails | null> {
   const supabase = await createClient();
+
+  // Get the current user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("Authentication required");
+  }
 
   const { data, error } = await supabase
     .from("jobs")
@@ -180,7 +189,7 @@ export async function getJobById(
     `
     )
     .eq("id", jobId)
-    .eq("customer_id", customerId)
+    .eq("customer_id", user.id)
     .single();
 
   if (error) {
@@ -318,12 +327,21 @@ export async function deleteJob(
 
 export async function assignTaskerToJob(
   jobId: string,
-  customerId: string,
   taskerId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
   try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
     // Verify the job belongs to the customer
     const { data: existingJob, error: fetchError } = await supabase
       .from("jobs")
@@ -335,7 +353,7 @@ export async function assignTaskerToJob(
       return { success: false, error: "Job not found" };
     }
 
-    if (existingJob.customer_id !== customerId) {
+    if (existingJob.customer_id !== user.id) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -401,12 +419,21 @@ export interface JobApplicationWithDetails {
 }
 
 export async function getJobApplications(
-  jobId: string,
-  customerId: string
+  jobId: string
 ): Promise<JobApplicationWithDetails[]> {
   const supabase = await createClient();
 
   try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      throw new Error("Authentication required");
+    }
+
     // First verify the job belongs to the customer
     const { data: job, error: jobError } = await supabase
       .from("jobs")
@@ -418,7 +445,7 @@ export async function getJobApplications(
       throw new Error("Job not found");
     }
 
-    if (job.customer_id !== customerId) {
+    if (job.customer_id !== user.id) {
       throw new Error("Unauthorized");
     }
 
@@ -482,6 +509,99 @@ export interface CreateJobData {
   max_applications?: number;
   requirements?: string;
   images?: string[];
+}
+
+export interface UpdateJobData {
+  title: string;
+  description: string;
+  customer_budget: number;
+  estimated_duration: number;
+  preferred_date: string;
+  preferred_time_start?: string | null;
+  preferred_time_end?: string | null;
+  is_flexible: boolean;
+  requirements?: string | null;
+}
+
+export async function updateJob(
+  jobId: string,
+  updateData: UpdateJobData
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Verify the job belongs to the customer
+    const { data: existingJob, error: fetchError } = await supabase
+      .from("jobs")
+      .select("customer_id")
+      .eq("id", jobId)
+      .single();
+
+    if (fetchError || !existingJob) {
+      return { success: false, error: "Job not found" };
+    }
+
+    if (existingJob.customer_id !== user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Validate required fields
+    if (!updateData.title?.trim()) {
+      return { success: false, error: "Job title is required" };
+    }
+    if (!updateData.description?.trim()) {
+      return { success: false, error: "Job description is required" };
+    }
+    if (!updateData.customer_budget || updateData.customer_budget <= 0) {
+      return { success: false, error: "Valid budget is required" };
+    }
+    if (!updateData.preferred_date) {
+      return { success: false, error: "Preferred date is required" };
+    }
+
+    // Update the job
+    const { error } = await supabase
+      .from("jobs")
+      .update({
+        title: updateData.title.trim(),
+        description: updateData.description.trim(),
+        customer_budget: updateData.customer_budget,
+        estimated_duration: updateData.estimated_duration,
+        preferred_date: updateData.preferred_date,
+        preferred_time_start: updateData.preferred_time_start || null,
+        preferred_time_end: updateData.preferred_time_end || null,
+        is_flexible: updateData.is_flexible,
+        requirements: updateData.requirements?.trim() || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", jobId);
+
+    if (error) {
+      console.error("Error updating job:", error);
+      return {
+        success: false,
+        error: `Failed to update job: ${error.message}`,
+      };
+    }
+
+    revalidatePath("/customer/my-jobs");
+    revalidatePath(`/customer/my-jobs/${jobId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateJob:", error);
+    return { success: false, error: "Failed to update job" };
+  }
 }
 
 export async function createJob(

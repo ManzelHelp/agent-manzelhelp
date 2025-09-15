@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { createClient } from "@/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,9 +31,9 @@ import {
   getJobById,
   getJobApplications,
   assignTaskerToJob,
+  updateJob,
   JobApplicationWithDetails,
 } from "@/actions/jobs";
-import { getUserProfileAction } from "@/actions/auth";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
 
 interface JobDetailsData {
@@ -113,16 +112,8 @@ export default function JobDetailPage() {
       }
 
       try {
-        // Get current user
-        const { user } = await getUserProfileAction();
-        if (!user) {
-          setError("Not authenticated");
-          setLoading(false);
-          return;
-        }
-
         // Fetch job details
-        const jobData = await getJobById(params["job-id"], user.id);
+        const jobData = await getJobById(params["job-id"]);
         if (!jobData) {
           setError("Job not found");
           setLoading(false);
@@ -147,10 +138,7 @@ export default function JobDetailPage() {
         // Fetch applications if job is open
         if (jobData.status === "open") {
           try {
-            const jobApplications = await getJobApplications(
-              params["job-id"],
-              user.id
-            );
+            const jobApplications = await getJobApplications(params["job-id"]);
             setApplications(jobApplications);
           } catch (appError) {
             console.error("Error fetching applications:", appError);
@@ -176,37 +164,28 @@ export default function JobDetailPage() {
     if (!data) return;
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("jobs")
-        .update({
-          title: editForm.title,
-          description: editForm.description,
-          customer_budget: editForm.customer_budget,
-          estimated_duration: editForm.estimated_duration,
-          preferred_date: editForm.preferred_date,
-          preferred_time_start: editForm.preferred_time_start || null,
-          preferred_time_end: editForm.preferred_time_end || null,
-          is_flexible: editForm.is_flexible,
-          requirements: editForm.requirements,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", data.id);
+      const result = await updateJob(data.id, {
+        title: editForm.title,
+        description: editForm.description,
+        customer_budget: editForm.customer_budget,
+        estimated_duration: editForm.estimated_duration,
+        preferred_date: editForm.preferred_date,
+        preferred_time_start: editForm.preferred_time_start || null,
+        preferred_time_end: editForm.preferred_time_end || null,
+        is_flexible: editForm.is_flexible,
+        requirements: editForm.requirements,
+      });
 
-      if (error) {
-        throw new Error(`Failed to update job: ${error.message}`);
-      }
-
-      // Refresh data
-      const { user } = await getUserProfileAction();
-      if (user) {
-        const updatedData = await getJobById(data.id, user.id);
+      if (result.success) {
+        // Refresh data
+        const updatedData = await getJobById(data.id);
         if (updatedData) {
           setData(updatedData);
         }
+        setIsEditing(false);
+      } else {
+        setError(result.error || "Failed to update job");
       }
-
-      setIsEditing(false);
     } catch (err) {
       console.error("Error updating job:", err);
       if (err instanceof Error) {
@@ -239,13 +218,7 @@ export default function JobDetailPage() {
 
     setIsAssigning(taskerId);
     try {
-      const { user } = await getUserProfileAction();
-      if (!user) {
-        setError("Not authenticated");
-        return;
-      }
-
-      const result = await assignTaskerToJob(data.id, user.id, taskerId);
+      const result = await assignTaskerToJob(data.id, taskerId);
 
       if (result.success) {
         // Refresh the page to show updated status
@@ -265,6 +238,8 @@ export default function JobDetailPage() {
     switch (status) {
       case "open":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "under_review":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "assigned":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       case "in_progress":
@@ -282,6 +257,8 @@ export default function JobDetailPage() {
     switch (status) {
       case "open":
         return <Eye className="h-4 w-4" />;
+      case "under_review":
+        return <Clock className="h-4 w-4" />;
       case "assigned":
         return <CheckCircle className="h-4 w-4" />;
       case "in_progress":
@@ -299,6 +276,8 @@ export default function JobDetailPage() {
     switch (status) {
       case "open":
         return "Open";
+      case "under_review":
+        return "Under Review";
       case "assigned":
         return "Assigned";
       case "in_progress":
@@ -331,8 +310,8 @@ export default function JobDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg)]">
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+        <div className="container mx-auto px-4 py-6 max-w-6xl">
           <div className="animate-pulse space-y-6">
             {/* Header Skeleton */}
             <div className="flex items-center gap-4">
@@ -360,7 +339,7 @@ export default function JobDetailPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20 flex items-center justify-center">
         <div className="container mx-auto px-4 max-w-md">
           <Card className="text-center p-8">
             <CardContent className="space-y-6">
@@ -394,8 +373,8 @@ export default function JobDetailPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -450,9 +429,9 @@ export default function JobDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="space-y-8">
           {/* Main Job Details */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* Job Status Card */}
             <Card className="border-[var(--color-border)] bg-[var(--color-surface)]">
               <CardContent className="p-4">
@@ -465,9 +444,7 @@ export default function JobDetailPage() {
                         <EyeOff className="h-5 w-5 text-[var(--color-text-secondary)]" />
                       )}
                       <span className="font-medium text-[var(--color-text-primary)]">
-                        {data.status === "open"
-                          ? "Open for Applications"
-                          : "Closed"}
+                        {data.status === "open" ? "Active" : "Paused"}
                       </span>
                     </div>
                   </div>
@@ -480,7 +457,7 @@ export default function JobDetailPage() {
             </Card>
 
             {/* Job Details Card */}
-            <Card className="overflow-hidden border-[var(--color-border)] bg-[var(--color-surface)]">
+            <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50">
               {/* Job Image */}
               {data.images &&
                 Array.isArray(data.images) &&
@@ -497,7 +474,7 @@ export default function JobDetailPage() {
                   </div>
                 )}
 
-              <CardContent className="p-6">
+              <div className="p-8 md:p-12">
                 {isEditing ? (
                   <div className="space-y-4">
                     <div>
@@ -791,149 +768,131 @@ export default function JobDetailPage() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Applications Card */}
-            {data.status === "open" && applications.length > 0 && (
-              <Card className="border-[var(--color-border)] bg-[var(--color-surface)]">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Users className="h-5 w-5 text-[var(--color-secondary)]" />
-                    <h3 className="font-semibold text-[var(--color-text-primary)]">
-                      Applications ({applications.length})
-                    </h3>
+          {/* Applications Section */}
+          {data.status === "open" && applications.length > 0 && (
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                    <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div className="space-y-3">
-                    {applications.slice(0, 3).map((application) => (
-                      <div
-                        key={application.id}
-                        className="p-3 border border-[var(--color-border)] rounded-lg"
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="h-8 w-8 bg-[var(--color-secondary)] rounded-full flex items-center justify-center">
-                            <User className="h-4 w-4 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
-                              {application.tasker_first_name}{" "}
-                              {application.tasker_last_name}
-                            </p>
-                            <p className="text-xs text-[var(--color-text-secondary)]">
-                              {formatDate(application.created_at)}
-                            </p>
-                          </div>
+                  Applications ({applications.length})
+                </h2>
+              </div>
+              <div className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {applications.map((application) => (
+                    <div
+                      key={application.id}
+                      className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                          <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-900 dark:text-white truncate">
+                            {application.tasker_first_name}{" "}
+                            {application.tasker_last_name}
+                          </p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {formatDate(application.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Euro className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                            €{application.proposed_price}
+                          </span>
+                        </div>
+                        {application.estimated_duration && (
                           <div className="flex items-center gap-1">
-                            <Euro className="h-3 w-3 text-[var(--color-secondary)]" />
-                            <span className="text-sm font-medium text-[var(--color-secondary)]">
-                              €{application.proposed_price}
+                            <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                            <span className="text-sm text-slate-600 dark:text-slate-400">
+                              {application.estimated_duration}h
                             </span>
                           </div>
-                          {application.estimated_duration && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3 text-[var(--color-text-secondary)]" />
-                              <span className="text-xs text-[var(--color-text-secondary)]">
-                                {application.estimated_duration}h
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        {application.message && (
-                          <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 mb-2">
-                            {application.message}
-                          </p>
                         )}
-                        <Button
-                          onClick={() =>
-                            handleAssignTasker(application.tasker_id)
-                          }
-                          disabled={isAssigning === application.tasker_id}
-                          size="sm"
-                          className="w-full bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
-                        >
-                          {isAssigning === application.tasker_id ? (
-                            <>
-                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                              Assigning...
-                            </>
-                          ) : (
-                            <>
-                              <UserCheck className="h-4 w-4 mr-2" />
-                              Assign Tasker
-                            </>
-                          )}
-                        </Button>
                       </div>
-                    ))}
-                    {applications.length > 3 && (
+                      {application.message && (
+                        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mb-4">
+                          {application.message}
+                        </p>
+                      )}
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-[var(--color-border)]"
+                        onClick={() =>
+                          handleAssignTasker(application.tasker_id)
+                        }
+                        disabled={isAssigning === application.tasker_id}
+                        className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                       >
-                        View All Applications
+                        {isAssigning === application.tasker_id ? (
+                          <>
+                            <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Assigning...
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-5 w-5 mr-2" />
+                            Assign Tasker
+                          </>
+                        )}
                       </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Assigned Tasker Card */}
-            {data.assigned_tasker_id && (
-              <Card className="border-[var(--color-border)] bg-[var(--color-surface)]">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <UserCheck className="h-5 w-5 text-[var(--color-secondary)]" />
-                    <h3 className="font-semibold text-[var(--color-text-primary)]">
-                      Assigned Tasker
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 bg-[var(--color-secondary)] rounded-full flex items-center justify-center">
-                      <User className="h-6 w-6 text-white" />
                     </div>
-                    <div>
-                      <p className="font-medium text-[var(--color-text-primary)]">
-                        {data.assigned_tasker_first_name}{" "}
-                        {data.assigned_tasker_last_name}
-                      </p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        Assigned to this job
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Action Buttons */}
-            <Card className="border-[var(--color-border)] bg-[var(--color-surface)]">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {!data.assigned_tasker_id && data.status === "open" && (
-                    <JobDeleteButton
-                      jobId={data.id}
-                      customerId={data.customer_id}
-                      jobTitle={data.title}
-                    />
-                  )}
-                  <Button
-                    variant="outline"
-                    className="w-full border-[var(--color-border)]"
-                    onClick={() => router.push("/customer/my-jobs")}
-                  >
-                    Back to My Jobs
-                  </Button>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </div>
+          )}
+
+          {/* Assigned Tasker Section */}
+          {data.assigned_tasker_id && (
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-50 to-green-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                    <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  Assigned Tasker
+                </h2>
+              </div>
+              <div className="p-8">
+                <div className="flex items-center gap-6">
+                  <div className="h-20 w-20 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center">
+                    <User className="h-10 w-10 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                      {data.assigned_tasker_first_name}{" "}
+                      {data.assigned_tasker_last_name}
+                    </h3>
+                    <p className="text-slate-600 dark:text-slate-400 text-lg">
+                      Assigned to this job
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          {!data.assigned_tasker_id && data.status === "open" && (
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+              <div className="p-8">
+                <JobDeleteButton
+                  jobId={data.id}
+                  customerId={data.customer_id}
+                  jobTitle={data.title}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

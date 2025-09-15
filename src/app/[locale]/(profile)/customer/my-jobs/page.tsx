@@ -73,6 +73,8 @@ function JobCard({
     switch (status) {
       case "open":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "under_review":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "assigned":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       case "in_progress":
@@ -90,6 +92,8 @@ function JobCard({
     switch (status) {
       case "open":
         return <Eye className="h-4 w-4" />;
+      case "under_review":
+        return <Clock className="h-4 w-4" />;
       case "assigned":
         return <CheckCircle className="h-4 w-4" />;
       case "in_progress":
@@ -107,6 +111,8 @@ function JobCard({
     switch (status) {
       case "open":
         return "Open";
+      case "under_review":
+        return "Under Review";
       case "assigned":
         return "Assigned";
       case "in_progress":
