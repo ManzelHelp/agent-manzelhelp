@@ -564,6 +564,160 @@
       "daysAgo": "Il y a {days} jours"
     }
   },
+  "postJob": {
+    "title": "Publier un Emploi",
+    "subtitle": "Décrivez ce dont vous avez besoin et trouvez l'assistant parfait",
+    "steps": {
+      "jobDetails": "Détails de l'Emploi",
+      "scheduleBudget": "Horaire et Budget",
+      "reviewPost": "Examiner et Publier"
+    },
+    "stepDescriptions": {
+      "jobDetails": "Dites-nous en quoi consiste l'emploi que vous voulez faire",
+      "scheduleBudget": "Définissez votre horaire et votre budget",
+      "reviewPost": "Examinez et publiez votre emploi"
+    },
+    "jobDetails": {
+      "title": "Titre de l'Emploi",
+      "titlePlaceholder": "ex. Nettoyage de maison pour appartement 3 pièces nécessaire",
+      "description": "Description de l'Emploi",
+      "descriptionPlaceholder": "Décrivez ce qui doit être fait, les exigences spécifiques et ce qui est inclus...",
+      "category": "Catégorie de Service",
+      "service": "Service Spécifique",
+      "location": "Lieu de l'Emploi",
+      "requirements": "Exigences Spéciales (Optionnel)",
+      "requirementsPlaceholder": "Instructions spéciales, matériaux nécessaires ou exigences spécifiques...",
+      "images": "Ajouter des Photos (Optionnel)",
+      "imagesDescription": "Téléchargez des photos pour aider les assistants à mieux comprendre l'emploi"
+    },
+    "scheduleBudget": {
+      "preferredDate": "Date Préférée",
+      "preferredTime": "Heure Préférée",
+      "timeFlexible": "L'heure est flexible",
+      "estimatedDuration": "Durée Estimée (heures)",
+      "durationPlaceholder": "Combien de temps pensez-vous que cela prendra ?",
+      "budget": "Votre Budget",
+      "budgetPlaceholder": "Quel est votre budget pour cet emploi ?",
+      "currency": "Devise",
+      "maxApplications": "Candidatures Maximum",
+      "maxApplicationsDescription": "Combien de candidatures d'assistants voulez-vous recevoir ?"
+    },
+    "review": {
+      "title": "Examinez Votre Publication d'Emploi",
+      "description": "Veuillez examiner tous les détails avant de publier votre emploi",
+      "jobOverview": "Aperçu de l'Emploi",
+      "scheduleBudget": "Horaire et Budget",
+      "publishJob": "Publier l'Emploi",
+      "publishingJob": "Publication de l'emploi..."
+    },
+    "success": {
+      "jobPosted": "Emploi publié avec succès !",
+      "jobPostedDescription": "Votre emploi a été publié et les assistants peuvent maintenant postuler."
+    },
+    "errors": {
+      "titleRequired": "Le titre de l'emploi est requis",
+      "descriptionRequired": "La description de l'emploi est requise",
+      "categoryRequired": "Veuillez sélectionner une catégorie de service",
+      "serviceRequired": "Veuillez sélectionner un service spécifique",
+      "locationRequired": "Veuillez sélectionner un lieu d'emploi",
+      "dateRequired": "Veuillez sélectionner une date préférée",
+      "budgetRequired": "Veuillez entrer votre budget",
+      "budgetGreaterThanZero": "Le budget doit être supérieur à 0",
+      "durationGreaterThanZero": "La durée doit être supérieure à 0",
+      "maxApplicationsRequired": "Veuillez définir les candidatures maximum",
+      "maxApplicationsGreaterThanZero": "Les candidatures maximum doivent être supérieures à 0",
+      "jobCreationFailed": "Échec de la création de l'emploi",
+      "notLoggedIn": "Veuillez vous connecter pour publier un emploi",
+      "onlyCustomersCanPost": "Seuls les clients peuvent publier des emplois",
+      "taskersCannotPost": "Les assistants ne peuvent pas publier d'emplois. Veuillez passer à un compte client."
+    },
+    "tips": {
+      "title": "Conseils pour une Excellente Publication d'Emploi",
+      "tip1": "Soyez spécifique concernant vos besoins et exigences",
+      "tip2": "Incluez des photos pour aider les assistants à mieux comprendre l'emploi",
+      "tip3": "Définissez un budget réaliste basé sur les tarifs du marché",
+      "tip4": "Soyez flexible avec le timing pour obtenir plus de candidatures"
+    }
+  },
+  "postService": {
+    "title": "Créer une Offre de Service",
+    "subtitle": "Montrez vos compétences et attirez des clients",
+    "steps": {
+      "basicInfo": "Informations de Base",
+      "pricing": "Tarifs et Détails",
+      "reviewPost": "Examiner et Publier"
+    },
+    "stepDescriptions": {
+      "basicInfo": "Parlez-nous de votre service",
+      "pricing": "Définissez vos tarifs et détails du service",
+      "reviewPost": "Examinez et publiez votre service"
+    },
+    "basicInfo": {
+      "title": "Titre du Service",
+      "titlePlaceholder": "ex. Service de Nettoyage de Maison Professionnel",
+      "description": "Description du Service",
+      "descriptionPlaceholder": "Décrivez ce que vous offrez, votre expérience et ce qui vous rend spécial...",
+      "category": "Catégorie de Service",
+      "service": "Service Spécifique",
+      "location": "Lieu de Service",
+      "serviceArea": "Zone de Service (Optionnel)",
+      "serviceAreaPlaceholder": "Décrivez les zones que vous couvrez ou les préférences de lieu"
+    },
+    "pricing": {
+      "pricingType": "Type de Tarification",
+      "fixed": "Prix Fixe",
+      "hourly": "Tarif Horaire",
+      "perItem": "Par Article",
+      "basePrice": "Prix de Base",
+      "basePricePlaceholder": "Entrez votre prix de base",
+      "hourlyRate": "Tarif Horaire",
+      "hourlyRatePlaceholder": "Entrez votre tarif horaire",
+      "minimumBooking": "Heures de Réservation Minimum",
+      "minimumBookingPlaceholder": "Heures minimum pour la réservation",
+      "estimatedDuration": "Durée Estimée (heures)",
+      "durationPlaceholder": "Combien de temps ce service prend-il généralement ?",
+      "extras": "Services Supplémentaires",
+      "addExtra": "Ajouter un Service Supplémentaire",
+      "extraName": "Nom du Service",
+      "extraPrice": "Prix",
+      "removeExtra": "Supprimer"
+    },
+    "review": {
+      "title": "Examinez Votre Offre de Service",
+      "description": "Veuillez examiner tous les détails avant de publier votre service",
+      "serviceOverview": "Aperçu du Service",
+      "pricingDetails": "Détails des Tarifs",
+      "publishService": "Publier le Service",
+      "publishingService": "Publication du service..."
+    },
+    "success": {
+      "servicePosted": "Service publié avec succès !",
+      "servicePostedDescription": "Votre service a été publié et les clients peuvent maintenant le réserver."
+    },
+    "errors": {
+      "titleRequired": "Le titre du service est requis",
+      "descriptionRequired": "La description du service est requise",
+      "categoryRequired": "Veuillez sélectionner une catégorie de service",
+      "serviceRequired": "Veuillez sélectionner un service spécifique",
+      "locationRequired": "Veuillez d'abord ajouter une adresse à votre profil",
+      "basePriceRequired": "Le prix de base est requis pour les tarifs fixes",
+      "hourlyRateRequired": "Le tarif horaire est requis pour les tarifs horaires",
+      "priceGreaterThanZero": "Le prix doit être supérieur à 0",
+      "minimumBookingGreaterThanZero": "Les heures de réservation minimum doivent être supérieures à 0",
+      "durationGreaterThanZero": "La durée doit être supérieure à 0",
+      "serviceCreationFailed": "Échec de la création du service",
+      "notLoggedIn": "Veuillez vous connecter pour créer un service",
+      "onlyTaskersCanPost": "Seuls les assistants peuvent créer des services",
+      "customersCannotPost": "Les clients ne peuvent pas créer de services. Veuillez passer à un compte assistant."
+    },
+    "tips": {
+      "title": "Conseils pour une Excellente Offre de Service",
+      "tip1": "Soyez spécifique concernant ce que vous offrez et votre expérience",
+      "tip2": "Définissez des tarifs compétitifs basés sur les tarifs du marché",
+      "tip3": "Incluez des descriptions claires de ce qui est inclus",
+      "tip4": "Ajoutez des services supplémentaires pour augmenter votre potentiel de revenus"
+    }
+  },
   "taskerOffer": {
     "title": "Offre de Service",
     "bookService": "Réserver le Service",

@@ -2,7 +2,12 @@
 
 import { createClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
-import { TaskerService, ServiceStatus } from "@/types/supabase";
+import {
+  TaskerService,
+  ServiceStatus,
+  Address,
+  TaskerProfile,
+} from "@/types/supabase";
 import { serviceCategories } from "@/lib/categories";
 
 export interface ServiceDetailsData {
@@ -357,74 +362,6 @@ export async function getServiceDetails(
   }
 }
 
-export async function createTaskerService(
-  taskerId: string,
-  serviceData: CreateServiceData
-): Promise<{ success: boolean; serviceId?: string; error?: string }> {
-  const supabase = await createClient();
-
-  try {
-    // Validate required fields
-    if (
-      !serviceData.title ||
-      !serviceData.description ||
-      !serviceData.service_id
-    ) {
-      return { success: false, error: "Missing required fields" };
-    }
-
-    // Validate pricing based on type
-    if (serviceData.pricing_type === "fixed" && !serviceData.base_price) {
-      return {
-        success: false,
-        error: "Base price is required for fixed pricing",
-      };
-    }
-    if (serviceData.pricing_type === "hourly" && !serviceData.hourly_rate) {
-      return {
-        success: false,
-        error: "Hourly rate is required for hourly pricing",
-      };
-    }
-
-    // Create the service
-    const { data, error } = await supabase
-      .from("tasker_services")
-      .insert({
-        tasker_id: taskerId,
-        title: serviceData.title,
-        description: serviceData.description,
-        service_id: serviceData.service_id,
-        service_area: serviceData.service_area,
-        pricing_type: serviceData.pricing_type,
-        price: serviceData.base_price || serviceData.hourly_rate,
-        minimum_duration: serviceData.minimum_booking_hours,
-        extra_fees: serviceData.extras.length,
-        service_status: "active",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .select("id")
-      .single();
-
-    if (error) {
-      console.error("Error creating service:", error);
-      return {
-        success: false,
-        error: `Failed to create service: ${error.message}`,
-      };
-    }
-
-    revalidatePath("/tasker/my-services");
-    revalidatePath("/tasker/dashboard");
-
-    return { success: true, serviceId: data.id };
-  } catch (error) {
-    console.error("Error in createTaskerService:", error);
-    return { success: false, error: "Failed to create service" };
-  }
-}
-
 // Get tasker service offer details for public viewing
 export interface TaskerServiceOffer {
   id: string;
@@ -533,5 +470,159 @@ export async function getTaskerServiceOffer(
       success: false,
       error: "Failed to load the service offer. Please try again later.",
     };
+  }
+}
+
+// Get tasker addresses for post-service page
+export async function getTaskerAddresses(): Promise<{
+  success: boolean;
+  addresses?: Address[];
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Get addresses
+    const { data: addresses, error: addressesError } = await supabase
+      .from("addresses")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("is_default", { ascending: false });
+
+    if (addressesError) {
+      console.error("Error fetching addresses:", addressesError);
+      return { success: false, error: "Failed to fetch addresses" };
+    }
+
+    return { success: true, addresses: addresses || [] };
+  } catch (error) {
+    console.error("Error in getTaskerAddresses:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// Get tasker profile for post-service page
+export async function getTaskerProfile(): Promise<{
+  success: boolean;
+  profile?: TaskerProfile | null;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Get tasker profile
+    const { data: profile, error: profileError } = await supabase
+      .from("tasker_profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError && profileError.code !== "PGRST116") {
+      console.error("Error fetching profile:", profileError);
+      return { success: false, error: "Failed to fetch profile" };
+    }
+
+    return { success: true, profile: profile || null };
+  } catch (error) {
+    console.error("Error in getTaskerProfile:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// Updated createTaskerService to work without taskerId parameter
+export async function createTaskerService(
+  serviceData: CreateServiceData
+): Promise<{ success: boolean; serviceId?: string; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Validate required fields
+    if (
+      !serviceData.title ||
+      !serviceData.description ||
+      !serviceData.service_id
+    ) {
+      return { success: false, error: "Missing required fields" };
+    }
+
+    // Validate pricing based on type
+    if (serviceData.pricing_type === "fixed" && !serviceData.base_price) {
+      return {
+        success: false,
+        error: "Base price is required for fixed pricing",
+      };
+    }
+    if (serviceData.pricing_type === "hourly" && !serviceData.hourly_rate) {
+      return {
+        success: false,
+        error: "Hourly rate is required for hourly pricing",
+      };
+    }
+
+    // Create the service
+    const { data, error } = await supabase
+      .from("tasker_services")
+      .insert({
+        tasker_id: user.id,
+        title: serviceData.title,
+        description: serviceData.description,
+        service_id: serviceData.service_id,
+        service_area: serviceData.service_area,
+        pricing_type: serviceData.pricing_type,
+        price: serviceData.base_price || serviceData.hourly_rate,
+        minimum_duration: serviceData.minimum_booking_hours,
+        extra_fees: serviceData.extras.length,
+        service_status: "active",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error creating service:", error);
+      return {
+        success: false,
+        error: `Failed to create service: ${error.message}`,
+      };
+    }
+
+    revalidatePath("/tasker/my-services");
+    revalidatePath("/tasker/dashboard");
+
+    return { success: true, serviceId: data.id };
+  } catch (error) {
+    console.error("Error in createTaskerService:", error);
+    return { success: false, error: "Failed to create service" };
   }
 }

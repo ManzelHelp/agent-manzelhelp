@@ -466,3 +466,123 @@ export async function getJobApplications(
     throw error;
   }
 }
+
+export interface CreateJobData {
+  title: string;
+  description: string;
+  service_id: number;
+  preferred_date: string;
+  preferred_time_start?: string;
+  preferred_time_end?: string;
+  is_flexible?: boolean;
+  estimated_duration?: number;
+  customer_budget: number;
+  currency?: string;
+  address_id: string;
+  max_applications?: number;
+  requirements?: string;
+  images?: string[];
+}
+
+export async function createJob(
+  jobData: CreateJobData
+): Promise<{ success: boolean; jobId?: string; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Validate required fields
+    if (!jobData.title?.trim()) {
+      return { success: false, error: "Job title is required" };
+    }
+    if (!jobData.description?.trim()) {
+      return { success: false, error: "Job description is required" };
+    }
+    if (!jobData.service_id) {
+      return { success: false, error: "Service selection is required" };
+    }
+    if (!jobData.preferred_date) {
+      return { success: false, error: "Preferred date is required" };
+    }
+    if (!jobData.customer_budget || jobData.customer_budget <= 0) {
+      return { success: false, error: "Valid budget is required" };
+    }
+    if (!jobData.address_id) {
+      return { success: false, error: "Job location is required" };
+    }
+
+    // Verify the address belongs to the customer
+    const { data: address, error: addressError } = await supabase
+      .from("addresses")
+      .select("id")
+      .eq("id", jobData.address_id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (addressError || !address) {
+      return { success: false, error: "Invalid address selected" };
+    }
+
+    // Create the job
+    const { data: newJob, error: jobError } = await supabase
+      .from("jobs")
+      .insert({
+        customer_id: user.id,
+        service_id: jobData.service_id,
+        title: jobData.title.trim(),
+        description: jobData.description.trim(),
+        preferred_date: jobData.preferred_date,
+        preferred_time_start: jobData.preferred_time_start || null,
+        preferred_time_end: jobData.preferred_time_end || null,
+        is_flexible: jobData.is_flexible || false,
+        estimated_duration: jobData.estimated_duration || null,
+        customer_budget: jobData.customer_budget,
+        currency: jobData.currency || "MAD",
+        address_id: jobData.address_id,
+        max_applications: jobData.max_applications || 3,
+        requirements: jobData.requirements?.trim() || null,
+        images: jobData.images || null,
+        status: "under_review",
+      })
+      .select("id")
+      .single();
+
+    if (jobError) {
+      console.error("Error creating job:", jobError);
+      return {
+        success: false,
+        error: `Failed to create job: ${jobError.message}`,
+      };
+    }
+
+    // Create job application count record
+    const { error: countError } = await supabase
+      .from("job_application_counts")
+      .insert({
+        job_id: newJob.id,
+        application_count: 0,
+      });
+
+    if (countError) {
+      console.error("Error creating job application count:", countError);
+      // Don't fail the job creation for this
+    }
+
+    revalidatePath("/customer/my-jobs");
+    revalidatePath("/customer/dashboard");
+
+    return { success: true, jobId: newJob.id };
+  } catch (error) {
+    console.error("Error in createJob:", error);
+    return { success: false, error: "Failed to create job" };
+  }
+}

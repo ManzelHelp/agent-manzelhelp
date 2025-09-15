@@ -564,6 +564,160 @@
       "daysAgo": "{days} days ago"
     }
   },
+  "postJob": {
+    "title": "Post a Job",
+    "subtitle": "Describe what you need and find the perfect helper",
+    "steps": {
+      "jobDetails": "Job Details",
+      "scheduleBudget": "Schedule & Budget",
+      "reviewPost": "Review & Post"
+    },
+    "stepDescriptions": {
+      "jobDetails": "Tell us about the job you need done",
+      "scheduleBudget": "Set your schedule and budget",
+      "reviewPost": "Review and publish your job"
+    },
+    "jobDetails": {
+      "title": "Job Title",
+      "titlePlaceholder": "e.g., Need house cleaning for 3-bedroom apartment",
+      "description": "Job Description",
+      "descriptionPlaceholder": "Describe what needs to be done, any specific requirements, and what's included...",
+      "category": "Service Category",
+      "service": "Specific Service",
+      "location": "Job Location",
+      "requirements": "Special Requirements (Optional)",
+      "requirementsPlaceholder": "Any special instructions, materials needed, or specific requirements...",
+      "images": "Add Photos (Optional)",
+      "imagesDescription": "Upload photos to help taskers understand the job better"
+    },
+    "scheduleBudget": {
+      "preferredDate": "Preferred Date",
+      "preferredTime": "Preferred Time",
+      "timeFlexible": "Time is flexible",
+      "estimatedDuration": "Estimated Duration (hours)",
+      "durationPlaceholder": "How long do you think this will take?",
+      "budget": "Your Budget",
+      "budgetPlaceholder": "What's your budget for this job?",
+      "currency": "Currency",
+      "maxApplications": "Maximum Applications",
+      "maxApplicationsDescription": "How many tasker applications do you want to receive?"
+    },
+    "review": {
+      "title": "Review Your Job Post",
+      "description": "Please review all details before publishing your job",
+      "jobOverview": "Job Overview",
+      "scheduleBudget": "Schedule & Budget",
+      "publishJob": "Publish Job",
+      "publishingJob": "Publishing Job..."
+    },
+    "success": {
+      "jobPosted": "Job posted successfully!",
+      "jobPostedDescription": "Your job has been published and taskers can now apply."
+    },
+    "errors": {
+      "titleRequired": "Job title is required",
+      "descriptionRequired": "Job description is required",
+      "categoryRequired": "Please select a service category",
+      "serviceRequired": "Please select a specific service",
+      "locationRequired": "Please select a job location",
+      "dateRequired": "Please select a preferred date",
+      "budgetRequired": "Please enter your budget",
+      "budgetGreaterThanZero": "Budget must be greater than 0",
+      "durationGreaterThanZero": "Duration must be greater than 0",
+      "maxApplicationsRequired": "Please set maximum applications",
+      "maxApplicationsGreaterThanZero": "Maximum applications must be greater than 0",
+      "jobCreationFailed": "Failed to create job",
+      "notLoggedIn": "Please log in to post a job",
+      "onlyCustomersCanPost": "Only customers can post jobs",
+      "taskersCannotPost": "Taskers cannot post jobs. Please switch to customer account."
+    },
+    "tips": {
+      "title": "Tips for a Great Job Post",
+      "tip1": "Be specific about what you need and any requirements",
+      "tip2": "Include photos to help taskers understand the job better",
+      "tip3": "Set a realistic budget based on market rates",
+      "tip4": "Be flexible with timing to get more applications"
+    }
+  },
+  "postService": {
+    "title": "Create Service Offer",
+    "subtitle": "Showcase your skills and attract customers",
+    "steps": {
+      "basicInfo": "Basic Information",
+      "pricing": "Pricing & Details",
+      "reviewPost": "Review & Publish"
+    },
+    "stepDescriptions": {
+      "basicInfo": "Tell us about your service",
+      "pricing": "Set your pricing and service details",
+      "reviewPost": "Review and publish your service"
+    },
+    "basicInfo": {
+      "title": "Service Title",
+      "titlePlaceholder": "e.g., Professional House Cleaning Service",
+      "description": "Service Description",
+      "descriptionPlaceholder": "Describe what you offer, your experience, and what makes you special...",
+      "category": "Service Category",
+      "service": "Specific Service",
+      "location": "Service Location",
+      "serviceArea": "Service Area (Optional)",
+      "serviceAreaPlaceholder": "Describe the areas you cover or any location preferences"
+    },
+    "pricing": {
+      "pricingType": "Pricing Type",
+      "fixed": "Fixed Price",
+      "hourly": "Hourly Rate",
+      "perItem": "Per Item",
+      "basePrice": "Base Price",
+      "basePricePlaceholder": "Enter your base price",
+      "hourlyRate": "Hourly Rate",
+      "hourlyRatePlaceholder": "Enter your hourly rate",
+      "minimumBooking": "Minimum Booking Hours",
+      "minimumBookingPlaceholder": "Minimum hours for booking",
+      "estimatedDuration": "Estimated Duration (hours)",
+      "durationPlaceholder": "How long does this service typically take?",
+      "extras": "Additional Services",
+      "addExtra": "Add Extra Service",
+      "extraName": "Service Name",
+      "extraPrice": "Price",
+      "removeExtra": "Remove"
+    },
+    "review": {
+      "title": "Review Your Service Offer",
+      "description": "Please review all details before publishing your service",
+      "serviceOverview": "Service Overview",
+      "pricingDetails": "Pricing Details",
+      "publishService": "Publish Service",
+      "publishingService": "Publishing Service..."
+    },
+    "success": {
+      "servicePosted": "Service posted successfully!",
+      "servicePostedDescription": "Your service has been published and customers can now book it."
+    },
+    "errors": {
+      "titleRequired": "Service title is required",
+      "descriptionRequired": "Service description is required",
+      "categoryRequired": "Please select a service category",
+      "serviceRequired": "Please select a specific service",
+      "locationRequired": "Please add an address in your profile first",
+      "basePriceRequired": "Base price is required for fixed pricing",
+      "hourlyRateRequired": "Hourly rate is required for hourly pricing",
+      "priceGreaterThanZero": "Price must be greater than 0",
+      "minimumBookingGreaterThanZero": "Minimum booking hours must be greater than 0",
+      "durationGreaterThanZero": "Duration must be greater than 0",
+      "serviceCreationFailed": "Failed to create service",
+      "notLoggedIn": "Please log in to create a service",
+      "onlyTaskersCanPost": "Only taskers can create services",
+      "customersCannotPost": "Customers cannot create services. Please switch to tasker account."
+    },
+    "tips": {
+      "title": "Tips for a Great Service Offer",
+      "tip1": "Be specific about what you offer and your experience",
+      "tip2": "Set competitive pricing based on market rates",
+      "tip3": "Include clear descriptions of what's included",
+      "tip4": "Add extra services to increase your earning potential"
+    }
+  },
   "taskerOffer": {
     "title": "Service Offer",
     "bookService": "Book Service",

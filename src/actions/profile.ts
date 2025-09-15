@@ -963,3 +963,41 @@ export async function deleteCustomerAddress(
     return { success: false, error: "An unexpected error occurred" };
   }
 }
+
+// Get user addresses (for both customers and taskers)
+export async function getUserAddresses(): Promise<{
+  success: boolean;
+  addresses?: Address[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Get addresses
+    const { data: addresses, error: addressesError } = await supabase
+      .from("addresses")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("is_default", { ascending: false });
+
+    if (addressesError) {
+      console.error("Error fetching addresses:", addressesError);
+      return { success: false, error: "Failed to fetch addresses" };
+    }
+
+    return { success: true, addresses: addresses || [] };
+  } catch (error) {
+    console.error("Error in getUserAddresses:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
