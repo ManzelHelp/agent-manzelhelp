@@ -593,6 +593,80 @@
     "tryAgain": "Réessayer",
     "serviceNotFound": "Service non trouvé",
     "failedToLoad": "Échec du chargement de l'offre de service. Veuillez réessayer plus tard.",
-    "goToDashboard": "Aller au Tableau de Bord"
+    "goToDashboard": "Aller au Tableau de Bord",
+    "bookingDialog": {
+      "title": "Confirmer la Réservation",
+      "description": "Examinez les détails de votre réservation et confirmez votre demande de service",
+      "serviceDetails": "Détails du Service",
+      "service": "Service",
+      "tasker": "Assistant",
+      "basePrice": "Prix de Base",
+      "totalPrice": "Prix Total",
+      "bookingType": "Type de Réservation",
+      "instant": "Instantané",
+      "scheduled": "Programmé",
+      "recurring": "Récurrent",
+      "date": "Date",
+      "startTime": "Heure de Début",
+      "endTime": "Heure de Fin",
+      "duration": "Durée (heures)",
+      "serviceAddress": "Adresse du Service",
+      "loadingAddresses": "Chargement des adresses...",
+      "noAddressesFound": "Aucune adresse trouvée",
+      "addAddressFirst": "Veuillez d'abord ajouter une adresse à votre profil.",
+      "default": "Par Défaut",
+      "specialRequirements": "Exigences Spéciales (Optionnel)",
+      "specialRequirementsPlaceholder": "Toute instruction ou exigence spéciale pour le service...",
+      "paymentMethod": "Méthode de Paiement",
+      "cash": "Espèces",
+      "online": "En Ligne",
+      "wallet": "Portefeuille",
+      "payLater": "Payer Plus Tard",
+      "cancel": "Annuler",
+      "creatingBooking": "Création de la Réservation...",
+      "confirmBooking": "Confirmer la Réservation",
+      "errors": {
+        "selectAddress": "Veuillez sélectionner une adresse",
+        "selectDate": "Veuillez sélectionner une date",
+        "selectStartTime": "Veuillez sélectionner une heure de début",
+        "selectEndTime": "Veuillez sélectionner une heure de fin",
+        "priceGreaterThanZero": "Le prix doit être supérieur à 0",
+        "durationGreaterThanZero": "La durée doit être supérieure à 0"
+      },
+      "toasts": {
+        "failedToLoadAddresses": "Échec du chargement des adresses",
+        "bookingCreatedSuccess": "Réservation créée avec succès !",
+        "failedToCreateBooking": "Échec de la création de la réservation"
+      }
+    },
+    "contactDialog": {
+      "title": "Contacter l'Assistant",
+      "description": "Commencez une conversation avec {taskerName} à propos de ce service",
+      "serviceDetails": "Détails du Service",
+      "service": "Service",
+      "tasker": "Assistant",
+      "yourMessage": "Votre Message",
+      "messagePlaceholder": "Salut ! Je suis intéressé par votre service. Pourriez-vous me dire plus sur...",
+      "charactersCount": "{count}/500 caractères",
+      "tipsTitle": "Conseils pour une excellente conversation",
+      "tips": {
+        "tip1": "Soyez spécifique concernant vos besoins et exigences",
+        "tip2": "Demandez des détails sur la disponibilité et les prix",
+        "tip3": "Mentionnez votre calendrier préféré si vous en avez un",
+        "tip4": "Soyez poli et professionnel dans votre communication"
+      },
+      "cancel": "Annuler",
+      "startingConversation": "Démarrage de la Conversation...",
+      "sendMessage": "Envoyer le Message",
+      "errors": {
+        "enterMessage": "Veuillez entrer un message pour commencer la conversation",
+        "messageTooShort": "Le message doit contenir au moins 10 caractères",
+        "messageTooLong": "Le message doit contenir moins de 500 caractères"
+      },
+      "toasts": {
+        "conversationStartedSuccess": "Conversation démarrée avec succès !",
+        "failedToStartConversation": "Échec du démarrage de la conversation"
+      }
+    }
   }
 }

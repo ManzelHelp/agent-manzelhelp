@@ -3,6 +3,7 @@
 import { createClient } from "@/supabase/server";
 import { handleError } from "@/lib/utils";
 import type { Conversation, Message } from "@/types/supabase";
+import { revalidatePath } from "next/cache";
 
 export interface MessageWithDetails extends Message {
   sender?: {
@@ -296,6 +297,8 @@ export const sendMessageAction = async (
         conversation_id: conversationId,
         sender_id: user.id,
         content,
+        topic: "general", // Required field
+        extension: "text", // Required field
         attachment_url: attachmentUrl,
         is_read: false,
       })
@@ -366,12 +369,13 @@ export const markMessagesAsReadAction = async (
   }
 };
 
-// Create a new conversation
+// Enhanced conversation creation with initial message support
 export const createConversationAction = async (
   otherParticipantId: string,
   jobId?: string,
   serviceId?: string,
-  bookingId?: string
+  bookingId?: string,
+  initialMessage?: string
 ): Promise<{
   conversation: ConversationWithDetails | null;
   errorMessage: string | null;
@@ -389,27 +393,97 @@ export const createConversationAction = async (
       throw new Error("User not authenticated");
     }
 
-    // Check if conversation already exists
-    const { data: existingConversation, error: checkError } = await supabase
+    // Validate input parameters
+    if (!otherParticipantId) {
+      return {
+        conversation: null,
+        errorMessage: "Recipient is required",
+      };
+    }
+
+    // Note: Self-messaging check removed as taskers cannot contact other taskers
+    // This is handled at the UI level by role-based access control
+
+    // Validate initial message if provided
+    if (initialMessage) {
+      const trimmedMessage = initialMessage.trim();
+      if (trimmedMessage.length < 10) {
+        return {
+          conversation: null,
+          errorMessage: "Initial message must be at least 10 characters long",
+        };
+      }
+      if (trimmedMessage.length > 500) {
+        return {
+          conversation: null,
+          errorMessage: "Initial message must be less than 500 characters",
+        };
+      }
+    }
+
+    // Check if the other participant exists and is active
+    const { data: otherUser, error: otherUserError } = await supabase
+      .from("users")
+      .select("id, first_name, last_name, avatar_url, is_active")
+      .eq("id", otherParticipantId)
+      .single();
+
+    if (otherUserError || !otherUser) {
+      return {
+        conversation: null,
+        errorMessage: "Recipient not found",
+      };
+    }
+
+    if (!otherUser.is_active) {
+      return {
+        conversation: null,
+        errorMessage: "Recipient is not available for messaging",
+      };
+    }
+
+    // Check if conversation already exists (service-specific if serviceId provided)
+    let existingConversationQuery = supabase
       .from("conversations")
       .select("*")
       .or(
         `and(participant1_id.eq.${user.id},participant2_id.eq.${otherParticipantId}),and(participant1_id.eq.${otherParticipantId},participant2_id.eq.${user.id})`
-      )
-      .single();
+      );
+
+    // If serviceId is provided, check for service-specific conversation
+    if (serviceId) {
+      existingConversationQuery = existingConversationQuery.eq(
+        "service_id",
+        serviceId
+      );
+    }
+
+    const { data: existingConversation, error: checkError } =
+      await existingConversationQuery.single();
 
     if (existingConversation && !checkError) {
-      // Return existing conversation
-      const { data: otherParticipant } = await supabase
-        .from("users")
-        .select("first_name, last_name, avatar_url")
-        .eq("id", otherParticipantId)
-        .single();
+      // If initial message is provided and conversation exists, send the message
+      if (initialMessage && initialMessage.trim()) {
+        const { error: messageError } = await supabase.from("messages").insert({
+          conversation_id: existingConversation.id,
+          sender_id: user.id,
+          content: initialMessage.trim(),
+          topic: "general", // Required field
+          extension: "text", // Required field
+          is_read: false,
+          created_at: new Date().toISOString(),
+        });
 
+        if (messageError) {
+          console.error("Error sending initial message:", messageError);
+        }
+      }
+
+      // Return existing conversation with updated participant info
       return {
         conversation: {
           ...existingConversation,
-          other_participant: otherParticipant,
+          other_participant: otherUser,
         },
         errorMessage: null,
       };
@@ -424,6 +498,7 @@ export const createConversationAction = async (
         job_id: jobId,
         service_id: serviceId,
         booking_id: bookingId,
+        last_message_at: new Date().toISOString(),
       })
       .select(
         `
@@ -443,13 +518,41 @@ export const createConversationAction = async (
       .single();
 
     if (conversationError) {
-      throw conversationError;
+      console.error("Error creating conversation:", conversationError);
+      return {
+        conversation: null,
+        errorMessage: `Failed to create conversation: ${conversationError.message}`,
+      };
+    }
+
+    // Send initial message if provided
+    if (initialMessage && initialMessage.trim()) {
+      const { error: messageError } = await supabase.from("messages").insert({
+        conversation_id: conversation.id,
+        sender_id: user.id,
+        content: initialMessage.trim(),
+        topic: "general", // Required field
+        extension: "text", // Required field
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+
+      if (messageError) {
+        console.error("Error sending initial message:", messageError);
+        // Don't fail the conversation creation if message sending fails
+      }
     }
 
     const otherParticipant =
       conversation.participant1_id === user.id
         ? conversation.participant2
         : conversation.participant1;
+
+    // Revalidate relevant paths
+    revalidatePath("/customer/messages");
+    revalidatePath("/tasker/messages");
+    revalidatePath("/customer/dashboard");
+    revalidatePath("/tasker/dashboard");
 
     return {
       conversation: {
@@ -460,7 +563,13 @@ export const createConversationAction = async (
     };
   } catch (error) {
     console.error("Error creating conversation:", error);
-    return { conversation: null, ...handleError(error) };
+    return {
+      conversation: null,
+      errorMessage:
+        error instanceof Error
+          ? error.message
+          : "Failed to create conversation",
+    };
   }
 };
 

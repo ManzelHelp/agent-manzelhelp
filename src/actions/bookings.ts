@@ -431,22 +431,150 @@ export interface CreateBookingData {
   payment_method?: "cash" | "online" | "wallet" | "pending";
 }
 
+// Enhanced booking validation result
+interface BookingValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// Enhanced validation function for booking data
+async function validateBookingData(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  customerId: string,
+  bookingData: CreateBookingData
+): Promise<BookingValidationResult> {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  // Basic field validation
+  if (!bookingData.tasker_service_id) {
+    errors.push("Service ID is required");
+  }
+
+  if (!bookingData.agreed_price || bookingData.agreed_price <= 0) {
+    errors.push("Valid price is required");
+  }
+
+  if (bookingData.booking_type === "scheduled") {
+    if (!bookingData.scheduled_date) {
+      errors.push("Scheduled date is required for scheduled bookings");
+    }
+    if (!bookingData.scheduled_time_start) {
+      errors.push("Start time is required for scheduled bookings");
+    }
+    if (!bookingData.scheduled_time_end) {
+      errors.push("End time is required for scheduled bookings");
+    }
+  }
+
+  // Get service details for validation
+  const { data: serviceData, error: serviceError } = await supabase
+    .from("tasker_services")
+    .select(
+      "tasker_id, title, price, pricing_type, service_status, minimum_duration"
+    )
+    .eq("id", bookingData.tasker_service_id)
+    .single();
+
+  if (serviceError || !serviceData) {
+    errors.push("Service not found or unavailable");
+    return { isValid: false, errors, warnings };
+  }
+
+  // Service status validation
+  if (serviceData.service_status !== "active") {
+    errors.push("Service is not currently available");
+  }
+
+  // Price validation
+  if (bookingData.agreed_price < serviceData.price) {
+    warnings.push("Agreed price is lower than the service's base price");
+  }
+
+  // Duration validation for hourly services
+  if (serviceData.pricing_type === "hourly") {
+    if (
+      !bookingData.estimated_duration ||
+      bookingData.estimated_duration <= 0
+    ) {
+      errors.push("Duration is required for hourly services");
+    }
+    if (
+      serviceData.minimum_duration &&
+      bookingData.estimated_duration &&
+      bookingData.estimated_duration < serviceData.minimum_duration
+    ) {
+      errors.push(`Minimum duration is ${serviceData.minimum_duration} hours`);
+    }
+  }
+
+  // Check for existing pending bookings
+  const { data: existingBooking } = await supabase
+    .from("service_bookings")
+    .select("id, status")
+    .eq("customer_id", customerId)
+    .eq("tasker_service_id", bookingData.tasker_service_id)
+    .in("status", ["pending", "accepted", "confirmed"])
+    .single();
+
+  if (existingBooking) {
+    errors.push("You already have a pending booking for this service");
+  }
+
+  // Address validation
+  if (!bookingData.address_id) {
+    const { data: customerAddresses } = await supabase
+      .from("addresses")
+      .select("id")
+      .eq("user_id", customerId)
+      .limit(1);
+
+    if (!customerAddresses || customerAddresses.length === 0) {
+      errors.push(
+        "No address found. Please add an address to your profile first"
+      );
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings,
+  };
+}
+
 export async function createServiceBooking(
   customerId: string,
   bookingData: CreateBookingData
-): Promise<{ success: boolean; bookingId?: string; error?: string }> {
+): Promise<{
+  success: boolean;
+  bookingId?: string;
+  error?: string;
+  warnings?: string[];
+}> {
   const supabase = await createClient();
 
   try {
-    // Validate required fields
-    if (!bookingData.tasker_service_id) {
-      return { success: false, error: "Missing required fields" };
+    // Enhanced validation
+    const validation = await validateBookingData(
+      supabase,
+      customerId,
+      bookingData
+    );
+
+    if (!validation.isValid) {
+      return {
+        success: false,
+        error: validation.errors.join(". ") + ".",
+        warnings: validation.warnings,
+      };
     }
 
-    // Get tasker service details to get tasker_id
+    // Get tasker service details
     const { data: serviceData, error: serviceError } = await supabase
       .from("tasker_services")
-      .select("tasker_id, title, price")
+      .select("tasker_id, title, price, pricing_type")
       .eq("id", bookingData.tasker_service_id)
       .single();
 
@@ -486,7 +614,24 @@ export async function createServiceBooking(
       }
     }
 
-    // Create the booking
+    // Validate scheduled date is not in the past
+    if (
+      bookingData.booking_type === "scheduled" &&
+      bookingData.scheduled_date
+    ) {
+      const scheduledDate = new Date(bookingData.scheduled_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (scheduledDate < today) {
+        return {
+          success: false,
+          error: "Scheduled date cannot be in the past",
+        };
+      }
+    }
+
+    // Create the booking with enhanced data
     const { data: booking, error: bookingError } = await supabase
       .from("service_bookings")
       .insert({
@@ -501,7 +646,7 @@ export async function createServiceBooking(
         address_id: addressId,
         service_address: bookingData.service_address || null,
         agreed_price: bookingData.agreed_price,
-        currency: "EUR",
+        currency: "MAD", // Using database default currency
         status: "pending",
         customer_requirements: bookingData.customer_requirements || null,
         payment_method: bookingData.payment_method || "pending",
@@ -513,18 +658,39 @@ export async function createServiceBooking(
 
     if (bookingError) {
       console.error("Error creating booking:", bookingError);
+
+      // Handle specific database errors
+      if (bookingError.code === "23505") {
+        return {
+          success: false,
+          error: "A booking for this service already exists",
+        };
+      }
+
       return {
         success: false,
         error: `Failed to create booking: ${bookingError.message}`,
       };
     }
 
+    // Revalidate relevant paths
     revalidatePath("/customer/bookings");
     revalidatePath("/tasker/bookings");
+    revalidatePath("/customer/dashboard");
+    revalidatePath("/tasker/dashboard");
 
-    return { success: true, bookingId: booking.id };
+    return {
+      success: true,
+      bookingId: booking.id,
+      warnings:
+        validation.warnings.length > 0 ? validation.warnings : undefined,
+    };
   } catch (error) {
     console.error("Error in createServiceBooking:", error);
-    return { success: false, error: "Failed to create booking" };
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to create booking",
+    };
   }
 }

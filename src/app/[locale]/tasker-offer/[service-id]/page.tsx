@@ -26,12 +26,8 @@ import {
   getTaskerServiceOffer,
   type TaskerServiceOffer,
 } from "@/actions/services";
-import {
-  createServiceBooking,
-  type CreateBookingData,
-} from "@/actions/bookings";
-import { createConversationAction } from "@/actions/messages";
-import { toast } from "sonner";
+import { BookingConfirmationDialog } from "@/components/booking/BookingConfirmationDialog";
+import { ContactConfirmationDialog } from "@/components/booking/ContactConfirmationDialog";
 
 export default function TaskerOfferPage() {
   const router = useRouter();
@@ -42,9 +38,9 @@ export default function TaskerOfferPage() {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [isBooking, setIsBooking] = useState(false);
-  const [isContacting, setIsContacting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   const serviceId = params["service-id"] as string;
 
@@ -106,63 +102,22 @@ export default function TaskerOfferPage() {
     }
   };
 
-  const handleBookService = async () => {
+  const handleBookService = () => {
     if (!user || !serviceData) return;
-
-    try {
-      setIsBooking(true);
-
-      // For now, we'll create a simple booking with minimal data
-      // In a real app, you'd want a booking form/modal
-      const bookingData: CreateBookingData = {
-        tasker_service_id: serviceData.id,
-        booking_type: "instant",
-        agreed_price: serviceData.price,
-        payment_method: "pending",
-        address_id: undefined, // Will be resolved in the action
-      };
-
-      const result = await createServiceBooking(user.id, bookingData);
-
-      if (result.success) {
-        toast.success(t("bookingSuccess"));
-        router.push(`/customer/bookings/${result.bookingId}`);
-      } else {
-        toast.error(result.error || t("bookingError"));
-      }
-    } catch (err) {
-      console.error("Error booking service:", err);
-      toast.error(t("bookingError"));
-    } finally {
-      setIsBooking(false);
-    }
+    setShowBookingDialog(true);
   };
 
-  const handleContactTasker = async () => {
+  const handleBookingSuccess = (bookingId: string) => {
+    router.push(`/customer/bookings/${bookingId}`);
+  };
+
+  const handleContactTasker = () => {
     if (!user || !serviceData) return;
+    setShowContactDialog(true);
+  };
 
-    try {
-      setIsContacting(true);
-
-      const result = await createConversationAction(
-        serviceData.tasker.id,
-        undefined, // jobId
-        serviceData.id, // serviceId
-        undefined // bookingId
-      );
-
-      if (result.conversation) {
-        toast.success(t("contactSuccess"));
-        router.push(`/customer/messages/${result.conversation.id}`);
-      } else {
-        toast.error(result.errorMessage || t("contactError"));
-      }
-    } catch (err) {
-      console.error("Error contacting tasker:", err);
-      toast.error(t("contactError"));
-    } finally {
-      setIsContacting(false);
-    }
+  const handleContactSuccess = (conversationId: string) => {
+    router.push(`/customer/messages/${conversationId}`);
   };
 
   // Show tasker restriction message if user is a tasker
@@ -576,29 +531,19 @@ export default function TaskerOfferPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button
                     onClick={handleBookService}
-                    disabled={isBooking}
-                    className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                     size="lg"
                   >
-                    {isBooking ? (
-                      <Loader2 className="h-6 w-6 mr-3 animate-spin" />
-                    ) : (
-                      <CheckCircle className="h-6 w-6 mr-3" />
-                    )}
+                    <CheckCircle className="h-6 w-6 mr-3" />
                     {t("bookService")}
                   </Button>
 
                   <Button
                     onClick={handleContactTasker}
-                    disabled={isContacting}
-                    className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                     size="lg"
                   >
-                    {isContacting ? (
-                      <Loader2 className="h-6 w-6 mr-3 animate-spin" />
-                    ) : (
-                      <MessageSquare className="h-6 w-6 mr-3" />
-                    )}
+                    <MessageSquare className="h-6 w-6 mr-3" />
                     {t("contactTasker")}
                   </Button>
                 </div>
@@ -607,6 +552,48 @@ export default function TaskerOfferPage() {
           </div>
         </div>
       </div>
+
+      {/* Booking Confirmation Dialog */}
+      {serviceData && user && (
+        <BookingConfirmationDialog
+          isOpen={showBookingDialog}
+          onClose={() => setShowBookingDialog(false)}
+          onSuccess={handleBookingSuccess}
+          serviceData={{
+            id: serviceData.id,
+            title: serviceData.title,
+            price: serviceData.price,
+            pricing_type: serviceData.pricing_type,
+            minimum_duration: serviceData.minimum_duration || undefined,
+            tasker: {
+              id: serviceData.tasker.id,
+              first_name: serviceData.tasker.first_name || "",
+              last_name: serviceData.tasker.last_name || "",
+              avatar_url: serviceData.tasker.avatar_url || undefined,
+            },
+          }}
+          customerId={user.id}
+        />
+      )}
+
+      {/* Contact Confirmation Dialog */}
+      {serviceData && user && (
+        <ContactConfirmationDialog
+          isOpen={showContactDialog}
+          onClose={() => setShowContactDialog(false)}
+          onSuccess={handleContactSuccess}
+          serviceData={{
+            id: serviceData.id,
+            title: serviceData.title,
+            tasker: {
+              id: serviceData.tasker.id,
+              first_name: serviceData.tasker.first_name || "",
+              last_name: serviceData.tasker.last_name || "",
+              avatar_url: serviceData.tasker.avatar_url || undefined,
+            },
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+//never use this file; Use server sided action files
+
 // import { createBrowserClient } from "@supabase/ssr";
 
 // export function createClient() {

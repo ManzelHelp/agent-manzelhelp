@@ -593,7 +593,81 @@
     "tryAgain": "Try Again",
     "serviceNotFound": "Service not found",
     "failedToLoad": "Failed to load the service offer. Please try again later.",
-    "goToDashboard": "Go to Dashboard"
+    "goToDashboard": "Go to Dashboard",
+    "bookingDialog": {
+      "title": "Confirm Booking",
+      "description": "Review your booking details and confirm your service request",
+      "serviceDetails": "Service Details",
+      "service": "Service",
+      "tasker": "Tasker",
+      "basePrice": "Base Price",
+      "totalPrice": "Total Price",
+      "bookingType": "Booking Type",
+      "instant": "Instant",
+      "scheduled": "Scheduled",
+      "recurring": "Recurring",
+      "date": "Date",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "duration": "Duration (hours)",
+      "serviceAddress": "Service Address",
+      "loadingAddresses": "Loading addresses...",
+      "noAddressesFound": "No addresses found",
+      "addAddressFirst": "Please add an address to your profile first.",
+      "default": "Default",
+      "specialRequirements": "Special Requirements (Optional)",
+      "specialRequirementsPlaceholder": "Any special instructions or requirements for the service...",
+      "paymentMethod": "Payment Method",
+      "cash": "Cash",
+      "online": "Online",
+      "wallet": "Wallet",
+      "payLater": "Pay Later",
+      "cancel": "Cancel",
+      "creatingBooking": "Creating Booking...",
+      "confirmBooking": "Confirm Booking",
+      "errors": {
+        "selectAddress": "Please select an address",
+        "selectDate": "Please select a date",
+        "selectStartTime": "Please select a start time",
+        "selectEndTime": "Please select an end time",
+        "priceGreaterThanZero": "Price must be greater than 0",
+        "durationGreaterThanZero": "Duration must be greater than 0"
+      },
+      "toasts": {
+        "failedToLoadAddresses": "Failed to load addresses",
+        "bookingCreatedSuccess": "Booking created successfully!",
+        "failedToCreateBooking": "Failed to create booking"
+      }
+    },
+    "contactDialog": {
+      "title": "Contact Tasker",
+      "description": "Start a conversation with {taskerName} about this service",
+      "serviceDetails": "Service Details",
+      "service": "Service",
+      "tasker": "Tasker",
+      "yourMessage": "Your Message",
+      "messagePlaceholder": "Hi! I'm interested in your service. Could you tell me more about...",
+      "charactersCount": "{count}/500 characters",
+      "tipsTitle": "Tips for a great conversation",
+      "tips": {
+        "tip1": "Be specific about your needs and requirements",
+        "tip2": "Ask about availability and pricing details",
+        "tip3": "Mention your preferred timeline if you have one",
+        "tip4": "Be polite and professional in your communication"
+      },
+      "cancel": "Cancel",
+      "startingConversation": "Starting Conversation...",
+      "sendMessage": "Send Message",
+      "errors": {
+        "enterMessage": "Please enter a message to start the conversation",
+        "messageTooShort": "Message must be at least 10 characters long",
+        "messageTooLong": "Message must be less than 500 characters"
+      },
+      "toasts": {
+        "conversationStartedSuccess": "Conversation started successfully!",
+        "failedToStartConversation": "Failed to start conversation"
+      }
+    }
   }
 }
   

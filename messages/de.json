@@ -593,7 +593,81 @@
     "tryAgain": "Erneut Versuchen",
     "serviceNotFound": "Service nicht gefunden",
     "failedToLoad": "Service-Angebot konnte nicht geladen werden. Bitte versuchen Sie es später erneut.",
-    "goToDashboard": "Zum Dashboard"
+    "goToDashboard": "Zum Dashboard",
+    "bookingDialog": {
+      "title": "Buchung Bestätigen",
+      "description": "Überprüfen Sie Ihre Buchungsdetails und bestätigen Sie Ihre Serviceanfrage",
+      "serviceDetails": "Service-Details",
+      "service": "Service",
+      "tasker": "Tasker",
+      "basePrice": "Grundpreis",
+      "totalPrice": "Gesamtpreis",
+      "bookingType": "Buchungstyp",
+      "instant": "Sofort",
+      "scheduled": "Geplant",
+      "recurring": "Wiederkehrend",
+      "date": "Datum",
+      "startTime": "Startzeit",
+      "endTime": "Endzeit",
+      "duration": "Dauer (Stunden)",
+      "serviceAddress": "Service-Adresse",
+      "loadingAddresses": "Adressen werden geladen...",
+      "noAddressesFound": "Keine Adressen gefunden",
+      "addAddressFirst": "Bitte fügen Sie zuerst eine Adresse zu Ihrem Profil hinzu.",
+      "default": "Standard",
+      "specialRequirements": "Besondere Anforderungen (Optional)",
+      "specialRequirementsPlaceholder": "Besondere Anweisungen oder Anforderungen für den Service...",
+      "paymentMethod": "Zahlungsmethode",
+      "cash": "Bar",
+      "online": "Online",
+      "wallet": "Geldbörse",
+      "payLater": "Später Bezahlen",
+      "cancel": "Abbrechen",
+      "creatingBooking": "Buchung wird erstellt...",
+      "confirmBooking": "Buchung Bestätigen",
+      "errors": {
+        "selectAddress": "Bitte wählen Sie eine Adresse",
+        "selectDate": "Bitte wählen Sie ein Datum",
+        "selectStartTime": "Bitte wählen Sie eine Startzeit",
+        "selectEndTime": "Bitte wählen Sie eine Endzeit",
+        "priceGreaterThanZero": "Preis muss größer als 0 sein",
+        "durationGreaterThanZero": "Dauer muss größer als 0 sein"
+      },
+      "toasts": {
+        "failedToLoadAddresses": "Adressen konnten nicht geladen werden",
+        "bookingCreatedSuccess": "Buchung erfolgreich erstellt!",
+        "failedToCreateBooking": "Buchung konnte nicht erstellt werden"
+      }
+    },
+    "contactDialog": {
+      "title": "Tasker Kontaktieren",
+      "description": "Starten Sie eine Unterhaltung mit {taskerName} über diesen Service",
+      "serviceDetails": "Service-Details",
+      "service": "Service",
+      "tasker": "Tasker",
+      "yourMessage": "Ihre Nachricht",
+      "messagePlaceholder": "Hallo! Ich interessiere mich für Ihren Service. Können Sie mir mehr erzählen über...",
+      "charactersCount": "{count}/500 Zeichen",
+      "tipsTitle": "Tipps für eine großartige Unterhaltung",
+      "tips": {
+        "tip1": "Seien Sie spezifisch bezüglich Ihrer Bedürfnisse und Anforderungen",
+        "tip2": "Fragen Sie nach Verfügbarkeit und Preisdetails",
+        "tip3": "Erwähnen Sie Ihren bevorzugten Zeitrahmen, falls vorhanden",
+        "tip4": "Seien Sie höflich und professionell in Ihrer Kommunikation"
+      },
+      "cancel": "Abbrechen",
+      "startingConversation": "Unterhaltung wird gestartet...",
+      "sendMessage": "Nachricht Senden",
+      "errors": {
+        "enterMessage": "Bitte geben Sie eine Nachricht ein, um die Unterhaltung zu starten",
+        "messageTooShort": "Nachricht muss mindestens 10 Zeichen lang sein",
+        "messageTooLong": "Nachricht muss weniger als 500 Zeichen lang sein"
+      },
+      "toasts": {
+        "conversationStartedSuccess": "Unterhaltung erfolgreich gestartet!",
+        "failedToStartConversation": "Unterhaltung konnte nicht gestartet werden"
+      }
+    }
   }
 }
   
