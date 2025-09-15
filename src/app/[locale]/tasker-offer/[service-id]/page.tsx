@@ -44,15 +44,6 @@ export default function TaskerOfferPage() {
 
   const serviceId = params["service-id"] as string;
 
-  // Check user authentication and role
-  useEffect(() => {
-    if (!user) {
-      // Redirect to login if not authenticated
-      router.push("/login");
-      return;
-    }
-  }, [user, router]);
-
   // Fetch service data
   useEffect(() => {
     const fetchServiceData = async () => {
@@ -103,7 +94,11 @@ export default function TaskerOfferPage() {
   };
 
   const handleBookService = () => {
-    if (!user || !serviceData) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    if (!serviceData) return;
     setShowBookingDialog(true);
   };
 
@@ -112,7 +107,11 @@ export default function TaskerOfferPage() {
   };
 
   const handleContactTasker = () => {
-    if (!user || !serviceData) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    if (!serviceData) return;
     setShowContactDialog(true);
   };
 
