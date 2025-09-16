@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function ServiceSearchBar({
   defaultValue = "",
@@ -14,6 +14,7 @@ export default function ServiceSearchBar({
 }) {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("search");
   const [searchQuery, setSearchQuery] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -36,22 +37,13 @@ export default function ServiceSearchBar({
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="Search for services, professionals, or skills..."
+            placeholder={t("placeholder")}
             className={`h-14 sm:h-16 text-base sm:text-lg px-6 sm:px-8 pr-16 sm:pr-20 rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl focus:shadow-2xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] ${
               isFocused
                 ? "border-[var(--color-secondary)] ring-4 ring-[var(--color-secondary)]/20"
                 : "border-white/20 hover:border-[var(--color-secondary)]/50"
             }`}
           />
-
-          {/* Search Icon */}
-          <div className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2">
-            <Search
-              className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200 ${
-                isFocused ? "text-[var(--color-secondary)]" : "text-gray-400"
-              }`}
-            />
-          </div>
 
           {/* Search Button */}
           <Button
@@ -61,7 +53,7 @@ export default function ServiceSearchBar({
             }`}
           >
             <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="hidden sm:inline ml-2">Search</span>
+            <span className="hidden sm:inline ml-2">{t("searchButton")}</span>
           </Button>
         </div>
 
@@ -71,15 +63,15 @@ export default function ServiceSearchBar({
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-[var(--color-secondary)]" />
               <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                Popular searches
+                {t("popularSearches")}
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
               {[
-                "House Cleaning",
-                "Pet Care",
-                "Furniture Assembly",
-                "Event Planning",
+                t("popularTerms.houseCleaning"),
+                t("popularTerms.petCare"),
+                t("popularTerms.furnitureAssembly"),
+                t("popularTerms.eventPlanning"),
               ].map((term) => (
                 <button
                   key={term}
@@ -102,10 +94,10 @@ export default function ServiceSearchBar({
         {searchQuery && isFocused && (
           <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-white/95 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg z-10">
             <div className="text-sm text-[var(--color-text-secondary)] mb-2">
-              Press Enter to search for "{searchQuery}"
+              {t("pressEnterToSearch", { query: searchQuery })}
             </div>
             <div className="text-xs text-[var(--color-text-secondary)]">
-              Try searching for specific services or skills
+              {t("trySearchingFor")}
             </div>
           </div>
         )}

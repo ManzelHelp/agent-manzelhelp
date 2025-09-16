@@ -481,7 +481,18 @@
     "allServices": "Alle Dienstleistungen",
     "resultsFound": "Ergebnisse gefunden",
     "noResults": "Keine Ergebnisse gefunden",
-    "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen"
+    "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen",
+    "placeholder": "Nach Dienstleistungen, Fachkräften oder Fähigkeiten suchen...",
+    "searchButton": "Suchen",
+    "popularSearches": "Beliebte Suchbegriffe",
+    "pressEnterToSearch": "Drücken Sie Enter, um nach \"{query}\" zu suchen",
+    "trySearchingFor": "Versuchen Sie, nach spezifischen Dienstleistungen oder Fähigkeiten zu suchen",
+    "popularTerms": {
+      "houseCleaning": "Hausreinigung",
+      "petCare": "Tierpflege",
+      "furnitureAssembly": "Möbelmontage",
+      "eventPlanning": "Eventplanung"
+    }
   },
   "notifications": {
     "title": "Benachrichtigungen",

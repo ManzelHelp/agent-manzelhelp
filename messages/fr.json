@@ -481,7 +481,18 @@
     "allServices": "Tous les services",
     "resultsFound": "résultats trouvés",
     "noResults": "Aucun résultat trouvé",
-    "tryAdjustingFilters": "Essayez d'ajuster vos filtres ou critères de recherche"
+    "tryAdjustingFilters": "Essayez d'ajuster vos filtres ou critères de recherche",
+    "placeholder": "Rechercher des services, professionnels ou compétences...",
+    "searchButton": "Rechercher",
+    "popularSearches": "Recherches populaires",
+    "pressEnterToSearch": "Appuyez sur Entrée pour rechercher \"{query}\"",
+    "trySearchingFor": "Essayez de rechercher des services ou compétences spécifiques",
+    "popularTerms": {
+      "houseCleaning": "Nettoyage de maison",
+      "petCare": "Soins aux animaux",
+      "furnitureAssembly": "Montage de meubles",
+      "eventPlanning": "Planification d'événements"
+    }
   },
   "notifications": {
     "title": "Notifications",

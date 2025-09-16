@@ -481,7 +481,18 @@
     "allServices": "All Services",
     "resultsFound": "results found",
     "noResults": "No Results Found",
-    "tryAdjustingFilters": "Try adjusting your filters or search criteria"
+    "tryAdjustingFilters": "Try adjusting your filters or search criteria",
+    "placeholder": "Search for services, professionals, or skills...",
+    "searchButton": "Search",
+    "popularSearches": "Popular searches",
+    "pressEnterToSearch": "Press Enter to search for \"{query}\"",
+    "trySearchingFor": "Try searching for specific services or skills",
+    "popularTerms": {
+      "houseCleaning": "House Cleaning",
+      "petCare": "Pet Care",
+      "furnitureAssembly": "Furniture Assembly",
+      "eventPlanning": "Event Planning"
+    }
   },
   "notifications": {
     "title": "Notifications",
