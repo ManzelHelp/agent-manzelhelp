@@ -312,7 +312,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
             {/* Enhanced Results Grid with Staggered Animation */}
             <Suspense
               fallback={
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {Array.from({ length: 8 }).map((_, index) => (
                     <div
                       key={index}
@@ -326,7 +326,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
               }
             >
               {filteredServices.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {filteredServices.map((service, index) => (
                     <div
                       key={service.tasker_service_id}
