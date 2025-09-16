@@ -105,7 +105,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
-  // Use centralized categories
+  // Use centralized categories - get all searchable categories
   const categories = getSearchCategories();
 
   // Fetch services using the service_listing_view which has all the data we need
@@ -115,8 +115,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
     .eq("service_status", "active");
 
   // Apply filters
-  if (resolvedSearchParams.q) {
-    query = query.ilike("title", `%${resolvedSearchParams.q}%`);
+  if (resolvedSearchParams.q && resolvedSearchParams.q.trim()) {
+    query = query.ilike("title", `%${resolvedSearchParams.q.trim()}%`);
   }
 
   if (resolvedSearchParams.category) {
@@ -175,7 +175,39 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
 
   if (error) {
     console.error("Error fetching services:", error);
-    return <div>Error loading services</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)] flex items-center justify-center">
+        <div className="text-center p-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
+            Error Loading Services
+          </h2>
+          <p className="text-[var(--color-text-secondary)] mb-4">
+            We're having trouble loading the services. Please try again later.
+          </p>
+          <Link
+            href={`/${locale}/search`}
+            className="inline-flex items-center px-4 py-2 bg-[var(--color-secondary)] text-white rounded-lg hover:bg-[var(--color-secondary-dark)] transition-colors"
+          >
+            Try Again
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const filteredServices = (services || []) as ServiceListing[];
@@ -183,16 +215,16 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
       {/* Enhanced Search Header with Glass Morphism */}
-      <div className="relative bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] py-12 sm:py-16">
+      <div className="relative bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] py-8 sm:py-12 lg:py-16">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 animate-fade-in-up">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-3 sm:mb-4 animate-fade-in-up">
               {resolvedSearchParams.q
                 ? `Search Results for "${resolvedSearchParams.q}"`
                 : "Find Your Perfect Service"}
             </h1>
-            <p className="text-white/90 text-lg sm:text-xl max-w-2xl mx-auto animate-fade-in-up animate-delay-200">
+            <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto animate-fade-in-up animate-delay-200">
               {resolvedSearchParams.q
                 ? "Discover amazing services tailored to your needs"
                 : "Connect with skilled professionals in your area"}
@@ -246,31 +278,33 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
               />
             </div>
             {/* Results Header with Modern Styling */}
-            <div className="bg-[var(--color-surface)] rounded-2xl p-6 mb-8 shadow-lg border border-[var(--color-border)] animate-fade-in-up">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
-                    {resolvedSearchParams.q
-                      ? t("searchResults", { query: resolvedSearchParams.q })
-                      : t("allServices")}
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-secondary)]/10 text-[var(--color-secondary)]">
-                      {count || filteredServices.length} {t("resultsFound")}
-                    </span>
-                    {resolvedSearchParams.q && (
-                      <span className="text-[var(--color-text-secondary)] text-sm">
-                        for "{resolvedSearchParams.q}"
+            <div className="bg-[var(--color-surface)] rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-lg border border-[var(--color-border)] animate-fade-in-up">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
+                  <div className="flex-1">
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+                      {resolvedSearchParams.q
+                        ? t("searchResults", { query: resolvedSearchParams.q })
+                        : t("allServices")}
+                    </h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-secondary)]/10 text-[var(--color-secondary)] w-fit">
+                        {count || filteredServices.length} {t("resultsFound")}
                       </span>
-                    )}
+                      {resolvedSearchParams.q && (
+                        <span className="text-[var(--color-text-secondary)] text-sm">
+                          for "{resolvedSearchParams.q}"
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Enhanced Sort Dropdown */}
-                <div className="animate-fade-in-up animate-delay-200">
-                  <SortDropdown
-                    currentSort={resolvedSearchParams.sort || "created_at"}
-                  />
+                  {/* Enhanced Sort Dropdown */}
+                  <div className="animate-fade-in-up animate-delay-200 w-full sm:w-auto">
+                    <SortDropdown
+                      currentSort={resolvedSearchParams.sort || "created_at"}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -278,8 +312,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
             {/* Enhanced Results Grid with Staggered Animation */}
             <Suspense
               fallback={
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-                  {Array.from({ length: 6 }).map((_, index) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                  {Array.from({ length: 8 }).map((_, index) => (
                     <div
                       key={index}
                       className="animate-fade-in-up"
@@ -292,7 +326,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
               }
             >
               {filteredServices.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {filteredServices.map((service, index) => (
                     <div
                       key={service.tasker_service_id}
@@ -344,11 +378,11 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16 animate-fade-in-up">
-                  <div className="max-w-md mx-auto">
-                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center">
+                <div className="text-center py-12 sm:py-16 animate-fade-in-up">
+                  <div className="max-w-md mx-auto px-4">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center">
                       <svg
-                        className="w-12 h-12 text-[var(--color-accent)]"
+                        className="w-10 h-10 sm:w-12 sm:h-12 text-[var(--color-accent)]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -361,15 +395,15 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">
+                    <h3 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-2 sm:mb-3">
                       {t("noResults")}
                     </h3>
-                    <p className="text-[var(--color-text-secondary)] text-lg mb-6">
+                    <p className="text-[var(--color-text-secondary)] text-base sm:text-lg mb-4 sm:mb-6">
                       {t("tryAdjustingFilters")}
                     </p>
                     <Link
                       href={`/${locale}/search`}
-                      className="inline-flex items-center px-6 py-3 bg-[var(--color-secondary)] text-white rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium"
+                      className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-secondary)] text-white rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium text-sm sm:text-base"
                     >
                       Clear All Filters
                     </Link>
@@ -380,17 +414,17 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
 
             {/* Enhanced Pagination */}
             {filteredServices.length > 0 && (count || 0) > limit && (
-              <div className="flex justify-center items-center gap-3 mt-12 animate-fade-in-up">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-8 sm:mt-12 animate-fade-in-up">
                 {page > 1 && (
                   <Link
                     href={`/${locale}/search?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page - 1).toString(),
                     }).toString()}`}
-                    className="inline-flex items-center px-6 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                    className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm sm:text-base"
                   >
                     <svg
-                      className="w-4 h-4 mr-2"
+                      className="w-4 h-4 mr-1 sm:mr-2"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -402,12 +436,13 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                         d="M15 19l-7-7 7-7"
                       />
                     </svg>
-                    Previous
+                    <span className="hidden sm:inline">Previous</span>
+                    <span className="sm:hidden">Prev</span>
                   </Link>
                 )}
 
-                <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-sm">
-                  <span className="text-[var(--color-text-primary)] font-medium">
+                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl shadow-sm">
+                  <span className="text-[var(--color-text-primary)] font-medium text-sm sm:text-base">
                     Page {page} of {Math.ceil((count || 0) / limit)}
                   </span>
                 </div>
@@ -418,11 +453,12 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       ...resolvedSearchParams,
                       page: (page + 1).toString(),
                     }).toString()}`}
-                    className="inline-flex items-center px-6 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                    className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm sm:text-base"
                   >
-                    Next
+                    <span className="hidden sm:inline">Next</span>
+                    <span className="sm:hidden">Next</span>
                     <svg
-                      className="w-4 h-4 ml-2"
+                      className="w-4 h-4 ml-1 sm:ml-2"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

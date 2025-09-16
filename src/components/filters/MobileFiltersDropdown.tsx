@@ -178,7 +178,26 @@ export default function MobileFiltersDropdown({
               <select
                 className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-2 text-[var(--color-text-primary)] text-sm"
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  // Apply category filter instantly
+                  const params = new URLSearchParams(searchParams);
+                  if (e.target.value) {
+                    params.set("category", e.target.value);
+                  } else {
+                    params.delete("category");
+                  }
+                  // Keep other filters
+                  const searchQuery = searchParams.get("q");
+                  if (searchQuery) params.set("q", searchQuery);
+                  if (minPrice) params.set("minPrice", minPrice);
+                  if (maxPrice) params.set("maxPrice", maxPrice);
+                  if (location) params.set("location", location);
+                  if (selectedRatings.length > 0)
+                    params.set("ratings", selectedRatings.join(","));
+
+                  router.push(`/${locale}/search?${params.toString()}`);
+                }}
               >
                 <option value="">{t.allCategories}</option>
                 {categories.map((category) => (

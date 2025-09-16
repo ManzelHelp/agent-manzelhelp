@@ -20,11 +20,9 @@ export default function ServiceSearchBar({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(
-        `/${locale}/search?q=${encodeURIComponent(searchQuery.trim())}`
-      );
-    }
+    router.push(
+      `/${locale}/search?q=${encodeURIComponent(searchQuery.trim())}`
+    );
   };
 
   return (
@@ -59,7 +57,7 @@ export default function ServiceSearchBar({
 
         {/* Popular Searches Suggestion */}
         {!searchQuery && !isFocused && (
-          <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-white/90 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg">
+          <div className="absolute top-full left-0 right-0 mt-2 p-3 sm:p-4 bg-white/90 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg z-10">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-[var(--color-secondary)]" />
               <span className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -81,7 +79,7 @@ export default function ServiceSearchBar({
                       `/${locale}/search?q=${encodeURIComponent(term)}`
                     );
                   }}
-                  className="px-3 py-1.5 text-xs sm:text-sm bg-[var(--color-accent)]/10 hover:bg-[var(--color-secondary)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-secondary)] rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/50"
+                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-[var(--color-accent)]/10 hover:bg-[var(--color-secondary)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-secondary)] rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/50"
                 >
                   {term}
                 </button>

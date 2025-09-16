@@ -131,7 +131,26 @@ export default function SearchFilters({
           <select
             className="w-full rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] p-3 text-[var(--color-text-primary)] focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]/20 transition-all duration-200"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              // Apply category filter instantly
+              const params = new URLSearchParams(searchParams);
+              if (e.target.value) {
+                params.set("category", e.target.value);
+              } else {
+                params.delete("category");
+              }
+              // Keep other filters
+              const searchQuery = searchParams.get("q");
+              if (searchQuery) params.set("q", searchQuery);
+              if (minPrice) params.set("minPrice", minPrice);
+              if (maxPrice) params.set("maxPrice", maxPrice);
+              if (location) params.set("location", location);
+              if (selectedRatings.length > 0)
+                params.set("ratings", selectedRatings.join(","));
+
+              router.push(`/${locale}/search?${params.toString()}`);
+            }}
           >
             <option value="">{t.allCategories}</option>
             {categories.map((category) => (
