@@ -75,7 +75,7 @@ const initialFormData: BookingFormData = {
   service_address: "",
   agreed_price: 0,
   customer_requirements: "",
-  payment_method: "pending",
+  payment_method: "wallet",
 };
 
 export function BookingConfirmationDialog({
@@ -539,10 +539,8 @@ export function BookingConfirmationDialog({
             </Label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { value: "cash", label: t("cash") },
-                { value: "online", label: t("online") },
                 { value: "wallet", label: t("wallet") },
-                { value: "pending", label: t("payLater") },
+                { value: "online", label: t("online") },
               ].map(({ value, label }) => (
                 <button
                   key={value}

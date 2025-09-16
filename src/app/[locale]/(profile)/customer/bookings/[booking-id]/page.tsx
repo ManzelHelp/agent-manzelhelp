@@ -23,14 +23,18 @@ import {
   Info,
   X,
   MoreHorizontal,
-  Shield,
+  Star,
+  Award,
+  Timer,
+  CreditCard,
+  Navigation,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useUserStore } from "@/stores/userStore";
 import {
   getBookingById,
-  updateBookingStatus,
+  cancelCustomerBooking,
   type BookingWithDetails,
 } from "@/actions/bookings";
 import { BookingStatus } from "@/types/supabase";
@@ -45,7 +49,7 @@ interface ConfirmationDialogState {
   variant: "default" | "success" | "warning" | "danger";
 }
 
-export default function TaskerBookingDetailPage({
+export default function CustomerBookingDetailPage({
   params,
 }: {
   params: Promise<{ "booking-id": string }>;
@@ -80,14 +84,14 @@ export default function TaskerBookingDetailPage({
       const bookingData = await getBookingById(bookingId);
       if (!bookingData) {
         toast.error(t("notFound"));
-        router.push("/tasker/bookings");
+        router.push("/customer/bookings");
         return;
       }
 
-      // Verify this booking belongs to the current tasker
-      if (bookingData.tasker_id !== user.id) {
+      // Verify this booking belongs to the current user
+      if (bookingData.customer_id !== user.id) {
         toast.error(t("unauthorizedAccess"));
-        router.push("/tasker/bookings");
+        router.push("/customer/bookings");
         return;
       }
 
@@ -97,7 +101,7 @@ export default function TaskerBookingDetailPage({
       const errorMessage =
         error instanceof Error ? error.message : t("errors.unexpectedError");
       toast.error(errorMessage);
-      router.push("/tasker/bookings");
+      router.push("/customer/bookings");
     } finally {
       setIsLoading(false);
     }
@@ -225,113 +229,54 @@ export default function TaskerBookingDetailPage({
     });
   }, []);
 
-  const getCustomerName = useCallback(() => {
-    if (!booking) return t("customer");
-    const firstName = booking.customer_first_name || "";
-    const lastName = booking.customer_last_name || "";
-    return `${firstName} ${lastName}`.trim() || t("customer");
+  const getTaskerName = useCallback(() => {
+    if (!booking) return t("tasker");
+    const firstName = booking.tasker_first_name || "";
+    const lastName = booking.tasker_last_name || "";
+    return `${firstName} ${lastName}`.trim() || t("tasker");
   }, [booking, t]);
 
-  const getCustomerEmail = useCallback(() => {
+  const getTaskerEmail = useCallback(() => {
     if (!booking) return "N/A";
-    return booking.customer_email || "N/A";
+    return "N/A"; // Tasker email not available in current schema
   }, [booking]);
 
-  const getCustomerPhone = useCallback(() => {
+  const getTaskerPhone = useCallback(() => {
     if (!booking) return "N/A";
-    return booking.customer_phone || "N/A";
+    return "N/A"; // Tasker phone not available in current schema
   }, [booking]);
 
-  const handleStatusAction = useCallback(
-    async (action: string) => {
-      if (!booking) return;
+  const handleCancelBooking = useCallback(async () => {
+    if (!booking || !user) return;
 
-      const actionConfig = {
-        accept: {
-          title: t("confirmations.accept.title"),
-          description: t("confirmations.accept.description"),
-          confirmText: t("confirmations.accept.confirmText"),
-          variant: "success" as const,
-          status: "accepted" as BookingStatus,
-        },
-        decline: {
-          title: t("confirmations.decline.title"),
-          description: t("confirmations.decline.description"),
-          confirmText: t("confirmations.decline.confirmText"),
-          variant: "danger" as const,
-          status: "cancelled" as BookingStatus,
-        },
-        confirm: {
-          title: t("confirmations.confirm.title"),
-          description: t("confirmations.confirm.description"),
-          confirmText: t("confirmations.confirm.confirmText"),
-          variant: "success" as const,
-          status: "confirmed" as BookingStatus,
-        },
-        start: {
-          title: t("confirmations.start.title"),
-          description: t("confirmations.start.description"),
-          confirmText: t("confirmations.start.confirmText"),
-          variant: "success" as const,
-          status: "in_progress" as BookingStatus,
-        },
-        complete: {
-          title: t("confirmations.complete.title"),
-          description: t("confirmations.complete.description"),
-          confirmText: t("confirmations.complete.confirmText"),
-          variant: "success" as const,
-          status: "completed" as BookingStatus,
-        },
-        cancel: {
-          title: t("confirmations.cancel.title"),
-          description: t("confirmations.cancel.description"),
-          confirmText: t("confirmations.cancel.confirmText"),
-          variant: "danger" as const,
-          status: "cancelled" as BookingStatus,
-        },
-      };
-
-      const config = actionConfig[action as keyof typeof actionConfig];
-      if (!config) return;
-
-      setConfirmationDialog({
-        isOpen: true,
-        action,
-        title: config.title,
-        description: config.description,
-        confirmText: config.confirmText,
-        variant: config.variant,
-      });
-    },
-    [booking, t]
-  );
+    setConfirmationDialog({
+      isOpen: true,
+      action: "cancel",
+      title: t("confirmations.cancelCustomer.title"),
+      description: t("confirmations.cancelCustomer.description"),
+      confirmText: t("confirmations.cancelCustomer.confirmText"),
+      variant: "danger",
+    });
+  }, [booking, user, t]);
 
   const handleConfirmAction = useCallback(async () => {
-    if (!booking) return;
+    if (!booking || !user) return;
 
     setIsUpdating(true);
 
     try {
-      const statusMap: Record<string, BookingStatus> = {
-        accept: "accepted",
-        decline: "cancelled",
-        confirm: "confirmed",
-        start: "in_progress",
-        complete: "completed",
-        cancel: "cancelled",
-      };
+      if (confirmationDialog.action === "cancel") {
+        const result = await cancelCustomerBooking(booking.id, user.id);
 
-      const newStatus = statusMap[confirmationDialog.action];
-      if (!newStatus) return;
-
-      const result = await updateBookingStatus(booking.id, newStatus, user!.id);
-
-      if (result.success) {
-        setBooking((prev) => (prev ? { ...prev, status: newStatus } : null));
-        toast.success(t("success.statusUpdated"));
-      } else {
-        console.error("Failed to update booking:", result.error);
-        toast.error(result.error || t("errors.updateFailed"));
+        if (result.success) {
+          setBooking((prev) =>
+            prev ? { ...prev, status: "cancelled" as BookingStatus } : null
+          );
+          toast.success(t("success.statusUpdated"));
+        } else {
+          console.error("Failed to cancel booking:", result.error);
+          toast.error(result.error || t("errors.updateFailed"));
+        }
       }
     } catch (error) {
       console.error("Error updating booking:", error);
@@ -393,7 +338,7 @@ export default function TaskerBookingDetailPage({
             </p>
           </div>
           <Button
-            onClick={() => router.push("/tasker/bookings")}
+            onClick={() => router.push("/customer/bookings")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105"
           >
             {t("backToBookings")}
@@ -440,7 +385,7 @@ export default function TaskerBookingDetailPage({
         {/* Hero Section with Status */}
         <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50">
           {/* Background Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-700 dark:via-slate-800 dark:to-slate-600"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-slate-700 dark:via-slate-800 dark:to-slate-600"></div>
 
           {/* Content */}
           <div className="relative p-8 md:p-12">
@@ -448,8 +393,8 @@ export default function TaskerBookingDetailPage({
               {/* Service Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-2xl flex items-center justify-center">
-                    <DollarSign className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl flex items-center justify-center">
+                    <Award className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
                     <h2 className="text-3xl font-bold text-slate-900 dark:text-white mobile-text-2xl">
@@ -499,35 +444,47 @@ export default function TaskerBookingDetailPage({
           </div>
         </div>
 
-        {/* Customer Information */}
+        {/* Tasker Information */}
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                 <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              {t("sections.customerInfo")}
+              {t("sections.taskerInfo")}
             </h2>
           </div>
 
           <div className="p-8">
             <div className="flex flex-col lg:flex-row lg:items-center gap-8">
-              {/* Customer Avatar */}
+              {/* Tasker Avatar */}
               <div className="relative group">
                 <div className="relative h-24 w-24 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30">
-                  <User className="h-12 w-12 text-blue-600 dark:text-blue-400 m-auto mt-6" />
+                  {booking.tasker_avatar ? (
+                    <div
+                      className="w-full h-full bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url(${booking.tasker_avatar})`,
+                      }}
+                    />
+                  ) : (
+                    <User className="h-12 w-12 text-blue-600 dark:text-blue-400 m-auto mt-6" />
+                  )}
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                  <Star className="h-4 w-4 text-white" />
                 </div>
               </div>
 
-              {/* Customer Details */}
+              {/* Tasker Details */}
               <div className="flex-1 space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                    {getCustomerName()}
+                    {getTaskerName()}
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 text-lg">
-                    {t("customer")}
+                    {t("tasker")}
                   </p>
                 </div>
 
@@ -543,7 +500,7 @@ export default function TaskerBookingDetailPage({
                           Email
                         </p>
                         <p className="text-slate-900 dark:text-white font-semibold">
-                          {getCustomerEmail()}
+                          {getTaskerEmail()}
                         </p>
                       </div>
                     </div>
@@ -559,7 +516,7 @@ export default function TaskerBookingDetailPage({
                           Phone
                         </p>
                         <p className="text-slate-900 dark:text-white font-semibold">
-                          {getCustomerPhone()}
+                          {getTaskerPhone()}
                         </p>
                       </div>
                     </div>
@@ -577,7 +534,7 @@ export default function TaskerBookingDetailPage({
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                 <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                  <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 {t("sections.serviceDetails")}
               </h2>
@@ -615,7 +572,7 @@ export default function TaskerBookingDetailPage({
                 <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <Timer className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
@@ -704,7 +661,7 @@ export default function TaskerBookingDetailPage({
                 <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Shield className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                      <CreditCard className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
@@ -728,7 +685,7 @@ export default function TaskerBookingDetailPage({
             <div className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  <Navigation className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
                 {t("sections.location")}
               </h2>
@@ -788,44 +745,40 @@ export default function TaskerBookingDetailPage({
           </div>
 
           <div className="p-8 space-y-6">
-            {/* Primary Actions */}
+            {/* Customer Actions */}
             {booking.status === "pending" && (
-              <div className="space-y-4">
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center">
+                  <AlertCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-lg mb-4">
+                  {t("waitingForTasker")}
+                </p>
                 <Button
-                  onClick={() => handleStatusAction("accept")}
-                  disabled={isUpdating}
-                  className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <CheckCircle className="h-6 w-6 mr-3" />
-                  {t("actions.acceptRequest")}
-                </Button>
-                <Button
-                  onClick={() => handleStatusAction("decline")}
+                  onClick={handleCancelBooking}
                   disabled={isUpdating}
                   variant="outline"
-                  className="w-full h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <X className="h-5 w-5 mr-3" />
-                  {t("actions.declineRequest")}
+                  {t("actions.cancelBooking")}
                 </Button>
               </div>
             )}
 
             {booking.status === "accepted" && (
-              <div className="space-y-4">
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-lg mb-4">
+                  {t("taskerAccepted")}
+                </p>
                 <Button
-                  onClick={() => handleStatusAction("confirm")}
-                  disabled={isUpdating}
-                  className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <CheckCircle className="h-6 w-6 mr-3" />
-                  {t("actions.confirmBooking")}
-                </Button>
-                <Button
-                  onClick={() => handleStatusAction("cancel")}
+                  onClick={handleCancelBooking}
                   disabled={isUpdating}
                   variant="outline"
-                  className="w-full h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <X className="h-5 w-5 mr-3" />
                   {t("actions.cancelBooking")}
@@ -834,20 +787,18 @@ export default function TaskerBookingDetailPage({
             )}
 
             {booking.status === "confirmed" && (
-              <div className="space-y-4">
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-emerald-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-lg mb-4">
+                  {t("bookingConfirmed")}
+                </p>
                 <Button
-                  onClick={() => handleStatusAction("start")}
-                  disabled={isUpdating}
-                  className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <Play className="h-6 w-6 mr-3" />
-                  {t("actions.startTask")}
-                </Button>
-                <Button
-                  onClick={() => handleStatusAction("cancel")}
+                  onClick={handleCancelBooking}
                   disabled={isUpdating}
                   variant="outline"
-                  className="w-full h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <X className="h-5 w-5 mr-3" />
                   {t("actions.cancelBooking")}
@@ -856,15 +807,13 @@ export default function TaskerBookingDetailPage({
             )}
 
             {booking.status === "in_progress" && (
-              <div className="space-y-4">
-                <Button
-                  onClick={() => handleStatusAction("complete")}
-                  disabled={isUpdating}
-                  className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <CheckCircle className="h-6 w-6 mr-3" />
-                  {t("actions.completeTask")}
-                </Button>
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center">
+                  <Play className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-lg mb-4">
+                  {t("taskerWorking")}
+                </p>
               </div>
             )}
 
@@ -897,12 +846,12 @@ export default function TaskerBookingDetailPage({
                 className="h-14 text-lg font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <MessageSquare className="h-5 w-5 mr-3" />
-                {t("actions.messageCustomer")}
+                {t("actions.messageTasker")}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => {
-                  const phoneNumber = getCustomerPhone();
+                  const phoneNumber = getTaskerPhone();
                   if (phoneNumber && phoneNumber !== "N/A") {
                     window.open(`tel:${phoneNumber}`, "_self");
                   } else {
@@ -912,7 +861,7 @@ export default function TaskerBookingDetailPage({
                 className="h-14 text-lg font-semibold border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Phone className="h-5 w-5 mr-3" />
-                {t("actions.callCustomer")}
+                {t("actions.callTasker")}
               </Button>
             </div>
           </div>
