@@ -832,7 +832,13 @@
         "conversationStartedSuccess": "Conversation started successfully!",
         "failedToStartConversation": "Failed to start conversation"
       }
-    }
+    },
+    "ownService": "This is your own service",
+    "ownServiceDescription": "You cannot book or contact yourself for this service. This is your own service listing.",
+    "goToBooking": "Go to Booking",
+    "goToChat": "Go to Chat",
+    "bookingExists": "You have an active booking for this service",
+    "conversationExists": "You have an ongoing conversation with this tasker"
   },
   "bookingDetails": {
     "title": "Booking Details",

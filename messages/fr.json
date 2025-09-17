@@ -832,6 +832,12 @@
         "conversationStartedSuccess": "Conversation démarrée avec succès !",
         "failedToStartConversation": "Échec du démarrage de la conversation"
       }
-    }
+    },
+    "ownService": "C'est votre propre service",
+    "ownServiceDescription": "Vous ne pouvez pas vous réserver ou vous contacter pour ce service. C'est votre propre annonce de service.",
+    "goToBooking": "Aller à la Réservation",
+    "goToChat": "Aller au Chat",
+    "bookingExists": "Vous avez une réservation active pour ce service",
+    "conversationExists": "Vous avez une conversation en cours avec cet assistant"
   }
 }

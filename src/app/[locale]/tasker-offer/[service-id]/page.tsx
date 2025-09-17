@@ -24,6 +24,7 @@ import { format } from "date-fns";
 import { useUserStore } from "@/stores/userStore";
 import {
   getTaskerServiceOffer,
+  getServiceInteractionStatus,
   type TaskerServiceOffer,
 } from "@/actions/services";
 import { BookingConfirmationDialog } from "@/components/booking/BookingConfirmationDialog";
@@ -41,10 +42,17 @@ export default function TaskerOfferPage() {
   const [error, setError] = useState<string | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const [interactionStatus, setInteractionStatus] = useState<{
+    isOwner: boolean;
+    hasBooking: boolean;
+    hasConversation: boolean;
+    bookingId?: string;
+    conversationId?: string;
+  } | null>(null);
 
   const serviceId = params["service-id"] as string;
 
-  // Fetch service data
+  // Fetch service data and interaction status
   useEffect(() => {
     const fetchServiceData = async () => {
       if (!serviceId) return;
@@ -56,6 +64,26 @@ export default function TaskerOfferPage() {
 
         if (result.success && result.data) {
           setServiceData(result.data);
+
+          // Check interaction status if user is logged in
+          if (user) {
+            try {
+              const interactionResult = await getServiceInteractionStatus(
+                serviceId,
+                user.id
+              );
+              if (interactionResult.success && interactionResult.data) {
+                setInteractionStatus(interactionResult.data);
+              } else {
+                console.warn(
+                  "Failed to get interaction status:",
+                  interactionResult.error
+                );
+              }
+            } catch (err) {
+              console.error("Error checking interaction status:", err);
+            }
+          }
         } else {
           setError(result.error || t("serviceNotFound"));
         }
@@ -68,7 +96,7 @@ export default function TaskerOfferPage() {
     };
 
     fetchServiceData();
-  }, [serviceId, t]);
+  }, [serviceId, t, user]);
 
   const getPricingDisplay = (price: number, pricingType: string) => {
     if (pricingType === "hourly") {
@@ -117,6 +145,22 @@ export default function TaskerOfferPage() {
 
   const handleContactSuccess = (conversationId: string) => {
     router.push(`/customer/messages/${conversationId}`);
+  };
+
+  const handleGoToBooking = () => {
+    if (interactionStatus?.bookingId) {
+      router.push(`/customer/bookings/${interactionStatus.bookingId}`);
+    } else {
+      console.error("No booking ID available");
+    }
+  };
+
+  const handleGoToChat = () => {
+    if (interactionStatus?.conversationId) {
+      router.push(`/customer/messages/${interactionStatus.conversationId}`);
+    } else {
+      console.error("No conversation ID available");
+    }
   };
 
   if (isLoading) {
@@ -494,25 +538,92 @@ export default function TaskerOfferPage() {
 
               {/* Action Buttons */}
               <div className="pt-6 border-t border-slate-200/50 dark:border-slate-600/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button
-                    onClick={handleBookService}
-                    className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                    size="lg"
-                  >
-                    <CheckCircle className="h-6 w-6 mr-3" />
-                    {t("bookService")}
-                  </Button>
+                {interactionStatus?.isOwner ? (
+                  <div className="text-center">
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-amber-200/50 dark:border-amber-700/50">
+                      <div className="flex items-center justify-center gap-3 mb-3">
+                        <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
+                          <UserIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+                          {t("ownService")}
+                        </h3>
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-lg">
+                        {t("ownServiceDescription")}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Primary Actions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Booking Button */}
+                      {interactionStatus?.hasBooking ? (
+                        <Button
+                          onClick={handleGoToBooking}
+                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                          size="lg"
+                        >
+                          <CheckCircle className="h-6 w-6 mr-3" />
+                          {t("goToBooking")}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleBookService}
+                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                          size="lg"
+                        >
+                          <CheckCircle className="h-6 w-6 mr-3" />
+                          {t("bookService")}
+                        </Button>
+                      )}
 
-                  <Button
-                    onClick={handleContactTasker}
-                    className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                    size="lg"
-                  >
-                    <MessageSquare className="h-6 w-6 mr-3" />
-                    {t("contactTasker")}
-                  </Button>
-                </div>
+                      {/* Chat/Contact Button */}
+                      {interactionStatus?.hasConversation ? (
+                        <Button
+                          onClick={handleGoToChat}
+                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                          size="lg"
+                        >
+                          <MessageSquare className="h-6 w-6 mr-3" />
+                          {t("goToChat")}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleContactTasker}
+                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                          size="lg"
+                        >
+                          <MessageSquare className="h-6 w-6 mr-3" />
+                          {t("contactTasker")}
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Status Messages */}
+                    {interactionStatus?.hasBooking && (
+                      <div className="text-center">
+                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 border border-green-200/50 dark:border-green-700/50">
+                          <p className="text-green-700 dark:text-green-300 text-sm font-medium">
+                            {t("bookingExists")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {interactionStatus?.hasConversation &&
+                      !interactionStatus?.hasBooking && (
+                        <div className="text-center">
+                          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-4 border border-blue-200/50 dark:border-blue-700/50">
+                            <p className="text-blue-700 dark:text-blue-300 text-sm font-medium">
+                              {t("conversationExists")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

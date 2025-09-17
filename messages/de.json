@@ -832,7 +832,13 @@
         "conversationStartedSuccess": "Unterhaltung erfolgreich gestartet!",
         "failedToStartConversation": "Unterhaltung konnte nicht gestartet werden"
       }
-    }
+    },
+    "ownService": "Das ist Ihr eigener Service",
+    "ownServiceDescription": "Sie können sich nicht selbst für diesen Service buchen oder kontaktieren. Das ist Ihre eigene Service-Anzeige.",
+    "goToBooking": "Zur Buchung",
+    "goToChat": "Zum Chat",
+    "bookingExists": "Sie haben eine aktive Buchung für diesen Service",
+    "conversationExists": "Sie haben eine laufende Unterhaltung mit diesem Tasker"
   }
 }
   

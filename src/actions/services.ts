@@ -627,3 +627,171 @@ export async function createTaskerService(
     return { success: false, error: "Failed to create service" };
   }
 }
+
+// Check if user has existing booking for a service
+export async function checkExistingBooking(
+  serviceId: string,
+  userId: string
+): Promise<{
+  success: boolean;
+  hasBooking: boolean;
+  bookingId?: string;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("service_bookings")
+      .select("id, status")
+      .eq("tasker_service_id", serviceId)
+      .eq("customer_id", userId)
+      .in("status", ["pending", "accepted", "confirmed", "in_progress"])
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Error checking existing booking:", error);
+      return {
+        success: false,
+        hasBooking: false,
+        error: "Failed to check booking status",
+      };
+    }
+
+    if (data) {
+      return { success: true, hasBooking: true, bookingId: data.id };
+    }
+
+    return { success: true, hasBooking: false };
+  } catch (error) {
+    console.error("Error in checkExistingBooking:", error);
+    return {
+      success: false,
+      hasBooking: false,
+      error: "Failed to check booking status",
+    };
+  }
+}
+
+// Check if user has existing conversation with tasker for a service
+export async function checkExistingConversation(
+  serviceId: string,
+  userId: string,
+  taskerId: string
+): Promise<{
+  success: boolean;
+  hasConversation: boolean;
+  conversationId?: string;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("id")
+      .or(
+        `and(participant1_id.eq.${userId},participant2_id.eq.${taskerId}),and(participant1_id.eq.${taskerId},participant2_id.eq.${userId})`
+      )
+      .eq("service_id", serviceId)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Error checking existing conversation:", error);
+      return {
+        success: false,
+        hasConversation: false,
+        error: "Failed to check conversation status",
+      };
+    }
+
+    if (data) {
+      return { success: true, hasConversation: true, conversationId: data.id };
+    }
+
+    return { success: true, hasConversation: false };
+  } catch (error) {
+    console.error("Error in checkExistingConversation:", error);
+    return {
+      success: false,
+      hasConversation: false,
+      error: "Failed to check conversation status",
+    };
+  }
+}
+
+// Get service interaction status for a user (optimized with parallel queries)
+export async function getServiceInteractionStatus(
+  serviceId: string,
+  userId: string
+): Promise<{
+  success: boolean;
+  data?: {
+    isOwner: boolean;
+    hasBooking: boolean;
+    hasConversation: boolean;
+    bookingId?: string;
+    conversationId?: string;
+  };
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  try {
+    // Get service details to get tasker ID
+    const { data: serviceData, error: serviceError } = await supabase
+      .from("tasker_services")
+      .select("tasker_id")
+      .eq("id", serviceId)
+      .single();
+
+    if (serviceError || !serviceData) {
+      return { success: false, error: "Service not found" };
+    }
+
+    const isOwner = serviceData.tasker_id === userId;
+
+    // If user is the owner, return early
+    if (isOwner) {
+      return {
+        success: true,
+        data: {
+          isOwner: true,
+          hasBooking: false,
+          hasConversation: false,
+        },
+      };
+    }
+
+    // Run booking and conversation checks in parallel for better performance
+    const [bookingCheck, conversationCheck] = await Promise.all([
+      checkExistingBooking(serviceId, userId),
+      checkExistingConversation(serviceId, userId, serviceData.tasker_id),
+    ]);
+
+    // Check for errors in parallel operations
+    if (!bookingCheck.success) {
+      return { success: false, error: bookingCheck.error };
+    }
+    if (!conversationCheck.success) {
+      return { success: false, error: conversationCheck.error };
+    }
+
+    return {
+      success: true,
+      data: {
+        isOwner: false,
+        hasBooking: bookingCheck.hasBooking,
+        hasConversation: conversationCheck.hasConversation,
+        bookingId: bookingCheck.bookingId,
+        conversationId: conversationCheck.conversationId,
+      },
+    };
+  } catch (error) {
+    console.error("Error in getServiceInteractionStatus:", error);
+    return {
+      success: false,
+      error: "Failed to get service interaction status",
+    };
+  }
+}
