@@ -475,6 +475,169 @@
     }
   }
 
+  /* Enhanced mobile-specific improvements for booking details */
+  .mobile-card {
+    @apply rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl;
+  }
+  
+  .mobile-section-header {
+    @apply px-4 sm:px-6 lg:px-8 py-4 sm:py-6;
+  }
+  
+  .mobile-section-content {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  .mobile-grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6;
+  }
+  
+  .mobile-text-responsive {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+  
+  .mobile-heading-responsive {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+  
+  .mobile-icon-responsive {
+    @apply h-4 w-4 sm:h-5 sm:w-5;
+  }
+  
+  .mobile-icon-large {
+    @apply h-6 w-6 sm:h-8 sm:w-8;
+  }
+  
+  .mobile-spacing-responsive {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+  
+  .mobile-padding-responsive {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+  
+  /* Enhanced touch interactions for mobile */
+  .mobile-touch-feedback {
+    @apply active:scale-95 transition-transform duration-150;
+  }
+  
+  .mobile-touch-feedback:active {
+    transform: scale(0.98);
+  }
+  
+  /* Better mobile scrolling */
+  .mobile-scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Mobile-optimized shadows */
+  .mobile-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .mobile-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Mobile-optimized borders */
+  .mobile-border {
+    @apply border border-slate-200/50 dark:border-slate-700/50;
+  }
+  
+  /* Mobile-optimized gradients */
+  .mobile-gradient-bg {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Mobile-optimized text truncation */
+  .mobile-text-truncate {
+    @apply truncate;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Mobile-optimized flex layouts */
+  .mobile-flex-center {
+    @apply flex items-center justify-center;
+  }
+  
+  .mobile-flex-between {
+    @apply flex items-center justify-between;
+  }
+  
+  .mobile-flex-start {
+    @apply flex items-center justify-start;
+  }
+  
+  /* Mobile-optimized spacing utilities */
+  .mobile-space-y {
+    @apply space-y-3 sm:space-y-4 lg:space-y-6;
+  }
+  
+  .mobile-space-x {
+    @apply space-x-3 sm:space-x-4 lg:space-x-6;
+  }
+  
+  /* Mobile-optimized container */
+  .mobile-container {
+    @apply container mx-auto px-4 sm:px-6 max-w-6xl;
+  }
+  
+  /* Mobile-optimized button groups */
+  .mobile-button-group {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+  
+  /* Mobile-optimized status badges */
+  .mobile-status-badge {
+    @apply text-sm sm:text-base lg:text-lg font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg w-fit;
+  }
+  
+  /* Mobile-optimized info cards */
+  .mobile-info-card {
+    @apply bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300;
+  }
+  
+  /* Mobile-optimized timeline */
+  .mobile-timeline-item {
+    @apply flex items-start gap-4 sm:gap-6;
+  }
+  
+  .mobile-timeline-dot {
+    @apply w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-lg flex-shrink-0;
+  }
+  
+  .mobile-timeline-content {
+    @apply flex-1 pb-6 sm:pb-8;
+  }
+  
+  /* Mobile-optimized loading states */
+  .mobile-loading-skeleton {
+    @apply animate-pulse bg-slate-200 dark:bg-slate-700 rounded;
+  }
+  
+  /* Mobile-optimized error states */
+  .mobile-error-state {
+    @apply text-center py-8 px-4;
+  }
+  
+  .mobile-error-icon {
+    @apply w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full flex items-center justify-center;
+  }
+  
+  /* Mobile-optimized success states */
+  .mobile-success-state {
+    @apply text-center py-6 sm:py-8 px-4;
+  }
+  
+  .mobile-success-icon {
+    @apply w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center;
+  }
+
   
  
 } 

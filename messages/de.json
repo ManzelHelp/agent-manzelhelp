@@ -888,6 +888,132 @@
     "results": {
       "showing": "Zeige {current} von {total} Buchungen"
     }
+  },
+  "bookingDetails": {
+    "title": "Buchungsdetails",
+    "loading": "Buchungsdetails werden geladen...",
+    "notFound": "Buchung nicht gefunden",
+    "backToBookings": "Zurück zu Buchungen",
+    "service": "Service",
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen", 
+      "confirmed": "Bestätigt",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "unknown": "Unbekannt"
+    },
+    "statusDescriptions": {
+      "pending": "Warten auf Antwort",
+      "accepted": "Buchung wurde angenommen",
+      "confirmed": "Buchung ist bestätigt und bereit",
+      "in_progress": "Aufgabe wird derzeit ausgeführt",
+      "completed": "Aufgabe wurde abgeschlossen",
+      "cancelled": "Buchung wurde storniert",
+      "unknown": "Status unbekannt"
+    },
+    "bookingType": {
+      "instant": "Sofort",
+      "scheduled": "Geplant",
+      "recurring": "Wiederkehrend"
+    },
+    "sections": {
+      "customerInfo": "Kundeninformationen",
+      "taskerInfo": "Tasker-Informationen",
+      "serviceDetails": "Service-Details",
+      "bookingInfo": "Buchungsinformationen",
+      "location": "Standort",
+      "requirements": "Anforderungen",
+      "actions": "Aktionen",
+      "timeline": "Buchungszeitlinie"
+    },
+    "customer": "Kunde",
+    "tasker": "Tasker",
+    "agreedPrice": "Vereinbarter Preis",
+    "price": "Preis",
+    "duration": "Dauer",
+    "date": "Datum",
+    "time": "Zeit",
+    "type": "Typ",
+    "payment": "Zahlung",
+    "addressNotSpecified": "Adresse nicht angegeben",
+    "noRequirements": "Keine spezifischen Anforderungen angegeben.",
+    "actions": {
+      "acceptRequest": "Anfrage annehmen",
+      "declineRequest": "Anfrage ablehnen",
+      "confirmBooking": "Buchung bestätigen",
+      "cancelBooking": "Buchung stornieren",
+      "startTask": "Aufgabe starten",
+      "completeTask": "Aufgabe abschließen",
+      "messageCustomer": "Kunde kontaktieren",
+      "messageTasker": "Tasker kontaktieren",
+      "callCustomer": "Kunde anrufen",
+      "callTasker": "Tasker anrufen"
+    },
+    "timeline": {
+      "bookingCreated": "Buchung erstellt",
+      "bookingAccepted": "Buchung angenommen",
+      "bookingConfirmed": "Buchung bestätigt",
+      "taskStarted": "Aufgabe gestartet",
+      "taskCompleted": "Aufgabe abgeschlossen"
+    },
+    "completed": "Diese Buchung wurde erfolgreich abgeschlossen.",
+    "cancelled": "Diese Buchung wurde storniert.",
+    "messagingComingSoon": "Messaging-Funktion kommt bald!",
+    "phoneNotAvailable": "Telefonnummer nicht verfügbar",
+    "timeNotSpecified": "Zeit nicht angegeben",
+    "waitingForTasker": "Warten auf die Antwort des Taskers auf Ihre Buchungsanfrage.",
+    "taskerAccepted": "Großartig! Der Tasker hat Ihre Buchungsanfrage angenommen.",
+    "bookingConfirmed": "Ihre Buchung ist bestätigt! Der Tasker wird den Service zur geplanten Zeit starten.",
+    "taskerWorking": "Der Tasker arbeitet derzeit an Ihrem Service.",
+    "unauthorizedAccess": "Unbefugter Zugriff",
+    "pleaseWait": "Bitte warten Sie, während wir Ihre Buchungsdetails abrufen...",
+    "bookingNotFound": "Die Buchung, nach der Sie suchen, existiert nicht oder Sie haben keine Berechtigung, sie anzuzeigen.",
+    "success": {
+      "statusUpdated": "Buchungsstatus erfolgreich aktualisiert"
+    },
+    "errors": {
+      "updateFailed": "Buchungsstatus konnte nicht aktualisiert werden",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
+    },
+    "confirmations": {
+      "accept": {
+        "title": "Buchungsanfrage annehmen",
+        "description": "Sind Sie sicher, dass Sie diese Buchungsanfrage annehmen möchten? Dies wird den Kunden benachrichtigen, dass Sie verfügbar sind, um den Service auszuführen.",
+        "confirmText": "Anfrage annehmen"
+      },
+      "decline": {
+        "title": "Buchungsanfrage ablehnen",
+        "description": "Sind Sie sicher, dass Sie diese Buchungsanfrage ablehnen möchten? Diese Aktion kann nicht rückgängig gemacht werden und der Kunde wird benachrichtigt.",
+        "confirmText": "Anfrage ablehnen"
+      },
+      "confirm": {
+        "title": "Buchung bestätigen",
+        "description": "Sind Sie sicher, dass Sie diese Buchung bestätigen möchten? Dies wird die Vereinbarung finalisieren und den Kunden benachrichtigen.",
+        "confirmText": "Buchung bestätigen"
+      },
+      "start": {
+        "title": "Aufgabe starten",
+        "description": "Sind Sie bereit, die Aufgabe zu starten? Dies wird den Kunden benachrichtigen, dass die Arbeit begonnen hat.",
+        "confirmText": "Aufgabe starten"
+      },
+      "complete": {
+        "title": "Aufgabe abschließen",
+        "description": "Sind Sie sicher, dass Sie diese Aufgabe als abgeschlossen markieren möchten? Dies wird die Buchung finalisieren und den Kunden benachrichtigen.",
+        "confirmText": "Aufgabe abschließen"
+      },
+      "cancel": {
+        "title": "Buchung stornieren",
+        "description": "Sind Sie sicher, dass Sie diese Buchung stornieren möchten? Diese Aktion kann nicht rückgängig gemacht werden und kann Ihre Bewertung beeinträchtigen.",
+        "confirmText": "Buchung stornieren"
+      },
+      "cancelCustomer": {
+        "title": "Buchung stornieren",
+        "description": "Sind Sie sicher, dass Sie diese Buchung stornieren möchten? Diese Aktion kann nicht rückgängig gemacht werden und kann Ihre Buchungshistorie beeinträchtigen.",
+        "confirmText": "Buchung stornieren"
+      }
+    }
   }
 }
   

@@ -888,5 +888,131 @@
     "results": {
       "showing": "Affichage de {current} sur {total} réservations"
     }
+  },
+  "bookingDetails": {
+    "title": "Détails de la Réservation",
+    "loading": "Chargement des détails de la réservation...",
+    "notFound": "Réservation non trouvée",
+    "backToBookings": "Retour aux Réservations",
+    "service": "Service",
+    "status": {
+      "pending": "En Attente",
+      "accepted": "Acceptée", 
+      "confirmed": "Confirmée",
+      "in_progress": "En Cours",
+      "completed": "Terminée",
+      "cancelled": "Annulée",
+      "unknown": "Inconnu"
+    },
+    "statusDescriptions": {
+      "pending": "En attente de réponse",
+      "accepted": "La réservation a été acceptée",
+      "confirmed": "La réservation est confirmée et prête",
+      "in_progress": "La tâche est actuellement en cours d'exécution",
+      "completed": "La tâche a été terminée",
+      "cancelled": "La réservation a été annulée",
+      "unknown": "Statut inconnu"
+    },
+    "bookingType": {
+      "instant": "Instantané",
+      "scheduled": "Programmé",
+      "recurring": "Récurrent"
+    },
+    "sections": {
+      "customerInfo": "Informations Client",
+      "taskerInfo": "Informations Assistant",
+      "serviceDetails": "Détails du Service",
+      "bookingInfo": "Informations de Réservation",
+      "location": "Emplacement",
+      "requirements": "Exigences",
+      "actions": "Actions",
+      "timeline": "Chronologie de Réservation"
+    },
+    "customer": "Client",
+    "tasker": "Assistant",
+    "agreedPrice": "Prix Convenu",
+    "price": "Prix",
+    "duration": "Durée",
+    "date": "Date",
+    "time": "Heure",
+    "type": "Type",
+    "payment": "Paiement",
+    "addressNotSpecified": "Adresse non spécifiée",
+    "noRequirements": "Aucune exigence spécifique fournie.",
+    "actions": {
+      "acceptRequest": "Accepter la Demande",
+      "declineRequest": "Refuser la Demande",
+      "confirmBooking": "Confirmer la Réservation",
+      "cancelBooking": "Annuler la Réservation",
+      "startTask": "Commencer la Tâche",
+      "completeTask": "Terminer la Tâche",
+      "messageCustomer": "Contacter le Client",
+      "messageTasker": "Contacter l'Assistant",
+      "callCustomer": "Appeler le Client",
+      "callTasker": "Appeler l'Assistant"
+    },
+    "timeline": {
+      "bookingCreated": "Réservation Créée",
+      "bookingAccepted": "Réservation Acceptée",
+      "bookingConfirmed": "Réservation Confirmée",
+      "taskStarted": "Tâche Commencée",
+      "taskCompleted": "Tâche Terminée"
+    },
+    "completed": "Cette réservation a été terminée avec succès.",
+    "cancelled": "Cette réservation a été annulée.",
+    "messagingComingSoon": "Fonctionnalité de messagerie bientôt disponible !",
+    "phoneNotAvailable": "Numéro de téléphone non disponible",
+    "timeNotSpecified": "Heure non spécifiée",
+    "waitingForTasker": "En attente de la réponse de l'assistant à votre demande de réservation.",
+    "taskerAccepted": "Excellent ! L'assistant a accepté votre demande de réservation.",
+    "bookingConfirmed": "Votre réservation est confirmée ! L'assistant commencera le service à l'heure prévue.",
+    "taskerWorking": "L'assistant travaille actuellement sur votre service.",
+    "unauthorizedAccess": "Accès non autorisé",
+    "pleaseWait": "Veuillez patienter pendant que nous récupérons les détails de votre réservation...",
+    "bookingNotFound": "La réservation que vous recherchez n'existe pas ou vous n'avez pas l'autorisation de la voir.",
+    "success": {
+      "statusUpdated": "Statut de la réservation mis à jour avec succès"
+    },
+    "errors": {
+      "updateFailed": "Échec de la mise à jour du statut de la réservation",
+      "unexpectedError": "Une erreur inattendue s'est produite"
+    },
+    "confirmations": {
+      "accept": {
+        "title": "Accepter la Demande de Réservation",
+        "description": "Êtes-vous sûr de vouloir accepter cette demande de réservation ? Cela notifiera le client que vous êtes disponible pour effectuer le service.",
+        "confirmText": "Accepter la Demande"
+      },
+      "decline": {
+        "title": "Refuser la Demande de Réservation",
+        "description": "Êtes-vous sûr de vouloir refuser cette demande de réservation ? Cette action ne peut pas être annulée et le client sera notifié.",
+        "confirmText": "Refuser la Demande"
+      },
+      "confirm": {
+        "title": "Confirmer la Réservation",
+        "description": "Êtes-vous sûr de vouloir confirmer cette réservation ? Cela finalisera l'arrangement et notifiera le client.",
+        "confirmText": "Confirmer la Réservation"
+      },
+      "start": {
+        "title": "Commencer la Tâche",
+        "description": "Êtes-vous prêt à commencer la tâche ? Cela notifiera le client que le travail a commencé.",
+        "confirmText": "Commencer la Tâche"
+      },
+      "complete": {
+        "title": "Terminer la Tâche",
+        "description": "Êtes-vous sûr de vouloir marquer cette tâche comme terminée ? Cela finalisera la réservation et notifiera le client.",
+        "confirmText": "Terminer la Tâche"
+      },
+      "cancel": {
+        "title": "Annuler la Réservation",
+        "description": "Êtes-vous sûr de vouloir annuler cette réservation ? Cette action ne peut pas être annulée et peut affecter votre évaluation.",
+        "confirmText": "Annuler la Réservation"
+      },
+      "cancelCustomer": {
+        "title": "Annuler la Réservation",
+        "description": "Êtes-vous sûr de vouloir annuler cette réservation ? Cette action ne peut pas être annulée et peut affecter votre historique de réservations.",
+        "confirmText": "Annuler la Réservation"
+      }
+    }
   }
 }

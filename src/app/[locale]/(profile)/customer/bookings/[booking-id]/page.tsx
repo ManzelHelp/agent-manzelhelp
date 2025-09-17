@@ -350,30 +350,30 @@ export default function CustomerBookingDetailPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
-      {/* Modern Header */}
+      {/* Modern Header - Mobile Optimized */}
       <div className="sticky top-0 z-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 max-w-6xl">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 max-w-6xl">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Button
               variant="ghost"
               size="sm"
-              className="p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 touch-target mobile-focus transition-all duration-200"
+              className="p-2 sm:p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 touch-target mobile-focus transition-all duration-200 min-h-[44px] min-w-[44px]"
               onClick={() => router.back()}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white mobile-text-xl">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white mobile-text-xl truncate">
                 {t("title")}
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm mobile-text-sm">
+              <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mobile-text-sm truncate">
                 {booking.service_title || t("service")}
               </p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 touch-target mobile-focus transition-all duration-200"
+              className="p-2 sm:p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 touch-target mobile-focus transition-all duration-200 min-h-[44px] min-w-[44px]"
             >
               <MoreHorizontal className="h-5 w-5" />
             </Button>
@@ -381,26 +381,26 @@ export default function CustomerBookingDetailPage({
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-8">
-        {/* Hero Section with Status */}
-        <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-6xl space-y-6 sm:space-y-8">
+        {/* Hero Section with Status - Mobile Optimized */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50">
           {/* Background Gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-slate-700 dark:via-slate-800 dark:to-slate-600"></div>
 
           {/* Content */}
-          <div className="relative p-8 md:p-12">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+          <div className="relative p-4 sm:p-6 md:p-8 lg:p-12">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4 sm:gap-6 lg:gap-8">
               {/* Service Info */}
               <div className="flex-1">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl flex items-center justify-center">
-                    <Award className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <Award className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <div>
-                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white mobile-text-2xl">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mobile-text-xl truncate">
                       {booking.service_title || t("service")}
                     </h2>
-                    <p className="text-slate-600 dark:text-slate-400 text-lg mobile-text-base">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg mobile-text-base truncate">
                       {booking.category_name
                         ? `${booking.category_name} service`
                         : "Professional service"}
@@ -408,32 +408,32 @@ export default function CustomerBookingDetailPage({
                   </div>
                 </div>
 
-                {/* Status Badge */}
-                <div className="flex items-center gap-4">
+                {/* Status Badge - Mobile Optimized */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <Badge
-                    className={`${statusInfo?.color} text-lg font-semibold px-6 py-3 rounded-2xl shadow-lg`}
+                    className={`${statusInfo?.color} text-sm sm:text-base lg:text-lg font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg w-fit`}
                   >
                     {statusInfo?.icon && (
-                      <statusInfo.icon className="h-5 w-5 mr-2" />
+                      <statusInfo.icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
                     )}
                     {statusInfo?.label}
                   </Badge>
-                  <span className="text-slate-600 dark:text-slate-400 text-lg mobile-text-base">
+                  <span className="text-slate-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg mobile-text-base">
                     {statusInfo?.description}
                   </span>
                 </div>
               </div>
 
-              {/* Price Display */}
-              <div className="lg:text-right">
-                <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 dark:border-slate-700/20">
-                  <div className="flex items-center gap-3 justify-center lg:justify-end">
-                    <DollarSign className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-                    <div>
-                      <p className="text-4xl font-bold text-slate-900 dark:text-white mobile-text-3xl">
+              {/* Price Display - Mobile Optimized */}
+              <div className="lg:text-right mt-4 sm:mt-0">
+                <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl border border-white/20 dark:border-slate-700/20">
+                  <div className="flex items-center gap-2 sm:gap-3 justify-center lg:justify-end">
+                    <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <div className="text-center lg:text-right">
+                      <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mobile-text-3xl">
                         {formatCurrency(booking.agreed_price, booking.currency)}
                       </p>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm mobile-text-sm">
+                      <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mobile-text-sm">
                         {t("agreedPrice")}
                       </p>
                     </div>
@@ -444,23 +444,23 @@ export default function CustomerBookingDetailPage({
           </div>
         </div>
 
-        {/* Tasker Information */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+        {/* Tasker Information - Mobile Optimized */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              {t("sections.taskerInfo")}
+              <span className="truncate">{t("sections.taskerInfo")}</span>
             </h2>
           </div>
 
-          <div className="p-8">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4 sm:gap-6 lg:gap-8">
               {/* Tasker Avatar */}
-              <div className="relative group">
-                <div className="relative h-24 w-24 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30">
+              <div className="relative group flex-shrink-0 self-center lg:self-start">
+                <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-xl sm:rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30">
                   {booking.tasker_avatar ? (
                     <div
                       className="w-full h-full bg-cover bg-center"
@@ -469,53 +469,53 @@ export default function CustomerBookingDetailPage({
                       }}
                     />
                   ) : (
-                    <User className="h-12 w-12 text-blue-600 dark:text-blue-400 m-auto mt-6" />
+                    <User className="h-10 w-10 sm:h-12 sm:w-12 text-blue-600 dark:text-blue-400 m-auto mt-4 sm:mt-6" />
                   )}
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Star className="h-4 w-4 text-white" />
+                <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 </div>
               </div>
 
               {/* Tasker Details */}
-              <div className="flex-1 space-y-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              <div className="flex-1 space-y-4 sm:space-y-6">
+                <div className="text-center lg:text-left">
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 truncate">
                     {getTaskerName()}
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-lg">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg">
                     {t("tasker")}
                   </p>
                 </div>
 
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                {/* Contact Info - Mobile Optimized */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                           Email
                         </p>
-                        <p className="text-slate-900 dark:text-white font-semibold">
+                        <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
                           {getTaskerEmail()}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                        <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                           Phone
                         </p>
-                        <p className="text-slate-900 dark:text-white font-semibold">
+                        <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
                           {getTaskerPhone()}
                         </p>
                       </div>
@@ -527,58 +527,58 @@ export default function CustomerBookingDetailPage({
           </div>
         </div>
 
-        {/* Service & Booking Details Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Service & Booking Details Grid - Mobile Optimized */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Service Details */}
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                  <Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-700 dark:to-slate-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Award className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                {t("sections.serviceDetails")}
+                <span className="truncate">{t("sections.serviceDetails")}</span>
               </h2>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 truncate">
                   {booking.service_title || t("service")}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-lg">
+                <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg">
                   {booking.category_name
                     ? `${booking.category_name} service`
                     : "Professional service"}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <DollarSign className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                      <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                         {t("price")}
                       </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                      <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white truncate">
                         {formatCurrency(booking.agreed_price, booking.currency)}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Timer className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                      <Timer className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                         {t("duration")}
                       </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                      <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white truncate">
                         {formatDuration(booking.estimated_duration || 0)}
                       </p>
                     </div>
@@ -758,10 +758,10 @@ export default function CustomerBookingDetailPage({
                   onClick={handleCancelBooking}
                   disabled={isUpdating}
                   variant="outline"
-                  className="h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
                 >
-                  <X className="h-5 w-5 mr-3" />
-                  {t("actions.cancelBooking")}
+                  <X className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+                  <span className="truncate">{t("actions.cancelBooking")}</span>
                 </Button>
               </div>
             )}
@@ -778,10 +778,10 @@ export default function CustomerBookingDetailPage({
                   onClick={handleCancelBooking}
                   disabled={isUpdating}
                   variant="outline"
-                  className="h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
                 >
-                  <X className="h-5 w-5 mr-3" />
-                  {t("actions.cancelBooking")}
+                  <X className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+                  <span className="truncate">{t("actions.cancelBooking")}</span>
                 </Button>
               </div>
             )}
@@ -798,10 +798,10 @@ export default function CustomerBookingDetailPage({
                   onClick={handleCancelBooking}
                   disabled={isUpdating}
                   variant="outline"
-                  className="h-14 text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
                 >
-                  <X className="h-5 w-5 mr-3" />
-                  {t("actions.cancelBooking")}
+                  <X className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+                  <span className="truncate">{t("actions.cancelBooking")}</span>
                 </Button>
               </div>
             )}
@@ -835,18 +835,18 @@ export default function CustomerBookingDetailPage({
               </div>
             )}
 
-            {/* Communication Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Communication Buttons - Mobile Optimized */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={() => {
                   // TODO: Implement messaging functionality
                   toast.info(t("messagingComingSoon"));
                 }}
-                className="h-14 text-lg font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
               >
-                <MessageSquare className="h-5 w-5 mr-3" />
-                {t("actions.messageTasker")}
+                <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+                <span className="truncate">{t("actions.messageTasker")}</span>
               </Button>
               <Button
                 variant="outline"
@@ -858,10 +858,10 @@ export default function CustomerBookingDetailPage({
                     toast.error(t("phoneNotAvailable"));
                   }
                 }}
-                className="h-14 text-lg font-semibold border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
               >
-                <Phone className="h-5 w-5 mr-3" />
-                {t("actions.callTasker")}
+                <Phone className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+                <span className="truncate">{t("actions.callTasker")}</span>
               </Button>
             </div>
           </div>
