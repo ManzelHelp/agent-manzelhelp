@@ -493,14 +493,17 @@ export async function getChartData(
 
 // Enhanced customer finance functions
 export async function getCustomerFinanceSummary(
-  userId: string,
   period: "week" | "month" | "year" = "month"
 ): Promise<FinanceSummary> {
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
   const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("User not authenticated");
+  }
 
   try {
     const now = new Date();
@@ -523,7 +526,7 @@ export async function getCustomerFinanceSummary(
       supabase
         .from("transactions")
         .select("amount, currency")
-        .eq("payer_id", userId)
+        .eq("payer_id", user.id)
         .eq("payment_status", "paid")
         .gte("created_at", startDate.toISOString()),
 
@@ -531,14 +534,14 @@ export async function getCustomerFinanceSummary(
       supabase
         .from("transactions")
         .select("amount, currency")
-        .eq("payer_id", userId)
+        .eq("payer_id", user.id)
         .eq("payment_status", "pending"),
 
       // Completed bookings - use actual data
       supabase
         .from("service_bookings")
         .select("agreed_price, currency, status, completed_at")
-        .eq("customer_id", userId)
+        .eq("customer_id", user.id)
         .eq("status", "completed")
         .gte("completed_at", startDate.toISOString()),
     ]);
@@ -592,14 +595,9 @@ export async function getCustomerFinanceSummary(
 }
 
 export async function getCustomerTransactionHistory(
-  userId: string,
   limit: number = 20,
   offset: number = 0
 ): Promise<Transaction[]> {
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
   if (limit < 1 || limit > 100) {
     throw new Error("Limit must be between 1 and 100");
   }
@@ -609,6 +607,14 @@ export async function getCustomerTransactionHistory(
   }
 
   const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("User not authenticated");
+  }
 
   try {
     // First try to get transactions
@@ -635,7 +641,7 @@ export async function getCustomerTransactionHistory(
         )
         `
       )
-      .eq("payer_id", userId) // Customer is the payer
+      .eq("payer_id", user.id) // Customer is the payer
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -678,7 +684,7 @@ export async function getCustomerTransactionHistory(
         )
         `
       )
-      .eq("customer_id", userId)
+      .eq("customer_id", user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -720,18 +726,22 @@ export async function getCustomerTransactionHistory(
   }
 }
 
-export async function getWalletBalance(userId: string): Promise<WalletBalance> {
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
+export async function getWalletBalance(): Promise<WalletBalance> {
   const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("User not authenticated");
+  }
 
   try {
     const { data: userData, error: userError } = await supabase
       .from("users")
       .select("wallet_balance")
-      .eq("id", userId)
+      .eq("id", user.id)
       .single();
 
     if (userError) {
@@ -743,7 +753,7 @@ export async function getWalletBalance(userId: string): Promise<WalletBalance> {
     const { data: pendingData, error: pendingError } = await supabase
       .from("wallet_transactions")
       .select("amount")
-      .eq("user_id", userId)
+      .eq("user_id", user.id)
       .eq("type", "pending");
 
     // Don't throw error if wallet_transactions table is empty, just log it

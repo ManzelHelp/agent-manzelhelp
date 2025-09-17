@@ -1014,6 +1014,45 @@
         "confirmText": "Cancel Booking"
       }
     }
+  },
+  "finance": {
+    "title": "Finance Overview",
+    "subtitle": "Track your payments and manage your spending",
+    "period": "Period:",
+    "week": "Week",
+    "month": "Month", 
+    "year": "Year",
+    "stats": {
+      "totalSpent": "Total Spent",
+      "completedJobs": "Completed Jobs",
+      "pendingPayments": "Pending Payments",
+      "walletBalance": "Wallet Balance",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "thisYear": "This year",
+      "average": "Average:",
+      "awaitingPayment": "Awaiting payment",
+      "pending": "Pending:"
+    },
+    "transactionHistory": {
+      "title": "Transaction History",
+      "subtitle": "Your latest payment activity",
+      "export": "Export",
+      "noTransactions": "No transactions yet",
+      "noTransactionsDescription": "Your transaction history will appear here once you start booking services.",
+      "servicePayment": "Service Payment"
+    },
+    "status": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "failed": "Failed",
+      "refunded": "Refunded"
+    },
+    "errors": {
+      "loadFailed": "Failed to load finance data. Please try again.",
+      "authenticationRequired": "Authentication Required",
+      "loginRequired": "Please log in to view your finance information."
+    }
   }
 }
   

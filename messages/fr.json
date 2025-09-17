@@ -1014,5 +1014,44 @@
         "confirmText": "Annuler la Réservation"
       }
     }
+  },
+  "finance": {
+    "title": "Aperçu Financier",
+    "subtitle": "Suivez vos paiements et gérez vos dépenses",
+    "period": "Période:",
+    "week": "Semaine",
+    "month": "Mois", 
+    "year": "Année",
+    "stats": {
+      "totalSpent": "Total Dépensé",
+      "completedJobs": "Tâches Terminées",
+      "pendingPayments": "Paiements en Attente",
+      "walletBalance": "Solde du Portefeuille",
+      "thisWeek": "Cette semaine",
+      "thisMonth": "Ce mois",
+      "thisYear": "Cette année",
+      "average": "Moyenne:",
+      "awaitingPayment": "En attente de paiement",
+      "pending": "En attente:"
+    },
+    "transactionHistory": {
+      "title": "Historique des Transactions",
+      "subtitle": "Votre dernière activité de paiement",
+      "export": "Exporter",
+      "noTransactions": "Aucune transaction pour le moment",
+      "noTransactionsDescription": "Votre historique de transactions apparaîtra ici une fois que vous commencerez à réserver des services.",
+      "servicePayment": "Paiement de Service"
+    },
+    "status": {
+      "paid": "Payé",
+      "pending": "En attente",
+      "failed": "Échoué",
+      "refunded": "Remboursé"
+    },
+    "errors": {
+      "loadFailed": "Échec du chargement des données financières. Veuillez réessayer.",
+      "authenticationRequired": "Authentification Requise",
+      "loginRequired": "Veuillez vous connecter pour voir vos informations financières."
+    }
   }
 }

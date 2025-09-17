@@ -1014,6 +1014,45 @@
         "confirmText": "Buchung stornieren"
       }
     }
+  },
+  "finance": {
+    "title": "Finanzübersicht",
+    "subtitle": "Verfolgen Sie Ihre Zahlungen und verwalten Sie Ihre Ausgaben",
+    "period": "Zeitraum:",
+    "week": "Woche",
+    "month": "Monat", 
+    "year": "Jahr",
+    "stats": {
+      "totalSpent": "Gesamt Ausgegeben",
+      "completedJobs": "Abgeschlossene Aufträge",
+      "pendingPayments": "Ausstehende Zahlungen",
+      "walletBalance": "Geldbörsen-Guthaben",
+      "thisWeek": "Diese Woche",
+      "thisMonth": "Diesen Monat",
+      "thisYear": "Dieses Jahr",
+      "average": "Durchschnitt:",
+      "awaitingPayment": "Warten auf Zahlung",
+      "pending": "Ausstehend:"
+    },
+    "transactionHistory": {
+      "title": "Transaktionsverlauf",
+      "subtitle": "Ihre neueste Zahlungsaktivität",
+      "export": "Exportieren",
+      "noTransactions": "Noch keine Transaktionen",
+      "noTransactionsDescription": "Ihr Transaktionsverlauf wird hier angezeigt, sobald Sie beginnen, Dienstleistungen zu buchen.",
+      "servicePayment": "Service-Zahlung"
+    },
+    "status": {
+      "paid": "Bezahlt",
+      "pending": "Ausstehend",
+      "failed": "Fehlgeschlagen",
+      "refunded": "Erstattet"
+    },
+    "errors": {
+      "loadFailed": "Fehler beim Laden der Finanzdaten. Bitte versuchen Sie es erneut.",
+      "authenticationRequired": "Authentifizierung Erforderlich",
+      "loginRequired": "Bitte melden Sie sich an, um Ihre Finanzinformationen anzuzeigen."
+    }
   }
 }
   

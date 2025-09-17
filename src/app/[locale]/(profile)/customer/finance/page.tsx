@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -23,7 +24,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserStore } from "@/stores/userStore";
 import {
   getCustomerFinanceSummary,
   getCustomerTransactionHistory,
@@ -37,7 +37,7 @@ import { toast } from "sonner";
 // Loading skeleton components
 function FinanceStatsSkeleton() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
         <Card key={i}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -45,7 +45,7 @@ function FinanceStatsSkeleton() {
             <Skeleton className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-8 w-20 mb-2" />
+            <Skeleton className="h-6 sm:h-8 w-20 mb-2" />
             <Skeleton className="h-3 w-16" />
           </CardContent>
         </Card>
@@ -56,21 +56,21 @@ function FinanceStatsSkeleton() {
 
 function TransactionSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center justify-between p-4 bg-muted rounded-lg"
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted rounded-lg gap-3 sm:gap-0"
         >
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1">
             <Skeleton className="h-4 w-32" />
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
               <Skeleton className="h-3 w-20" />
               <Skeleton className="h-3 w-16" />
               <Skeleton className="h-3 w-24" />
             </div>
           </div>
-          <div className="text-right space-y-2">
+          <div className="flex items-center justify-between sm:flex-col sm:text-right sm:space-y-2">
             <Skeleton className="h-6 w-16" />
             <Skeleton className="h-5 w-20" />
           </div>
@@ -82,7 +82,7 @@ function TransactionSkeleton() {
 
 // Main component
 export default function CustomerFinancePage() {
-  const { user } = useUserStore();
+  const t = useTranslations("finance");
   const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(
     null
   );
@@ -96,14 +96,12 @@ export default function CustomerFinancePage() {
   >("month");
 
   const fetchFinanceData = useCallback(async () => {
-    if (!user?.id) return;
-
     try {
       setLoading(true);
       const [summary, transactionHistory, balance] = await Promise.all([
-        getCustomerFinanceSummary(user.id, selectedPeriod),
-        getCustomerTransactionHistory(user.id, 20, 0),
-        getWalletBalance(user.id),
+        getCustomerFinanceSummary(selectedPeriod),
+        getCustomerTransactionHistory(20, 0),
+        getWalletBalance(),
       ]);
 
       setFinanceSummary(summary);
@@ -111,18 +109,16 @@ export default function CustomerFinancePage() {
       setWalletBalance(balance);
     } catch (error) {
       console.error("Error fetching finance data:", error);
-      toast.error("Failed to load finance data. Please try again.");
+      toast.error(t("errors.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [user?.id, selectedPeriod]);
+  }, [selectedPeriod, t]);
 
   // Fetch data on component mount
   useEffect(() => {
-    if (user?.id) {
-      fetchFinanceData();
-    }
-  }, [user?.id, fetchFinanceData]);
+    fetchFinanceData();
+  }, [fetchFinanceData]);
 
   const formatCurrency = (amount: number, currency: string = "USD") => {
     return new Intl.NumberFormat("en-US", {
@@ -167,55 +163,39 @@ export default function CustomerFinancePage() {
           variants[status as keyof typeof variants] || variants.pending
         }
       >
-        {status}
+        {t(`status.${status}`)}
       </Badge>
     );
   };
 
-  if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">
-              Authentication Required
-            </h2>
-            <p className="text-muted-foreground">
-              Please log in to view your finance information.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6 animate-fade-in-up">
+    <div className="container mx-auto px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in-up">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight gradient-text">
-          Finance Overview
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text">
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mobile-text-optimized">
-          Track your payments and manage your spending
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          {t("subtitle")}
         </p>
       </div>
 
       {/* Period Selector */}
-      <div className="flex items-center gap-2">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Period:</span>
-        <div className="flex gap-1">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">{t("period")}</span>
+        </div>
+        <div className="flex gap-1 w-full sm:w-auto">
           {(["week", "month", "year"] as const).map((period) => (
             <Button
               key={period}
               variant={selectedPeriod === period ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedPeriod(period)}
-              className="mobile-button"
+              className="flex-1 sm:flex-none text-xs sm:text-sm"
             >
-              {period.charAt(0).toUpperCase() + period.slice(1)}
+              {t(period)}
             </Button>
           ))}
         </div>
@@ -225,14 +205,16 @@ export default function CustomerFinancePage() {
       {loading ? (
         <FinanceStatsSkeleton />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="hover-lift">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("stats.totalSpent")}
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {formatCurrency(
                   financeSummary?.totalSpent || 0,
                   financeSummary?.currency
@@ -240,10 +222,10 @@ export default function CustomerFinancePage() {
               </div>
               <p className="text-xs text-muted-foreground">
                 {selectedPeriod === "week"
-                  ? "This week"
+                  ? t("stats.thisWeek")
                   : selectedPeriod === "month"
-                  ? "This month"
-                  : "This year"}
+                  ? t("stats.thisMonth")
+                  : t("stats.thisYear")}
               </p>
             </CardContent>
           </Card>
@@ -251,16 +233,16 @@ export default function CustomerFinancePage() {
           <Card className="hover-lift">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Completed Jobs
+                {t("stats.completedJobs")}
               </CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {financeSummary?.completedJobs || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Average:{" "}
+                {t("stats.average")}{" "}
                 {formatCurrency(
                   financeSummary?.averageJobValue || 0,
                   financeSummary?.currency
@@ -272,37 +254,39 @@ export default function CustomerFinancePage() {
           <Card className="hover-lift">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Pending Payments
+                {t("stats.pendingPayments")}
               </CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {formatCurrency(
                   financeSummary?.pendingPayments || 0,
                   financeSummary?.currency
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">Awaiting payment</p>
+              <p className="text-xs text-muted-foreground">
+                {t("stats.awaitingPayment")}
+              </p>
             </CardContent>
           </Card>
 
           <Card className="hover-lift">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Wallet Balance
+                {t("stats.walletBalance")}
               </CardTitle>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {formatCurrency(
                   walletBalance?.available || 0,
                   walletBalance?.currency
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Pending:{" "}
+                {t("stats.pending")}{" "}
                 {formatCurrency(
                   walletBalance?.pending || 0,
                   walletBalance?.currency
@@ -315,14 +299,18 @@ export default function CustomerFinancePage() {
 
       {/* Transaction History */}
       <Card className="hover-lift">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <CardTitle>Transaction History</CardTitle>
-            <CardDescription>Your latest payment activity</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">
+              {t("transactionHistory.title")}
+            </CardTitle>
+            <CardDescription className="text-sm">
+              {t("transactionHistory.subtitle")}
+            </CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="mobile-button">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
-            Export
+            {t("transactionHistory.export")}
           </Button>
         </CardHeader>
         <CardContent>
@@ -332,28 +320,28 @@ export default function CustomerFinancePage() {
             <div className="text-center py-8">
               <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                No transactions yet
+                {t("transactionHistory.noTransactions")}
               </h3>
               <p className="text-muted-foreground">
-                Your transaction history will appear here once you start booking
-                services.
+                {t("transactionHistory.noTransactionsDescription")}
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors gap-3 sm:gap-0"
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-2 sm:space-y-1 flex-1">
                     <div className="flex items-center gap-2">
                       {getStatusIcon(transaction.paymentStatus)}
-                      <h3 className="font-semibold">
-                        {transaction.serviceTitle || "Service Payment"}
+                      <h3 className="font-semibold text-sm sm:text-base">
+                        {transaction.serviceTitle ||
+                          t("transactionHistory.servicePayment")}
                       </h3>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <CreditCard className="h-3 w-3" />
                         {transaction.paymentMethod || "Unknown"}
@@ -370,8 +358,8 @@ export default function CustomerFinancePage() {
                       )}
                     </div>
                   </div>
-                  <div className="text-right space-y-2">
-                    <p className="text-xl font-bold">
+                  <div className="flex items-center justify-between sm:flex-col sm:text-right sm:space-y-2">
+                    <p className="text-lg sm:text-xl font-bold">
                       {formatCurrency(transaction.amount, transaction.currency)}
                     </p>
                     {getStatusBadge(transaction.paymentStatus)}
