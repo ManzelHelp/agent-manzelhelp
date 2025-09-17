@@ -842,5 +842,51 @@
     "goToChat": "Aller au Chat",
     "bookingExists": "Vous avez une réservation active pour ce service",
     "conversationExists": "Vous avez une conversation en cours avec cet assistant"
+  },
+  "customerBookings": {
+    "title": "Mes Réservations",
+    "description": "Suivez et gérez toutes vos réservations de services en un seul endroit",
+    "badge": "Gestion des Réservations",
+    "stats": {
+      "totalBookings": "Total des Réservations",
+      "activeBookings": "Réservations Actives",
+      "completedBookings": "Terminées",
+      "completionRate": "Taux de Réussite"
+    },
+    "status": {
+      "pending": "En Attente",
+      "accepted": "Acceptée",
+      "confirmed": "Confirmée",
+      "in_progress": "En Cours",
+      "completed": "Terminée",
+      "cancelled": "Annulée",
+      "disputed": "Contestée",
+      "refunded": "Remboursée"
+    },
+    "actions": {
+      "cancelBooking": "Annuler la Réservation",
+      "loadMoreBookings": "Charger Plus de Réservations",
+      "tryAgain": "Réessayer"
+    },
+    "confirmations": {
+      "cancel": {
+        "title": "Annuler la Réservation",
+        "description": "Êtes-vous sûr de vouloir annuler cette réservation avec {taskerName} ? Cette action ne peut pas être annulée.",
+        "confirmText": "Oui, Annuler la Réservation"
+      }
+    },
+    "success": {
+      "bookingCancelled": "Réservation annulée avec succès"
+    },
+    "errors": {
+      "cancelFailed": "Échec de l'annulation de la réservation",
+      "unexpectedError": "Une erreur inattendue s'est produite"
+    },
+    "loading": {
+      "loadingMore": "Chargement de plus de réservations..."
+    },
+    "results": {
+      "showing": "Affichage de {current} sur {total} réservations"
+    }
   }
 }

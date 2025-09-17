@@ -842,6 +842,52 @@
     "goToChat": "Zum Chat",
     "bookingExists": "Sie haben eine aktive Buchung für diesen Service",
     "conversationExists": "Sie haben eine laufende Unterhaltung mit diesem Tasker"
+  },
+  "customerBookings": {
+    "title": "Meine Buchungen",
+    "description": "Verfolgen und verwalten Sie alle Ihre Service-Buchungen an einem Ort",
+    "badge": "Buchungsverwaltung",
+    "stats": {
+      "totalBookings": "Gesamtbuchungen",
+      "activeBookings": "Aktive Buchungen",
+      "completedBookings": "Abgeschlossen",
+      "completionRate": "Erfolgsrate"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "confirmed": "Bestätigt",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "disputed": "Bestritten",
+      "refunded": "Erstattet"
+    },
+    "actions": {
+      "cancelBooking": "Buchung stornieren",
+      "loadMoreBookings": "Weitere Buchungen laden",
+      "tryAgain": "Erneut versuchen"
+    },
+    "confirmations": {
+      "cancel": {
+        "title": "Buchung stornieren",
+        "description": "Sind Sie sicher, dass Sie diese Buchung mit {taskerName} stornieren möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "confirmText": "Ja, Buchung stornieren"
+      }
+    },
+    "success": {
+      "bookingCancelled": "Buchung erfolgreich storniert"
+    },
+    "errors": {
+      "cancelFailed": "Buchung konnte nicht storniert werden",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
+    },
+    "loading": {
+      "loadingMore": "Weitere Buchungen werden geladen..."
+    },
+    "results": {
+      "showing": "Zeige {current} von {total} Buchungen"
+    }
   }
 }
   

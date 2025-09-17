@@ -843,6 +843,52 @@
     "bookingExists": "You have an active booking for this service",
     "conversationExists": "You have an ongoing conversation with this tasker"
   },
+  "customerBookings": {
+    "title": "My Bookings",
+    "description": "Track and manage all your service bookings in one place",
+    "badge": "Booking Management",
+    "stats": {
+      "totalBookings": "Total Bookings",
+      "activeBookings": "Active Bookings",
+      "completedBookings": "Completed",
+      "completionRate": "Success Rate"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "disputed": "Disputed",
+      "refunded": "Refunded"
+    },
+    "actions": {
+      "cancelBooking": "Cancel Booking",
+      "loadMoreBookings": "Load More Bookings",
+      "tryAgain": "Try Again"
+    },
+    "confirmations": {
+      "cancel": {
+        "title": "Cancel Booking",
+        "description": "Are you sure you want to cancel this booking with {taskerName}? This action cannot be undone.",
+        "confirmText": "Yes, Cancel Booking"
+      }
+    },
+    "success": {
+      "bookingCancelled": "Booking cancelled successfully"
+    },
+    "errors": {
+      "cancelFailed": "Failed to cancel booking",
+      "unexpectedError": "An unexpected error occurred"
+    },
+    "loading": {
+      "loadingMore": "Loading more bookings..."
+    },
+    "results": {
+      "showing": "Showing {current} of {total} bookings"
+    }
+  },
   "bookingDetails": {
     "title": "Booking Details",
     "loading": "Loading booking details...",
