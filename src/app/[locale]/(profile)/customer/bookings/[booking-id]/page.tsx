@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useUserStore } from "@/stores/userStore";
 import {
   getBookingById,
   cancelCustomerBooking,
@@ -70,27 +69,14 @@ export default function CustomerBookingDetailPage({
       variant: "default",
     });
   const router = useRouter();
-  const { user } = useUserStore();
   const t = useTranslations("bookingDetails");
 
   const fetchBookingData = useCallback(async () => {
-    if (!user) {
-      // User store not ready yet, wait for it
-      return;
-    }
-
     try {
       setIsLoading(true);
       const bookingData = await getBookingById(bookingId);
       if (!bookingData) {
         toast.error(t("notFound"));
-        router.push("/customer/bookings");
-        return;
-      }
-
-      // Verify this booking belongs to the current user
-      if (bookingData.customer_id !== user.id) {
-        toast.error(t("unauthorizedAccess"));
         router.push("/customer/bookings");
         return;
       }
@@ -105,7 +91,7 @@ export default function CustomerBookingDetailPage({
     } finally {
       setIsLoading(false);
     }
-  }, [bookingId, user, router, t]);
+  }, [bookingId, router, t]);
 
   useEffect(() => {
     fetchBookingData();
@@ -247,7 +233,7 @@ export default function CustomerBookingDetailPage({
   }, [booking]);
 
   const handleCancelBooking = useCallback(async () => {
-    if (!booking || !user) return;
+    if (!booking) return;
 
     setConfirmationDialog({
       isOpen: true,
@@ -257,16 +243,16 @@ export default function CustomerBookingDetailPage({
       confirmText: t("confirmations.cancelCustomer.confirmText"),
       variant: "danger",
     });
-  }, [booking, user, t]);
+  }, [booking, t]);
 
   const handleConfirmAction = useCallback(async () => {
-    if (!booking || !user) return;
+    if (!booking) return;
 
     setIsUpdating(true);
 
     try {
       if (confirmationDialog.action === "cancel") {
-        const result = await cancelCustomerBooking(booking.id, user.id);
+        const result = await cancelCustomerBooking(booking.id);
 
         if (result.success) {
           setBooking((prev) =>
@@ -285,7 +271,7 @@ export default function CustomerBookingDetailPage({
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
     }
-  }, [user, booking, confirmationDialog, t]);
+  }, [booking, confirmationDialog, t]);
 
   const handleCloseDialog = useCallback(() => {
     setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));

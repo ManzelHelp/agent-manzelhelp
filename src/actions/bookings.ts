@@ -145,6 +145,17 @@ export async function getBookingById(
 ): Promise<BookingWithDetails | null> {
   const supabase = await createClient();
 
+  // Get the authenticated user for authorization
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error("User not authenticated:", userError);
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("service_bookings")
     .select(
@@ -180,6 +191,17 @@ export async function getBookingById(
 
   if (error) {
     console.error("Error fetching booking:", error);
+    return null;
+  }
+
+  // Server-side authorization: Check if the user is either the customer or tasker
+  if (data.customer_id !== user.id && data.tasker_id !== user.id) {
+    console.error("Unauthorized access to booking:", {
+      bookingId,
+      userId: user.id,
+      customerId: data.customer_id,
+      taskerId: data.tasker_id,
+    });
     return null;
   }
 
@@ -364,10 +386,19 @@ export async function updateBookingStatus(
 
 export async function cancelCustomerBooking(
   bookingId: string,
-  customerId: string,
   reason?: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
+
+  // Get the authenticated user for authorization
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { success: false, error: "User not authenticated" };
+  }
 
   // Verify the booking belongs to the customer
   const { data: booking, error: fetchError } = await supabase
@@ -380,7 +411,13 @@ export async function cancelCustomerBooking(
     return { success: false, error: "Booking not found" };
   }
 
-  if (booking.customer_id !== customerId) {
+  // Server-side authorization: Check if the user is the customer
+  if (booking.customer_id !== user.id) {
+    console.error("Unauthorized cancellation attempt:", {
+      bookingId,
+      userId: user.id,
+      customerId: booking.customer_id,
+    });
     return { success: false, error: "Unauthorized" };
   }
 
@@ -393,7 +430,7 @@ export async function cancelCustomerBooking(
   const updateData = {
     status: "cancelled" as BookingStatus,
     cancelled_at: new Date().toISOString(),
-    cancelled_by: customerId,
+    cancelled_by: user.id,
     cancellation_reason: reason || "Cancelled by customer",
   };
 
