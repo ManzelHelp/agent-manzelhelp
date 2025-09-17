@@ -818,7 +818,8 @@
         "tip1": "Be specific about your needs and requirements",
         "tip2": "Ask about availability and pricing details",
         "tip3": "Mention your preferred timeline if you have one",
-        "tip4": "Be polite and professional in your communication"
+        "tip4": "Be polite and professional in your communication",
+        "warning": "Sharing contact information or discussing unrelated topics may result in account suspension."
       },
       "cancel": "Cancel",
       "startingConversation": "Starting Conversation...",

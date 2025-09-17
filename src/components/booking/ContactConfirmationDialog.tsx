@@ -212,9 +212,7 @@ export function ContactConfirmationDialog({
                   <li>• {t("tips.tip3")}</li>
                   <li>• {t("tips.tip4")}</li>
                   <li>
-                    • <strong>Warning:</strong> Sharing contact information or
-                    discussing unrelated topics may result in account
-                    suspension.
+                    • <strong>Warning:</strong> {t("tips.warning")}
                   </li>
                 </ul>
               </div>

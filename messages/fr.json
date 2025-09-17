@@ -818,7 +818,8 @@
         "tip1": "Soyez spécifique concernant vos besoins et exigences",
         "tip2": "Demandez des détails sur la disponibilité et les prix",
         "tip3": "Mentionnez votre calendrier préféré si vous en avez un",
-        "tip4": "Soyez poli et professionnel dans votre communication"
+        "tip4": "Soyez poli et professionnel dans votre communication",
+        "warning": "Le partage d'informations de contact ou la discussion de sujets non pertinents peut entraîner une suspension du compte."
       },
       "cancel": "Annuler",
       "startingConversation": "Démarrage de la Conversation...",
