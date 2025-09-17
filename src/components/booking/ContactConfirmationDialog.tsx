@@ -209,9 +209,13 @@ export function ContactConfirmationDialog({
                 </h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                   <li>• {t("tips.tip1")}</li>
-                  <li>• {t("tips.tip2")}</li>
                   <li>• {t("tips.tip3")}</li>
                   <li>• {t("tips.tip4")}</li>
+                  <li>
+                    • <strong>Warning:</strong> Sharing contact information or
+                    discussing unrelated topics may result in account
+                    suspension.
+                  </li>
                 </ul>
               </div>
             </div>

@@ -297,8 +297,6 @@ export const sendMessageAction = async (
         conversation_id: conversationId,
         sender_id: user.id,
         content,
-        topic: "general", // Required field
-        extension: "text", // Required field
         attachment_url: attachmentUrl,
         is_read: false,
       })
@@ -473,8 +471,6 @@ export const createConversationAction = async (
           conversation_id: existingConversation.id,
           sender_id: user.id,
           content: initialMessage.trim(),
-          topic: "general", // Required field
-          extension: "text", // Required field
           is_read: false,
           created_at: new Date().toISOString(),
         });
@@ -536,8 +532,6 @@ export const createConversationAction = async (
         conversation_id: conversation.id,
         sender_id: user.id,
         content: initialMessage.trim(),
-        topic: "general", // Required field
-        extension: "text", // Required field
         is_read: false,
         created_at: new Date().toISOString(),
       });
