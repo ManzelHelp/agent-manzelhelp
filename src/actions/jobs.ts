@@ -2,15 +2,16 @@
 
 import { createClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
-import { serviceCategories } from "@/lib/categories";
+import { getAllCategoryHierarchies } from "@/lib/categories";
 
 // Helper function to get category and service names by service ID
 function getCategoryAndServiceNames(serviceId: number) {
-  for (const category of serviceCategories) {
-    const foundService = category.services.find((s) => s.id === serviceId);
+  const hierarchies = getAllCategoryHierarchies();
+  for (const { parent, subcategories } of hierarchies) {
+    const foundService = subcategories.find((s) => s.id === serviceId);
     if (foundService) {
       return {
-        categoryName: category.name_en,
+        categoryName: parent.name_en,
         serviceName: foundService.name_en,
       };
     }

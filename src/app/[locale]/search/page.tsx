@@ -15,7 +15,7 @@ import {
   UserRole,
   VerificationStatus,
 } from "@/types/supabase";
-import { getSearchCategories } from "@/lib/categories";
+import { getParentCategoriesForSearch } from "@/lib/categories";
 
 interface SearchPageProps {
   searchParams: {
@@ -105,8 +105,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
-  // Use centralized categories - get all searchable categories
-  const categories = getSearchCategories();
+  // Use centralized categories - get all parent categories for search
+  const categories = getParentCategoriesForSearch();
 
   // Fetch services using the service_listing_view which has all the data we need
   let query = supabase

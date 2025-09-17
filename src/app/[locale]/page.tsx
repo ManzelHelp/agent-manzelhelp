@@ -21,7 +21,7 @@ import {
   Heart,
   TrendingUp,
 } from "lucide-react";
-import { getPopularCategories } from "@/lib/categories";
+import { getParentCategoriesForSearch } from "@/lib/categories";
 
 export async function generateMetadata({
   params,
@@ -210,7 +210,10 @@ export default async function Page({
       </section>
 
       {/* Popular Services Section */}
-      <PopularServices categories={getPopularCategories()} locale={locale} />
+      <PopularServices
+        categories={getParentCategoriesForSearch()}
+        locale={locale}
+      />
 
       {/* Featured Services Section - Modern Design */}
       <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-[var(--color-bg)] to-[var(--color-surface)]">

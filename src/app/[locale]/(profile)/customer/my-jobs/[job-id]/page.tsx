@@ -26,7 +26,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { format } from "date-fns";
-import { serviceCategories } from "@/lib/categories";
+import { getAllCategoryHierarchies } from "@/lib/categories";
 import {
   getJobById,
   getJobApplications,
@@ -368,9 +368,10 @@ export default function JobDetailPage() {
   }
 
   // Get category information from local data
-  const category = serviceCategories.find(
-    (cat) => cat.id.toString() === data.service_id.toString()
-  );
+  const hierarchies = getAllCategoryHierarchies();
+  const category = hierarchies.find(
+    ({ parent }) => parent.id.toString() === data.service_id.toString()
+  )?.parent;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">

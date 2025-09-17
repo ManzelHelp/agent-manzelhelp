@@ -10,10 +10,23 @@ import {
   Clock,
   MapPin,
 } from "lucide-react";
-import { getDetailedCategories } from "@/lib/categories";
+import { getAllCategoryHierarchies } from "@/lib/categories";
 
 // Use centralized service categories
-const serviceCategories = getDetailedCategories();
+const serviceCategories = getAllCategoryHierarchies().map(
+  ({ parent, subcategories }) => ({
+    id: parent.id,
+    name: parent.name_en, // Use English as default for services page
+    icon: "🔧", // Default icon - pages should handle their own icons
+    description: parent.description_en,
+    color: "from-blue-500 to-blue-600", // Default color - pages should handle their own colors
+    services: subcategories.map((service) => ({
+      id: service.id,
+      name: service.name_en,
+      description: service.description_en,
+    })),
+  })
+);
 
 export default function ServicesPage() {
   const [selectedCategory, setSelectedCategory] = useState(

@@ -40,7 +40,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
-import { serviceCategories } from "@/lib/categories";
+import { getAllCategoryHierarchies } from "@/lib/categories";
 import { createJob, type CreateJobData } from "@/actions/jobs";
 import { getUserAddresses } from "@/actions/profile";
 import type { ServiceCategory, Service, Address } from "@/types/supabase";
@@ -144,27 +144,28 @@ export default function PostJobPage() {
 
     try {
       // Use local categories from categories.ts
-      const localCategories = serviceCategories.map((cat) => ({
-        id: cat.id,
-        name_en: cat.name_en,
-        name_fr: cat.name_fr,
-        name_ar: cat.name_ar,
-        description_en: cat.description_en,
-        description_fr: cat.description_fr,
-        description_ar: cat.description_ar,
-        icon_url: cat.icon,
+      const hierarchies = getAllCategoryHierarchies();
+      const localCategories = hierarchies.map(({ parent }) => ({
+        id: parent.id,
+        name_en: parent.name_en,
+        name_fr: parent.name_fr,
+        name_ar: parent.name_ar,
+        description_en: parent.description_en,
+        description_fr: parent.description_fr,
+        description_ar: parent.description_ar,
+        icon_url: undefined,
         is_active: true,
-        sort_order: cat.id,
+        sort_order: parent.id,
       }));
       setCategories(localCategories);
 
       // Get all services from local categories
       const allServices: Service[] = [];
-      serviceCategories.forEach((category) => {
-        category.services.forEach((service) => {
+      hierarchies.forEach(({ parent, subcategories }) => {
+        subcategories.forEach((service) => {
           allServices.push({
             id: service.id,
-            category_id: category.id,
+            category_id: parent.id,
             name_en: service.name_en,
             name_fr: service.name_fr,
             name_ar: service.name_ar,

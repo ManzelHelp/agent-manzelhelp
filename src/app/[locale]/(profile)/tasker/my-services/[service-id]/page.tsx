@@ -30,7 +30,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { format } from "date-fns";
-import { serviceCategories } from "@/lib/categories";
+import { getAllCategoryHierarchies } from "@/lib/categories";
 
 export default function TaskerServiceDetailPage() {
   const params = useParams();
@@ -261,9 +261,10 @@ export default function TaskerServiceDetailPage() {
   }
 
   // Get category information from local data
-  const category = serviceCategories.find(
-    (cat) => cat.id.toString() === data.category_id
-  );
+  const hierarchies = getAllCategoryHierarchies();
+  const category = hierarchies.find(
+    ({ parent }) => parent.id.toString() === data.category_id
+  )?.parent;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
