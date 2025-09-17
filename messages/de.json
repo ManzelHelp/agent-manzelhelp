@@ -813,6 +813,8 @@
       "yourMessage": "Ihre Nachricht",
       "messagePlaceholder": "Hallo! Ich interessiere mich für Ihren Service. Können Sie mir mehr erzählen über...",
       "charactersCount": "{count}/500 Zeichen",
+      "warningTitle": "Wichtiger Hinweis",
+      "warningMessage": "Das Diskutieren von irrelevanten Themen oder das Teilen von Kontaktinformationen kann zu einer Sperrung Ihres Kontos führen. Alle Transaktionen und Kontakte bezüglich dieses Services müssen über ManzelHelp abgewickelt werden.",
       "tipsTitle": "Tipps für eine großartige Unterhaltung",
       "tips": {
         "tip1": "Seien Sie spezifisch bezüglich Ihrer Bedürfnisse und Anforderungen",

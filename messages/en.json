@@ -813,6 +813,8 @@
       "yourMessage": "Your Message",
       "messagePlaceholder": "Hi! I'm interested in your service. Could you tell me more about...",
       "charactersCount": "{count}/500 characters",
+      "warningTitle": "Important Notice",
+      "warningMessage": "Discussing unrelated topics or sharing contact information may result in a ban of your account. All transactions and contact regarding this service must be handled through ManzelHelp.",
       "tipsTitle": "Tips for a great conversation",
       "tips": {
         "tip1": "Be specific about your needs and requirements",

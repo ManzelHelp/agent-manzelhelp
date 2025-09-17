@@ -813,6 +813,8 @@
       "yourMessage": "Votre Message",
       "messagePlaceholder": "Salut ! Je suis intéressé par votre service. Pourriez-vous me dire plus sur...",
       "charactersCount": "{count}/500 caractères",
+      "warningTitle": "Avis Important",
+      "warningMessage": "Discuter de sujets non pertinents ou partager des informations de contact peut entraîner une interdiction de votre compte. Toutes les transactions et contacts concernant ce service doivent être gérés via ManzelHelp.",
       "tipsTitle": "Conseils pour une excellente conversation",
       "tips": {
         "tip1": "Soyez spécifique concernant vos besoins et exigences",
