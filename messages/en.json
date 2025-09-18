@@ -1053,6 +1053,55 @@
       "authenticationRequired": "Authentication Required",
       "loginRequired": "Please log in to view your finance information."
     }
+  },
+  "chat": {
+    "title": "Chat",
+    "subtitle": "Communicate with your service provider",
+    "loading": {
+      "title": "Loading conversation",
+      "description": "Please wait while we load your messages"
+    },
+    "empty": {
+      "title": "No messages yet",
+      "description": "Start the conversation by sending a message"
+    },
+    "actions": {
+      "send": "Send",
+      "attach": "Attach file",
+      "emoji": "Add emoji",
+      "call": "Call",
+      "video": "Video call",
+      "info": "Conversation info",
+      "goBack": "Go back",
+      "tryAgain": "Try again",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing..."
+    },
+    "input": {
+      "placeholder": "Type your message...",
+      "charactersCount": "{count}/{max} characters",
+      "pressEnter": "Press Enter to send"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "common": {
+      "unknown": "Unknown"
+    },
+    "errors": {
+      "loadFailed": "Failed to load conversation",
+      "conversationNotFound": "Conversation not found",
+      "sendFailed": "Failed to send message",
+      "unauthorizedAccess": "You don't have permission to view this conversation"
+    },
+    "success": {
+      "messageSent": "Message sent successfully",
+      "messagesMarkedRead": "Messages marked as read"
+    }
   }
 }
   

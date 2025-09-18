@@ -1053,6 +1053,55 @@
       "authenticationRequired": "Authentifizierung Erforderlich",
       "loginRequired": "Bitte melden Sie sich an, um Ihre Finanzinformationen anzuzeigen."
     }
+  },
+  "chat": {
+    "title": "Chat",
+    "subtitle": "Kommunizieren Sie mit Ihrem Dienstleister",
+    "loading": {
+      "title": "Unterhaltung wird geladen",
+      "description": "Bitte warten Sie, während wir Ihre Nachrichten laden"
+    },
+    "empty": {
+      "title": "Noch keine Nachrichten",
+      "description": "Starten Sie die Unterhaltung, indem Sie eine Nachricht senden"
+    },
+    "actions": {
+      "send": "Senden",
+      "attach": "Datei anhängen",
+      "emoji": "Emoji hinzufügen",
+      "call": "Anrufen",
+      "video": "Videoanruf",
+      "info": "Unterhaltungsinfo",
+      "goBack": "Zurück",
+      "tryAgain": "Erneut versuchen",
+      "refresh": "Aktualisieren",
+      "refreshing": "Wird aktualisiert..."
+    },
+    "input": {
+      "placeholder": "Geben Sie Ihre Nachricht ein...",
+      "charactersCount": "{count}/{max} Zeichen",
+      "pressEnter": "Enter drücken zum Senden"
+    },
+    "time": {
+      "justNow": "Gerade eben",
+      "minutesAgo": "vor {minutes} Min",
+      "hoursAgo": "vor {hours} Std",
+      "today": "Heute",
+      "yesterday": "Gestern"
+    },
+    "common": {
+      "unknown": "Unbekannt"
+    },
+    "errors": {
+      "loadFailed": "Fehler beim Laden der Unterhaltung",
+      "conversationNotFound": "Unterhaltung nicht gefunden",
+      "sendFailed": "Fehler beim Senden der Nachricht",
+      "unauthorizedAccess": "Sie haben keine Berechtigung, diese Unterhaltung anzuzeigen"
+    },
+    "success": {
+      "messageSent": "Nachricht erfolgreich gesendet",
+      "messagesMarkedRead": "Nachrichten als gelesen markiert"
+    }
   }
 }
   

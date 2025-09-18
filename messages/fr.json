@@ -1053,5 +1053,54 @@
       "authenticationRequired": "Authentification Requise",
       "loginRequired": "Veuillez vous connecter pour voir vos informations financières."
     }
+  },
+  "chat": {
+    "title": "Chat",
+    "subtitle": "Communiquez avec votre prestataire de services",
+    "loading": {
+      "title": "Chargement de la conversation",
+      "description": "Veuillez patienter pendant que nous chargeons vos messages"
+    },
+    "empty": {
+      "title": "Aucun message pour le moment",
+      "description": "Commencez la conversation en envoyant un message"
+    },
+    "actions": {
+      "send": "Envoyer",
+      "attach": "Joindre un fichier",
+      "emoji": "Ajouter un emoji",
+      "call": "Appeler",
+      "video": "Appel vidéo",
+      "info": "Informations de conversation",
+      "goBack": "Retour",
+      "tryAgain": "Réessayer",
+      "refresh": "Actualiser",
+      "refreshing": "Actualisation..."
+    },
+    "input": {
+      "placeholder": "Tapez votre message...",
+      "charactersCount": "{count}/{max} caractères",
+      "pressEnter": "Appuyez sur Entrée pour envoyer"
+    },
+    "time": {
+      "justNow": "À l'instant",
+      "minutesAgo": "il y a {minutes} min",
+      "hoursAgo": "il y a {hours} h",
+      "today": "Aujourd'hui",
+      "yesterday": "Hier"
+    },
+    "common": {
+      "unknown": "Inconnu"
+    },
+    "errors": {
+      "loadFailed": "Échec du chargement de la conversation",
+      "conversationNotFound": "Conversation introuvable",
+      "sendFailed": "Échec de l'envoi du message",
+      "unauthorizedAccess": "Vous n'avez pas l'autorisation de voir cette conversation"
+    },
+    "success": {
+      "messageSent": "Message envoyé avec succès",
+      "messagesMarkedRead": "Messages marqués comme lus"
+    }
   }
 }

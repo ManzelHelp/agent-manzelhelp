@@ -364,7 +364,7 @@ export default function MessagesPage() {
                               size="sm"
                               onClick={() =>
                                 router.push(
-                                  `/tasker/messages/${conversation.id}`
+                                  `/customer/messages/${conversation.id}`
                                 )
                               }
                               className={`touch-target transition-all duration-200 ${
