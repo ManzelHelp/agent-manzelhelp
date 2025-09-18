@@ -1,7 +1,10 @@
 "use server";
 
+//if smaller function were to be exported we need to make the id and supabase const props optional and therefore created inside the function if not provided
+
 import { createClient } from "@/supabase/server";
 import type { Notification, Message } from "@/types/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Types for dashboard data
 export interface DashboardStats {
@@ -54,10 +57,9 @@ export interface CustomerDashboardStats {
  * Fetch comprehensive dashboard statistics for a tasker
  */
 export async function fetchDashboardStats(
+  supabase: SupabaseClient,
   userId: string
 ): Promise<DashboardStats> {
-  const supabase = await createClient();
-
   try {
     // Get user wallet balance and comprehensive user stats
     const [userResult, userStatsResult] = await Promise.allSettled([
@@ -236,10 +238,9 @@ export async function fetchDashboardStats(
  * Fetch recent notifications for a user
  */
 export async function fetchDashboardNotifications(
+  supabase: SupabaseClient,
   userId: string
 ): Promise<Notification[]> {
-  const supabase = await createClient();
-
   try {
     const { data, error } = await supabase
       .from("notifications")
@@ -264,10 +265,9 @@ export async function fetchDashboardNotifications(
  * Fetch recent messages with user details
  */
 export async function fetchDashboardMessages(
+  supabase: SupabaseClient,
   userId: string
 ): Promise<ProcessedMessage[]> {
-  const supabase = await createClient();
-
   try {
     // Get conversations where user is a participant
     const { data: conversations, error: conversationsError } = await supabase
@@ -343,10 +343,9 @@ export async function fetchDashboardMessages(
  * Fetch and process recent activity from multiple sources
  */
 export async function fetchDashboardRecentActivity(
+  supabase: SupabaseClient,
   userId: string
 ): Promise<RecentActivity[]> {
-  const supabase = await createClient();
-
   try {
     // Get recent bookings, messages, and reviews
     const [bookingsResult, messagesResult, reviewsResult] =
@@ -477,13 +476,12 @@ export async function fetchDashboardRecentActivity(
  * Fetch comprehensive dashboard statistics for a customer
  */
 export async function fetchCustomerDashboardStats(
+  supabase: SupabaseClient,
   userId: string
 ): Promise<CustomerDashboardStats> {
-  const supabase = await createClient();
-
   try {
     // Get user wallet balance
-    const { data: user, error: userError } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from("users")
       .select("wallet_balance")
       .eq("id", userId)
@@ -640,7 +638,7 @@ export async function fetchCustomerDashboardStats(
       weeklySpent,
       upcomingBookings: upcomingBookings.length,
       recentBookings: recentBookings.length,
-      walletBalance: user?.wallet_balance || 0,
+      walletBalance: userData?.wallet_balance || 0,
     };
   } catch (error) {
     console.error("Error fetching customer dashboard stats:", error);
@@ -652,10 +650,9 @@ export async function fetchCustomerDashboardStats(
  * Fetch customer-specific recent activity
  */
 export async function fetchCustomerRecentActivity(
+  supabase: SupabaseClient,
   userId: string
 ): Promise<RecentActivity[]> {
-  const supabase = await createClient();
-
   try {
     // Get recent bookings, jobs, and messages
     const [bookingsResult, jobsResult, messagesResult] =
@@ -772,14 +769,25 @@ export async function fetchCustomerRecentActivity(
 /**
  * Fetch all customer dashboard data in parallel
  */
-export async function fetchAllCustomerDashboardData(userId: string) {
+export async function fetchAllCustomerDashboardData() {
+  const supabase = await createClient();
+
+  // Get the authenticated user once
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) {
+    throw new Error("User not authenticated");
+  }
+
   try {
     const [stats, notifications, messages, recentActivity] =
       await Promise.allSettled([
-        fetchCustomerDashboardStats(userId),
-        fetchDashboardNotifications(userId),
-        fetchDashboardMessages(userId),
-        fetchCustomerRecentActivity(userId),
+        fetchCustomerDashboardStats(supabase, user.id),
+        fetchDashboardNotifications(supabase, user.id),
+        fetchDashboardMessages(supabase, user.id),
+        fetchCustomerRecentActivity(supabase, user.id),
       ]);
 
     return {
@@ -799,14 +807,25 @@ export async function fetchAllCustomerDashboardData(userId: string) {
 /**
  * Fetch all dashboard data in parallel (for taskers)
  */
-export async function fetchAllDashboardData(userId: string) {
+export async function fetchAllDashboardData() {
+  const supabase = await createClient();
+
+  // Get the authenticated user once
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) {
+    throw new Error("User not authenticated");
+  }
+
   try {
     const [stats, notifications, messages, recentActivity] =
       await Promise.allSettled([
-        fetchDashboardStats(userId),
-        fetchDashboardNotifications(userId),
-        fetchDashboardMessages(userId),
-        fetchDashboardRecentActivity(userId),
+        fetchDashboardStats(supabase, user.id),
+        fetchDashboardNotifications(supabase, user.id),
+        fetchDashboardMessages(supabase, user.id),
+        fetchDashboardRecentActivity(supabase, user.id),
       ]);
 
     return {

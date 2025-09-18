@@ -33,7 +33,6 @@ import {
 } from "lucide-react";
 
 // Utils and Types
-import { useUserStore } from "@/stores/userStore";
 import type { Notification } from "@/types/supabase";
 import {
   fetchAllDashboardData,
@@ -83,14 +82,7 @@ export default function DashboardPage() {
   const [activityLoading, setActivityLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const user = useUserStore((state) => state.user);
-
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
     const fetchDashboardData = async () => {
       setError(null);
       setStatsLoading(true);
@@ -99,7 +91,7 @@ export default function DashboardPage() {
       setActivityLoading(true);
 
       try {
-        const data = await fetchAllDashboardData(user.id);
+        const data = await fetchAllDashboardData();
 
         if (data.stats) {
           setStats(data.stats);
@@ -121,7 +113,7 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
-  }, [user]);
+  }, []);
 
   // Helper functions for notification display
   const getNotificationIcon = (type: string) => {
