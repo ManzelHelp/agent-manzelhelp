@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import type { Address } from "@/types/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,35 +64,38 @@ interface ProfileStats {
   }>;
 }
 
-const SECTIONS = [
-  {
-    id: "personal" as ProfileSection,
-    title: "Personal Information",
-    icon: UserIcon,
-    description: "Manage your basic profile details",
-    color: "from-blue-500 to-blue-600",
-  },
-  {
-    id: "addresses" as ProfileSection,
-    title: "Addresses",
-    icon: MapPin,
-    description: "Manage your service locations",
-    color: "from-orange-500 to-orange-600",
-  },
-  {
-    id: "payment" as ProfileSection,
-    title: "Payment Methods",
-    icon: CreditCard,
-    description: "Manage your payment info",
-    color: "from-indigo-500 to-indigo-600",
-  },
-];
-
 export default function CustomerProfilePage() {
-  const router = useRouter();
   const { user, setUser } = useUserStore();
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
+
+  // Create sections with translations
+  const sections = useMemo(
+    () => [
+      {
+        id: "personal" as ProfileSection,
+        title: t("sections.personal.title"),
+        icon: UserIcon,
+        description: t("sections.personal.description"),
+        color: "from-blue-500 to-blue-600",
+      },
+      {
+        id: "addresses" as ProfileSection,
+        title: t("sections.addresses.title"),
+        icon: MapPin,
+        description: t("sections.addresses.description"),
+        color: "from-orange-500 to-orange-600",
+      },
+      {
+        id: "payment" as ProfileSection,
+        title: t("sections.payment.title"),
+        icon: CreditCard,
+        description: t("sections.payment.description"),
+        color: "from-indigo-500 to-indigo-600",
+      },
+    ],
+    [t]
+  );
 
   // Core state
   const [activeSection, setActiveSection] =
@@ -139,13 +141,6 @@ export default function CustomerProfilePage() {
 
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
 
-  // Redirect tasker users to their dashboard
-  useEffect(() => {
-    if (user?.role === "tasker") {
-      router.replace("/tasker/profile");
-    }
-  }, [user?.role, router]);
-
   // Data fetching
   const fetchProfileData = useCallback(async () => {
     if (!user?.id) return;
@@ -169,11 +164,11 @@ export default function CustomerProfilePage() {
       setProfileStats(stats);
     } catch (error) {
       console.error("Error fetching profile data:", error);
-      toast.error("Failed to load profile data");
+      toast.error(t("errors.loadProfileData"));
     } finally {
       setLoading(false);
     }
-  }, [user?.id, setUser]);
+  }, [user?.id, setUser, t]);
 
   // Effects - fetch data when user is available
   useEffect(() => {
@@ -194,17 +189,18 @@ export default function CustomerProfilePage() {
   }, []);
 
   // Helper function to get field descriptions
-  const getFieldDescription = useCallback((fieldId: string): string => {
-    const descriptionMap: Record<string, string> = {
-      profile_photo: "Add a profile photo to personalize your account",
-      full_name: "Complete your name for better recognition",
-      phone: "Add your phone number for contact purposes",
-      address: "Add your address for service delivery",
-    };
-    return (
-      descriptionMap[fieldId] || "Complete this field to improve your profile"
-    );
-  }, []);
+  const getFieldDescription = useCallback(
+    (fieldId: string): string => {
+      const descriptionMap: Record<string, string> = {
+        profile_photo: t("fieldDescriptions.profilePhoto"),
+        full_name: t("fieldDescriptions.fullName"),
+        phone: t("fieldDescriptions.phone"),
+        address: t("fieldDescriptions.address"),
+      };
+      return descriptionMap[fieldId] || t("fieldDescriptions.default");
+    },
+    [t]
+  );
 
   // Convert server missing fields to client format
   const missingFields = useMemo((): MissingField[] => {
@@ -233,12 +229,12 @@ export default function CustomerProfilePage() {
 
     if (result.success && result.user) {
       setUser(result.user);
-      toast.success("Profile updated successfully");
+      toast.success(t("success.profileUpdated"));
       setPersonalInfoDialogOpen(false);
       // Refresh profile data to update completion stats
       fetchProfileData();
     } else {
-      toast.error(result.error || "Failed to update profile");
+      toast.error(result.error || t("errors.updateProfile"));
     }
 
     setLoading(false);
@@ -253,7 +249,7 @@ export default function CustomerProfilePage() {
     const result = await addCustomerAddress(user.id, newAddress);
 
     if (result.success) {
-      toast.success("Address added successfully");
+      toast.success(t("success.addressAdded"));
       setNewAddress({
         label: "home",
         street_address: "",
@@ -267,7 +263,7 @@ export default function CustomerProfilePage() {
       // Refresh profile data to update completion stats
       fetchProfileData();
     } else {
-      toast.error(result.error || "Failed to add address");
+      toast.error(result.error || t("errors.addAddress"));
     }
 
     setLoading(false);
@@ -282,11 +278,11 @@ export default function CustomerProfilePage() {
     const result = await deleteCustomerAddress(addressId, user.id);
 
     if (result.success) {
-      toast.success("Address deleted successfully");
+      toast.success(t("success.addressDeleted"));
       // Refresh profile data to update completion stats
       fetchProfileData();
     } else {
-      toast.error(result.error || "Failed to delete address");
+      toast.error(result.error || t("errors.deleteAddress"));
     }
 
     setLoading(false);
@@ -299,10 +295,10 @@ export default function CustomerProfilePage() {
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-4" />
           <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-            Not Logged In
+            {t("errors.notLoggedIn")}
           </h2>
           <p className="text-[var(--color-text-secondary)]">
-            Please log in to access your profile
+            {t("errors.loginRequired")}
           </p>
         </div>
       </div>
@@ -320,11 +316,11 @@ export default function CustomerProfilePage() {
                 <Settings className="h-6 w-6 text-white" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)]">
-                Profile Settings
+                {t("navigation.title")}
               </h1>
             </div>
             <p className="text-[var(--color-text-secondary)] text-lg">
-              Manage your account information and preferences
+              {t("subtitle")}
             </p>
           </div>
 
@@ -345,15 +341,16 @@ export default function CustomerProfilePage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-[var(--color-text-primary)] text-lg">
-                      Profile Completion
+                      {t("completion.title")}
                     </h3>
                     <p className="text-[var(--color-text-secondary)]">
                       {profileStats.completionPercentage === 100
-                        ? "Your profile is complete! 🎉"
-                        : `${
-                            profileStats.missingFields.filter((f) => f.required)
-                              .length
-                          } required fields remaining`}
+                        ? t("completion.complete")
+                        : t("completion.requiredFieldsRemaining", {
+                            count: profileStats.missingFields.filter(
+                              (f) => f.required
+                            ).length,
+                          })}
                     </p>
                   </div>
                 </div>
@@ -366,7 +363,9 @@ export default function CustomerProfilePage() {
                     />
                   </div>
                   <p className="text-xs text-[var(--color-text-secondary)] mt-1 text-center">
-                    {profileStats.completionPercentage}% complete
+                    {t("completion.percentageComplete", {
+                      percentage: profileStats.completionPercentage,
+                    })}
                   </p>
                 </div>
               </div>
@@ -380,7 +379,7 @@ export default function CustomerProfilePage() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-[var(--color-text-primary)]">
-                  Navigation
+                  {tCommon("navigation")}
                 </CardTitle>
                 <Button
                   variant="outline"
@@ -389,7 +388,7 @@ export default function CustomerProfilePage() {
                   className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                 >
                   <Menu className="h-4 w-4 mr-2" />
-                  {mobileMenuOpen ? "Close" : "Menu"}
+                  {mobileMenuOpen ? tCommon("close") : tCommon("menu")}
                   <ChevronDown
                     className={`h-4 w-4 ml-2 transition-transform ${
                       mobileMenuOpen ? "rotate-180" : ""
@@ -401,7 +400,7 @@ export default function CustomerProfilePage() {
             {mobileMenuOpen && (
               <CardContent className="pt-0">
                 <nav className="space-y-2">
-                  {SECTIONS.map((section) => {
+                  {sections.map((section) => {
                     const sectionMissingFields = missingFields.filter(
                       (field) => field.section === section.id
                     );
@@ -459,7 +458,7 @@ export default function CustomerProfilePage() {
           <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
             <CardContent className="p-6">
               <nav className="grid grid-cols-3 gap-3">
-                {SECTIONS.map((section) => {
+                {sections.map((section) => {
                   const sectionMissingFields = missingFields.filter(
                     (field) => field.section === section.id
                   );
@@ -515,10 +514,10 @@ export default function CustomerProfilePage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                       <UserIcon className="h-5 w-5" />
-                      Personal Information
+                      {t("sections.personal.title")}
                     </CardTitle>
                     <p className="text-[var(--color-text-secondary)] mt-1">
-                      Manage your basic profile details
+                      {t("sections.personal.description")}
                     </p>
                   </div>
                   <Button
@@ -528,7 +527,7 @@ export default function CustomerProfilePage() {
                     className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                   >
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
+                    {t("sections.personal.editProfile")}
                   </Button>
                 </div>
               </CardHeader>
@@ -554,10 +553,10 @@ export default function CustomerProfilePage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-[var(--color-text-primary)]">
-                      Profile Photo
+                      {t("sections.personal.profilePhoto")}
                     </h3>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                      Add a profile photo to personalize your account
+                      {t("sections.personal.profilePhotoDescription")}
                     </p>
                   </div>
                 </div>
@@ -566,7 +565,7 @@ export default function CustomerProfilePage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
-                      First Name
+                      {t("sections.personal.firstName")}
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
                       {user.first_name || tCommon("notProvided")}
@@ -574,7 +573,7 @@ export default function CustomerProfilePage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
-                      Last Name
+                      {t("sections.personal.lastName")}
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
                       {user.last_name || tCommon("notProvided")}
@@ -582,7 +581,7 @@ export default function CustomerProfilePage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
-                      Email
+                      {t("sections.personal.email")}
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
                       {user.email}
@@ -590,7 +589,7 @@ export default function CustomerProfilePage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
-                      Phone Number
+                      {t("sections.personal.phoneNumber")}
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
                       {user.phone || tCommon("notProvided")}
@@ -598,7 +597,7 @@ export default function CustomerProfilePage() {
                   </div>
                   <div className="space-y-2 sm:col-span-2">
                     <Label className="text-[var(--color-text-secondary)] text-sm font-medium">
-                      Date of Birth
+                      {t("sections.personal.dateOfBirth")}
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
                       {user.date_of_birth
@@ -619,10 +618,10 @@ export default function CustomerProfilePage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                       <MapPin className="h-5 w-5" />
-                      Addresses
+                      {t("sections.addresses.title")}
                     </CardTitle>
                     <p className="text-[var(--color-text-secondary)] mt-1">
-                      Manage your service locations
+                      {t("sections.addresses.description")}
                     </p>
                   </div>
                   <Button
@@ -632,7 +631,7 @@ export default function CustomerProfilePage() {
                     className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Address
+                    {t("sections.addresses.addAddress")}
                   </Button>
                 </div>
               </CardHeader>
@@ -641,17 +640,17 @@ export default function CustomerProfilePage() {
                   <div className="text-center py-8">
                     <MapPin className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-4" />
                     <h3 className="font-medium mb-2 text-[var(--color-text-primary)]">
-                      No Addresses Added
+                      {t("sections.addresses.noAddressesAdded")}
                     </h3>
                     <p className="text-[var(--color-text-secondary)] mb-4">
-                      Add your first address to get started
+                      {t("sections.addresses.addFirstAddressDescription")}
                     </p>
                     <Button
                       onClick={() => setShowNewAddressForm(true)}
                       className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Add First Address
+                      {t("sections.addresses.addFirstAddress")}
                     </Button>
                   </div>
                 )}
@@ -662,7 +661,7 @@ export default function CustomerProfilePage() {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg text-[var(--color-text-primary)]">
-                          Add New Address
+                          {t("sections.addresses.addNewAddress")}
                         </CardTitle>
                         <Button
                           variant="ghost"
@@ -680,7 +679,7 @@ export default function CustomerProfilePage() {
                             htmlFor="address_label"
                             className="text-[var(--color-text-primary)]"
                           >
-                            Label
+                            {t("sections.addresses.label")}
                           </Label>
                           <select
                             id="address_label"
@@ -693,9 +692,9 @@ export default function CustomerProfilePage() {
                             }
                             className="flex h-9 w-full rounded-md border border-[var(--color-border)] bg-transparent px-3 py-1 text-sm shadow-xs focus:border-[var(--color-primary)]"
                           >
-                            <option value="home">Home</option>
-                            <option value="work">Work</option>
-                            <option value="other">Other</option>
+                            <option value="home">{tCommon("home")}</option>
+                            <option value="work">{tCommon("work")}</option>
+                            <option value="other">{tCommon("other")}</option>
                           </select>
                         </div>
                         <div className="space-y-2">
@@ -703,7 +702,7 @@ export default function CustomerProfilePage() {
                             htmlFor="country"
                             className="text-[var(--color-text-primary)]"
                           >
-                            Country
+                            {t("sections.addresses.country")}
                           </Label>
                           <select
                             id="country"
@@ -726,7 +725,7 @@ export default function CustomerProfilePage() {
                             htmlFor="street_address"
                             className="text-[var(--color-text-primary)]"
                           >
-                            Street Address *
+                            {t("sections.addresses.streetAddress")} *
                           </Label>
                           <Input
                             id="street_address"
@@ -737,7 +736,9 @@ export default function CustomerProfilePage() {
                                 street_address: e.target.value,
                               }))
                             }
-                            placeholder="Enter street address"
+                            placeholder={t(
+                              "sections.addresses.enterStreetAddress"
+                            )}
                             className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
@@ -746,7 +747,7 @@ export default function CustomerProfilePage() {
                             htmlFor="city"
                             className="text-[var(--color-text-primary)]"
                           >
-                            City *
+                            {t("sections.addresses.city")} *
                           </Label>
                           <Input
                             id="city"
@@ -757,7 +758,7 @@ export default function CustomerProfilePage() {
                                 city: e.target.value,
                               }))
                             }
-                            placeholder="Enter city"
+                            placeholder={t("sections.addresses.enterCity")}
                             className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
@@ -766,7 +767,7 @@ export default function CustomerProfilePage() {
                             htmlFor="region"
                             className="text-[var(--color-text-primary)]"
                           >
-                            Region *
+                            {t("sections.addresses.region")} *
                           </Label>
                           <Input
                             id="region"
@@ -777,7 +778,7 @@ export default function CustomerProfilePage() {
                                 region: e.target.value,
                               }))
                             }
-                            placeholder="Enter region"
+                            placeholder={t("sections.addresses.enterRegion")}
                             className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
@@ -786,7 +787,7 @@ export default function CustomerProfilePage() {
                             htmlFor="postal_code"
                             className="text-[var(--color-text-primary)]"
                           >
-                            Postal Code
+                            {t("sections.addresses.postalCode")}
                           </Label>
                           <Input
                             id="postal_code"
@@ -797,7 +798,9 @@ export default function CustomerProfilePage() {
                                 postal_code: e.target.value,
                               }))
                             }
-                            placeholder="Enter postal code"
+                            placeholder={t(
+                              "sections.addresses.enterPostalCode"
+                            )}
                             className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                           />
                         </div>
@@ -815,7 +818,7 @@ export default function CustomerProfilePage() {
                           onClick={() => setShowNewAddressForm(false)}
                           className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                         >
-                          Cancel
+                          {tCommon("cancel")}
                         </Button>
                       </div>
                     </CardContent>
@@ -837,7 +840,7 @@ export default function CustomerProfilePage() {
                             </span>
                             {address.is_default && (
                               <span className="text-xs bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white px-2 py-1 rounded">
-                                Default
+                                {tCommon("default")}
                               </span>
                             )}
                           </div>
@@ -882,10 +885,10 @@ export default function CustomerProfilePage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                       <CreditCard className="h-5 w-5" />
-                      Payment Methods
+                      {t("sections.payment.title")}
                     </CardTitle>
                     <p className="text-[var(--color-text-secondary)] mt-1">
-                      Manage your payment information
+                      {t("sections.payment.description")}
                     </p>
                   </div>
                   <Button
@@ -894,7 +897,7 @@ export default function CustomerProfilePage() {
                     className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Payment Method
+                    {t("sections.payment.addPaymentMethod")}
                   </Button>
                 </div>
               </CardHeader>
@@ -903,7 +906,9 @@ export default function CustomerProfilePage() {
                 <div className="p-6 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-xl text-white">
                   <div className="flex items-center gap-3 mb-4">
                     <Wallet className="h-6 w-6" />
-                    <h3 className="text-lg font-semibold">Wallet Balance</h3>
+                    <h3 className="text-lg font-semibold">
+                      {t("sections.payment.walletBalance")}
+                    </h3>
                   </div>
                   <div className="text-3xl font-bold mb-2">
                     {user.wallet_balance
@@ -911,7 +916,7 @@ export default function CustomerProfilePage() {
                       : "0 MAD"}
                   </div>
                   <p className="text-sm opacity-90">
-                    Available for payments and refunds
+                    {t("sections.payment.availableForPayments")}
                   </p>
                 </div>
 
@@ -919,14 +924,14 @@ export default function CustomerProfilePage() {
                 <div className="text-center py-8">
                   <CreditCard className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-4" />
                   <h3 className="font-medium mb-2 text-[var(--color-text-primary)]">
-                    No Payment Methods
+                    {t("sections.payment.noPaymentMethods")}
                   </h3>
                   <p className="text-[var(--color-text-secondary)] mb-4">
-                    Add a payment method to make purchases
+                    {t("sections.payment.addPaymentMethodDescription")}
                   </p>
                   <Button className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add First Payment Method
+                    {t("sections.payment.addFirstPaymentMethod")}
                   </Button>
                 </div>
               </CardContent>
@@ -944,11 +949,10 @@ export default function CustomerProfilePage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserIcon className="h-5 w-5" />
-              Edit Personal Information
+              {t("dialog.editPersonalInfo.title")}
             </DialogTitle>
             <DialogDescription>
-              Update your personal information. Fields marked with * are
-              required.
+              {t("dialog.editPersonalInfo.description")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -958,7 +962,7 @@ export default function CustomerProfilePage() {
                   htmlFor="dialog_first_name"
                   className="text-[var(--color-text-primary)]"
                 >
-                  First Name *
+                  {t("dialog.editPersonalInfo.firstName")}
                 </Label>
                 <Input
                   id="dialog_first_name"
@@ -969,7 +973,7 @@ export default function CustomerProfilePage() {
                       first_name: e.target.value,
                     }))
                   }
-                  placeholder="Enter your first name"
+                  placeholder={t("dialog.editPersonalInfo.enterFirstName")}
                   className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                 />
               </div>
@@ -978,7 +982,7 @@ export default function CustomerProfilePage() {
                   htmlFor="dialog_last_name"
                   className="text-[var(--color-text-primary)]"
                 >
-                  Last Name *
+                  {t("dialog.editPersonalInfo.lastName")}
                 </Label>
                 <Input
                   id="dialog_last_name"
@@ -989,7 +993,7 @@ export default function CustomerProfilePage() {
                       last_name: e.target.value,
                     }))
                   }
-                  placeholder="Enter your last name"
+                  placeholder={t("dialog.editPersonalInfo.enterLastName")}
                   className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                 />
               </div>
@@ -998,7 +1002,7 @@ export default function CustomerProfilePage() {
                   htmlFor="dialog_email"
                   className="text-[var(--color-text-primary)]"
                 >
-                  Email
+                  {t("dialog.editPersonalInfo.email")}
                 </Label>
                 <Input
                   id="dialog_email"
@@ -1008,7 +1012,7 @@ export default function CustomerProfilePage() {
                   className="bg-[var(--color-accent)]/30 border-[var(--color-border)]"
                 />
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  Email cannot be changed
+                  {t("dialog.editPersonalInfo.emailCannotBeChanged")}
                 </p>
               </div>
               <div className="space-y-2">
@@ -1016,7 +1020,7 @@ export default function CustomerProfilePage() {
                   htmlFor="dialog_phone"
                   className="text-[var(--color-text-primary)]"
                 >
-                  Phone Number
+                  {t("dialog.editPersonalInfo.phoneNumber")}
                 </Label>
                 <Input
                   id="dialog_phone"
@@ -1028,7 +1032,7 @@ export default function CustomerProfilePage() {
                       phone: e.target.value,
                     }))
                   }
-                  placeholder="Enter your phone number"
+                  placeholder={t("dialog.editPersonalInfo.enterPhoneNumber")}
                   className="border-[var(--color-border)] focus:border-[var(--color-primary)]"
                 />
               </div>
@@ -1037,7 +1041,7 @@ export default function CustomerProfilePage() {
                   htmlFor="dialog_date_of_birth"
                   className="text-[var(--color-text-primary)]"
                 >
-                  Date of Birth
+                  {t("dialog.editPersonalInfo.dateOfBirth")}
                 </Label>
                 <Input
                   id="dialog_date_of_birth"
@@ -1070,7 +1074,7 @@ export default function CustomerProfilePage() {
               }}
               className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
             >
-              Cancel
+              {tCommon("cancel")}
             </Button>
             <Button
               onClick={updatePersonalInfo}

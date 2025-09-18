@@ -2,6 +2,28 @@
   "Metadata": {
     "title": "ManzelHelp"
   },
+  "common": {
+    "notProvided": "Not provided",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "saveAddress": "Save Address",
+    "cancel": "Cancel",
+    "close": "Close",
+    "menu": "Menu",
+    "navigation": "Navigation",
+    "edit": "Edit",
+    "add": "Add",
+    "default": "Default",
+    "home": "Home",
+    "work": "Work",
+    "other": "Other",
+    "profile": "Profile",
+    "complete": "complete",
+    "required": "required",
+    "fields": "fields",
+    "remaining": "remaining",
+    "unknown": "Unknown"
+  },
   "Header": {
     "services": "Services",
     "about_us": "About Us",
@@ -67,15 +89,6 @@
     "navigation": {
       "title": "Profile Settings"
     },
-    "sections": {
-      "personal": "Personal Information",
-      "addresses": "Addresses",
-      "security": "Security",
-      "payment": "Payment Methods",
-      "notifications": "Notifications",
-      "preferences": "Preferences",
-      "verification": "Verification"
-    },
     "completion": {
       "title": "Complete Your Profile",
       "description": "Complete your profile to unlock all features and build trust with other users.",
@@ -86,7 +99,9 @@
       "address": "Home Address",
       "emailVerified": "Email Verified",
       "phoneVerified": "Phone Verified",
-      "required": "Required"
+      "required": "Required",
+      "requiredFieldsRemaining": "{count} required fields remaining",
+      "percentageComplete": "{percentage}% complete"
     },
     "personal": {
       "description": "Update your basic information and profile photo",
@@ -183,12 +198,6 @@
       "save": "Save Changes",
       "saving": "Saving..."
     },
-    "common": {
-      "notProvided": "Not provided",
-      "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "saveAddress": "Save Address"
-    },
     "success": {
       "profileUpdated": "Profile updated successfully!",
       "addressAdded": "Address added successfully!",
@@ -200,7 +209,73 @@
       "updateProfile": "Failed to update profile",
       "fetchAddresses": "Failed to load addresses",
       "addAddress": "Failed to add address",
-      "deleteAddress": "Failed to delete address"
+      "deleteAddress": "Failed to delete address",
+      "loadProfileData": "Failed to load profile data"
+    },
+    "sections": {
+      "personal": {
+        "title": "Personal Information",
+        "description": "Manage your basic profile details",
+        "editProfile": "Edit Profile",
+        "profilePhoto": "Profile Photo",
+        "profilePhotoDescription": "Add a profile photo to personalize your account",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "dateOfBirth": "Date of Birth"
+      },
+      "addresses": {
+        "title": "Addresses",
+        "description": "Manage your service locations",
+        "addAddress": "Add Address",
+        "noAddressesAdded": "No Addresses Added",
+        "addFirstAddressDescription": "Add your first address to get started",
+        "addFirstAddress": "Add First Address",
+        "addNewAddress": "Add New Address",
+        "label": "Label",
+        "country": "Country",
+        "streetAddress": "Street Address",
+        "city": "City",
+        "region": "Region",
+        "postalCode": "Postal Code",
+        "enterStreetAddress": "Enter street address",
+        "enterCity": "Enter city",
+        "enterRegion": "Enter region",
+        "enterPostalCode": "Enter postal code"
+      },
+      "payment": {
+        "title": "Payment Methods",
+        "description": "Manage your payment information",
+        "addPaymentMethod": "Add Payment Method",
+        "noPaymentMethods": "No Payment Methods",
+        "addPaymentMethodDescription": "Add a payment method to make purchases",
+        "addFirstPaymentMethod": "Add First Payment Method",
+        "walletBalance": "Wallet Balance",
+        "availableForPayments": "Available for payments and refunds"
+      }
+    },
+    "dialog": {
+      "editPersonalInfo": {
+        "title": "Edit Personal Information",
+        "description": "Update your personal information. Fields marked with * are required.",
+        "firstName": "First Name *",
+        "lastName": "Last Name *",
+        "email": "Email",
+        "emailCannotBeChanged": "Email cannot be changed",
+        "phoneNumber": "Phone Number",
+        "dateOfBirth": "Date of Birth",
+        "enterFirstName": "Enter your first name",
+        "enterLastName": "Enter your last name",
+        "enterPhoneNumber": "Enter your phone number"
+      }
+    },
+    "fieldDescriptions": {
+      "profilePhoto": "Add a profile photo to personalize your account",
+      "fullName": "Complete your name for better recognition",
+      "phone": "Add your phone number for contact purposes",
+      "address": "Add your address for service delivery",
+      "default": "Complete this field to improve your profile"
     }
   },
   "Footer": {
@@ -1193,9 +1268,6 @@
       "hoursAgo": "{hours}h ago",
       "today": "Today",
       "yesterday": "Yesterday"
-    },
-    "common": {
-      "unknown": "Unknown"
     },
     "errors": {
       "loadFailed": "Failed to load conversation",

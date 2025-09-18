@@ -2,6 +2,28 @@
   "Metadata": {
     "title": "ManzelHelp"
   },
+  "common": {
+    "notProvided": "Nicht angegeben",
+    "saving": "Speichern...",
+    "saveChanges": "Änderungen Speichern",
+    "saveAddress": "Adresse Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "menu": "Menü",
+    "navigation": "Navigation",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "default": "Standard",
+    "home": "Zuhause",
+    "work": "Arbeit",
+    "other": "Andere",
+    "profile": "Profil",
+    "complete": "vollständig",
+    "required": "erforderlich",
+    "fields": "Felder",
+    "remaining": "verbleibend",
+    "unknown": "Unbekannt"
+  },
   "Header": {
     "services": "Dienstleistungen",
     "about_us": "Über uns",
@@ -67,15 +89,6 @@
     "navigation": {
       "title": "Profil-Einstellungen"
     },
-    "sections": {
-      "personal": "Persönliche Informationen",
-      "addresses": "Adressen",
-      "security": "Sicherheit",
-      "payment": "Zahlungsmethoden",
-      "notifications": "Benachrichtigungen",
-      "preferences": "Einstellungen",
-      "verification": "Verifizierung"
-    },
     "completion": {
       "title": "Vervollständigen Sie Ihr Profil",
       "description": "Vervollständigen Sie Ihr Profil, um alle Funktionen freizuschalten und Vertrauen bei anderen Nutzern aufzubauen.",
@@ -86,7 +99,9 @@
       "address": "Heimadresse",
       "emailVerified": "E-Mail Verifiziert",
       "phoneVerified": "Telefon Verifiziert",
-      "required": "Erforderlich"
+      "required": "Erforderlich",
+      "requiredFieldsRemaining": "{count} erforderliche Felder verbleibend",
+      "percentageComplete": "{percentage}% vollständig"
     },
     "personal": {
       "description": "Aktualisieren Sie Ihre Grundinformationen und Ihr Profilbild",
@@ -183,12 +198,6 @@
       "save": "Änderungen Speichern",
       "saving": "Speichern..."
     },
-    "common": {
-      "notProvided": "Nicht angegeben",
-      "saving": "Speichern...",
-      "saveChanges": "Änderungen Speichern",
-      "saveAddress": "Adresse Speichern"
-    },
     "success": {
       "profileUpdated": "Profil erfolgreich aktualisiert!",
       "addressAdded": "Adresse erfolgreich hinzugefügt!",
@@ -200,7 +209,73 @@
       "updateProfile": "Profil konnte nicht aktualisiert werden",
       "fetchAddresses": "Adressen konnten nicht geladen werden",
       "addAddress": "Adresse konnte nicht hinzugefügt werden",
-      "deleteAddress": "Adresse konnte nicht gelöscht werden"
+      "deleteAddress": "Adresse konnte nicht gelöscht werden",
+      "loadProfileData": "Profil-Daten konnten nicht geladen werden"
+    },
+    "sections": {
+      "personal": {
+        "title": "Persönliche Informationen",
+        "description": "Verwalten Sie Ihre grundlegenden Profildetails",
+        "editProfile": "Profil Bearbeiten",
+        "profilePhoto": "Profilbild",
+        "profilePhotoDescription": "Fügen Sie ein Profilbild hinzu, um Ihr Konto zu personalisieren",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "email": "E-Mail",
+        "phoneNumber": "Telefonnummer",
+        "dateOfBirth": "Geburtsdatum"
+      },
+      "addresses": {
+        "title": "Adressen",
+        "description": "Verwalten Sie Ihre Service-Standorte",
+        "addAddress": "Adresse Hinzufügen",
+        "noAddressesAdded": "Keine Adressen Hinzugefügt",
+        "addFirstAddressDescription": "Fügen Sie Ihre erste Adresse hinzu, um zu beginnen",
+        "addFirstAddress": "Erste Adresse Hinzufügen",
+        "addNewAddress": "Neue Adresse Hinzufügen",
+        "label": "Bezeichnung",
+        "country": "Land",
+        "streetAddress": "Straßenadresse",
+        "city": "Stadt",
+        "region": "Region",
+        "postalCode": "Postleitzahl",
+        "enterStreetAddress": "Straßenadresse eingeben",
+        "enterCity": "Stadt eingeben",
+        "enterRegion": "Region eingeben",
+        "enterPostalCode": "Postleitzahl eingeben"
+      },
+      "payment": {
+        "title": "Zahlungsmethoden",
+        "description": "Verwalten Sie Ihre Zahlungsinformationen",
+        "addPaymentMethod": "Zahlungsmethode Hinzufügen",
+        "noPaymentMethods": "Keine Zahlungsmethoden",
+        "addPaymentMethodDescription": "Fügen Sie eine Zahlungsmethode hinzu, um Einkäufe zu tätigen",
+        "addFirstPaymentMethod": "Erste Zahlungsmethode Hinzufügen",
+        "walletBalance": "Geldbörsen-Guthaben",
+        "availableForPayments": "Verfügbar für Zahlungen und Rückerstattungen"
+      }
+    },
+    "dialog": {
+      "editPersonalInfo": {
+        "title": "Persönliche Informationen Bearbeiten",
+        "description": "Aktualisieren Sie Ihre persönlichen Informationen. Mit * markierte Felder sind erforderlich.",
+        "firstName": "Vorname *",
+        "lastName": "Nachname *",
+        "email": "E-Mail",
+        "emailCannotBeChanged": "E-Mail kann nicht geändert werden",
+        "phoneNumber": "Telefonnummer",
+        "dateOfBirth": "Geburtsdatum",
+        "enterFirstName": "Geben Sie Ihren Vornamen ein",
+        "enterLastName": "Geben Sie Ihren Nachnamen ein",
+        "enterPhoneNumber": "Geben Sie Ihre Telefonnummer ein"
+      }
+    },
+    "fieldDescriptions": {
+      "profilePhoto": "Fügen Sie ein Profilbild hinzu, um Ihr Konto zu personalisieren",
+      "fullName": "Vervollständigen Sie Ihren Namen für bessere Erkennung",
+      "phone": "Fügen Sie Ihre Telefonnummer für Kontaktzwecke hinzu",
+      "address": "Fügen Sie Ihre Adresse für die Service-Lieferung hinzu",
+      "default": "Vervollständigen Sie dieses Feld, um Ihr Profil zu verbessern"
     }
   },
   "Footer": {
@@ -1193,9 +1268,6 @@
       "hoursAgo": "vor {hours} Std",
       "today": "Heute",
       "yesterday": "Gestern"
-    },
-    "common": {
-      "unknown": "Unbekannt"
     },
     "errors": {
       "loadFailed": "Fehler beim Laden der Unterhaltung",
