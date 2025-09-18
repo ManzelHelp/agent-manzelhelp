@@ -649,7 +649,6 @@ export default function TaskerOfferPage() {
               avatar_url: serviceData.tasker.avatar_url || undefined,
             },
           }}
-          customerId={user.id}
         />
       )}
 

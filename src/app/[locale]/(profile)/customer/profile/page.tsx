@@ -143,11 +143,9 @@ export default function CustomerProfilePage() {
 
   // Data fetching
   const fetchProfileData = useCallback(async () => {
-    if (!user?.id) return;
-
     try {
       setLoading(true);
-      const result = await getCustomerProfileData(user.id);
+      const result = await getCustomerProfileData();
 
       if (result.error) {
         toast.error(result.error);
@@ -160,7 +158,7 @@ export default function CustomerProfilePage() {
       setAddresses(result.addresses);
 
       // Fetch profile completion stats
-      const stats = await getCustomerProfileCompletion(user.id);
+      const stats = await getCustomerProfileCompletion();
       setProfileStats(stats);
     } catch (error) {
       console.error("Error fetching profile data:", error);
@@ -168,7 +166,7 @@ export default function CustomerProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, setUser, t]);
+  }, [setUser, t]);
 
   // Effects - fetch data when user is available
   useEffect(() => {
@@ -216,11 +214,9 @@ export default function CustomerProfilePage() {
 
   // Update personal info
   const updatePersonalInfo = async () => {
-    if (!user?.id) return;
-
     setLoading(true);
 
-    const result = await updateCustomerPersonalInfo(user.id, {
+    const result = await updateCustomerPersonalInfo({
       first_name: personalInfo.first_name,
       last_name: personalInfo.last_name,
       phone: personalInfo.phone,
@@ -242,11 +238,11 @@ export default function CustomerProfilePage() {
 
   // Add address
   const addAddress = async () => {
-    if (!user?.id || !newAddress.street_address || !newAddress.city) return;
+    if (!newAddress.street_address || !newAddress.city) return;
 
     setLoading(true);
 
-    const result = await addCustomerAddress(user.id, newAddress);
+    const result = await addCustomerAddress(newAddress);
 
     if (result.success) {
       toast.success(t("success.addressAdded"));
@@ -271,11 +267,9 @@ export default function CustomerProfilePage() {
 
   // Delete address
   const deleteAddress = async (addressId: string) => {
-    if (!user?.id) return;
-
     setLoading(true);
 
-    const result = await deleteCustomerAddress(addressId, user.id);
+    const result = await deleteCustomerAddress(addressId);
 
     if (result.success) {
       toast.success(t("success.addressDeleted"));

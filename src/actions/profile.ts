@@ -673,7 +673,7 @@ export async function getProfileCompletion(userId: string): Promise<{
 // ===== CUSTOMER PROFILE FUNCTIONS =====
 
 // Get customer profile data (user + addresses only)
-export async function getCustomerProfileData(userId: string): Promise<{
+export async function getCustomerProfileData(): Promise<{
   user: User | null;
   addresses: Address[];
   error?: string;
@@ -681,11 +681,25 @@ export async function getCustomerProfileData(userId: string): Promise<{
   try {
     const supabase = await createClient();
 
+    // Get the authenticated user
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return {
+        user: null,
+        addresses: [],
+        error: "Authentication required",
+      };
+    }
+
     // Get user data
     const { data: user, error: userError } = await supabase
       .from("users")
       .select("*")
-      .eq("id", userId)
+      .eq("id", authUser.id)
       .single();
 
     if (userError) {
@@ -701,7 +715,7 @@ export async function getCustomerProfileData(userId: string): Promise<{
     const { data: addresses, error: addressesError } = await supabase
       .from("addresses")
       .select("*")
-      .eq("user_id", userId)
+      .eq("user_id", authUser.id)
       .order("is_default", { ascending: false });
 
     if (addressesError) {
@@ -728,7 +742,7 @@ export async function getCustomerProfileData(userId: string): Promise<{
 }
 
 // Get customer profile completion percentage
-export async function getCustomerProfileCompletion(userId: string): Promise<{
+export async function getCustomerProfileCompletion(): Promise<{
   completionPercentage: number;
   missingFields: Array<{
     id: string;
@@ -738,7 +752,7 @@ export async function getCustomerProfileCompletion(userId: string): Promise<{
   }>;
 }> {
   try {
-    const { user, addresses } = await getCustomerProfileData(userId);
+    const { user, addresses } = await getCustomerProfileData();
 
     const missingFields: Array<{
       id: string;
@@ -807,17 +821,24 @@ export async function getCustomerProfileCompletion(userId: string): Promise<{
 }
 
 // Update customer personal information
-export async function updateCustomerPersonalInfo(
-  userId: string,
-  updates: {
-    first_name?: string;
-    last_name?: string;
-    phone?: string;
-    date_of_birth?: string;
-  }
-): Promise<{ success: boolean; user?: User; error?: string }> {
+export async function updateCustomerPersonalInfo(updates: {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  date_of_birth?: string;
+}): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
     const supabase = await createClient();
+
+    // Get the authenticated user
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return { success: false, error: "Authentication required" };
+    }
 
     // Validate required fields
     if (updates.first_name && !updates.first_name.trim()) {
@@ -854,7 +875,7 @@ export async function updateCustomerPersonalInfo(
     const { data, error } = await supabase
       .from("users")
       .update(updateData)
-      .eq("id", userId)
+      .eq("id", authUser.id)
       .select()
       .single();
 
@@ -872,20 +893,27 @@ export async function updateCustomerPersonalInfo(
 }
 
 // Add customer address
-export async function addCustomerAddress(
-  userId: string,
-  addressData: {
-    label: string;
-    street_address: string;
-    city: string;
-    region: string;
-    postal_code?: string;
-    country: string;
-    is_default: boolean;
-  }
-): Promise<{ success: boolean; address?: Address; error?: string }> {
+export async function addCustomerAddress(addressData: {
+  label: string;
+  street_address: string;
+  city: string;
+  region: string;
+  postal_code?: string;
+  country: string;
+  is_default: boolean;
+}): Promise<{ success: boolean; address?: Address; error?: string }> {
   try {
     const supabase = await createClient();
+
+    // Get the authenticated user
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return { success: false, error: "Authentication required" };
+    }
 
     // Validate required fields
     if (
@@ -910,7 +938,7 @@ export async function addCustomerAddress(
     const { data, error } = await supabase
       .from("addresses")
       .insert({
-        user_id: userId,
+        user_id: authUser.id,
         label: addressData.label,
         street_address: addressData.street_address.trim(),
         city: addressData.city.trim(),
@@ -939,17 +967,26 @@ export async function addCustomerAddress(
 
 // Delete customer address
 export async function deleteCustomerAddress(
-  addressId: string,
-  userId: string
+  addressId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+
+    // Get the authenticated user
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return { success: false, error: "Authentication required" };
+    }
 
     const { error } = await supabase
       .from("addresses")
       .delete()
       .eq("id", addressId)
-      .eq("user_id", userId); // Ensure user can only delete their own addresses
+      .eq("user_id", authUser.id); // Ensure user can only delete their own addresses
 
     if (error) {
       console.error("Error deleting customer address:", error);

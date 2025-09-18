@@ -478,11 +478,23 @@ interface BookingValidationResult {
 // Enhanced validation function for booking data
 async function validateBookingData(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  customerId: string,
   bookingData: CreateBookingData
 ): Promise<BookingValidationResult> {
   const errors: string[] = [];
   const warnings: string[] = [];
+
+  // Get the authenticated user
+  const {
+    data: { user: authUser },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !authUser) {
+    errors.push("Authentication required");
+    return { isValid: false, errors, warnings };
+  }
+
+  const customerId = authUser.id;
 
   // Basic field validation
   if (!bookingData.tasker_service_id) {
@@ -588,7 +600,6 @@ async function validateBookingData(
 }
 
 export async function createServiceBooking(
-  customerId: string,
   bookingData: CreateBookingData
 ): Promise<{
   success: boolean;
@@ -599,12 +610,20 @@ export async function createServiceBooking(
   const supabase = await createClient();
 
   try {
+    // Get the authenticated user
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const customerId = authUser.id;
+
     // Enhanced validation
-    const validation = await validateBookingData(
-      supabase,
-      customerId,
-      bookingData
-    );
+    const validation = await validateBookingData(supabase, bookingData);
 
     if (!validation.isValid) {
       return {

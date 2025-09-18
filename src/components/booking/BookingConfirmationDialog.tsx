@@ -49,7 +49,6 @@ interface BookingConfirmationDialogProps {
       avatar_url?: string;
     };
   };
-  customerId: string;
 }
 
 interface BookingFormData {
@@ -83,7 +82,6 @@ export function BookingConfirmationDialog({
   onClose,
   onSuccess,
   serviceData,
-  customerId,
 }: BookingConfirmationDialogProps) {
   const t = useTranslations("taskerOffer.bookingDialog");
   const [formData, setFormData] = useState<BookingFormData>(initialFormData);
@@ -95,7 +93,7 @@ export function BookingConfirmationDialog({
   const loadAddresses = React.useCallback(async () => {
     try {
       setIsLoading(true);
-      const { addresses, error } = await getCustomerProfileData(customerId);
+      const { addresses, error } = await getCustomerProfileData();
 
       if (error) {
         toast.error(t("toasts.failedToLoadAddresses"));
@@ -119,14 +117,14 @@ export function BookingConfirmationDialog({
     } finally {
       setIsLoading(false);
     }
-  }, [customerId, t]);
+  }, [t]);
 
   // Load customer addresses when dialog opens
   useEffect(() => {
-    if (isOpen && customerId) {
+    if (isOpen) {
       loadAddresses();
     }
-  }, [isOpen, customerId, loadAddresses]);
+  }, [isOpen, loadAddresses]);
 
   // Initialize form data when service data changes
   useEffect(() => {
@@ -201,7 +199,7 @@ export function BookingConfirmationDialog({
         payment_method: formData.payment_method,
       };
 
-      const result = await createServiceBooking(customerId, bookingData);
+      const result = await createServiceBooking(bookingData);
 
       if (result.success && result.bookingId) {
         // Show warnings if any
