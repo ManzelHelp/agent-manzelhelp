@@ -1,10 +1,10 @@
 import React from "react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getUserProfileAction } from "@/actions/auth";
 import { getCustomerJobs, JobWithDetails } from "@/actions/jobs";
 import {
   Plus,
-  Edit,
   Eye,
   EyeOff,
   MapPin,
@@ -62,13 +62,14 @@ function JobsLoadingSkeleton() {
 }
 
 // Job card component
-function JobCard({
+async function JobCard({
   job,
   customerId,
 }: {
   job: JobWithDetails;
   customerId: string;
 }) {
+  const t = await getTranslations("myJobs");
   const getStatusColor = (status?: string | null) => {
     switch (status) {
       case "open":
@@ -110,19 +111,19 @@ function JobCard({
   const getStatusLabel = (status?: string | null) => {
     switch (status) {
       case "open":
-        return "Open";
+        return t("status.open");
       case "under_review":
-        return "Under Review";
+        return t("status.under_review");
       case "assigned":
-        return "Assigned";
+        return t("status.assigned");
       case "in_progress":
-        return "In Progress";
+        return t("status.in_progress");
       case "completed":
-        return "Completed";
+        return t("status.completed");
       case "cancelled":
-        return "Cancelled";
+        return t("status.cancelled");
       default:
-        return "Unknown";
+        return t("status.unknown");
     }
   };
 
@@ -168,7 +169,7 @@ function JobCard({
                 <Star className="h-3 w-3 text-white" />
               </div>
               <span className="text-sm text-[var(--color-text-secondary)]">
-                {job.category_name_en || "Unknown Category"}
+                {job.category_name_en || t("jobCard.unknownCategory")}
               </span>
             </div>
 
@@ -178,7 +179,7 @@ function JobCard({
               <span className="truncate">
                 {job.city && job.region
                   ? `${job.city}, ${job.region}`
-                  : job.street_address || "Location not specified"}
+                  : job.street_address || t("jobCard.locationNotSpecified")}
               </span>
             </div>
           </div>
@@ -207,7 +208,7 @@ function JobCard({
       <div className="p-4">
         {/* Description */}
         <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-4 leading-relaxed">
-          {job.description || "No description available"}
+          {job.description || t("jobCard.noDescription")}
         </p>
 
         {/* Job Details */}
@@ -217,7 +218,7 @@ function JobCard({
             <span>
               {job.preferred_date
                 ? formatDate(job.preferred_date)
-                : "No date set"}
+                : t("jobCard.noDateSet")}
             </span>
             {job.preferred_time_start && (
               <>
@@ -225,12 +226,16 @@ function JobCard({
                 <span>{formatTime(job.preferred_time_start)}</span>
               </>
             )}
-            {job.application_count > 0 && (
-              <>
-                <span>•</span>
-                <span>{job.application_count} applications</span>
-              </>
-            )}
+            <span>•</span>
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>
+                {job.application_count || 0}{" "}
+                {(job.application_count || 0) === 1
+                  ? t("jobCard.application")
+                  : t("jobCard.applications")}
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Badge className={getStatusColor(job.status)}>
@@ -239,7 +244,7 @@ function JobCard({
             </Badge>
             {job.is_promoted && (
               <Badge className="bg-[var(--color-secondary)] text-white">
-                Promoted
+                {t("jobCard.promoted")}
               </Badge>
             )}
           </div>
@@ -254,11 +259,11 @@ function JobCard({
               </div>
               <div>
                 <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                  Assigned to: {job.assigned_tasker_first_name}{" "}
+                  {t("jobCard.assignedTo")} {job.assigned_tasker_first_name}{" "}
                   {job.assigned_tasker_last_name}
                 </p>
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  Tasker assigned to this job
+                  {t("jobCard.taskerAssigned")}
                 </p>
               </div>
             </div>
@@ -275,7 +280,7 @@ function JobCard({
                 className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
               >
                 <Link href={`./my-jobs/${job.id}`}>
-                  View Applications
+                  {t("jobCard.viewApplications")}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>
@@ -288,7 +293,7 @@ function JobCard({
                 className="border-[var(--color-border)]"
               >
                 <Link href={`./my-jobs/${job.id}`}>
-                  View Details
+                  {t("jobCard.viewDetails")}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>
@@ -302,8 +307,18 @@ function JobCard({
               variant="outline"
               className="border-[var(--color-border)]"
             >
+              <Link href={`./my-jobs/${job.id}/applications`}>
+                <Users className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="border-[var(--color-border)]"
+            >
               <Link href={`./my-jobs/${job.id}`}>
-                <Edit className="h-4 w-4" />
+                <Eye className="h-4 w-4" />
               </Link>
             </Button>
             {!job.assigned_tasker_id && job.status === "open" && (
@@ -322,6 +337,8 @@ function JobCard({
 
 // Jobs list component
 async function JobsList({ customerId }: { customerId: string }) {
+  const t = await getTranslations("myJobs");
+
   try {
     const { jobs } = await getCustomerJobs(customerId);
 
@@ -329,15 +346,15 @@ async function JobsList({ customerId }: { customerId: string }) {
       <>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)]">
-            Your Job Posts ({jobs.length})
+            {t("yourJobPosts")} ({jobs.length})
           </h3>
           <Link
             href="./post-job"
             className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-secondary)] text-white font-semibold text-base shadow hover:bg-[var(--color-secondary-dark)] transition-all min-h-[44px] mobile-button whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Post New Job</span>
-            <span className="sm:hidden">Post Job</span>
+            <span className="hidden sm:inline">{t("postNewJob")}</span>
+            <span className="sm:hidden">{t("postJob")}</span>
           </Link>
         </div>
 
@@ -345,24 +362,25 @@ async function JobsList({ customerId }: { customerId: string }) {
           <div className="flex flex-col items-center justify-center flex-1 py-16 bg-[var(--color-surface)] rounded-xl shadow-inner border border-dashed border-[var(--color-border)] mt-2">
             <span className="text-6xl mb-4">💼</span>
             <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-              No jobs posted yet
+              {t("noJobs")}
             </h2>
             <p className="text-[var(--color-text-secondary)] mb-4 max-w-xs text-center">
-              You haven't posted any jobs. Start by creating your first job post
-              to find the perfect tasker!
+              {t("noJobsDescription")}
             </p>
             <Link
               href="./post-job"
               className="px-5 py-2.5 rounded-lg bg-[var(--color-secondary)] text-white font-semibold hover:bg-[var(--color-secondary-dark)] transition-all text-base shadow"
             >
-              Post Job
+              {t("createJob")}
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 mt-2">
-            {jobs.map((job) => (
-              <JobCard key={job.id} job={job} customerId={customerId} />
-            ))}
+            {await Promise.all(
+              jobs.map(async (job) => (
+                <JobCard key={job.id} job={job} customerId={customerId} />
+              ))
+            )}
           </div>
         )}
       </>
@@ -373,16 +391,16 @@ async function JobsList({ customerId }: { customerId: string }) {
       <div className="flex flex-col items-center justify-center flex-1 py-16 bg-[var(--color-surface)] rounded-xl shadow-inner border border-dashed border-[var(--color-border)] mt-2">
         <span className="text-6xl mb-4">⚠️</span>
         <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-          Error loading jobs
+          {t("errorLoading")}
         </h2>
         <p className="text-[var(--color-text-secondary)] mb-4 max-w-xs text-center">
-          There was an error loading your jobs. Please try refreshing the page.
+          {t("errorDescription")}
         </p>
         <Link
           href="/customer/my-jobs"
           className="px-5 py-2.5 rounded-lg bg-[var(--color-secondary)] text-white font-semibold hover:bg-[var(--color-secondary-dark)] transition-all text-base shadow"
         >
-          Refresh Page
+          {t("refreshPage")}
         </Link>
       </div>
     );
@@ -390,22 +408,24 @@ async function JobsList({ customerId }: { customerId: string }) {
 }
 
 export default async function MyJobsPage() {
+  const t = await getTranslations("myJobs");
+
   // Get current user (customer)
   const { user } = await getUserProfileAction();
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
         <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-          Not signed in
+          {t("notSignedIn")}
         </h2>
         <p className="text-[var(--color-text-secondary)] mb-4">
-          Please log in to view your jobs.
+          {t("pleaseLogin")}
         </p>
         <Link
           href="/login"
           className="px-4 py-2 rounded-md bg-[var(--color-secondary)] text-white font-medium hover:bg-[var(--color-secondary-dark)] transition-all"
         >
-          Go to Login
+          {t("goToLogin")}
         </Link>
       </div>
     );
@@ -417,28 +437,20 @@ export default async function MyJobsPage() {
       <section className="w-full max-w-2xl px-4 pt-6 pb-2">
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-4 sm:p-6 border border-[var(--color-border)] mb-4">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-2">
-            Manage Your Jobs
+            {t("pageTitle")}
           </h1>
           <p className="text-[var(--color-text-secondary)] mb-4 text-sm sm:text-base">
-            Here you can view, create, and manage all the job posts you've made
-            as a customer. Keep track of applications and manage your ongoing
-            projects with taskers.
+            {t("pageDescription")}
           </p>
           <div>
             <h2 className="font-semibold text-[var(--color-text-primary)] mb-1 text-base">
-              Quick Steps:
+              {t("quickSteps")}
             </h2>
             <ol className="list-decimal list-inside space-y-1 text-[var(--color-text-secondary)] text-sm sm:text-base">
-              <li>
-                Click{" "}
-                <span className="font-semibold text-[var(--color-secondary-dark)]">
-                  Post New Job
-                </span>{" "}
-                to create a new job post.
-              </li>
-              <li>Review applications from interested taskers.</li>
-              <li>Assign the best tasker for your job.</li>
-              <li>Track progress and manage completed work.</li>
+              <li>{t("step1")}</li>
+              <li>{t("step2")}</li>
+              <li>{t("step3")}</li>
+              <li>{t("step4")}</li>
             </ol>
           </div>
         </div>

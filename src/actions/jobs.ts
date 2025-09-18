@@ -707,3 +707,164 @@ export async function createJob(
     return { success: false, error: "Failed to create job" };
   }
 }
+
+export async function acceptJobApplication(
+  applicationId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Get the application and verify ownership
+    const { data: application, error: appError } = await supabase
+      .from("job_applications")
+      .select(
+        `
+        *,
+        job:jobs!job_applications_job_id_fkey(
+          customer_id,
+          assigned_tasker_id,
+          status
+        )
+      `
+      )
+      .eq("id", applicationId)
+      .single();
+
+    if (appError || !application) {
+      return { success: false, error: "Application not found" };
+    }
+
+    if (application.job.customer_id !== user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (application.job.assigned_tasker_id) {
+      return { success: false, error: "Job already has an assigned tasker" };
+    }
+
+    // Update the application status to accepted
+    const { error: updateAppError } = await supabase
+      .from("job_applications")
+      .update({
+        status: "accepted",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", applicationId);
+
+    if (updateAppError) {
+      console.error("Error updating application:", updateAppError);
+      return { success: false, error: "Failed to accept application" };
+    }
+
+    // Update the job to assign the tasker
+    const { error: updateJobError } = await supabase
+      .from("jobs")
+      .update({
+        assigned_tasker_id: application.tasker_id,
+        final_price: application.proposed_price,
+        status: "assigned",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", application.job_id);
+
+    if (updateJobError) {
+      console.error("Error updating job:", updateJobError);
+      return { success: false, error: "Failed to assign tasker to job" };
+    }
+
+    // Reject all other applications for this job
+    const { error: rejectOthersError } = await supabase
+      .from("job_applications")
+      .update({
+        status: "rejected",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("job_id", application.job_id)
+      .neq("id", applicationId);
+
+    if (rejectOthersError) {
+      console.error("Error rejecting other applications:", rejectOthersError);
+      // Don't fail the operation for this
+    }
+
+    revalidatePath(`/customer/my-jobs/${application.job_id}/applications`);
+    revalidatePath("/customer/my-jobs");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in acceptJobApplication:", error);
+    return { success: false, error: "Failed to accept application" };
+  }
+}
+
+export async function rejectJobApplication(
+  applicationId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Get the application and verify ownership
+    const { data: application, error: appError } = await supabase
+      .from("job_applications")
+      .select(
+        `
+        *,
+        job:jobs!job_applications_job_id_fkey(
+          customer_id
+        )
+      `
+      )
+      .eq("id", applicationId)
+      .single();
+
+    if (appError || !application) {
+      return { success: false, error: "Application not found" };
+    }
+
+    if (application.job.customer_id !== user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Update the application status to rejected
+    const { error: updateError } = await supabase
+      .from("job_applications")
+      .update({
+        status: "rejected",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", applicationId);
+
+    if (updateError) {
+      console.error("Error updating application:", updateError);
+      return { success: false, error: "Failed to reject application" };
+    }
+
+    revalidatePath(`/customer/my-jobs/${application.job_id}/applications`);
+    revalidatePath("/customer/my-jobs");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in rejectJobApplication:", error);
+    return { success: false, error: "Failed to reject application" };
+  }
+}

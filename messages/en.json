@@ -650,6 +650,111 @@
       "tip4": "Be flexible with timing to get more applications"
     }
   },
+  "applications": {
+    "title": "Job Applications",
+    "subtitle": "Review applications from taskers for your job",
+    "noApplications": "No applications yet",
+    "noApplicationsDescription": "Taskers haven't applied to your job yet. Your job is live and visible to qualified taskers.",
+    "applicationCard": {
+      "appliedOn": "Applied on",
+      "proposedPrice": "Proposed Price",
+      "estimatedDuration": "Estimated Duration",
+      "availability": "Availability",
+      "experience": "Experience",
+      "message": "Message",
+      "contactInfo": "Contact Information",
+      "viewProfile": "View Profile",
+      "acceptApplication": "Accept Application",
+      "rejectApplication": "Reject Application",
+      "contactTasker": "Contact Tasker",
+      "premiumApplication": "Premium Application",
+      "verifiedTasker": "Verified Tasker"
+    },
+    "actions": {
+      "accept": "Accept",
+      "reject": "Reject",
+      "contact": "Contact",
+      "viewProfile": "View Profile"
+    },
+    "confirmations": {
+      "acceptTitle": "Accept Application",
+      "acceptDescription": "Are you sure you want to accept this application? This will assign the tasker to your job and notify them.",
+      "rejectTitle": "Reject Application",
+      "rejectDescription": "Are you sure you want to reject this application? The tasker will be notified and won't be able to apply again.",
+      "confirmAccept": "Yes, Accept",
+      "confirmReject": "Yes, Reject",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "errors": {
+      "loadFailed": "Failed to load applications",
+      "acceptFailed": "Failed to accept application",
+      "rejectFailed": "Failed to reject application",
+      "unauthorized": "You don't have permission to view these applications"
+    }
+  },
+  "myJobs": {
+    "title": "My Jobs",
+    "subtitle": "Manage your posted jobs and applications",
+    "pageTitle": "Manage Your Jobs",
+    "pageDescription": "Here you can view, create, and manage all the job posts you've made as a customer. Keep track of applications and manage your ongoing projects with taskers.",
+    "quickSteps": "Quick Steps:",
+    "step1": "Click Post New Job to create a new job post.",
+    "step2": "Review applications from interested taskers.",
+    "step3": "Assign the best tasker for your job.",
+    "step4": "Track progress and manage completed work.",
+    "postNewJob": "Post New Job",
+    "postJob": "Post Job",
+    "yourJobPosts": "Your Job Posts",
+    "noJobs": "No jobs posted yet",
+    "noJobsDescription": "You haven't posted any jobs. Start by creating your first job post to find the perfect tasker!",
+    "createJob": "Create Job",
+    "errorLoading": "Error loading jobs",
+    "errorDescription": "There was an error loading your jobs. Please try refreshing the page.",
+    "refreshPage": "Refresh Page",
+    "notSignedIn": "Not signed in",
+    "pleaseLogin": "Please log in to view your jobs.",
+    "goToLogin": "Go to Login",
+    "jobCard": {
+      "applications": "applications",
+      "application": "application",
+      "viewApplications": "View Applications",
+      "viewDetails": "View Details",
+      "editJob": "Edit Job",
+      "deleteJob": "Delete Job",
+      "promoted": "Promoted",
+      "assignedTo": "Assigned to:",
+      "taskerAssigned": "Tasker assigned to this job",
+      "noDescription": "No description available",
+      "noDateSet": "No date set",
+      "locationNotSpecified": "Location not specified",
+      "unknownCategory": "Unknown Category"
+    },
+    "status": {
+      "open": "Open",
+      "under_review": "Under Review",
+      "assigned": "Assigned",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "actions": {
+      "viewApplications": "View Applications",
+      "viewDetails": "View Details",
+      "editJob": "Edit Job",
+      "deleteJob": "Delete Job"
+    },
+    "errors": {
+      "loadFailed": "Failed to load jobs",
+      "deleteFailed": "Failed to delete job",
+      "unauthorized": "You don't have permission to view these jobs"
+    }
+  },
   "postService": {
     "title": "Create Service Offer",
     "subtitle": "Showcase your skills and attract customers",

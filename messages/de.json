@@ -650,6 +650,111 @@
       "tip4": "Seien Sie flexibel mit der Zeit, um mehr Bewerbungen zu erhalten"
     }
   },
+  "applications": {
+    "title": "Job-Bewerbungen",
+    "subtitle": "Bewerbungen von Taskern für Ihren Job überprüfen",
+    "noApplications": "Noch keine Bewerbungen",
+    "noApplicationsDescription": "Tasker haben sich noch nicht für Ihren Job beworben. Ihr Job ist live und für qualifizierte Tasker sichtbar.",
+    "applicationCard": {
+      "appliedOn": "Beworben am",
+      "proposedPrice": "Vorgeschlagener Preis",
+      "estimatedDuration": "Geschätzte Dauer",
+      "availability": "Verfügbarkeit",
+      "experience": "Erfahrung",
+      "message": "Nachricht",
+      "contactInfo": "Kontaktinformationen",
+      "viewProfile": "Profil anzeigen",
+      "acceptApplication": "Bewerbung annehmen",
+      "rejectApplication": "Bewerbung ablehnen",
+      "contactTasker": "Tasker kontaktieren",
+      "premiumApplication": "Premium-Bewerbung",
+      "verifiedTasker": "Verifizierter Tasker"
+    },
+    "actions": {
+      "accept": "Annehmen",
+      "reject": "Ablehnen",
+      "contact": "Kontaktieren",
+      "viewProfile": "Profil anzeigen"
+    },
+    "confirmations": {
+      "acceptTitle": "Bewerbung annehmen",
+      "acceptDescription": "Sind Sie sicher, dass Sie diese Bewerbung annehmen möchten? Dies weist den Tasker Ihrem Job zu und benachrichtigt ihn.",
+      "rejectTitle": "Bewerbung ablehnen",
+      "rejectDescription": "Sind Sie sicher, dass Sie diese Bewerbung ablehnen möchten? Der Tasker wird benachrichtigt und kann sich nicht erneut bewerben.",
+      "confirmAccept": "Ja, annehmen",
+      "confirmReject": "Ja, ablehnen",
+      "cancel": "Abbrechen"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "rejected": "Abgelehnt"
+    },
+    "errors": {
+      "loadFailed": "Bewerbungen konnten nicht geladen werden",
+      "acceptFailed": "Bewerbung konnte nicht angenommen werden",
+      "rejectFailed": "Bewerbung konnte nicht abgelehnt werden",
+      "unauthorized": "Sie haben keine Berechtigung, diese Bewerbungen anzuzeigen"
+    }
+  },
+  "myJobs": {
+    "title": "Meine Jobs",
+    "subtitle": "Verwalten Sie Ihre veröffentlichten Jobs und Bewerbungen",
+    "pageTitle": "Ihre Jobs Verwalten",
+    "pageDescription": "Hier können Sie alle Job-Posts anzeigen, erstellen und verwalten, die Sie als Kunde erstellt haben. Verfolgen Sie Bewerbungen und verwalten Sie Ihre laufenden Projekte mit Taskern.",
+    "quickSteps": "Schnelle Schritte:",
+    "step1": "Klicken Sie auf 'Neuen Job Posten', um einen neuen Job-Post zu erstellen.",
+    "step2": "Überprüfen Sie Bewerbungen von interessierten Taskern.",
+    "step3": "Weisen Sie den besten Tasker für Ihren Job zu.",
+    "step4": "Verfolgen Sie den Fortschritt und verwalten Sie abgeschlossene Arbeiten.",
+    "postNewJob": "Neuen Job Posten",
+    "postJob": "Job Posten",
+    "yourJobPosts": "Ihre Job-Posts",
+    "noJobs": "Noch keine Jobs veröffentlicht",
+    "noJobsDescription": "Sie haben noch keine Jobs veröffentlicht. Beginnen Sie mit der Erstellung Ihres ersten Job-Posts, um den perfekten Tasker zu finden!",
+    "createJob": "Job Erstellen",
+    "errorLoading": "Fehler beim Laden der Jobs",
+    "errorDescription": "Beim Laden Ihrer Jobs ist ein Fehler aufgetreten. Bitte versuchen Sie, die Seite zu aktualisieren.",
+    "refreshPage": "Seite Aktualisieren",
+    "notSignedIn": "Nicht angemeldet",
+    "pleaseLogin": "Bitte melden Sie sich an, um Ihre Jobs anzuzeigen.",
+    "goToLogin": "Zur Anmeldung",
+    "jobCard": {
+      "applications": "Bewerbungen",
+      "application": "Bewerbung",
+      "viewApplications": "Bewerbungen Anzeigen",
+      "viewDetails": "Details Anzeigen",
+      "editJob": "Job Bearbeiten",
+      "deleteJob": "Job Löschen",
+      "promoted": "Beworben",
+      "assignedTo": "Zugewiesen an:",
+      "taskerAssigned": "Tasker diesem Job zugewiesen",
+      "noDescription": "Keine Beschreibung verfügbar",
+      "noDateSet": "Kein Datum festgelegt",
+      "locationNotSpecified": "Standort nicht angegeben",
+      "unknownCategory": "Unbekannte Kategorie"
+    },
+    "status": {
+      "open": "Offen",
+      "under_review": "In Prüfung",
+      "assigned": "Zugewiesen",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "unknown": "Unbekannt"
+    },
+    "actions": {
+      "viewApplications": "Bewerbungen Anzeigen",
+      "viewDetails": "Details Anzeigen",
+      "editJob": "Job Bearbeiten",
+      "deleteJob": "Job Löschen"
+    },
+    "errors": {
+      "loadFailed": "Jobs konnten nicht geladen werden",
+      "deleteFailed": "Job konnte nicht gelöscht werden",
+      "unauthorized": "Sie haben keine Berechtigung, diese Jobs anzuzeigen"
+    }
+  },
   "postService": {
     "title": "Service-Angebot Erstellen",
     "subtitle": "Zeigen Sie Ihre Fähigkeiten und ziehen Sie Kunden an",
