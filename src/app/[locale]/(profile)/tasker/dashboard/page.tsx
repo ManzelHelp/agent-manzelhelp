@@ -41,16 +41,6 @@ import {
   type ProcessedMessage,
 } from "@/actions/dashboard";
 
-/**
- * Modern Tasker Dashboard Component
- *
- * Features:
- * - Comprehensive business metrics and KPIs
- * - Real-time activity feed
- * - Mobile-first responsive design
- * - Optimized Supabase data fetching
- * - Modern UI with animations and interactions
- */
 export default function DashboardPage() {
   // State management for dashboard data
   const [stats, setStats] = useState<DashboardStats>({
