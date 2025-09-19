@@ -1285,6 +1285,78 @@
       "messageSent": "Nachricht erfolgreich gesendet",
       "messagesMarkedRead": "Nachrichten als gelesen markiert"
     }
+  },
+  "jobApplications": {
+    "title": "Stellenbewerbungen",
+    "description": "Verfolgen Sie Ihre Stellenbewerbungen und deren Status",
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "rejected": "Abgelehnt",
+      "withdrawn": "Zurückgezogen"
+    },
+    "jobStatus": {
+      "open": "Offen",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert"
+    },
+    "labels": {
+      "jobPoster": "Stellenausschreiber",
+      "proposedPrice": "Vorgeschlagener Preis",
+      "estimatedDuration": "Geschätzte Dauer",
+      "preferredDate": "Bevorzugtes Datum",
+      "customerBudget": "Kundenbudget",
+      "message": "Nachricht",
+      "appliedOn": "Beworben am",
+      "flexible": "Flexibel",
+      "notSpecified": "Nicht angegeben"
+    },
+    "actions": {
+      "viewDetails": "Details anzeigen",
+      "withdrawApplication": "Bewerbung zurückziehen",
+      "contactCustomer": "Kunde kontaktieren"
+    }
+  },
+  "taskerBookings": {
+    "title": "Tasker-Buchungen",
+    "description": "Dienstleistungen, die Sie bei anderen Taskern gebucht haben",
+    "labels": {
+      "serviceProvider": "Dienstleister",
+      "agreedPrice": "Vereinbarter Preis",
+      "duration": "Dauer",
+      "date": "Datum",
+      "location": "Standort",
+      "requirements": "Anforderungen",
+      "bookedOn": "Gebucht am",
+      "flexible": "Flexibel",
+      "addressNotSpecified": "Adresse nicht angegeben",
+      "noRequirements": "Keine spezifischen Anforderungen angegeben"
+    },
+    "bookingTypes": {
+      "instant": "Sofortbuchung",
+      "scheduled": "Terminbuchung",
+      "recurring": "Wiederkehrende Buchung"
+    },
+    "actions": {
+      "viewDetails": "Details anzeigen",
+      "contactTasker": "Tasker kontaktieren",
+      "cancelBooking": "Buchung stornieren"
+    }
+  },
+  "taskerBookingTabs": {
+    "myBookings": {
+      "label": "Meine Buchungen",
+      "description": "Buchungen für Ihre Dienstleistungen"
+    },
+    "bookedTaskers": {
+      "label": "Gebuchte Tasker",
+      "description": "Dienstleistungen, die Sie gebucht haben"
+    },
+    "myApplications": {
+      "label": "Meine Bewerbungen",
+      "description": "Stellen, auf die Sie sich beworben haben"
+    }
   }
 }
   

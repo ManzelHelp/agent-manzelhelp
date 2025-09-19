@@ -1285,5 +1285,77 @@
       "messageSent": "Message envoyé avec succès",
       "messagesMarkedRead": "Messages marqués comme lus"
     }
+  },
+  "jobApplications": {
+    "title": "Candidatures d'emploi",
+    "description": "Suivez vos candidatures d'emploi et leur statut",
+    "status": {
+      "pending": "En attente",
+      "accepted": "Accepté",
+      "rejected": "Rejeté",
+      "withdrawn": "Retiré"
+    },
+    "jobStatus": {
+      "open": "Ouvert",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "labels": {
+      "jobPoster": "Annonceur d'emploi",
+      "proposedPrice": "Prix proposé",
+      "estimatedDuration": "Durée estimée",
+      "preferredDate": "Date préférée",
+      "customerBudget": "Budget client",
+      "message": "Message",
+      "appliedOn": "Candidaté le",
+      "flexible": "Flexible",
+      "notSpecified": "Non spécifié"
+    },
+    "actions": {
+      "viewDetails": "Voir les détails",
+      "withdrawApplication": "Retirer la candidature",
+      "contactCustomer": "Contacter le client"
+    }
+  },
+  "taskerBookings": {
+    "title": "Réservations de tâcherons",
+    "description": "Services que vous avez réservés auprès d'autres tâcherons",
+    "labels": {
+      "serviceProvider": "Fournisseur de service",
+      "agreedPrice": "Prix convenu",
+      "duration": "Durée",
+      "date": "Date",
+      "location": "Emplacement",
+      "requirements": "Exigences",
+      "bookedOn": "Réservé le",
+      "flexible": "Flexible",
+      "addressNotSpecified": "Adresse non spécifiée",
+      "noRequirements": "Aucune exigence spécifique fournie"
+    },
+    "bookingTypes": {
+      "instant": "Réservation instantanée",
+      "scheduled": "Réservation programmée",
+      "recurring": "Réservation récurrente"
+    },
+    "actions": {
+      "viewDetails": "Voir les détails",
+      "contactTasker": "Contacter le tâcheron",
+      "cancelBooking": "Annuler la réservation"
+    }
+  },
+  "taskerBookingTabs": {
+    "myBookings": {
+      "label": "Mes réservations",
+      "description": "Réservations pour vos services"
+    },
+    "bookedTaskers": {
+      "label": "Tâcherons réservés",
+      "description": "Services que vous avez réservés"
+    },
+    "myApplications": {
+      "label": "Mes candidatures",
+      "description": "Emplois auxquels vous avez postulé"
+    }
   }
 }

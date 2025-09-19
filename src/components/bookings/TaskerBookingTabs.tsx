@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type TaskerBookingTab =
   | "my-bookings"
@@ -29,23 +30,23 @@ interface TaskerBookingTabsProps {
   filteredCount: number;
 }
 
-const tabConfig = {
+const getTabConfig = (t: ReturnType<typeof useTranslations>) => ({
   "my-bookings": {
-    label: "My Bookings",
+    label: t("myBookings.label"),
     icon: Calendar,
-    description: "Bookings for your services",
+    description: t("myBookings.description"),
   },
   "booked-taskers": {
-    label: "Booked Taskers",
+    label: t("bookedTaskers.label"),
     icon: Users,
-    description: "Services you've booked",
+    description: t("bookedTaskers.description"),
   },
   "my-applications": {
-    label: "My Applications",
+    label: t("myApplications.label"),
     icon: FileText,
-    description: "Jobs you've applied to",
+    description: t("myApplications.description"),
   },
-};
+});
 
 export function TaskerBookingTabs({
   activeTab,
@@ -55,6 +56,8 @@ export function TaskerBookingTabs({
   onNavToggle,
   filteredCount,
 }: TaskerBookingTabsProps) {
+  const t = useTranslations("taskerBookingTabs");
+  const tabConfig = getTabConfig(t);
   const tabs = Object.entries(tabConfig) as [
     TaskerBookingTab,
     (typeof tabConfig)[TaskerBookingTab]

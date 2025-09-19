@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { TaskerBookingWithDetails } from "@/actions/bookings";
 import { BookingStatus } from "@/types/supabase";
+import { useTranslations } from "next-intl";
 
 interface TaskerBookingCardProps {
   booking: TaskerBookingWithDetails;
@@ -63,8 +64,9 @@ export function TaskerBookingCard({
   isUpdating,
   actionButton,
 }: TaskerBookingCardProps) {
+  const t = useTranslations("taskerBookings");
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Flexible";
+    if (!dateString) return t("labels.flexible");
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
@@ -91,14 +93,16 @@ export function TaskerBookingCard({
   const getTaskerName = () => {
     const firstName = booking.tasker_first_name || "";
     const lastName = booking.tasker_last_name || "";
-    return `${firstName} ${lastName}`.trim() || "Tasker";
+    return `${firstName} ${lastName}`.trim() || t("labels.serviceProvider");
   };
 
   const getAddress = () => {
     const parts = [booking.street_address, booking.city, booking.region].filter(
       Boolean
     );
-    return parts.length > 0 ? parts.join(", ") : "Address not specified";
+    return parts.length > 0
+      ? parts.join(", ")
+      : t("labels.addressNotSpecified");
   };
 
   return (
@@ -112,14 +116,16 @@ export function TaskerBookingCard({
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {booking.booking_type === "instant"
-                ? "Instant Booking"
+                ? t("bookingTypes.instant")
                 : booking.booking_type === "scheduled"
-                ? "Scheduled Booking"
-                : "Recurring Booking"}
+                ? t("bookingTypes.scheduled")
+                : t("bookingTypes.recurring")}
             </p>
           </div>
           <Badge className={getStatusColor(booking.status)}>
-            {booking.status.replace("_", " ").toUpperCase()}
+            {booking.status
+              ? t(`status.${booking.status}`)
+              : t("status.pending")}
           </Badge>
         </div>
 
@@ -143,7 +149,7 @@ export function TaskerBookingCard({
               {getTaskerName()}
             </p>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Service Provider
+              {t("labels.serviceProvider")}
             </p>
           </div>
         </div>
@@ -159,7 +165,7 @@ export function TaskerBookingCard({
                 {formatPrice(booking.agreed_price)}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Agreed Price
+                {t("labels.agreedPrice")}
               </p>
             </div>
           </div>
@@ -172,10 +178,10 @@ export function TaskerBookingCard({
               <p className="text-sm font-medium text-slate-900 dark:text-white">
                 {booking.estimated_duration
                   ? `${booking.estimated_duration}h`
-                  : "Flexible"}
+                  : t("labels.flexible")}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Duration
+                {t("labels.duration")}
               </p>
             </div>
           </div>
@@ -193,7 +199,7 @@ export function TaskerBookingCard({
                   ? `${formatTime(booking.scheduled_time_start)} - ${formatTime(
                       booking.scheduled_time_end
                     )}`
-                  : "Date"}
+                  : t("labels.date")}
               </p>
             </div>
           </div>
@@ -207,7 +213,7 @@ export function TaskerBookingCard({
                 {getAddress()}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Location
+                {t("labels.location")}
               </p>
             </div>
           </div>
@@ -220,7 +226,7 @@ export function TaskerBookingCard({
               <MessageSquare className="w-4 h-4 text-slate-600 dark:text-slate-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Requirements:
+                  {t("labels.requirements")}:
                 </p>
                 <p className="text-sm text-slate-700 dark:text-slate-300">
                   {booking.customer_requirements}
@@ -254,7 +260,7 @@ export function TaskerBookingCard({
         {/* Footer */}
         <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Booked on{" "}
+            {t("labels.bookedOn")}{" "}
             {new Date(booking.created_at).toLocaleDateString("en-US", {
               year: "numeric",
               month: "short",

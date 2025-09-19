@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, DollarSign, User, MessageSquare } from "lucide-react";
 import { JobApplicationWithDetails } from "@/actions/bookings";
+import { useTranslations } from "next-intl";
 
 interface JobApplicationCardProps {
   application: JobApplicationWithDetails;
@@ -62,8 +63,9 @@ export function JobApplicationCard({
   isUpdating,
   actionButton,
 }: JobApplicationCardProps) {
+  const t = useTranslations("jobApplications");
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Flexible";
+    if (!dateString) return t("labels.flexible");
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
@@ -82,7 +84,7 @@ export function JobApplicationCard({
   const getCustomerName = () => {
     const firstName = application.customer_first_name || "";
     const lastName = application.customer_last_name || "";
-    return `${firstName} ${lastName}`.trim() || "Customer";
+    return `${firstName} ${lastName}`.trim() || t("labels.jobPoster");
   };
 
   return (
@@ -100,10 +102,14 @@ export function JobApplicationCard({
           </div>
           <div className="flex flex-col items-end space-y-2">
             <Badge className={getStatusColor(application.status)}>
-              {application.status || "Pending"}
+              {application.status
+                ? t(`status.${application.status}`)
+                : t("status.pending")}
             </Badge>
             <Badge className={getJobStatusColor(application.job_status)}>
-              {application.job_status || "Open"}
+              {application.job_status
+                ? t(`jobStatus.${application.job_status}`)
+                : t("jobStatus.open")}
             </Badge>
           </div>
         </div>
@@ -128,7 +134,7 @@ export function JobApplicationCard({
               {getCustomerName()}
             </p>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Job Poster
+              {t("labels.jobPoster")}
             </p>
           </div>
         </div>
@@ -144,7 +150,7 @@ export function JobApplicationCard({
                 {formatPrice(application.proposed_price)}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Proposed Price
+                {t("labels.proposedPrice")}
               </p>
             </div>
           </div>
@@ -157,10 +163,10 @@ export function JobApplicationCard({
               <p className="text-sm font-medium text-slate-900 dark:text-white">
                 {application.estimated_duration
                   ? `${application.estimated_duration}h`
-                  : "Flexible"}
+                  : t("labels.flexible")}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Estimated Duration
+                {t("labels.estimatedDuration")}
               </p>
             </div>
           </div>
@@ -174,7 +180,7 @@ export function JobApplicationCard({
                 {formatDate(application.preferred_date)}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Preferred Date
+                {t("labels.preferredDate")}
               </p>
             </div>
           </div>
@@ -187,10 +193,10 @@ export function JobApplicationCard({
               <p className="text-sm font-medium text-slate-900 dark:text-white">
                 {application.customer_budget
                   ? formatPrice(application.customer_budget)
-                  : "Not specified"}
+                  : t("labels.notSpecified")}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Customer Budget
+                {t("labels.customerBudget")}
               </p>
             </div>
           </div>
@@ -232,7 +238,7 @@ export function JobApplicationCard({
         {/* Footer */}
         <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Applied on{" "}
+            {t("labels.appliedOn")}{" "}
             {new Date(application.created_at).toLocaleDateString("en-US", {
               year: "numeric",
               month: "short",

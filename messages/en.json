@@ -1285,6 +1285,78 @@
       "messageSent": "Message sent successfully",
       "messagesMarkedRead": "Messages marked as read"
     }
+  },
+  "jobApplications": {
+    "title": "Job Applications",
+    "description": "Track your job applications and their status",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
+    },
+    "jobStatus": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "labels": {
+      "jobPoster": "Job Poster",
+      "proposedPrice": "Proposed Price",
+      "estimatedDuration": "Estimated Duration",
+      "preferredDate": "Preferred Date",
+      "customerBudget": "Customer Budget",
+      "message": "Message",
+      "appliedOn": "Applied on",
+      "flexible": "Flexible",
+      "notSpecified": "Not specified"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "withdrawApplication": "Withdraw Application",
+      "contactCustomer": "Contact Customer"
+    }
+  },
+  "taskerBookings": {
+    "title": "Tasker Bookings",
+    "description": "Services you've booked from other taskers",
+    "labels": {
+      "serviceProvider": "Service Provider",
+      "agreedPrice": "Agreed Price",
+      "duration": "Duration",
+      "date": "Date",
+      "location": "Location",
+      "requirements": "Requirements",
+      "bookedOn": "Booked on",
+      "flexible": "Flexible",
+      "addressNotSpecified": "Address not specified",
+      "noRequirements": "No specific requirements provided"
+    },
+    "bookingTypes": {
+      "instant": "Instant Booking",
+      "scheduled": "Scheduled Booking",
+      "recurring": "Recurring Booking"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "contactTasker": "Contact Tasker",
+      "cancelBooking": "Cancel Booking"
+    }
+  },
+  "taskerBookingTabs": {
+    "myBookings": {
+      "label": "My Bookings",
+      "description": "Bookings for your services"
+    },
+    "bookedTaskers": {
+      "label": "Booked Taskers", 
+      "description": "Services you've booked"
+    },
+    "myApplications": {
+      "label": "My Applications",
+      "description": "Jobs you've applied to"
+    }
   }
 }
   
