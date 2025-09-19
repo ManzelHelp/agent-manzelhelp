@@ -150,13 +150,6 @@ export default function CustomerNotificationsPage() {
   const t = useTranslations("notifications");
   const router = useRouter();
 
-  // Check user role and redirect if needed
-  useEffect(() => {
-    if (user && user.role === "tasker") {
-      router.push("/tasker/dashboard");
-    }
-  }, [user, router]);
-
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
