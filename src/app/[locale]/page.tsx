@@ -2,8 +2,9 @@ import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
+import OfferedJobs from "@/components/dashboard/OfferedJobs";
 import { User, TaskerService } from "@/types/supabase";
-import PopularServices from "@/components/PopularServices";
+import PopularServices from "@/components/dashboard/PopularServices";
 import { createClient } from "@/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({
+export default async function HomePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -109,6 +110,58 @@ export default async function Page({
         is_promoted: service.is_promoted,
       } as TaskerService,
       tasker: service.users as unknown as User,
+    })) || [];
+
+  // Fetch featured jobs with customer information
+  const { data: featuredJobs } = await supabase
+    .from("jobs")
+    .select(
+      `
+      id,
+      title,
+      description,
+      customer_budget,
+      currency,
+      estimated_duration,
+      preferred_date,
+      is_flexible,
+      is_promoted,
+      current_applications,
+      max_applications,
+      created_at,
+      customer_id,
+      users!inner (
+        id,
+        first_name,
+        last_name,
+        avatar_url,
+        verification_status
+      )
+    `
+    )
+    .in("status", ["under_review", "active"])
+    .order("is_promoted", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  // Transform the jobs data to match the expected format
+  const transformedJobs =
+    featuredJobs?.map((job) => ({
+      job: {
+        id: job.id,
+        title: job.title,
+        description: job.description || "",
+        customer_budget: job.customer_budget,
+        currency: job.currency,
+        estimated_duration: job.estimated_duration,
+        preferred_date: job.preferred_date,
+        is_flexible: job.is_flexible,
+        is_promoted: job.is_promoted,
+        current_applications: job.current_applications,
+        max_applications: job.max_applications,
+        created_at: job.created_at,
+      },
+      customer: job.users as unknown as User,
     })) || [];
 
   return (
@@ -286,6 +339,9 @@ export default async function Page({
           </div>
         </div>
       </section>
+
+      {/* Offered Jobs Section */}
+      <OfferedJobs jobs={transformedJobs} locale={locale} />
 
       {/* Why Choose Us Section - Modern Design */}
       <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-gradient-to-br from-[var(--color-surface)] via-[var(--color-bg)] to-[var(--color-accent-light)] relative overflow-hidden">
