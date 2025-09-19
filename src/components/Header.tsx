@@ -132,20 +132,28 @@ function Header() {
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center space-x-3">
             {user ? (
-              <Button
-                asChild
-                variant="default"
-                size="sm"
-                className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <Link
-                  href={`/${user.role}/${
-                    user.role === "tasker" ? "my-services" : "my-jobs"
-                  }`}
+              <>
+                {/* My Jobs Button - Always visible for all users */}
+                <Button
+                  asChild
+                  variant="default"
+                  size="sm"
+                  className="font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
                 >
-                  {user.role === "tasker" ? t("myServices") : t("myJobs")}
-                </Link>
-              </Button>
+                  <Link href={`/${user.role}/my-jobs`}>{t("myJobs")}</Link>
+                </Button>
+                {/* My Services Button - Only for taskers */}
+                {user.role === "tasker" && (
+                  <Button
+                    asChild
+                    variant="default"
+                    size="sm"
+                    className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <Link href="/tasker/my-services">{t("myServices")}</Link>
+                  </Button>
+                )}
+              </>
             ) : (
               <>
                 <Button
@@ -347,20 +355,26 @@ function Header() {
           <div className="pt-4 border-t border-[var(--color-border)]">
             {user ? (
               <>
+                {/* My Jobs Button - Always visible for all users */}
                 <Button
                   asChild
                   variant="default"
-                  className="w-full justify-center font-medium mb-3 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                  className="w-full justify-center font-medium mb-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Link
-                    href={`/${user.role}/${
-                      user.role === "tasker" ? "my-services" : "my-jobs"
-                    }`}
-                  >
-                    {user.role === "tasker" ? t("myServices") : t("myJobs")}
-                  </Link>
+                  <Link href={`/${user.role}/my-jobs`}>{t("myJobs")}</Link>
                 </Button>
+                {/* My Services Button - Only for taskers */}
+                {user.role === "tasker" && (
+                  <Button
+                    asChild
+                    variant="default"
+                    className="w-full justify-center font-medium mb-3 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link href="/tasker/my-services">{t("myServices")}</Link>
+                  </Button>
+                )}
                 <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200">
                   <LogOut className="h-4 w-4" />
                   <LogOutButton />
