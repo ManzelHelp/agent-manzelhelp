@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -8,129 +8,134 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DollarSign,
+  Calendar,
+  TrendingUp,
+  TrendingDown,
+  Star,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  BarChart3,
+  Filter,
+  Download,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Calendar,
-  Clock,
-  Star,
-  Users,
-  CheckCircle,
-  AlertCircle,
-  RefreshCw,
-  BarChart3,
-} from "lucide-react";
 import {
   getEarningsData,
   getPerformanceMetrics,
   getTransactionHistory,
   getChartData,
-  refreshFinanceData,
   type EarningsData,
   type PerformanceMetrics,
   type Transaction,
   type ChartData,
 } from "@/actions/finance";
-import { useUserStore } from "@/stores/userStore";
+import { toast } from "sonner";
 
-export default function FinancePage() {
-  const { user } = useUserStore();
+// Loading skeleton components
+function FinanceStatsSkeleton() {
+  return (
+    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Card key={i}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-6 sm:h-8 w-20 mb-2" />
+            <Skeleton className="h-3 w-16" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function TransactionSkeleton() {
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted rounded-lg gap-3 sm:gap-0"
+        >
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-4 w-32" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between sm:flex-col sm:text-right sm:space-y-2">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-5 w-20" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Main component
+export default function TaskerFinancePage() {
   const [earningsData, setEarningsData] = useState<EarningsData | null>(null);
   const [performanceMetrics, setPerformanceMetrics] =
     useState<PerformanceMetrics | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month">(
-    "week"
-  );
-  const [transactionPage, setTransactionPage] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    "day" | "week" | "month"
+  >("week");
 
-  const TRANSACTIONS_PER_PAGE = 10;
-
-  const fetchData = useCallback(async () => {
-    if (!user?.id) return;
-
+  const fetchFinanceData = useCallback(async () => {
     try {
-      setError(null);
+      setLoading(true);
       const [earnings, performance, transactionHistory, chart] =
         await Promise.all([
-          getEarningsData(user.id),
-          getPerformanceMetrics(user.id),
-          getTransactionHistory(user.id, TRANSACTIONS_PER_PAGE, 0),
-          getChartData(user.id, chartPeriod),
+          getEarningsData(),
+          getPerformanceMetrics(),
+          getTransactionHistory(20, 0),
+          getChartData(selectedPeriod),
         ]);
 
       setEarningsData(earnings);
       setPerformanceMetrics(performance);
       setTransactions(transactionHistory);
       setChartData(chart);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to load finance data. Please try again.";
-      setError(errorMessage);
-      console.error("Error fetching finance data:", err);
+    } catch (error) {
+      console.error("Error fetching finance data:", error);
+      toast.error("Failed to load finance data. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [user?.id, chartPeriod]);
+  }, [selectedPeriod]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    if (user?.id) {
-      await refreshFinanceData();
-      await fetchData();
-    }
-    setRefreshing(false);
-  };
-
-  const loadMoreTransactions = async () => {
-    if (!user?.id) return;
-
-    try {
-      const newTransactions = await getTransactionHistory(
-        user.id,
-        TRANSACTIONS_PER_PAGE,
-        (transactionPage + 1) * TRANSACTIONS_PER_PAGE
-      );
-      setTransactions((prev) => [...prev, ...newTransactions]);
-      setTransactionPage((prev) => prev + 1);
-    } catch (err) {
-      console.error("Error loading more transactions:", err);
-      // You could add a toast notification here for better UX
-    }
-  };
-
-  const handleChartPeriodChange = async (period: "day" | "week" | "month") => {
-    setChartPeriod(period);
-    if (user?.id) {
-      try {
-        const newChartData = await getChartData(user.id, period);
-        setChartData(newChartData);
-      } catch (err) {
-        console.error("Error fetching chart data:", err);
-        // You could add a toast notification here for better UX
-      }
-    }
-  };
-
+  // Fetch data on component mount
   useEffect(() => {
-    fetchData();
-  }, [user?.id, fetchData]);
+    fetchFinanceData();
+  }, [fetchFinanceData]);
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number, currency: string = "USD") => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: currency,
     }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const formatPercentage = (value: number) => {
@@ -150,191 +155,161 @@ export default function FinancePage() {
     return value >= 0 ? "text-green-600" : "text-red-600";
   };
 
-  if (loading) {
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "paid":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "pending":
+        return <Clock className="h-4 w-4 text-yellow-500" />;
+      case "failed":
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      paid: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      pending:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+      failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+      refunded: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+    };
+
     return (
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <Skeleton className="h-10 w-24" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-20" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-24 mb-2" />
-                <Skeleton className="h-4 w-16" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-64 w-full" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-40" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                    <Skeleton className="h-6 w-16" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Badge
+        className={
+          variants[status as keyof typeof variants] || variants.pending
+        }
+      >
+        {status}
+      </Badge>
     );
-  }
+  };
 
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <AlertCircle className="h-12 w-12 text-red-500" />
-              <div>
-                <h3 className="text-lg font-semibold">Error Loading Data</h3>
-                <p className="text-muted-foreground">{error}</p>
-              </div>
-              <Button onClick={handleRefresh} disabled={refreshing}>
-                {refreshing ? (
-                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                )}
-                Try Again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleChartPeriodChange = async (period: "day" | "week" | "month") => {
+    setSelectedPeriod(period);
+    try {
+      const newChartData = await getChartData(period);
+      setChartData(newChartData);
+    } catch (err) {
+      console.error("Error fetching chart data:", err);
+      toast.error("Failed to load chart data");
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="container mx-auto px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in-up">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">
-            Finance Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            Track your earnings, performance, and transaction history
-          </p>
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text">
+          Finance Dashboard
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          Track your earnings, performance, and transaction history
+        </p>
+      </div>
+
+      {/* Period Selector */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Chart Period</span>
         </div>
-        <Button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="mobile-button"
-        >
-          {refreshing ? (
-            <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          Refresh
-        </Button>
+        <div className="flex gap-1 w-full sm:w-auto">
+          {(["day", "week", "month"] as const).map((period) => (
+            <Button
+              key={period}
+              variant={selectedPeriod === period ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleChartPeriodChange(period)}
+              className="flex-1 sm:flex-none text-xs sm:text-sm"
+            >
+              {period.charAt(0).toUpperCase() + period.slice(1)}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Earnings Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(earningsData?.today || 0)}
-            </div>
-            <div className="flex items-center space-x-1 text-xs">
-              {getTrendIcon(earningsData?.todayChange || 0)}
-              <span className={getTrendColor(earningsData?.todayChange || 0)}>
-                {formatPercentage(earningsData?.todayChange || 0)}
-              </span>
-              <span className="text-muted-foreground">vs yesterday</span>
-            </div>
-          </CardContent>
-        </Card>
+      {loading ? (
+        <FinanceStatsSkeleton />
+      ) : (
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="hover-lift">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Today</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl sm:text-2xl font-bold">
+                {formatCurrency(earningsData?.today || 0)}
+              </div>
+              <div className="flex items-center space-x-1 text-xs">
+                {getTrendIcon(earningsData?.todayChange || 0)}
+                <span className={getTrendColor(earningsData?.todayChange || 0)}>
+                  {formatPercentage(earningsData?.todayChange || 0)}
+                </span>
+                <span className="text-muted-foreground">vs yesterday</span>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(earningsData?.week || 0)}
-            </div>
-            <div className="flex items-center space-x-1 text-xs">
-              {getTrendIcon(earningsData?.weekChange || 0)}
-              <span className={getTrendColor(earningsData?.weekChange || 0)}>
-                {formatPercentage(earningsData?.weekChange || 0)}
-              </span>
-              <span className="text-muted-foreground">vs last week</span>
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="hover-lift">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">This Week</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl sm:text-2xl font-bold">
+                {formatCurrency(earningsData?.week || 0)}
+              </div>
+              <div className="flex items-center space-x-1 text-xs">
+                {getTrendIcon(earningsData?.weekChange || 0)}
+                <span className={getTrendColor(earningsData?.weekChange || 0)}>
+                  {formatPercentage(earningsData?.weekChange || 0)}
+                </span>
+                <span className="text-muted-foreground">vs last week</span>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Month</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(earningsData?.month || 0)}
-            </div>
-            <div className="flex items-center space-x-1 text-xs">
-              {getTrendIcon(earningsData?.monthChange || 0)}
-              <span className={getTrendColor(earningsData?.monthChange || 0)}>
-                {formatPercentage(earningsData?.monthChange || 0)}
-              </span>
-              <span className="text-muted-foreground">vs last month</span>
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="hover-lift">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">This Month</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl sm:text-2xl font-bold">
+                {formatCurrency(earningsData?.month || 0)}
+              </div>
+              <div className="flex items-center space-x-1 text-xs">
+                {getTrendIcon(earningsData?.monthChange || 0)}
+                <span className={getTrendColor(earningsData?.monthChange || 0)}>
+                  {formatPercentage(earningsData?.monthChange || 0)}
+                </span>
+                <span className="text-muted-foreground">vs last month</span>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="hover-lift">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Earnings
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(earningsData?.total || 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">All time earnings</p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="hover-lift">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Earnings
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl sm:text-2xl font-bold">
+                {formatCurrency(earningsData?.total || 0)}
+              </div>
+              <p className="text-xs text-muted-foreground">All time earnings</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Performance Metrics */}
       <Card className="hover-lift">
@@ -348,51 +323,64 @@ export default function FinancePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">
-                {performanceMetrics?.completedJobs || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Completed Jobs
-              </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="text-center">
+                  <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                  <Skeleton className="h-4 w-20 mx-auto" />
+                </div>
+              ))}
             </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {performanceMetrics?.completedJobs || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Completed Jobs
+                </div>
+              </div>
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">
-                {performanceMetrics?.totalReviews || 0}
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {performanceMetrics?.totalReviews || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Total Reviews
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">Total Reviews</div>
-            </div>
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary flex items-center justify-center space-x-1">
-                <Star className="h-6 w-6 fill-current" />
-                <span>{performanceMetrics?.averageRating || 0}</span>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary flex items-center justify-center space-x-1">
+                  <Star className="h-6 w-6 fill-current" />
+                  <span>{performanceMetrics?.averageRating || 0}</span>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Average Rating
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                Average Rating
-              </div>
-            </div>
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">
-                {performanceMetrics?.responseTime || 0}h
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {performanceMetrics?.responseTime || 0}h
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Avg Response Time
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                Avg Response Time
-              </div>
-            </div>
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
-                {performanceMetrics?.positiveReviews || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Positive Reviews
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600">
+                  {performanceMetrics?.positiveReviews || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Positive Reviews
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -400,28 +388,18 @@ export default function FinancePage() {
         {/* Interactive Chart */}
         <Card className="hover-lift">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="h-5 w-5" />
-                <span>Earnings Trend</span>
-              </CardTitle>
-              <div className="flex space-x-1">
-                {(["day", "week", "month"] as const).map((period) => (
-                  <Button
-                    key={period}
-                    variant={chartPeriod === period ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleChartPeriodChange(period)}
-                    className="mobile-button"
-                  >
-                    {period.charAt(0).toUpperCase() + period.slice(1)}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5" />
+              <span>Earnings Trend</span>
+            </CardTitle>
+            <CardDescription>
+              Your earnings over the selected time period
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {chartData.length > 0 ? (
+            {loading ? (
+              <Skeleton className="h-64 w-full" />
+            ) : chartData.length > 0 ? (
               <div className="space-y-4">
                 <div className="h-64 flex items-end justify-between space-x-1">
                   {chartData.map((data, index) => {
@@ -444,12 +422,12 @@ export default function FinancePage() {
                           )}`}
                         />
                         <div className="text-xs text-muted-foreground text-center">
-                          {chartPeriod === "day"
+                          {selectedPeriod === "day"
                             ? new Date(data.date).toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
                               })
-                            : chartPeriod === "week"
+                            : selectedPeriod === "week"
                             ? new Date(data.date).toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
@@ -483,75 +461,71 @@ export default function FinancePage() {
 
         {/* Transaction History */}
         <Card className="hover-lift">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5" />
-              <span>Recent Transactions</span>
-            </CardTitle>
-            <CardDescription>
-              Your latest payment transactions and earnings
-            </CardDescription>
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-lg sm:text-xl">
+                Recent Transactions
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Your latest payment transactions and earnings
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
           </CardHeader>
           <CardContent>
-            {transactions.length > 0 ? (
-              <div className="space-y-4">
+            {loading ? (
+              <TransactionSkeleton />
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
+                  No transactions found
+                </h3>
+                <p className="text-muted-foreground">
+                  Your transaction history will appear here
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
                 {transactions.map((transaction) => (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors gap-3 sm:gap-0"
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0">
-                        {transaction.paymentStatus === "paid" ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-yellow-500" />
+                    <div className="space-y-2 sm:space-y-1 flex-1">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(transaction.paymentStatus)}
+                        <h3 className="font-semibold text-sm sm:text-base">
+                          {transaction.serviceTitle || "Service Payment"}
+                        </h3>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(transaction.createdAt)}
+                        </span>
+                        {transaction.bookingStatus && (
+                          <span className="flex items-center gap-1">
+                            <BarChart3 className="h-3 w-3" />
+                            {transaction.bookingStatus}
+                          </span>
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">
-                          {transaction.serviceTitle || "Service Payment"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(transaction.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold">
-                        {formatCurrency(transaction.netAmount)}
+                    <div className="flex items-center justify-between sm:flex-col sm:text-right sm:space-y-2">
+                      <p className="text-lg sm:text-xl font-bold">
+                        {formatCurrency(
+                          transaction.netAmount,
+                          transaction.currency
+                        )}
                       </p>
-                      <Badge
-                        variant={
-                          transaction.paymentStatus === "paid"
-                            ? "default"
-                            : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        {transaction.paymentStatus}
-                      </Badge>
+                      {getStatusBadge(transaction.paymentStatus)}
                     </div>
                   </div>
                 ))}
-
-                {transactions.length >= TRANSACTIONS_PER_PAGE && (
-                  <Button
-                    variant="outline"
-                    onClick={loadMoreTransactions}
-                    className="w-full mobile-button"
-                  >
-                    Load More Transactions
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No transactions found</p>
-                <p className="text-sm">
-                  Your transaction history will appear here
-                </p>
               </div>
             )}
           </CardContent>

@@ -117,12 +117,16 @@ interface TransactionWithBooking {
   }[];
 }
 
-export async function getEarningsData(userId: string): Promise<EarningsData> {
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
+export async function getEarningsData(): Promise<EarningsData> {
   const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("User not authenticated");
+  }
 
   try {
     // Get current period earnings
@@ -142,28 +146,28 @@ export async function getEarningsData(userId: string): Promise<EarningsData> {
         supabase
           .from("transactions")
           .select("net_amount")
-          .eq("payee_id", userId)
+          .eq("payee_id", user.id)
           .eq("payment_status", "paid")
           .gte("created_at", startOfToday.toISOString()),
 
         supabase
           .from("transactions")
           .select("net_amount")
-          .eq("payee_id", userId)
+          .eq("payee_id", user.id)
           .eq("payment_status", "paid")
           .gte("created_at", startOfWeek.toISOString()),
 
         supabase
           .from("transactions")
           .select("net_amount")
-          .eq("payee_id", userId)
+          .eq("payee_id", user.id)
           .eq("payment_status", "paid")
           .gte("created_at", startOfMonth.toISOString()),
 
         supabase
           .from("transactions")
           .select("net_amount")
-          .eq("payee_id", userId)
+          .eq("payee_id", user.id)
           .eq("payment_status", "paid"),
       ]);
 
@@ -180,7 +184,7 @@ export async function getEarningsData(userId: string): Promise<EarningsData> {
         supabase
           .from("transactions")
           .select("net_amount")
-          .eq("payee_id", userId)
+          .eq("payee_id", user.id)
           .eq("payment_status", "paid")
           .gte("created_at", yesterday.toISOString())
           .lt("created_at", startOfToday.toISOString()),
@@ -188,7 +192,7 @@ export async function getEarningsData(userId: string): Promise<EarningsData> {
         supabase
           .from("transactions")
           .select("net_amount")
-          .eq("payee_id", userId)
+          .eq("payee_id", user.id)
           .eq("payment_status", "paid")
           .gte("created_at", startOfLastWeek.toISOString())
           .lt("created_at", startOfWeek.toISOString()),
@@ -196,7 +200,7 @@ export async function getEarningsData(userId: string): Promise<EarningsData> {
         supabase
           .from("transactions")
           .select("net_amount")
-          .eq("payee_id", userId)
+          .eq("payee_id", user.id)
           .eq("payment_status", "paid")
           .gte("created_at", startOfLastMonth.toISOString())
           .lt("created_at", startOfMonth.toISOString()),
@@ -244,26 +248,28 @@ export async function getEarningsData(userId: string): Promise<EarningsData> {
   }
 }
 
-export async function getPerformanceMetrics(
-  userId: string
-): Promise<PerformanceMetrics> {
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
+export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
   const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("User not authenticated");
+  }
 
   try {
     const [reviewsResult, bookingsResult] = await Promise.all([
       supabase
         .from("reviews")
         .select("overall_rating")
-        .eq("reviewee_id", userId),
+        .eq("reviewee_id", user.id),
 
       supabase
         .from("service_bookings")
         .select("status, created_at, accepted_at")
-        .eq("tasker_id", userId),
+        .eq("tasker_id", user.id),
     ]);
 
     const reviews = reviewsResult.data || [];
@@ -317,14 +323,9 @@ export async function getPerformanceMetrics(
 }
 
 export async function getTransactionHistory(
-  userId: string,
   limit: number = 20,
   offset: number = 0
 ): Promise<Transaction[]> {
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
   if (limit < 1 || limit > 100) {
     throw new Error("Limit must be between 1 and 100");
   }
@@ -334,6 +335,14 @@ export async function getTransactionHistory(
   }
 
   const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("User not authenticated");
+  }
 
   try {
     const { data, error } = await supabase
@@ -359,7 +368,7 @@ export async function getTransactionHistory(
       )
       `
       )
-      .eq("payee_id", userId)
+      .eq("payee_id", user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -388,13 +397,8 @@ export async function getTransactionHistory(
 }
 
 export async function getChartData(
-  userId: string,
   period: "day" | "week" | "month" = "week"
 ): Promise<ChartData[]> {
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
   const validPeriods = ["day", "week", "month"];
   if (!validPeriods.includes(period)) {
     throw new Error(
@@ -403,6 +407,14 @@ export async function getChartData(
   }
 
   const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("User not authenticated");
+  }
 
   try {
     const now = new Date();
@@ -436,7 +448,7 @@ export async function getChartData(
         )
       `
       )
-      .eq("payee_id", userId)
+      .eq("payee_id", user.id)
       .eq("payment_status", "paid")
       .gte("created_at", startDate.toISOString())
       .order("created_at", { ascending: true });
