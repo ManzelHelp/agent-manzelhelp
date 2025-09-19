@@ -1321,6 +1321,14 @@
   "taskerBookings": {
     "title": "Tasker Bookings",
     "description": "Services you've booked from other taskers",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
     "labels": {
       "serviceProvider": "Service Provider",
       "agreedPrice": "Agreed Price",

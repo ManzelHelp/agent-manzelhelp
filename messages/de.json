@@ -1321,6 +1321,14 @@
   "taskerBookings": {
     "title": "Tasker-Buchungen",
     "description": "Dienstleistungen, die Sie bei anderen Taskern gebucht haben",
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "confirmed": "Bestätigt",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert"
+    },
     "labels": {
       "serviceProvider": "Dienstleister",
       "agreedPrice": "Vereinbarter Preis",

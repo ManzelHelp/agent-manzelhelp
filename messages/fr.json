@@ -1321,6 +1321,14 @@
   "taskerBookings": {
     "title": "Réservations de tâcherons",
     "description": "Services que vous avez réservés auprès d'autres tâcherons",
+    "status": {
+      "pending": "En attente",
+      "accepted": "Accepté",
+      "confirmed": "Confirmé",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
     "labels": {
       "serviceProvider": "Fournisseur de service",
       "agreedPrice": "Prix convenu",

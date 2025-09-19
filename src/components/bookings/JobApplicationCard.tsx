@@ -88,19 +88,19 @@ export function JobApplicationCard({
   };
 
   return (
-    <Card className="p-6 hover:shadow-lg transition-all duration-300 border-0 bg-white dark:bg-slate-800 shadow-xl">
-      <div className="flex flex-col space-y-4">
+    <Card className="p-6 hover:shadow-xl transition-all duration-300 border-0 bg-white dark:bg-slate-800 shadow-lg hover:scale-[1.01]">
+      <div className="flex flex-col space-y-5">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 line-clamp-2">
               {application.job_title || "Job Application"}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
               {application.job_description || "No description available"}
             </p>
           </div>
-          <div className="flex flex-col items-end space-y-2">
+          <div className="flex flex-col items-end space-y-2 flex-shrink-0">
             <Badge className={getStatusColor(application.status)}>
               {application.status
                 ? t(`status.${application.status}`)
@@ -116,7 +116,7 @@ export function JobApplicationCard({
 
         {/* Customer Info */}
         <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
             {application.customer_avatar ? (
               <Image
                 src={application.customer_avatar}
@@ -129,11 +129,11 @@ export function JobApplicationCard({
               <User className="w-5 h-5 text-white" />
             )}
           </div>
-          <div className="flex-1">
-            <p className="font-medium text-slate-900 dark:text-white">
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-slate-900 dark:text-white truncate">
               {getCustomerName()}
             </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-slate-600 dark:text-slate-400 truncate">
               {t("labels.jobPoster")}
             </p>
           </div>
@@ -142,60 +142,60 @@ export function JobApplicationCard({
         {/* Application Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
               <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                 {formatPrice(application.proposed_price)}
               </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
                 {t("labels.proposedPrice")}
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
               <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                 {application.estimated_duration
                   ? `${application.estimated_duration}h`
                   : t("labels.flexible")}
               </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
                 {t("labels.estimatedDuration")}
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
               <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                 {formatDate(application.preferred_date)}
               </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
                 {t("labels.preferredDate")}
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
               <DollarSign className="w-4 h-4 text-orange-600 dark:text-orange-400" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                 {application.customer_budget
                   ? formatPrice(application.customer_budget)
                   : t("labels.notSpecified")}
               </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
                 {t("labels.customerBudget")}
               </p>
             </div>

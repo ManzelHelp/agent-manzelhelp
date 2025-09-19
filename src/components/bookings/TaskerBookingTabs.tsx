@@ -93,7 +93,7 @@ export function TaskerBookingTabs({
 
       {/* Desktop Navigation */}
       <div className="hidden md:block">
-        <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+        <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl">
           {tabs.map(([tab, config]) => {
             const Icon = config.icon;
             const isActive = activeTab === tab;
@@ -113,8 +113,8 @@ export function TaskerBookingTabs({
                 variant={isActive ? "default" : "ghost"}
                 className={`flex-1 justify-start space-x-2 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm hover:bg-white dark:hover:bg-slate-700 hover:shadow-md"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50 hover:shadow-sm"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -122,7 +122,7 @@ export function TaskerBookingTabs({
                 <Badge
                   className={`${
                     isActive
-                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 shadow-sm"
                       : "bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-300"
                   }`}
                 >
