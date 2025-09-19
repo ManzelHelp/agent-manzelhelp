@@ -12,38 +12,64 @@ import {
   Euro,
   Star,
   Calendar,
+  TrendingUp,
+  Users,
+  Award,
+  Sparkles,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Suspense } from "react";
 import ServiceDeleteButton from "@/components/services/ServiceDeleteButton";
 
-// Loading component for better UX
+// Enhanced loading component with modern design
 function ServicesLoadingSkeleton() {
   return (
-    <div className="w-full max-w-2xl px-4 pb-8">
-      <div className="grid grid-cols-1 gap-4 mt-2">
-        {[1, 2, 3].map((i) => (
+    <div className="w-full max-w-4xl px-4 pb-8">
+      {/* Header skeleton */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-[var(--color-secondary)]/10 to-[var(--color-secondary)]/5 rounded-3xl p-6 sm:p-8 border border-[var(--color-border)] animate-pulse">
+          <div className="h-8 bg-[var(--color-accent)]/30 rounded-lg mb-3 w-2/3"></div>
+          <div className="h-4 bg-[var(--color-accent)]/20 rounded w-1/2 mb-4"></div>
+          <div className="h-4 bg-[var(--color-accent)]/20 rounded w-3/4"></div>
+        </div>
+      </div>
+
+      {/* Stats skeleton */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm animate-pulse"
+            className="bg-[var(--color-surface)] rounded-2xl p-4 border border-[var(--color-border)] animate-pulse"
           >
-            <div className="p-4 border-b border-[var(--color-border)]">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="h-5 bg-gray-200 rounded mb-2 w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-2 w-1/2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-6 bg-[var(--color-accent)]/30 rounded mb-2"></div>
+            <div className="h-4 bg-[var(--color-accent)]/20 rounded w-3/4"></div>
+          </div>
+        ))}
+      </div>
+
+      {/* Services skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-sm animate-pulse"
+          >
+            <div className="h-48 bg-[var(--color-accent)]/20"></div>
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <div className="h-6 bg-[var(--color-accent)]/30 rounded mb-2 w-3/4"></div>
+                  <div className="h-4 bg-[var(--color-accent)]/20 rounded mb-2 w-1/2"></div>
                 </div>
-                <div className="h-6 bg-gray-200 rounded w-16"></div>
+                <div className="h-8 bg-[var(--color-accent)]/30 rounded-full w-20"></div>
               </div>
-            </div>
-            <div className="p-4">
-              <div className="h-4 bg-gray-200 rounded mb-4 w-full"></div>
+              <div className="h-4 bg-[var(--color-accent)]/20 rounded mb-4 w-full"></div>
+              <div className="h-4 bg-[var(--color-accent)]/20 rounded mb-4 w-2/3"></div>
               <div className="flex items-center justify-between">
-                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                <div className="h-6 bg-[var(--color-accent)]/30 rounded w-16"></div>
                 <div className="flex gap-2">
-                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
-                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                  <div className="h-10 w-10 bg-[var(--color-accent)]/30 rounded-xl"></div>
+                  <div className="h-10 w-10 bg-[var(--color-accent)]/30 rounded-xl"></div>
                 </div>
               </div>
             </div>
@@ -103,123 +129,128 @@ function ServiceCard({
   };
 
   return (
-    <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
-      {/* Service Header */}
-      <div className="p-4 border-b border-[var(--color-border)]">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-[var(--color-text-primary)] text-base sm:text-lg truncate">
-                {service.title}
-              </h3>
-              <div className="flex items-center gap-1">
-                {service.service_status === "active" ? (
-                  <Eye className="h-4 w-4 text-[var(--color-success)]" />
-                ) : (
-                  <EyeOff className="h-4 w-4 text-[var(--color-text-secondary)]" />
-                )}
-              </div>
+    <div className="group bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-sm hover:shadow-xl hover:border-[var(--color-secondary)]/30 transition-all duration-300 transform hover:-translate-y-1">
+      {/* Service Image Placeholder */}
+      <div className="relative h-48 bg-gradient-to-br from-[var(--color-secondary)]/10 via-[var(--color-secondary)]/5 to-[var(--color-accent)]/10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent"></div>
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {service.service_status === "active" ? (
+            <div className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+              <Eye className="h-3 w-3" />
+              <span>Active</span>
             </div>
+          ) : (
+            <div className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+              <EyeOff className="h-3 w-3" />
+              <span>Paused</span>
+            </div>
+          )}
+        </div>
 
-            {/* Service Category */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-6 w-6 bg-[var(--color-secondary)] rounded-md flex items-center justify-center">
-                <Star className="h-3 w-3 text-white" />
-              </div>
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                {service.category_name_en || "Unknown Category"}
-              </span>
-            </div>
-
-            {/* Service Area */}
-            <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
-              <MapPin className="h-3 w-3" />
-              <span className="truncate">
-                {service.service_area &&
-                typeof service.service_area === "string"
-                  ? service.service_area
-                  : service.service_area
-                  ? "Multiple areas"
-                  : "Area not specified"}
-              </span>
-            </div>
+        {/* Category Badge */}
+        <div className="absolute top-4 left-4">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-[var(--color-text-primary)] shadow-sm">
+            <Star className="h-3 w-3 text-[var(--color-secondary)]" />
+            <span>{service.category_name_en || "Service"}</span>
           </div>
+        </div>
 
-          {/* Price Display */}
-          <div className="flex flex-col items-end gap-1">
+        {/* Price Badge */}
+        <div className="absolute bottom-4 right-4">
+          <div className="flex items-center gap-1 px-4 py-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg">
+            <Euro className="h-4 w-4 text-[var(--color-secondary)]" />
+            <span className="font-bold text-[var(--color-secondary)] text-lg">
+              {getPricingDisplay(service)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Service Content */}
+      <div className="p-6">
+        {/* Title and Status */}
+        <div className="mb-4">
+          <h3 className="font-bold text-[var(--color-text-primary)] text-lg mb-2 line-clamp-1 group-hover:text-[var(--color-secondary)] transition-colors">
+            {service.title}
+          </h3>
+
+          {/* Service Area */}
+          <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] mb-3">
+            <MapPin className="h-4 w-4 text-[var(--color-secondary)]" />
+            <span className="truncate">
+              {service.service_area && typeof service.service_area === "string"
+                ? service.service_area
+                : service.service_area
+                ? "Multiple areas"
+                : "Area not specified"}
+            </span>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-[var(--color-text-secondary)] line-clamp-3 mb-4 leading-relaxed">
+          {service.description || "No description available"}
+        </p>
+
+        {/* Service Details */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3 text-xs text-[var(--color-text-secondary)]">
             <div className="flex items-center gap-1">
-              <Euro className="h-4 w-4 text-[var(--color-secondary)]" />
-              <span className="font-bold text-[var(--color-secondary)] text-lg">
-                {getPricingDisplay(service)}
+              <Calendar className="h-3 w-3" />
+              <span>
+                {service.created_at
+                  ? format(new Date(service.created_at), "MMM d, yyyy")
+                  : "Unknown date"}
               </span>
             </div>
+            {service.booking_count > 0 && (
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                <span>{service.booking_count} bookings</span>
+              </div>
+            )}
             {service.minimum_duration && (
-              <div className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)]">
+              <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 <span>Min {service.minimum_duration}h</span>
               </div>
             )}
           </div>
         </div>
-      </div>
-
-      {/* Service Content */}
-      <div className="p-4">
-        {/* Description */}
-        <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2 mb-4 leading-relaxed">
-          {service.description || "No description available"}
-        </p>
-
-        {/* Service Details */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-            <Calendar className="h-3 w-3" />
-            <span>
-              {service.created_at
-                ? format(new Date(service.created_at), "MMM d, yyyy")
-                : "Unknown date"}
-            </span>
-            {service.booking_count > 0 && (
-              <>
-                <span>•</span>
-                <span>{service.booking_count} bookings</span>
-              </>
-            )}
-          </div>
-          <span className="px-2 py-1 rounded-full bg-[var(--color-accent)]/20 text-[var(--color-text-secondary)] font-medium text-xs">
-            {service.pricing_type === "hourly"
-              ? "Hourly Rate"
-              : service.pricing_type === "per_item"
-              ? "Per Item"
-              : "Fixed Price"}
-          </span>
-        </div>
 
         {/* Status and Actions */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+              className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(
                 service.verification_status
               )}`}
             >
               {getStatusLabel(service.verification_status)}
             </span>
             {service.is_promoted && (
-              <span className="px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-secondary)] text-white">
-                Promoted
+              <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white">
+                <Sparkles className="h-3 w-3" />
+                <span>Promoted</span>
               </span>
             )}
+            <span className="px-3 py-1.5 rounded-full bg-[var(--color-accent)]/20 text-[var(--color-text-secondary)] font-medium text-xs">
+              {service.pricing_type === "hourly"
+                ? "Hourly Rate"
+                : service.pricing_type === "per_item"
+                ? "Per Item"
+                : "Fixed Price"}
+            </span>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
             <Link
               href={`./my-services/${service.id}`}
-              className="p-2 rounded-lg bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-3 rounded-xl bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] transition-all min-h-[44px] min-w-[44px] flex items-center justify-center shadow-sm hover:shadow-md group/btn"
               title="Edit service"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
             </Link>
             <ServiceDeleteButton serviceId={service.id} taskerId={taskerId} />
           </div>
@@ -229,46 +260,137 @@ function ServiceCard({
   );
 }
 
-// Services list component
+// Services list component with enhanced design
 async function ServicesList({ taskerId }: { taskerId: string }) {
   try {
     const services = await getTaskerServices(taskerId);
 
+    // Calculate stats
+    const activeServices = services.filter(
+      (s) => s.service_status === "active"
+    ).length;
+    const totalBookings = services.reduce((sum, s) => sum + s.booking_count, 0);
+    //  const promotedServices = services.filter((s) => s.is_promoted).length;
+    const verifiedServices = services.filter(
+      (s) => s.verification_status === "verified"
+    ).length;
+
     return (
       <>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)]">
-            Your Service Offers ({services.length})
-          </h3>
+        {/* Stats Cards - Only show when there are services */}
+        {services.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div className="bg-gradient-to-br from-[var(--color-secondary)]/10 to-[var(--color-secondary)]/5 rounded-2xl p-4 border border-[var(--color-border)]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[var(--color-secondary)]/20 rounded-xl">
+                  <TrendingUp className="h-5 w-5 text-[var(--color-secondary)]" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                    {services.length}
+                  </p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Total Services
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-2xl p-4 border border-[var(--color-border)]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/20 rounded-xl">
+                  <Eye className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                    {activeServices}
+                  </p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Active
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-2xl p-4 border border-[var(--color-border)]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/20 rounded-xl">
+                  <Users className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                    {totalBookings}
+                  </p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Bookings
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-2xl p-4 border border-[var(--color-border)]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-500/20 rounded-xl">
+                  <Award className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                    {verifiedServices}
+                  </p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Verified
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Header with Add Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-1">
+              Your Service Portfolio
+            </h3>
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              Manage and showcase your professional services
+            </p>
+          </div>
           <Link
             href="./post-service"
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-secondary)] text-white font-semibold text-base shadow hover:bg-[var(--color-secondary-dark)] transition-all min-h-[44px] mobile-button whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all min-h-[48px] mobile-button whitespace-nowrap group"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
             <span className="hidden sm:inline">Add New Service</span>
-            <span className="sm:hidden">Add</span>
+            <span className="sm:hidden">Add Service</span>
           </Link>
         </div>
 
         {services.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 py-16 bg-[var(--color-surface)] rounded-xl shadow-inner border border-dashed border-[var(--color-border)] mt-2">
-            <span className="text-6xl mb-4">🛠️</span>
-            <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-              No services yet
-            </h2>
-            <p className="text-[var(--color-text-secondary)] mb-4 max-w-xs text-center">
-              You haven't added any services. Start by creating your first
-              service offer!
-            </p>
-            <Link
-              href="./post-service"
-              className="px-5 py-2.5 rounded-lg bg-[var(--color-secondary)] text-white font-semibold hover:bg-[var(--color-secondary-dark)] transition-all text-base shadow"
-            >
-              Add Service
-            </Link>
+          <div className="flex flex-col items-center justify-center flex-1 py-20 bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-accent)]/5 rounded-3xl border-2 border-dashed border-[var(--color-border)]">
+            <div className="text-center max-w-md mx-auto px-6">
+              <div className="w-24 h-24 bg-gradient-to-br from-[var(--color-secondary)]/20 to-[var(--color-secondary)]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Sparkles className="h-12 w-12 text-[var(--color-secondary)]" />
+              </div>
+              <h2 className="text-2xl font-bold mb-3 text-[var(--color-text-primary)]">
+                Start Your Service Journey
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-8 leading-relaxed">
+                Create your first service offer and start connecting with
+                customers who need your expertise. Build your professional
+                portfolio and grow your business.
+              </p>
+              <Link
+                href="./post-service"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all group"
+              >
+                <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                Create Your First Service
+              </Link>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 mt-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {services.map((service) => (
               <ServiceCard
                 key={service.id}
@@ -283,21 +405,25 @@ async function ServicesList({ taskerId }: { taskerId: string }) {
   } catch (error) {
     console.error("Error loading services:", error);
     return (
-      <div className="flex flex-col items-center justify-center flex-1 py-16 bg-[var(--color-surface)] rounded-xl shadow-inner border border-dashed border-[var(--color-border)] mt-2">
-        <span className="text-6xl mb-4">⚠️</span>
-        <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-          Error loading services
-        </h2>
-        <p className="text-[var(--color-text-secondary)] mb-4 max-w-xs text-center">
-          There was an error loading your services. Please try refreshing the
-          page.
-        </p>
-        <Link
-          href="/tasker/my-services"
-          className="px-5 py-2.5 rounded-lg bg-[var(--color-secondary)] text-white font-semibold hover:bg-[var(--color-secondary-dark)] transition-all text-base shadow"
-        >
-          Refresh Page
-        </Link>
+      <div className="flex flex-col items-center justify-center flex-1 py-20 bg-gradient-to-br from-red-50 to-red-100/50 rounded-3xl border-2 border-dashed border-red-200">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="w-24 h-24 bg-red-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <Award className="h-12 w-12 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold mb-3 text-[var(--color-text-primary)]">
+            Oops! Something went wrong
+          </h2>
+          <p className="text-[var(--color-text-secondary)] mb-8 leading-relaxed">
+            We couldn't load your services right now. Please try refreshing the
+            page or contact support if the problem persists.
+          </p>
+          <Link
+            href="/tasker/my-services"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
+          >
+            Try Again
+          </Link>
+        </div>
       </div>
     );
   }
@@ -309,17 +435,21 @@ export default async function MyServicesPage() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
-        <h2 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-          Not signed in
+        <div className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <Award className="h-10 w-10 text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold mb-2 text-[var(--color-text-primary)]">
+          Access Required
         </h2>
-        <p className="text-[var(--color-text-secondary)] mb-4">
-          Please log in to view your services.
+        <p className="text-[var(--color-text-secondary)] mb-6 max-w-sm">
+          Please sign in to access your service management dashboard and start
+          building your professional portfolio.
         </p>
         <Link
           href="/login"
-          className="px-4 py-2 rounded-md bg-[var(--color-secondary)] text-white font-medium hover:bg-[var(--color-secondary-dark)] transition-all"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold hover:shadow-lg transition-all"
         >
-          Go to Login
+          Sign In
         </Link>
       </div>
     );
@@ -327,39 +457,45 @@ export default async function MyServicesPage() {
 
   return (
     <main className="w-full min-h-[100dvh] bg-[var(--color-bg)] flex flex-col items-center px-0 sm:px-4 py-0">
-      {/* Header Section */}
-      <section className="w-full max-w-2xl px-4 pt-6 pb-2">
-        <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-4 sm:p-6 border border-[var(--color-border)] mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-2">
-            Manage Your Services
-          </h1>
-          <p className="text-[var(--color-text-secondary)] mb-4 text-sm sm:text-base">
-            Here you can view, add, and manage all the services you offer as a
-            tasker. Keeping your service list up to date helps customers find
-            and book you more easily.
-          </p>
-          <div>
-            <h2 className="font-semibold text-[var(--color-text-primary)] mb-1 text-base">
-              Quick Steps:
-            </h2>
-            <ol className="list-decimal list-inside space-y-1 text-[var(--color-text-secondary)] text-sm sm:text-base">
-              <li>
-                Click{" "}
-                <span className="font-semibold text-[var(--color-secondary-dark)]">
-                  Add New Service
-                </span>{" "}
-                to create a new offer.
-              </li>
-              <li>Review your existing services below.</li>
-              <li>Edit or update your offers to keep them attractive.</li>
-              <li>Remove services you no longer provide.</li>
-            </ol>
+      {/* Hero Header Section */}
+      <section className="w-full max-w-4xl px-4 pt-6 pb-2">
+        <div className="bg-gradient-to-r from-[var(--color-secondary)]/10 via-[var(--color-secondary)]/5 to-[var(--color-accent)]/10 rounded-3xl p-6 sm:p-8 border border-[var(--color-border)] mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-3">
+                Service Management Hub
+              </h1>
+              <p className="text-[var(--color-text-secondary)] mb-4 text-base sm:text-lg leading-relaxed">
+                Build and manage your professional service portfolio. Create
+                compelling offers, track performance, and grow your business
+                with our powerful tools.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 rounded-full text-sm font-medium text-[var(--color-text-primary)]">
+                  <TrendingUp className="h-4 w-4 text-[var(--color-secondary)]" />
+                  <span>Performance Tracking</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 rounded-full text-sm font-medium text-[var(--color-text-primary)]">
+                  <Users className="h-4 w-4 text-[var(--color-secondary)]" />
+                  <span>Customer Insights</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 rounded-full text-sm font-medium text-[var(--color-text-primary)]">
+                  <Award className="h-4 w-4 text-[var(--color-secondary)]" />
+                  <span>Quality Control</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-[var(--color-secondary)]/20 to-[var(--color-secondary)]/10 rounded-3xl flex items-center justify-center">
+                <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-[var(--color-secondary)]" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Services Section with Suspense for better loading */}
-      <section className="w-full max-w-2xl px-4 pb-8 flex-1 flex flex-col">
+      <section className="w-full max-w-4xl px-4 pb-8 flex-1 flex flex-col">
         <Suspense fallback={<ServicesLoadingSkeleton />}>
           <ServicesList taskerId={user.id} />
         </Suspense>
