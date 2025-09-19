@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import {
   Card,
@@ -21,8 +22,9 @@ import {
   AlertCircle,
   MessageCircle,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
-import { useUserStore } from "@/stores/userStore";
+
 import {
   getConversationsAction,
   type ConversationWithDetails,
@@ -32,44 +34,48 @@ type MessageStatus = "all" | "unread" | "read";
 
 export default function MessagesPage() {
   const router = useRouter();
-  const { user } = useUserStore();
+  const t = useTranslations("notifications.actions");
   const [messageFilter, setMessageFilter] = useState<MessageStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [conversations, setConversations] = useState<ConversationWithDetails[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch conversations from database
-  useEffect(() => {
-    const fetchConversations = async () => {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
+  const fetchConversations = useCallback(async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
         setIsLoading(true);
-        setError(null);
-        const { conversations: fetchedConversations, errorMessage } =
-          await getConversationsAction();
+      }
+      setError(null);
+      const { conversations: fetchedConversations, errorMessage } =
+        await getConversationsAction();
 
-        if (errorMessage) {
-          setError(errorMessage);
-        } else {
-          setConversations(fetchedConversations);
-        }
-      } catch (err) {
-        console.error("Error fetching conversations:", err);
-        setError("Failed to load messages");
-      } finally {
+      if (errorMessage) {
+        setError(errorMessage);
+      } else {
+        setConversations(fetchedConversations);
+      }
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
+      setError("Failed to load messages");
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
         setIsLoading(false);
       }
-    };
+    }
+  }, []);
 
+  useEffect(() => {
     fetchConversations();
-  }, [user]);
+  }, [fetchConversations]);
 
   // Helper function to format time
   const formatTime = (timestamp: string | undefined) => {
@@ -190,14 +196,31 @@ export default function MessagesPage() {
                   {unreadCount} unread message{unreadCount !== 1 && "s"}
                 </CardDescription>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
-                <Input
-                  placeholder="Search messages..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] mobile-focus touch-target"
-                />
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
+                  <Input
+                    placeholder="Search messages..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] mobile-focus touch-target"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchConversations(true)}
+                  disabled={isRefreshing}
+                  className="touch-target border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-light)] hover:text-[var(--color-text-primary)] mobile-focus"
+                  title={isRefreshing ? t("refreshing") : t("refresh")}
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                  />
+                  <span className="sr-only">
+                    {isRefreshing ? t("refreshing") : t("refresh")}
+                  </span>
+                </Button>
               </div>
             </div>
           </CardHeader>
