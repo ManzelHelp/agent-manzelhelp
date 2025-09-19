@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { useUserStore } from "@/stores/userStore";
 import { useTranslations } from "next-intl";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CustomerBookingCard } from "@/components/bookings/CustomerBookingCard";
@@ -33,7 +32,13 @@ interface ConfirmationDialogState {
   title: string;
   description: string;
   confirmText: string;
-  variant: "default" | "success" | "warning" | "danger";
+  variant:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 // Utility functions moved outside component to avoid re-creation
@@ -46,27 +51,27 @@ const getActionButton = (
   const actionConfig = {
     pending: {
       text: t("actions.cancelBooking"),
-      variant: "danger" as const,
+      variant: "destructive" as const,
       action: "cancel",
-      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+      className: "bg-red-600 text-white hover:bg-red-700",
     },
     accepted: {
       text: t("actions.cancelBooking"),
-      variant: "danger" as const,
+      variant: "destructive" as const,
       action: "cancel",
-      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+      className: "bg-red-600 text-white hover:bg-red-700",
     },
     confirmed: {
       text: t("actions.cancelBooking"),
-      variant: "danger" as const,
+      variant: "destructive" as const,
       action: "cancel",
-      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+      className: "bg-red-600 text-white hover:bg-red-700",
     },
     in_progress: {
       text: t("actions.cancelBooking"),
-      variant: "danger" as const,
+      variant: "destructive" as const,
       action: "cancel",
-      className: "bg-color-error text-color-surface hover:bg-color-error-dark",
+      className: "bg-red-600 text-white hover:bg-red-700",
     },
     completed: {
       text: t("status.completed"),
@@ -128,14 +133,11 @@ export default function CustomerBookingsPage() {
       variant: "default",
     });
 
-  const { user } = useUserStore();
   const t = useTranslations("customerBookings");
 
   // Fetch bookings with pagination
   const fetchBookings = useCallback(
     async (page: number = 0, append: boolean = false) => {
-      if (!user) return;
-
       try {
         if (append) {
           setIsLoadingMore(true);
@@ -146,12 +148,7 @@ export default function CustomerBookingsPage() {
         // Clear any previous pagination errors
         setPaginationError(null);
 
-        const result = await getCustomerBookings(
-          user.id,
-          20,
-          page * 20,
-          !append
-        );
+        const result = await getCustomerBookings(20, page * 20, !append);
 
         if (append) {
           // Append new bookings to existing ones
@@ -182,7 +179,7 @@ export default function CustomerBookingsPage() {
         setIsLoadingMore(false);
       }
     },
-    [user]
+    []
   );
 
   // Initial data fetch
@@ -227,7 +224,7 @@ export default function CustomerBookingsPage() {
             taskerName: getTaskerName(booking),
           }),
           confirmText: t("confirmations.cancel.confirmText"),
-          variant: "danger" as const,
+          variant: "destructive" as const,
         },
       };
 
@@ -248,15 +245,12 @@ export default function CustomerBookingsPage() {
   );
 
   const handleConfirmAction = useCallback(async () => {
-    if (!user) return;
-
     setIsUpdating(true);
 
     try {
       if (confirmationDialog.action === "cancel") {
         const result = await cancelCustomerBooking(
           confirmationDialog.bookingId,
-          user.id,
           "Cancelled by customer"
         );
 
@@ -282,7 +276,7 @@ export default function CustomerBookingsPage() {
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
     }
-  }, [confirmationDialog, user, t]);
+  }, [confirmationDialog, t]);
 
   const handleCloseDialog = useCallback(() => {
     setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));

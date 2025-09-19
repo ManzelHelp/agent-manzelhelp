@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, use } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useUserStore } from "@/stores/userStore";
 import {
   getBookingById,
   updateBookingStatus,
@@ -42,16 +41,21 @@ interface ConfirmationDialogState {
   title: string;
   description: string;
   confirmText: string;
-  variant: "default" | "success" | "warning" | "danger";
+  variant:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 export default function TaskerBookingDetailPage({
   params,
 }: {
-  params: Promise<{ "booking-id": string }>;
+  params: { "booking-id": string };
 }) {
-  // Use the use() hook to handle async params in client component
-  const { "booking-id": bookingId } = use(params);
+  const { "booking-id": bookingId } = params;
 
   const [booking, setBooking] = useState<BookingWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,27 +70,14 @@ export default function TaskerBookingDetailPage({
       variant: "default",
     });
   const router = useRouter();
-  const { user } = useUserStore();
   const t = useTranslations("bookingDetails");
 
   const fetchBookingData = useCallback(async () => {
-    if (!user) {
-      // User store not ready yet, wait for it
-      return;
-    }
-
     try {
       setIsLoading(true);
       const bookingData = await getBookingById(bookingId);
       if (!bookingData) {
-        toast.error(t("notFound"));
-        router.push("/tasker/bookings");
-        return;
-      }
-
-      // Verify this booking belongs to the current tasker
-      if (bookingData.tasker_id !== user.id) {
-        toast.error(t("unauthorizedAccess"));
+        toast.error(t("bookingNotFound"));
         router.push("/tasker/bookings");
         return;
       }
@@ -101,7 +92,7 @@ export default function TaskerBookingDetailPage({
     } finally {
       setIsLoading(false);
     }
-  }, [bookingId, user, router, t]);
+  }, [bookingId, router, t]);
 
   useEffect(() => {
     fetchBookingData();
@@ -251,42 +242,42 @@ export default function TaskerBookingDetailPage({
           title: t("confirmations.accept.title"),
           description: t("confirmations.accept.description"),
           confirmText: t("confirmations.accept.confirmText"),
-          variant: "success" as const,
+          variant: "default" as const,
           status: "accepted" as BookingStatus,
         },
         decline: {
           title: t("confirmations.decline.title"),
           description: t("confirmations.decline.description"),
           confirmText: t("confirmations.decline.confirmText"),
-          variant: "danger" as const,
+          variant: "destructive" as const,
           status: "cancelled" as BookingStatus,
         },
         confirm: {
           title: t("confirmations.confirm.title"),
           description: t("confirmations.confirm.description"),
           confirmText: t("confirmations.confirm.confirmText"),
-          variant: "success" as const,
+          variant: "default" as const,
           status: "confirmed" as BookingStatus,
         },
         start: {
           title: t("confirmations.start.title"),
           description: t("confirmations.start.description"),
           confirmText: t("confirmations.start.confirmText"),
-          variant: "success" as const,
+          variant: "default" as const,
           status: "in_progress" as BookingStatus,
         },
         complete: {
           title: t("confirmations.complete.title"),
           description: t("confirmations.complete.description"),
           confirmText: t("confirmations.complete.confirmText"),
-          variant: "success" as const,
+          variant: "default" as const,
           status: "completed" as BookingStatus,
         },
         cancel: {
           title: t("confirmations.cancel.title"),
           description: t("confirmations.cancel.description"),
           confirmText: t("confirmations.cancel.confirmText"),
-          variant: "danger" as const,
+          variant: "destructive" as const,
           status: "cancelled" as BookingStatus,
         },
       };
@@ -324,7 +315,7 @@ export default function TaskerBookingDetailPage({
       const newStatus = statusMap[confirmationDialog.action];
       if (!newStatus) return;
 
-      const result = await updateBookingStatus(booking.id, newStatus, user!.id);
+      const result = await updateBookingStatus(booking.id, newStatus);
 
       if (result.success) {
         setBooking((prev) => (prev ? { ...prev, status: newStatus } : null));
@@ -340,7 +331,7 @@ export default function TaskerBookingDetailPage({
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
     }
-  }, [user, booking, confirmationDialog, t]);
+  }, [booking, confirmationDialog, t]);
 
   const handleCloseDialog = useCallback(() => {
     setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));

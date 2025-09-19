@@ -48,7 +48,6 @@ export interface BookingWithDetails {
 }
 
 export async function getTaskerBookings(
-  taskerId: string,
   limit: number = 20,
   offset: number = 0,
   includeTotal: boolean = true
@@ -58,6 +57,18 @@ export async function getTaskerBookings(
   hasMore: boolean;
 }> {
   const supabase = await createClient();
+
+  // Get the authenticated user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("User not authenticated");
+  }
+
+  const taskerId = user.id;
 
   // Get total count only when needed (for initial load or when includeTotal is true)
   let total = 0;
@@ -224,7 +235,6 @@ export async function getBookingById(
 }
 
 export async function getCustomerBookings(
-  customerId: string,
   limit: number = 20,
   offset: number = 0,
   includeTotal: boolean = true
@@ -234,6 +244,18 @@ export async function getCustomerBookings(
   hasMore: boolean;
 }> {
   const supabase = await createClient();
+
+  // Get the authenticated user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("User not authenticated");
+  }
+
+  const customerId = user.id;
 
   // Get total count only when needed (for initial load or when includeTotal is true)
   let total = 0;
@@ -323,10 +345,21 @@ export async function getCustomerBookings(
 
 export async function updateBookingStatus(
   bookingId: string,
-  status: BookingStatus,
-  taskerId: string
+  status: BookingStatus
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
+
+  // Get the authenticated user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { success: false, error: "User not authenticated" };
+  }
+
+  const taskerId = user.id;
 
   // Verify the booking belongs to the tasker
   const { data: booking, error: fetchError } = await supabase
@@ -755,4 +788,280 @@ export async function createServiceBooking(
         error instanceof Error ? error.message : "Failed to create booking",
     };
   }
+}
+
+// New interfaces for job applications and tasker bookings
+export interface JobApplicationWithDetails {
+  id: string;
+  job_id: string;
+  tasker_id: string;
+  proposed_price: number;
+  estimated_duration: number | null;
+  message: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  job_title: string | null;
+  job_description: string | null;
+  preferred_date: string | null;
+  customer_budget: number | null;
+  job_status: string | null;
+  customer_first_name: string | null;
+  customer_last_name: string | null;
+  customer_avatar: string | null;
+  tasker_first_name: string | null;
+  tasker_last_name: string | null;
+  tasker_avatar: string | null;
+}
+
+export interface TaskerBookingWithDetails {
+  id: string;
+  customer_id: string;
+  tasker_id: string;
+  tasker_service_id: string;
+  booking_type: "instant" | "scheduled" | "recurring";
+  scheduled_date: string | null;
+  scheduled_time_start: string | null;
+  scheduled_time_end: string | null;
+  estimated_duration: number | null;
+  address_id: string;
+  service_address: string | null;
+  agreed_price: number;
+  currency: string;
+  status: BookingStatus;
+  accepted_at: string | null;
+  confirmed_at: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  cancelled_by: string | null;
+  cancellation_reason: string | null;
+  customer_requirements: string | null;
+  created_at: string;
+  updated_at: string;
+  payment_method: "cash" | "online" | "wallet" | "pending";
+  cancellation_fee: number;
+  // Joined data
+  customer_first_name: string | null;
+  customer_last_name: string | null;
+  customer_avatar: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+  tasker_first_name: string | null;
+  tasker_last_name: string | null;
+  tasker_avatar: string | null;
+  service_title: string | null;
+  category_name: string | null;
+  street_address: string | null;
+  city: string | null;
+  region: string | null;
+}
+
+// Get tasker's job applications
+export async function getTaskerJobApplications(
+  limit: number = 20,
+  offset: number = 0,
+  includeTotal: boolean = true
+): Promise<{
+  applications: JobApplicationWithDetails[];
+  total: number;
+  hasMore: boolean;
+}> {
+  const supabase = await createClient();
+
+  // Get the authenticated user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("User not authenticated");
+  }
+
+  const taskerId = user.id;
+
+  // Get total count only when needed
+  let total = 0;
+  if (includeTotal || offset === 0) {
+    const { count, error: countError } = await supabase
+      .from("job_applications")
+      .select("*", { count: "exact", head: true })
+      .eq("tasker_id", taskerId);
+
+    if (countError) {
+      console.error("Error fetching job applications count:", countError);
+      throw new Error(
+        `Failed to fetch job applications count: ${countError.message}`
+      );
+    }
+    total = count || 0;
+  }
+
+  // Get applications with pagination
+  const { data, error } = await supabase
+    .from("job_applications")
+    .select(
+      `
+      *,
+      job:jobs(
+        title,
+        description,
+        preferred_date,
+        customer_budget,
+        status,
+        customer:users!jobs_customer_id_fkey(
+          first_name,
+          last_name,
+          avatar_url
+        )
+      ),
+      tasker:users!job_applications_tasker_id_fkey(
+        first_name,
+        last_name,
+        avatar_url
+      )
+    `
+    )
+    .eq("tasker_id", taskerId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit);
+
+  if (error) {
+    console.error("Error fetching job applications:", error);
+    throw new Error(`Failed to fetch job applications: ${error.message}`);
+  }
+
+  // Check if there are more items
+  const hasMore = data.length > limit;
+  const applications = data.slice(0, limit);
+
+  const formattedApplications = applications.map((application) => ({
+    ...application,
+    job_title: application.job?.title,
+    job_description: application.job?.description,
+    preferred_date: application.job?.preferred_date,
+    customer_budget: application.job?.customer_budget,
+    job_status: application.job?.status,
+    customer_first_name: application.job?.customer?.first_name,
+    customer_last_name: application.job?.customer?.last_name,
+    customer_avatar: application.job?.customer?.avatar_url,
+    tasker_first_name: application.tasker?.first_name,
+    tasker_last_name: application.tasker?.last_name,
+    tasker_avatar: application.tasker?.avatar_url,
+  }));
+
+  return {
+    applications: formattedApplications,
+    total,
+    hasMore,
+  };
+}
+
+// Get tasker's bookings (when they book other taskers)
+export async function getTaskerAsCustomerBookings(
+  limit: number = 20,
+  offset: number = 0,
+  includeTotal: boolean = true
+): Promise<{
+  bookings: TaskerBookingWithDetails[];
+  total: number;
+  hasMore: boolean;
+}> {
+  const supabase = await createClient();
+
+  // Get the authenticated user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("User not authenticated");
+  }
+
+  const customerId = user.id;
+
+  // Get total count only when needed
+  let total = 0;
+  if (includeTotal || offset === 0) {
+    const { count, error: countError } = await supabase
+      .from("service_bookings")
+      .select("*", { count: "exact", head: true })
+      .eq("customer_id", customerId);
+
+    if (countError) {
+      console.error("Error fetching tasker bookings count:", countError);
+      throw new Error(
+        `Failed to fetch tasker bookings count: ${countError.message}`
+      );
+    }
+    total = count || 0;
+  }
+
+  // Get bookings with pagination
+  const { data, error } = await supabase
+    .from("service_bookings")
+    .select(
+      `
+      *,
+      customer:users!service_bookings_customer_id_fkey(
+        first_name,
+        last_name,
+        avatar_url,
+        email,
+        phone
+      ),
+      tasker:users!service_bookings_tasker_id_fkey(
+        first_name,
+        last_name,
+        avatar_url
+      ),
+      tasker_service:tasker_services(
+        title,
+        description
+      ),
+      address:addresses(
+        street_address,
+        city,
+        region
+      )
+    `
+    )
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit);
+
+  if (error) {
+    console.error("Error fetching tasker bookings:", error);
+    throw new Error(`Failed to fetch tasker bookings: ${error.message}`);
+  }
+
+  // Check if there are more items
+  const hasMore = data.length > limit;
+  const bookings = data.slice(0, limit);
+
+  const formattedBookings = bookings.map((booking) => ({
+    ...booking,
+    customer_first_name: booking.customer?.first_name,
+    customer_last_name: booking.customer?.last_name,
+    customer_avatar: booking.customer?.avatar_url,
+    customer_email: booking.customer?.email,
+    customer_phone: booking.customer?.phone,
+    tasker_first_name: booking.tasker?.first_name,
+    tasker_last_name: booking.tasker?.last_name,
+    tasker_avatar: booking.tasker?.avatar_url,
+    service_title: booking.tasker_service?.title,
+    category_name: null,
+    street_address: booking.address?.street_address,
+    city: booking.address?.city,
+    region: booking.address?.region,
+  }));
+
+  return {
+    bookings: formattedBookings,
+    total,
+    hasMore,
+  };
 }

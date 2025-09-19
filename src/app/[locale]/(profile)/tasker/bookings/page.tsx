@@ -1,29 +1,30 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useUserStore } from "@/stores/userStore";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { BookingCard } from "@/components/bookings/BookingCard";
-import { BookingTabs } from "@/components/bookings/BookingTabs";
+import { JobApplicationCard } from "@/components/bookings/JobApplicationCard";
+import { TaskerBookingCard } from "@/components/bookings/TaskerBookingCard";
+import {
+  TaskerBookingTabs,
+  type TaskerBookingTab,
+} from "@/components/bookings/TaskerBookingTabs";
 import { EmptyState } from "@/components/bookings/EmptyState";
 import { BookingLoadingSkeleton } from "@/components/bookings/BookingLoadingSkeleton";
 import {
   getTaskerBookings,
+  getTaskerJobApplications,
+  getTaskerAsCustomerBookings,
   updateBookingStatus,
   type BookingWithDetails,
+  type JobApplicationWithDetails,
+  type TaskerBookingWithDetails,
 } from "@/actions/bookings";
 import { BookingStatus } from "@/types/supabase";
+import { Calendar, ArrowRight } from "lucide-react";
 
-type TaskStatus =
-  | "all"
-  | "pending"
-  | "accepted"
-  | "confirmed"
-  | "in_progress"
-  | "completed"
-  | "cancelled";
+// Removed unused TaskStatus type
 
 interface ConfirmationDialogState {
   isOpen: boolean;
@@ -32,7 +33,13 @@ interface ConfirmationDialogState {
   title: string;
   description: string;
   confirmText: string;
-  variant: "default" | "success" | "warning" | "danger";
+  variant:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 // Utility functions moved outside component to avoid re-creation
@@ -42,58 +49,55 @@ const getActionButton = (booking: BookingWithDetails) => {
   const actionConfig = {
     pending: {
       text: "Accept Request",
-      variant: "success" as const,
+      variant: "default" as const,
       action: "accept",
-      className:
-        "bg-color-success text-color-surface hover:bg-color-success-dark",
+      className: "bg-green-600 text-white hover:bg-green-700",
     },
     accepted: {
       text: "Confirm Booking",
-      variant: "success" as const,
+      variant: "default" as const,
       action: "confirm",
-      className:
-        "bg-color-success text-color-surface hover:bg-color-success-dark",
+      className: "bg-green-600 text-white hover:bg-green-700",
     },
     confirmed: {
       text: "Start Task",
-      variant: "success" as const,
+      variant: "default" as const,
       action: "start",
-      className:
-        "bg-color-success text-color-surface hover:bg-color-success-dark",
+      className: "bg-green-600 text-white hover:bg-green-700",
     },
     in_progress: {
       text: "Complete Task",
-      variant: "success" as const,
+      variant: "default" as const,
       action: "complete",
-      className:
-        "bg-color-success text-color-surface hover:bg-color-success-dark",
+      className: "bg-green-600 text-white hover:bg-green-700",
     },
     completed: {
       text: "Completed",
       variant: "default" as const,
       action: "none",
       className:
-        "bg-color-success/10 text-color-success border border-color-success/20",
+        "bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/50",
     },
     cancelled: {
       text: "Cancelled",
       variant: "default" as const,
       action: "none",
       className:
-        "bg-color-error/10 text-color-error border border-color-error/20",
+        "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50",
     },
     disputed: {
       text: "Disputed",
       variant: "default" as const,
       action: "none",
       className:
-        "bg-color-warning/10 text-color-warning border border-color-warning/20",
+        "bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50",
     },
     refunded: {
       text: "Refunded",
       variant: "default" as const,
       action: "none",
-      className: "bg-color-info/10 text-color-info border border-color-info/20",
+      className:
+        "bg-cyan-100 text-cyan-800 border border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800/50",
     },
   };
 
@@ -107,9 +111,18 @@ const getCustomerName = (booking: BookingWithDetails) => {
 };
 
 export default function BookingsPage() {
-  const [activeTab, setActiveTab] = useState<TaskStatus>("all");
+  const [activeTab, setActiveTab] = useState<TaskerBookingTab>("my-bookings");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
-  const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
+
+  // State for different data types
+  const [myBookings, setMyBookings] = useState<BookingWithDetails[]>([]);
+  const [bookedTaskers, setBookedTaskers] = useState<
+    TaskerBookingWithDetails[]
+  >([]);
+  const [myApplications, setMyApplications] = useState<
+    JobApplicationWithDetails[]
+  >([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -127,21 +140,9 @@ export default function BookingsPage() {
       variant: "default",
     });
 
-  const router = useRouter();
-  const { user } = useUserStore();
-
-  // Redirect customer users
-  useEffect(() => {
-    if (user && user.role === "customer") {
-      router.replace("/customer/dashboard");
-    }
-  }, [user, router]);
-
-  // Fetch bookings with pagination
-  const fetchBookings = useCallback(
+  // Fetch data based on active tab
+  const fetchData = useCallback(
     async (page: number = 0, append: boolean = false) => {
-      if (!user) return;
-
       try {
         if (append) {
           setIsLoadingMore(true);
@@ -152,22 +153,55 @@ export default function BookingsPage() {
         // Clear any previous pagination errors
         setPaginationError(null);
 
-        const result = await getTaskerBookings(user.id, 20, page * 20, !append);
-
-        if (append) {
-          // Append new bookings to existing ones
-          setBookings((prev) => [...prev, ...result.bookings]);
-        } else {
-          // Replace bookings for initial load or refresh
-          setBookings(result.bookings);
+        let result: {
+          bookings?: BookingWithDetails[] | TaskerBookingWithDetails[];
+          applications?: JobApplicationWithDetails[];
+          hasMore: boolean;
+        };
+        switch (activeTab) {
+          case "my-bookings":
+            result = await getTaskerBookings(20, page * 20, !append);
+            if (append) {
+              setMyBookings((prev) => [
+                ...prev,
+                ...(result.bookings as BookingWithDetails[]),
+              ]);
+            } else {
+              setMyBookings(result.bookings as BookingWithDetails[]);
+            }
+            break;
+          case "booked-taskers":
+            result = await getTaskerAsCustomerBookings(20, page * 20, !append);
+            if (append) {
+              setBookedTaskers((prev) => [
+                ...prev,
+                ...(result.bookings as TaskerBookingWithDetails[]),
+              ]);
+            } else {
+              setBookedTaskers(result.bookings as TaskerBookingWithDetails[]);
+            }
+            break;
+          case "my-applications":
+            result = await getTaskerJobApplications(20, page * 20, !append);
+            if (append) {
+              setMyApplications((prev) => [
+                ...prev,
+                ...(result.applications as JobApplicationWithDetails[]),
+              ]);
+            } else {
+              setMyApplications(
+                result.applications as JobApplicationWithDetails[]
+              );
+            }
+            break;
         }
 
         setCurrentPage(page);
         setHasMore(result.hasMore);
       } catch (error) {
-        console.error("Error fetching bookings:", error);
+        console.error("Error fetching data:", error);
         const errorMessage =
-          error instanceof Error ? error.message : "Failed to load bookings";
+          error instanceof Error ? error.message : "Failed to load data";
 
         // Set pagination error for better UX
         setPaginationError(errorMessage);
@@ -175,102 +209,129 @@ export default function BookingsPage() {
         // Only show toast for initial load errors, not for load more errors
         if (!append) {
           toast.error(errorMessage);
-          setBookings([]);
+          // Clear the appropriate state
+          switch (activeTab) {
+            case "my-bookings":
+              setMyBookings([]);
+              break;
+            case "booked-taskers":
+              setBookedTaskers([]);
+              break;
+            case "my-applications":
+              setMyApplications([]);
+              break;
+          }
         }
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
       }
     },
-    [user]
+    [activeTab]
   );
 
   // Initial data fetch
   useEffect(() => {
-    fetchBookings(0);
-  }, [fetchBookings]);
+    fetchData(0);
+  }, [fetchData]);
 
-  // Memoized filtered bookings for better performance
-  const filteredBookings = useMemo(() => {
-    if (activeTab === "all") {
-      return bookings;
+  // Get current data based on active tab
+  const currentData = useMemo(() => {
+    switch (activeTab) {
+      case "my-bookings":
+        return myBookings;
+      case "booked-taskers":
+        return bookedTaskers;
+      case "my-applications":
+        return myApplications;
+      default:
+        return [];
     }
-    return bookings.filter((booking) => booking.status === activeTab);
-  }, [bookings, activeTab]);
+  }, [activeTab, myBookings, bookedTaskers, myApplications]);
 
   // Memoized booking counts for better performance
   const bookingCounts = useMemo(() => {
-    const counts: Record<TaskStatus, number> = {
-      all: bookings.length,
-      pending: bookings.filter((b) => b.status === "pending").length,
-      accepted: bookings.filter((b) => b.status === "accepted").length,
-      confirmed: bookings.filter((b) => b.status === "confirmed").length,
-      in_progress: bookings.filter((b) => b.status === "in_progress").length,
-      completed: bookings.filter((b) => b.status === "completed").length,
-      cancelled: bookings.filter((b) => b.status === "cancelled").length,
+    return {
+      myBookings: myBookings.length,
+      bookedTaskers: bookedTaskers.length,
+      myApplications: myApplications.length,
     };
-    return counts;
-  }, [bookings]);
+  }, [myBookings, bookedTaskers, myApplications]);
 
-  const handleActionClick = useCallback((booking: BookingWithDetails) => {
-    const actionButton = getActionButton(booking);
+  const handleActionClick = useCallback(
+    (
+      item:
+        | BookingWithDetails
+        | TaskerBookingWithDetails
+        | JobApplicationWithDetails
+    ) => {
+      // Only handle actions for my bookings (BookingWithDetails)
+      if (
+        activeTab !== "my-bookings" ||
+        !("status" in item && "customer_first_name" in item)
+      ) {
+        return;
+      }
 
-    if (actionButton.action === "none") {
-      return;
-    }
+      const booking = item as BookingWithDetails;
+      const actionButton = getActionButton(booking);
 
-    const actionConfig = {
-      accept: {
-        title: "Accept Booking Request",
-        description: `Are you sure you want to accept this booking request from ${getCustomerName(
-          booking
-        )}?`,
-        confirmText: "Accept Request",
-        variant: "success" as const,
-      },
-      confirm: {
-        title: "Confirm Booking",
-        description: `Are you sure you want to confirm this booking with ${getCustomerName(
-          booking
-        )}?`,
-        confirmText: "Confirm Booking",
-        variant: "success" as const,
-      },
-      start: {
-        title: "Start Task",
-        description: `Are you ready to start the task for ${getCustomerName(
-          booking
-        )}?`,
-        confirmText: "Start Task",
-        variant: "success" as const,
-      },
-      complete: {
-        title: "Complete Task",
-        description: `Are you sure you want to mark this task as completed for ${getCustomerName(
-          booking
-        )}?`,
-        confirmText: "Complete Task",
-        variant: "success" as const,
-      },
-    };
+      if (actionButton.action === "none") {
+        return;
+      }
 
-    const config =
-      actionConfig[actionButton.action as keyof typeof actionConfig];
+      const actionConfig = {
+        accept: {
+          title: "Accept Booking Request",
+          description: `Are you sure you want to accept this booking request from ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Accept Request",
+          variant: "default" as const,
+        },
+        confirm: {
+          title: "Confirm Booking",
+          description: `Are you sure you want to confirm this booking with ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Confirm Booking",
+          variant: "default" as const,
+        },
+        start: {
+          title: "Start Task",
+          description: `Are you ready to start the task for ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Start Task",
+          variant: "default" as const,
+        },
+        complete: {
+          title: "Complete Task",
+          description: `Are you sure you want to mark this task as completed for ${getCustomerName(
+            booking
+          )}?`,
+          confirmText: "Complete Task",
+          variant: "default" as const,
+        },
+      };
 
-    setConfirmationDialog({
-      isOpen: true,
-      bookingId: booking.id,
-      action: actionButton.action,
-      title: config.title,
-      description: config.description,
-      confirmText: config.confirmText,
-      variant: config.variant,
-    });
-  }, []);
+      const config =
+        actionConfig[actionButton.action as keyof typeof actionConfig];
+
+      setConfirmationDialog({
+        isOpen: true,
+        bookingId: booking.id,
+        action: actionButton.action,
+        title: config.title,
+        description: config.description,
+        confirmText: config.confirmText,
+        variant: config.variant,
+      });
+    },
+    [activeTab]
+  );
 
   const handleConfirmAction = useCallback(async () => {
-    if (!user) return;
-
     setIsUpdating(true);
 
     try {
@@ -286,13 +347,12 @@ export default function BookingsPage() {
 
       const result = await updateBookingStatus(
         confirmationDialog.bookingId,
-        newStatus,
-        user.id
+        newStatus
       );
 
       if (result.success) {
         // Update local state
-        setBookings((prev) =>
+        setMyBookings((prev) =>
           prev.map((booking) =>
             booking.id === confirmationDialog.bookingId
               ? { ...booking, status: newStatus }
@@ -311,21 +371,25 @@ export default function BookingsPage() {
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
     }
-  }, [confirmationDialog, user]);
+  }, [confirmationDialog]);
 
   const handleCloseDialog = useCallback(() => {
     setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
-  const handleTabChange = useCallback((tab: TaskStatus) => {
-    setActiveTab(tab);
-    setIsNavExpanded(false);
-    // Reset pagination when changing tabs
-    setCurrentPage(0);
-    setHasMore(true);
-    // Note: We don't refetch here since filtering is done client-side
-    // If you want server-side filtering, you'd need to refetch here
-  }, []);
+  const handleTabChange = useCallback(
+    (tab: TaskerBookingTab) => {
+      setActiveTab(tab);
+      setIsNavExpanded(false);
+      // Reset pagination when changing tabs
+      setCurrentPage(0);
+      setHasMore(true);
+      setPaginationError(null);
+      // Fetch data for the new tab
+      fetchData(0);
+    },
+    [fetchData]
+  );
 
   const handleNavToggle = useCallback(() => {
     setIsNavExpanded((prev) => !prev);
@@ -333,90 +397,155 @@ export default function BookingsPage() {
 
   const handleRetryLoadMore = useCallback(() => {
     setPaginationError(null);
-    fetchBookings(currentPage + 1, true);
-  }, [fetchBookings, currentPage]);
+    fetchData(currentPage + 1, true);
+  }, [fetchData, currentPage]);
 
   if (isLoading) {
     return <BookingLoadingSkeleton />;
   }
 
   return (
-    <div className="min-h-screen bg-color-bg smooth-scroll">
-      <div className="container mx-auto px-4 py-6 space-y-6 mobile-spacing">
-        {/* Page Header */}
-        <div className="bg-color-surface border-b border-color-border pb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-color-text-primary mobile-text-xl mobile-leading">
-              My Bookings
-            </h1>
-            <p className="text-color-text-secondary text-sm mt-1 mobile-leading">
-              Manage your booking requests and ongoing tasks
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-8">
+        {/* Navigation Tabs */}
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              Tasker Bookings
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+              Manage your bookings, applications, and hired services
             </p>
+          </div>
+          <div className="p-6">
+            <TaskerBookingTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              bookingCounts={bookingCounts}
+              isNavExpanded={isNavExpanded}
+              onNavToggle={handleNavToggle}
+              filteredCount={currentData.length}
+            />
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <BookingTabs
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          bookingCounts={bookingCounts}
-          isNavExpanded={isNavExpanded}
-          onNavToggle={handleNavToggle}
-          filteredBookingsLength={filteredBookings.length}
-        />
-
-        {/* Booking Cards */}
-        <div className="space-y-4">
-          {filteredBookings.map((booking) => {
-            const actionButton = getActionButton(booking);
-
-            return (
-              <BookingCard
-                key={booking.id}
-                booking={booking}
-                onActionClick={handleActionClick}
-                isUpdating={isUpdating}
-                actionButton={actionButton}
-              />
-            );
+        {/* Content Cards */}
+        <div className="space-y-6">
+          {currentData.map((item, index) => {
+            if (activeTab === "my-bookings") {
+              const booking = item as BookingWithDetails;
+              const actionButton = getActionButton(booking);
+              return (
+                <div
+                  key={booking.id}
+                  className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <BookingCard
+                    booking={booking}
+                    onActionClick={handleActionClick}
+                    isUpdating={isUpdating}
+                    actionButton={actionButton}
+                  />
+                </div>
+              );
+            } else if (activeTab === "booked-taskers") {
+              const booking = item as TaskerBookingWithDetails;
+              return (
+                <div
+                  key={booking.id}
+                  className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <TaskerBookingCard
+                    booking={booking}
+                    onActionClick={handleActionClick}
+                    isUpdating={isUpdating}
+                  />
+                </div>
+              );
+            } else if (activeTab === "my-applications") {
+              const application = item as JobApplicationWithDetails;
+              return (
+                <div
+                  key={application.id}
+                  className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <JobApplicationCard
+                    application={application}
+                    onActionClick={handleActionClick}
+                    isUpdating={isUpdating}
+                  />
+                </div>
+              );
+            }
+            return null;
           })}
+
+          {/* Loading indicator for new items */}
+          {isLoadingMore && (
+            <div className="flex justify-center py-8">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+                <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-400">
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm font-medium">Loading more...</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Empty State */}
-        {!isLoading && filteredBookings.length === 0 && (
-          <EmptyState activeTab={activeTab} />
+        {!isLoading && currentData.length === 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-fade-in-up">
+            <EmptyState activeTab="all" />
+          </div>
         )}
 
-        {/* Load More Button */}
-        {hasMore && !isLoading && (
-          <div className="flex flex-col items-center pt-4 space-y-3">
-            {paginationError && (
-              <div className="text-center">
-                <p className="text-color-error text-sm mb-2">
-                  {paginationError}
-                </p>
+        {/* Load More Section */}
+        {hasMore && !isLoading && currentData.length > 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+            <div className="p-8">
+              <div className="flex flex-col items-center space-y-6">
+                {/* Error State */}
+                {paginationError && (
+                  <div className="text-center p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl max-w-md shadow-lg">
+                    <p className="text-red-600 dark:text-red-400 text-sm mb-4 font-medium">
+                      {paginationError}
+                    </p>
+                    <button
+                      onClick={handleRetryLoadMore}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-semibold underline transition-colors"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+
+                {/* Load More Button */}
                 <button
-                  onClick={handleRetryLoadMore}
-                  className="text-color-primary hover:text-color-primary-dark text-sm underline"
+                  onClick={() => fetchData(currentPage + 1, true)}
+                  disabled={isLoadingMore}
+                  className="group relative inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-700 border-2 border-blue-600 dark:border-blue-400 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-600/20 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
-                  Try again
+                  {isLoadingMore ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-3"></div>
+                      Loading more...
+                    </>
+                  ) : (
+                    <>
+                      <span>Load More</span>
+                      <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
                 </button>
               </div>
-            )}
-            <button
-              onClick={() => fetchBookings(currentPage + 1, true)}
-              disabled={isLoadingMore}
-              className="px-6 py-2 bg-color-primary text-color-surface rounded-lg hover:bg-color-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isLoadingMore ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-color-surface border-t-transparent rounded-full animate-spin"></div>
-                  Loading...
-                </>
-              ) : (
-                "Load More Bookings"
-              )}
-            </button>
+            </div>
           </div>
         )}
       </div>

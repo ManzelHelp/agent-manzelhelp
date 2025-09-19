@@ -45,7 +45,13 @@ interface ConfirmationDialogState {
   title: string;
   description: string;
   confirmText: string;
-  variant: "default" | "success" | "warning" | "danger";
+  variant:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 export default function CustomerBookingDetailPage({
@@ -241,7 +247,7 @@ export default function CustomerBookingDetailPage({
       title: t("confirmations.cancelCustomer.title"),
       description: t("confirmations.cancelCustomer.description"),
       confirmText: t("confirmations.cancelCustomer.confirmText"),
-      variant: "danger",
+      variant: "destructive",
     });
   }, [booking, t]);
 

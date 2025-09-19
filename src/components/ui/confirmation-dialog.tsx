@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, X } from "lucide-react";
+import { AlertCircle, X } from "lucide-react";
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
@@ -20,39 +20,56 @@ interface ConfirmationDialogProps {
   description: string;
   confirmText: string;
   cancelText?: string;
-  variant?: "default" | "success" | "warning" | "danger";
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
   isLoading?: boolean;
 }
 
 const getVariantStyles = (variant: string) => {
   switch (variant) {
-    case "success":
-      return {
-        icon: CheckCircle,
-        iconColor: "text-color-success",
-        buttonColor:
-          "bg-color-success text-color-surface hover:bg-color-success-dark",
-      };
-    case "warning":
-      return {
-        icon: AlertCircle,
-        iconColor: "text-color-warning",
-        buttonColor:
-          "bg-color-warning text-color-surface hover:bg-color-warning-dark",
-      };
-    case "danger":
+    case "destructive":
       return {
         icon: X,
-        iconColor: "text-color-error",
+        iconColor: "text-red-600 dark:text-red-400",
+        buttonColor: "bg-red-600 text-white hover:bg-red-700",
+      };
+    case "outline":
+      return {
+        icon: AlertCircle,
+        iconColor: "text-blue-600 dark:text-blue-400",
         buttonColor:
-          "bg-color-error text-color-surface hover:bg-color-error-dark",
+          "border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20",
+      };
+    case "secondary":
+      return {
+        icon: AlertCircle,
+        iconColor: "text-slate-600 dark:text-slate-400",
+        buttonColor:
+          "bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
+      };
+    case "ghost":
+      return {
+        icon: AlertCircle,
+        iconColor: "text-slate-600 dark:text-slate-400",
+        buttonColor: "hover:bg-slate-100 dark:hover:bg-slate-800",
+      };
+    case "link":
+      return {
+        icon: AlertCircle,
+        iconColor: "text-blue-600 dark:text-blue-400",
+        buttonColor:
+          "text-blue-600 underline-offset-4 hover:underline dark:text-blue-400",
       };
     default:
       return {
         icon: AlertCircle,
-        iconColor: "text-color-primary",
-        buttonColor:
-          "bg-color-primary text-color-surface hover:bg-color-primary-dark",
+        iconColor: "text-blue-600 dark:text-blue-400",
+        buttonColor: "bg-blue-600 text-white hover:bg-blue-700",
       };
   }
 };
