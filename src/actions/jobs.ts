@@ -868,3 +868,266 @@ export async function rejectJobApplication(
     return { success: false, error: "Failed to reject application" };
   }
 }
+
+export interface CreateJobApplicationData {
+  job_id: string;
+  proposed_price: number;
+  estimated_duration?: number;
+  message?: string;
+  availability?: string;
+  experience_level?: string;
+  experience_description?: string;
+  availability_details?: string;
+  is_flexible_schedule?: boolean;
+}
+
+export async function createJobApplication(
+  applicationData: CreateJobApplicationData
+): Promise<{ success: boolean; applicationId?: string; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Validate required fields
+    if (!applicationData.job_id) {
+      return { success: false, error: "Job ID is required" };
+    }
+    if (
+      !applicationData.proposed_price ||
+      applicationData.proposed_price <= 0
+    ) {
+      return { success: false, error: "Valid proposed price is required" };
+    }
+
+    // Check if job exists and is available for applications
+    const { data: job, error: jobError } = await supabase
+      .from("jobs")
+      .select(
+        "id, customer_id, status, assigned_tasker_id, max_applications, current_applications"
+      )
+      .eq("id", applicationData.job_id)
+      .single();
+
+    if (jobError || !job) {
+      return { success: false, error: "Job not found" };
+    }
+
+    // Check if user is the job owner
+    if (job.customer_id === user.id) {
+      return { success: false, error: "You cannot apply to your own job" };
+    }
+
+    // Check if job is still open for applications
+    if (job.status !== "active" && job.status !== "under_review") {
+      return {
+        success: false,
+        error: "Job is no longer accepting applications",
+      };
+    }
+
+    // Check if job already has an assigned tasker
+    if (job.assigned_tasker_id) {
+      return { success: false, error: "Job already has an assigned tasker" };
+    }
+
+    // Check if user has already applied to this job
+    const { data: existingApplication, error: existingError } = await supabase
+      .from("job_applications")
+      .select("id")
+      .eq("job_id", applicationData.job_id)
+      .eq("tasker_id", user.id)
+      .single();
+
+    if (existingApplication && !existingError) {
+      return { success: false, error: "You have already applied to this job" };
+    }
+
+    // Check application limit
+    if (
+      job.max_applications &&
+      job.current_applications >= job.max_applications
+    ) {
+      return {
+        success: false,
+        error: "Job has reached maximum application limit",
+      };
+    }
+
+    // Create the job application
+    const { data: newApplication, error: applicationError } = await supabase
+      .from("job_applications")
+      .insert({
+        job_id: applicationData.job_id,
+        tasker_id: user.id,
+        proposed_price: applicationData.proposed_price,
+        estimated_duration: applicationData.estimated_duration || null,
+        message: applicationData.message?.trim() || null,
+        availability: applicationData.availability?.trim() || null,
+        experience_level: applicationData.experience_level || null,
+        experience_description:
+          applicationData.experience_description?.trim() || null,
+        availability_details:
+          applicationData.availability_details?.trim() || null,
+        is_flexible_schedule: applicationData.is_flexible_schedule || false,
+        status: "pending",
+      })
+      .select("id")
+      .single();
+
+    if (applicationError) {
+      console.error("Error creating job application:", applicationError);
+      return {
+        success: false,
+        error: `Failed to create application: ${applicationError.message}`,
+      };
+    }
+
+    // Update job application count
+    const { error: updateCountError } = await supabase
+      .from("jobs")
+      .update({
+        current_applications: (job.current_applications || 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", applicationData.job_id);
+
+    if (updateCountError) {
+      console.error("Error updating job application count:", updateCountError);
+      // Don't fail the application creation for this
+    }
+
+    revalidatePath(`/job-offer/${applicationData.job_id}`);
+    revalidatePath("/tasker/my-jobs");
+
+    return { success: true, applicationId: newApplication.id };
+  } catch (error) {
+    console.error("Error in createJobApplication:", error);
+    return { success: false, error: "Failed to create job application" };
+  }
+}
+
+export interface JobWithCustomerDetails {
+  id: string;
+  customer_id: string;
+  service_id: number;
+  title: string;
+  description: string;
+  preferred_date: string;
+  preferred_time_start: string | null;
+  preferred_time_end: string | null;
+  is_flexible: boolean | null;
+  estimated_duration: number | null;
+  customer_budget: number | null;
+  final_price: number | null;
+  is_promoted: boolean | null;
+  promotion_expires_at: string | null;
+  promotion_boost_score: number | null;
+  assigned_tasker_id: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  images: string[] | null;
+  requirements: string | null;
+  currency: string | null;
+  address_id: string;
+  max_applications: number | null;
+  premium_applications_purchased: number | null;
+  current_applications: number | null;
+  status: string | null;
+  verification_status: string | null;
+  // Customer details
+  customer_first_name: string | null;
+  customer_last_name: string | null;
+  customer_avatar_url: string | null;
+  customer_phone: string | null;
+  customer_email: string | null;
+  customer_created_at: string | null;
+  // Address details
+  street_address: string | null;
+  city: string | null;
+  region: string | null;
+  postal_code: string | null;
+  country: string | null;
+  // Category and service names
+  category_name_en?: string;
+  service_name_en?: string;
+  // Application count
+  application_count: number;
+}
+
+export async function getJobWithCustomerDetails(
+  jobId: string
+): Promise<JobWithCustomerDetails | null> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("jobs")
+      .select(
+        `
+        *,
+        application_count:job_applications(count),
+        customer:users!jobs_customer_id_fkey(
+          first_name,
+          last_name,
+          avatar_url,
+          phone,
+          email,
+          created_at
+        ),
+        address:addresses(
+          street_address,
+          city,
+          region,
+          postal_code,
+          country
+        )
+      `
+      )
+      .eq("id", jobId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return null; // Job not found
+      }
+      console.error("Error fetching job:", error);
+      throw new Error(`Failed to fetch job: ${error.message}`);
+    }
+
+    const { categoryName, serviceName } = getCategoryAndServiceNames(
+      data.service_id
+    );
+
+    return {
+      ...data,
+      application_count: data.application_count?.[0]?.count || 0,
+      category_name_en: categoryName,
+      service_name_en: serviceName,
+      customer_first_name: data.customer?.first_name,
+      customer_last_name: data.customer?.last_name,
+      customer_avatar_url: data.customer?.avatar_url,
+      customer_phone: data.customer?.phone,
+      customer_email: data.customer?.email,
+      customer_created_at: data.customer?.created_at,
+      street_address: data.address?.street_address,
+      city: data.address?.city,
+      region: data.address?.region,
+      postal_code: data.address?.postal_code,
+      country: data.address?.country,
+    };
+  } catch (error) {
+    console.error("Error in getJobWithCustomerDetails:", error);
+    throw error;
+  }
+}
