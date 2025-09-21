@@ -478,7 +478,7 @@ export default function JobOfferPage() {
                             {jobData.customer_created_at
                               ? format(
                                   new Date(jobData.customer_created_at),
-                                  "MMM 'yy"
+                                  "MMM yy"
                                 )
                               : "N/A"}
                           </p>

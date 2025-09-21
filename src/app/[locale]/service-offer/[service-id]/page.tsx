@@ -525,7 +525,7 @@ export default function TaskerOfferPage() {
                       {serviceData.tasker.created_at
                         ? format(
                             new Date(serviceData.tasker.created_at),
-                            "MMM 'yy"
+                            "MMM yy"
                           )
                         : "N/A"}
                     </div>
