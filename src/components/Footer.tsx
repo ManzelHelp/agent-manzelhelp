@@ -12,7 +12,7 @@ function Footer() {
     <footer className="w-full bg-[var(--color-surface)] border-t border-[var(--color-border)] py-12 px-4 text-[var(--color-text-secondary)]">
       <div className="max-w-7xl mx-auto">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* About Us */}
           <div className="lg:col-span-1">
             <h3
@@ -116,13 +116,13 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Services */}
+          {/* For Customers */}
           <div>
             <h3
               className="text-lg font-semibold mb-4 text-[var(--color-text-primary)]"
               style={{ fontFamily: "var(--font-sans)" }}
             >
-              {t("services")}
+              For Customers
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
@@ -135,6 +135,50 @@ function Footer() {
               </li>
               <li>
                 <Link
+                  href="/how-does-it-work"
+                  className="hover:text-[var(--color-primary)] transition-colors"
+                >
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services"
+                  className="hover:text-[var(--color-primary)] transition-colors"
+                >
+                  Browse Services
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/pricing"
+                  className="hover:text-[var(--color-primary)] transition-colors"
+                >
+                  Pricing Guide
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/safety"
+                  className="hover:text-[var(--color-primary)] transition-colors"
+                >
+                  Safety & Trust
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* For Taskers */}
+          <div>
+            <h3
+              className="text-lg font-semibold mb-4 text-[var(--color-text-primary)]"
+              style={{ fontFamily: "var(--font-sans)" }}
+            >
+              For Taskers
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link
                   href="/become-a-helper"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
@@ -143,18 +187,34 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/search"
+                  href="/tasker-guide"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  {t("searchServices")}
+                  Getting Started
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/popular-services"
+                  href="/earnings"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  {t("popularServices")}
+                  Earnings Calculator
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/tasker-resources"
+                  className="hover:text-[var(--color-primary)] transition-colors"
+                >
+                  Resources
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/success-stories"
+                  className="hover:text-[var(--color-primary)] transition-colors"
+                >
+                  Success Stories
                 </Link>
               </li>
             </ul>
