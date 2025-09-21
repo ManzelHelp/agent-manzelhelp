@@ -3,7 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { User } from "@/types/supabase";
 import { Card } from "./ui/card";
-import { Clock, Shield, ArrowRight, Calendar, DollarSign } from "lucide-react";
+import {
+  Clock,
+  Shield,
+  ArrowRight,
+  Calendar,
+  DollarSign,
+  Users,
+} from "lucide-react";
 import { useLocale } from "next-intl";
 
 interface Job {
@@ -113,8 +120,11 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
                 Promoted
               </div>
             )}
-            <div className="px-2 py-1 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)] font-medium">
-              {job.current_applications}/{job.max_applications} applications
+            <div className="flex items-center gap-1 px-2 py-1 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)] font-medium">
+              <Users size={12} />
+              <span>
+                {job.current_applications}/{job.max_applications} applied
+              </span>
             </div>
           </div>
         </div>
