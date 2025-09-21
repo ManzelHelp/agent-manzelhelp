@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { Card } from "./ui/card";
-import { Button } from "./ui/button";
 import {
   ArrowRight,
   Sparkles,
@@ -123,21 +122,6 @@ function PopularServices({ categories, locale }: PopularServicesProps) {
               </Link>
             );
           })}
-        </div>
-
-        {/* Enhanced View All Services Button */}
-        <div className="text-center mt-12 sm:mt-16">
-          <Link href={`/${locale}/search/services`}>
-            <Button
-              size="lg"
-              className="group bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] hover:from-[var(--color-primary-dark)] hover:to-[var(--color-primary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0"
-            >
-              <span className="flex items-center gap-3">
-                View All Services
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-              </span>
-            </Button>
-          </Link>
         </div>
 
         {/* Trust Indicators */}

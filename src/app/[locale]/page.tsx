@@ -514,7 +514,7 @@ export default async function HomePage({
               </p>
 
               {/* Enhanced Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-2 max-w-3xl mx-auto">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-2 max-w-2xl mx-auto">
                 <Link href={`/${locale}/search/services`}>
                   <Button
                     size="lg"
@@ -535,18 +535,6 @@ export default async function HomePage({
                     <span className="flex items-center justify-center gap-3">
                       <Briefcase className="h-5 w-5" />
                       Find Jobs
-                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                    </span>
-                  </Button>
-                </Link>
-                <Link href={`/${locale}/become-a-helper`}>
-                  <Button
-                    size="lg"
-                    className="group bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border-2 border-white/30 hover:border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 px-6 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl flex-1"
-                  >
-                    <span className="flex items-center justify-center gap-3">
-                      <Star className="h-5 w-5" />
-                      Become a Tasker
                       <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
                   </Button>

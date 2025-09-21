@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { ArrowRight, Briefcase, Users, DollarSign } from "lucide-react";
+import { ArrowRight, Briefcase, Users, DollarSign, Star } from "lucide-react";
 import JobOfferCard from "./JobOfferCard";
 import { User } from "@/types/supabase";
 
@@ -80,8 +80,8 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
           </div>
         )}
 
-        {/* Enhanced View All Jobs Button */}
-        <div className="text-center mt-12 sm:mt-16">
+        {/* Enhanced View All Jobs and Become Tasker Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mt-12 sm:mt-16">
           <Link href={`/${locale}/search/jobs`}>
             <Button
               size="lg"
@@ -89,6 +89,18 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
             >
               <span className="flex items-center gap-3">
                 View All Jobs
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </span>
+            </Button>
+          </Link>
+          <Link href={`/${locale}/become-a-helper`}>
+            <Button
+              size="lg"
+              className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0"
+            >
+              <span className="flex items-center gap-3">
+                <Star className="h-5 w-5" />
+                Become a Tasker
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>

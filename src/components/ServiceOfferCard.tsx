@@ -144,7 +144,7 @@ function ServiceOfferCard({
               )}
             </div>
             <Link
-              href={`/${locale}/tasker-offer/${service.id}`}
+              href={`/${locale}/service-offer/${service.id}`}
               className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white rounded-xl hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               View Details
