@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
           return Response.redirect(redirectTo.toString());
         }
 
-        // Create related records (user_stats, tasker_profile if needed)
-        await createUserRecordsAction(data.user.id, userRole as string);
+        // Create related records (user_stats for all users)
+        await createUserRecordsAction(data.user.id);
 
         // User is now authenticated and created, get their profile data
         const { data: profile, error: profileError } = await supabase

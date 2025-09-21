@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
-import { getUserProfileAction, createUserRecordsAction } from "@/actions/auth";
+import { getUserProfileAction } from "@/actions/auth";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
@@ -30,28 +30,31 @@ export default function ConfirmSuccessPage() {
         if (profileResult.success && profileResult.user) {
           const user = profileResult.user;
 
-          // Create initial user records (stats, tasker profile if applicable)
-          await createUserRecordsAction(user.id, user.role || userRole);
-
           // Store user data in Zustand
           setUser(user);
 
           // Show success message based on user role
           const roleMessage =
             user.role === "tasker"
-              ? "Welcome! Your account is ready. Complete your profile to start helping others."
-              : "Welcome! Your account is ready. Start finding help for your tasks.";
+              ? "Welcome! Your account is ready. Let's complete your profile to start helping others."
+              : "Welcome! Your account is ready. Let's show you how it works.";
 
           toast.success("Email confirmed successfully!", {
             description: roleMessage,
           });
 
-          // Redirect to appropriate dashboard based on role
+          // Redirect based on role (fresh signup, so taskers haven't completed profile yet)
           const role = user.role || userRole;
 
           // Small delay for better UX
           setTimeout(() => {
-            router.replace(`/${role}/dashboard`);
+            if (role === "tasker") {
+              // Tasker just signed up, send to finish-signUp
+              router.replace("/finish-signUp");
+            } else {
+              // Customer goes to how-it-works page
+              router.replace("/how-does-It-work");
+            }
           }, 1500);
         } else {
           // Handle profile fetch failure

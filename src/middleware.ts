@@ -17,7 +17,12 @@ const SYSTEM_ROUTES = [
 ];
 
 // Routes that need auth checks
-const PROTECTED_ROUTES = ["/customer/", "/tasker/"];
+const PROTECTED_ROUTES = [
+  "/customer/",
+  "/tasker/",
+  "/confirm-success",
+  "/finish-signUp",
+];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;

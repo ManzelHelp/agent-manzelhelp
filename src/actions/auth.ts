@@ -102,7 +102,7 @@ export const signUpAction = async (
     }
 
     // Validate user role against schema
-    const validRoles = ["customer", "tasker", "support", "admin"];
+    const validRoles = ["customer", "tasker"];
     if (!validRoles.includes(userRole)) {
       throw new Error(`Invalid role. Must be one of: ${validRoles.join(", ")}`);
     }
@@ -227,14 +227,11 @@ export const getUserProfileAction = async () => {
 };
 
 // Action to create initial user records after email confirmation
-export const createUserRecordsAction = async (
-  userId: string,
-  userRole: string
-) => {
+export const createUserRecordsAction = async (userId: string) => {
   try {
     const supabase = await createClient();
 
-    // Create user_stats record
+    // Create user_stats record for all users
     const { error: statsError } = await supabase.from("user_stats").insert([
       {
         id: userId,
@@ -253,28 +250,173 @@ export const createUserRecordsAction = async (
       console.error("Failed to create user_stats:", statsError);
     }
 
-    // If user is a tasker, create tasker_profile
-    if (userRole === "tasker") {
-      const { error: profileError } = await supabase
-        .from("tasker_profiles")
-        .insert([
-          {
-            id: userId,
-            experience_level: "beginner",
-            service_radius_km: 50,
-            is_available: true,
-            verification_status: "unverified",
-          },
-        ]);
-
-      if (profileError) {
-        console.error("Failed to create tasker_profile:", profileError);
-      }
-    }
+    // Note: For taskers, we DON'T create tasker_profile here
+    // It will be created in the finish-signUp page after they complete their profile
 
     return { errorMessage: null };
   } catch (error) {
     console.error("Error creating user records:", error);
     return { errorMessage: "Failed to create user records" };
+  }
+};
+
+// Action to create tasker profile after completing finish-signUp
+export const createTaskerProfileAction = async (formData: {
+  experience_level: string;
+  bio: string;
+  service_radius_km: number;
+  is_available: boolean;
+  phone?: string;
+  identity_document_url: string;
+  operation_hours: Record<
+    string,
+    { enabled: boolean; startTime: string; endTime: string }
+  >;
+}) => {
+  try {
+    const supabase = await createClient();
+
+    // Get current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error("You must be logged in to complete your tasker profile");
+    }
+
+    // Validate form data
+    if (!formData.experience_level) {
+      throw new Error("Experience level is required");
+    }
+
+    if (!formData.bio || formData.bio.trim().length < 50) {
+      throw new Error("Bio must be at least 50 characters long");
+    }
+
+    if (formData.service_radius_km < 1 || formData.service_radius_km > 200) {
+      throw new Error("Service radius must be between 1 and 200 km");
+    }
+
+    // Check if user is already a tasker and has a profile
+    const { data: existingProfile } = await supabase
+      .from("tasker_profiles")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    if (existingProfile) {
+      throw new Error("Tasker profile already exists");
+    }
+
+    // Create tasker profile
+    const { error: profileError } = await supabase
+      .from("tasker_profiles")
+      .insert({
+        id: user.id,
+        experience_level: formData.experience_level,
+        bio: formData.bio.trim(),
+        service_radius_km: formData.service_radius_km,
+        is_available: formData.is_available,
+        operation_hours: formData.operation_hours,
+        verification_status: "unverified",
+        identity_document_url: formData.identity_document_url,
+      });
+
+    // Update user phone number if provided
+    if (formData.phone) {
+      const { error: phoneError } = await supabase
+        .from("users")
+        .update({ phone: formData.phone })
+        .eq("id", user.id);
+
+      if (phoneError) {
+        console.error("Failed to update phone number:", phoneError);
+        // Don't throw error here as profile creation was successful
+      }
+    }
+
+    if (profileError) {
+      throw new Error(
+        `Failed to create tasker profile: ${profileError.message}`
+      );
+    }
+
+    return {
+      success: true,
+      errorMessage: null,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      ...handleError(error),
+    };
+  }
+};
+
+// Action to check if tasker has completed their profile setup
+export const hasTaskerCompletedProfileAction = async (): Promise<{
+  hasCompleted: boolean;
+  errorMessage?: string;
+}> => {
+  try {
+    const supabase = await createClient();
+
+    // Get current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return {
+        hasCompleted: false,
+        errorMessage: "User not authenticated",
+      };
+    }
+
+    // Check if user is a tasker
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (userError || !userData) {
+      return {
+        hasCompleted: false,
+        errorMessage: "Failed to fetch user data",
+      };
+    }
+
+    if (userData.role !== "tasker") {
+      return {
+        hasCompleted: false,
+        errorMessage: "User is not a tasker",
+      };
+    }
+
+    // Check if tasker profile exists
+    const { data: profile, error: profileError } = await supabase
+      .from("tasker_profiles")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError && profileError.code !== "PGRST116") {
+      // PGRST116 is "not found" error, which is expected if no profile exists
+      return {
+        hasCompleted: false,
+        errorMessage: "Failed to check tasker profile",
+      };
+    }
+
+    return {
+      hasCompleted: !!profile,
+    };
+  } catch (error) {
+    return {
+      hasCompleted: false,
+      ...handleError(error),
+    };
   }
 };
