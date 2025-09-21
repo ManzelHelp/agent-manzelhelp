@@ -751,6 +751,7 @@
   "search": {
     "filters": "Filters",
     "priceRange": "Price Range",
+    "budgetRange": "Budget Range",
     "location": "Location",
     "enterLocation": "Enter location",
     "rating": "Rating",
@@ -758,11 +759,14 @@
     "categories": "Categories",
     "allCategories": "All Categories",
     "searchResults": "Search Results for \"{query}\"",
+    "jobSearchResults": "Job Search Results for \"{query}\"",
     "allServices": "All Services",
+    "allJobs": "All Jobs",
     "resultsFound": "results found",
     "noResults": "No Results Found",
     "tryAdjustingFilters": "Try adjusting your filters or search criteria",
     "placeholder": "Search for services, professionals, or skills...",
+    "jobPlaceholder": "Search for jobs, tasks, or opportunities...",
     "searchButton": "Search",
     "popularSearches": "Popular searches",
     "pressEnterToSearch": "Press Enter to search for \"{query}\"",
@@ -772,6 +776,16 @@
       "petCare": "Pet Care",
       "furnitureAssembly": "Furniture Assembly",
       "eventPlanning": "Event Planning"
+    },
+    "popularJobTerms": {
+      "houseCleaning": "House Cleaning",
+      "petCare": "Pet Care",
+      "furnitureAssembly": "Furniture Assembly",
+      "eventPlanning": "Event Planning",
+      "gardening": "Gardening",
+      "handyman": "Handyman",
+      "tutoring": "Tutoring",
+      "delivery": "Delivery"
     }
   },
   "notifications": {

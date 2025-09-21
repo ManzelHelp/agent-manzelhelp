@@ -9,9 +9,11 @@ import { Filter, X, ChevronDown } from "lucide-react";
 interface MobileFiltersDropdownProps {
   categories: Pick<ServiceCategory, "id" | "name_en" | "name_fr" | "name_ar">[];
   locale: string;
+  type?: "services" | "jobs";
   translations: {
     filters: string;
     priceRange: string;
+    budgetRange: string;
     location: string;
     enterLocation: string;
     rating: string;
@@ -24,6 +26,7 @@ interface MobileFiltersDropdownProps {
 export default function MobileFiltersDropdown({
   categories,
   locale,
+  type = "services",
   translations: t,
 }: MobileFiltersDropdownProps) {
   const router = useRouter();
@@ -123,7 +126,7 @@ export default function MobileFiltersDropdown({
     if (searchQuery) params.set("q", searchQuery);
 
     // Navigate with updated filters
-    router.push(`/${locale}/search?${params.toString()}`);
+    router.push(`/${locale}/search/${type}?${params.toString()}`);
     setIsOpen(false);
   };
 
@@ -196,7 +199,7 @@ export default function MobileFiltersDropdown({
                   if (selectedRatings.length > 0)
                     params.set("ratings", selectedRatings.join(","));
 
-                  router.push(`/${locale}/search?${params.toString()}`);
+                  router.push(`/${locale}/search/${type}?${params.toString()}`);
                 }}
               >
                 <option value="">{t.allCategories}</option>
@@ -209,10 +212,10 @@ export default function MobileFiltersDropdown({
               </select>
             </div>
 
-            {/* Price Range */}
+            {/* Price/Budget Range */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--color-text-primary)]">
-                {t.priceRange}
+                {type === "jobs" ? t.budgetRange : t.priceRange}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -248,44 +251,46 @@ export default function MobileFiltersDropdown({
               />
             </div>
 
-            {/* Rating Filter */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--color-text-primary)]">
-                {t.rating}
-              </label>
+            {/* Rating Filter - Only for services */}
+            {type === "services" && (
               <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <label
-                    key={rating}
-                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--color-accent)]/5 transition-colors cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border border-[var(--color-border)] text-[var(--color-secondary)]"
-                      checked={selectedRatings.includes(rating.toString())}
-                      onChange={() => handleRatingChange(rating.toString())}
-                    />
-                    <span className="flex items-center text-sm text-[var(--color-text-primary)]">
-                      <div className="flex items-center mr-2">
-                        {[...Array(5)].map((_, i) => (
-                          <span
-                            key={i}
-                            className={`text-sm ${
-                              i < rating ? "text-yellow-400" : "text-gray-300"
-                            }`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-[var(--color-text-secondary)]">
-                        {rating} star{rating > 1 ? "s" : ""} & up
+                <label className="text-sm font-medium text-[var(--color-text-primary)]">
+                  {t.rating}
+                </label>
+                <div className="space-y-2">
+                  {[5, 4, 3, 2, 1].map((rating) => (
+                    <label
+                      key={rating}
+                      className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--color-accent)]/5 transition-colors cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 rounded border border-[var(--color-border)] text-[var(--color-secondary)]"
+                        checked={selectedRatings.includes(rating.toString())}
+                        onChange={() => handleRatingChange(rating.toString())}
+                      />
+                      <span className="flex items-center text-sm text-[var(--color-text-primary)]">
+                        <div className="flex items-center mr-2">
+                          {[...Array(5)].map((_, i) => (
+                            <span
+                              key={i}
+                              className={`text-sm ${
+                                i < rating ? "text-yellow-400" : "text-gray-300"
+                              }`}
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-[var(--color-text-secondary)]">
+                          {rating} star{rating > 1 ? "s" : ""} & up
+                        </span>
                       </span>
-                    </span>
-                  </label>
-                ))}
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Apply Button */}
             <Button

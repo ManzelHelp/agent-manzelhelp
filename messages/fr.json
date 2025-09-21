@@ -751,6 +751,7 @@
   "search": {
     "filters": "Filtres",
     "priceRange": "Gamme de prix",
+    "budgetRange": "Gamme de budget",
     "location": "Emplacement",
     "enterLocation": "Entrer l'emplacement",
     "rating": "Note",
@@ -758,11 +759,14 @@
     "categories": "Catégories",
     "allCategories": "Toutes les catégories",
     "searchResults": "Résultats de recherche pour \"{query}\"",
+    "jobSearchResults": "Résultats de recherche d'emploi pour \"{query}\"",
     "allServices": "Tous les services",
+    "allJobs": "Tous les emplois",
     "resultsFound": "résultats trouvés",
     "noResults": "Aucun résultat trouvé",
     "tryAdjustingFilters": "Essayez d'ajuster vos filtres ou critères de recherche",
     "placeholder": "Rechercher des services, professionnels ou compétences...",
+    "jobPlaceholder": "Rechercher des emplois, tâches ou opportunités...",
     "searchButton": "Rechercher",
     "popularSearches": "Recherches populaires",
     "pressEnterToSearch": "Appuyez sur Entrée pour rechercher \"{query}\"",
@@ -772,6 +776,16 @@
       "petCare": "Soins aux animaux",
       "furnitureAssembly": "Montage de meubles",
       "eventPlanning": "Planification d'événements"
+    },
+    "popularJobTerms": {
+      "houseCleaning": "Nettoyage de maison",
+      "petCare": "Soins aux animaux",
+      "furnitureAssembly": "Montage de meubles",
+      "eventPlanning": "Planification d'événements",
+      "gardening": "Jardinage",
+      "handyman": "Bricoleur",
+      "tutoring": "Tutorat",
+      "delivery": "Livraison"
     }
   },
   "notifications": {

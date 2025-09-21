@@ -1,4 +1,4 @@
-import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
+import SearchBar from "@/components/buttons/SearchBar";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
@@ -21,6 +21,7 @@ import {
   Zap,
   Heart,
   TrendingUp,
+  Briefcase,
 } from "lucide-react";
 import { getParentCategoriesForSearch } from "@/lib/categories";
 
@@ -204,7 +205,7 @@ export default async function HomePage({
           {/* Enhanced Search Bar */}
           <div className="max-w-3xl mx-auto mb-8 sm:mb-12 px-2 relative z-10">
             <div className="relative">
-              <ServiceSearchBar />
+              <SearchBar type="services" />
               <div className="absolute -top-2 -right-2 w-4 h-4 bg-[var(--color-secondary)] rounded-full animate-ping"></div>
             </div>
           </div>
@@ -513,11 +514,11 @@ export default async function HomePage({
               </p>
 
               {/* Enhanced Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-2 max-w-2xl mx-auto">
-                <Link href={`/${locale}/search`}>
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-2 max-w-3xl mx-auto">
+                <Link href={`/${locale}/search/services`}>
                   <Button
                     size="lg"
-                    className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0 flex-1"
+                    className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-6 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0 flex-1"
                   >
                     <span className="flex items-center justify-center gap-3">
                       <Users className="h-5 w-5" />
@@ -526,10 +527,22 @@ export default async function HomePage({
                     </span>
                   </Button>
                 </Link>
+                <Link href={`/${locale}/search/jobs`}>
+                  <Button
+                    size="lg"
+                    className="group bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-light)] hover:from-[var(--color-accent-dark)] hover:to-[var(--color-accent)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-6 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0 flex-1"
+                  >
+                    <span className="flex items-center justify-center gap-3">
+                      <Briefcase className="h-5 w-5" />
+                      Find Jobs
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    </span>
+                  </Button>
+                </Link>
                 <Link href={`/${locale}/become-a-helper`}>
                   <Button
                     size="lg"
-                    className="group bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border-2 border-white/30 hover:border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl flex-1"
+                    className="group bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border-2 border-white/30 hover:border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 px-6 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl flex-1"
                   >
                     <span className="flex items-center justify-center gap-3">
                       <Star className="h-5 w-5" />

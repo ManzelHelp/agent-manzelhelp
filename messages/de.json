@@ -751,6 +751,7 @@
   "search": {
     "filters": "Filter",
     "priceRange": "Preisbereich",
+    "budgetRange": "Budgetbereich",
     "location": "Standort",
     "enterLocation": "Standort eingeben",
     "rating": "Bewertung",
@@ -758,11 +759,14 @@
     "categories": "Kategorien",
     "allCategories": "Alle Kategorien",
     "searchResults": "Suchergebnisse für \"{query}\"",
+    "jobSearchResults": "Job-Suchergebnisse für \"{query}\"",
     "allServices": "Alle Dienstleistungen",
+    "allJobs": "Alle Jobs",
     "resultsFound": "Ergebnisse gefunden",
     "noResults": "Keine Ergebnisse gefunden",
     "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen",
     "placeholder": "Nach Dienstleistungen, Fachkräften oder Fähigkeiten suchen...",
+    "jobPlaceholder": "Nach Jobs, Aufgaben oder Möglichkeiten suchen...",
     "searchButton": "Suchen",
     "popularSearches": "Beliebte Suchbegriffe",
     "pressEnterToSearch": "Drücken Sie Enter, um nach \"{query}\" zu suchen",
@@ -772,6 +776,16 @@
       "petCare": "Tierpflege",
       "furnitureAssembly": "Möbelmontage",
       "eventPlanning": "Eventplanung"
+    },
+    "popularJobTerms": {
+      "houseCleaning": "Hausreinigung",
+      "petCare": "Tierpflege",
+      "furnitureAssembly": "Möbelmontage",
+      "eventPlanning": "Eventplanung",
+      "gardening": "Gartenarbeit",
+      "handyman": "Handwerker",
+      "tutoring": "Nachhilfe",
+      "delivery": "Lieferung"
     }
   },
   "notifications": {

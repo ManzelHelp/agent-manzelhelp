@@ -1,20 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/supabase/server";
-import ServiceSearchBar from "@/components/buttons/ServiceSearchBar";
-import ServiceOfferCard from "@/components/ServiceOfferCard";
-import ServiceCardSkeleton from "@/components/ServiceCardSkeleton";
+import SearchBar from "@/components/buttons/SearchBar";
+import JobOfferCard from "@/components/JobOfferCard";
+import SearchCardSkeleton from "@/components/SearchCardSkeleton";
 import SearchFilters from "@/components/filters/SearchFilters";
 import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import {
-  PricingType,
-  ServiceStatus,
-  ServiceVerificationStatus,
-  UserRole,
-  VerificationStatus,
-} from "@/types/supabase";
 import { getParentCategoriesForSearch } from "@/lib/categories";
 
 interface SearchPageProps {
@@ -33,47 +26,49 @@ interface SearchPageProps {
   };
 }
 
-// Interface matching the service_listing_view structure
-interface ServiceListing {
-  tasker_service_id: string;
+// Interface matching the jobs table structure with related data
+interface JobListing {
+  id: string;
+  customer_id: string;
   service_id: number;
-  tasker_id: string;
   title: string;
   description: string;
-  price: number;
-  pricing_type: string;
-  service_status: string;
-  verification_status: string;
-  has_active_booking: boolean;
+  preferred_date: string;
+  preferred_time_start: string | null;
+  preferred_time_end: string | null;
+  is_flexible: boolean;
+  estimated_duration: number | null;
+  customer_budget: number | null;
+  final_price: number | null;
+  is_promoted: boolean;
+  promotion_expires_at: string | null;
+  promotion_boost_score: number | null;
+  assigned_tasker_id: string | null;
+  started_at: string | null;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
-  portfolio_images: object | null;
-  minimum_duration: number | null;
-  service_area: string;
-  extra_fees: number | null;
-  tasker_first_name: string;
-  tasker_last_name: string;
-  tasker_avatar_url: string;
-  tasker_phone: string;
-  tasker_created_at: string;
-  tasker_role: string;
-  experience_level: string;
-  tasker_bio: string;
-  tasker_verification_status: string;
-  service_radius_km: number;
-  tasker_is_available: boolean;
-  operation_hours: object | null;
-  company_id: string;
-  tasker_rating: number;
-  total_reviews: number;
-  completed_jobs: number;
-  total_earnings: number;
-  response_time_hours: number;
-  cancellation_rate: number;
-  company_name: string;
-  company_city: string;
-  company_verification_status: string;
-  is_available_for_booking: boolean;
+  images: object | null;
+  requirements: string | null;
+  currency: string | null;
+  address_id: string;
+  max_applications: number | null;
+  premium_applications_purchased: number | null;
+  current_applications: number | null;
+  status: string | null;
+  // Related data from joins
+  customer_first_name: string;
+  customer_last_name: string;
+  customer_avatar_url: string;
+  customer_verification_status: string;
+  category_name_en: string;
+  category_name_de: string;
+  category_name_fr: string;
+  street_address: string;
+  city: string;
+  region: string;
+  postal_code: string;
+  country: string;
 }
 
 export async function generateMetadata({
@@ -86,7 +81,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "search" });
 
   const query = resolvedSearchParams.q;
-  const title = query ? t("searchResults", { query }) : t("allServices");
+  const title = query ? t("jobSearchResults", { query }) : t("allJobs");
 
   return {
     title,
@@ -108,11 +103,28 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   // Use centralized categories - get all parent categories for search
   const categories = getParentCategoriesForSearch();
 
-  // Fetch services using the service_listing_view which has all the data we need
+  // Fetch jobs with related data using proper joins
   let query = supabase
-    .from("service_listing_view")
-    .select("*")
-    .eq("service_status", "active");
+    .from("jobs")
+    .select(
+      `
+      *,
+      users!customer_id (
+        first_name,
+        last_name,
+        avatar_url,
+        verification_status
+      ),
+      addresses!address_id (
+        street_address,
+        city,
+        region,
+        postal_code,
+        country
+      )
+    `
+    )
+    .eq("status", "under_review");
 
   // Apply filters
   if (resolvedSearchParams.q && resolvedSearchParams.q.trim()) {
@@ -124,39 +136,37 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   }
 
   if (resolvedSearchParams.minPrice) {
-    query = query.gte("price", parseFloat(resolvedSearchParams.minPrice));
+    query = query.gte(
+      "customer_budget",
+      parseFloat(resolvedSearchParams.minPrice)
+    );
   }
 
   if (resolvedSearchParams.maxPrice) {
-    query = query.lte("price", parseFloat(resolvedSearchParams.maxPrice));
+    query = query.lte(
+      "customer_budget",
+      parseFloat(resolvedSearchParams.maxPrice)
+    );
   }
 
   if (resolvedSearchParams.location) {
-    query = query.ilike("service_area", `%${resolvedSearchParams.location}%`);
-  }
-
-  // Apply rating filter server-side for accurate pagination
-  if (resolvedSearchParams.ratings) {
-    const minRating = Math.min(
-      ...resolvedSearchParams.ratings.split(",").map((r) => parseInt(r))
-    );
-    query = query.gte("tasker_rating", minRating);
+    query = query.ilike("addresses.city", `%${resolvedSearchParams.location}%`);
   }
 
   // Apply sorting
   const sortBy = resolvedSearchParams.sort || "created_at";
   switch (sortBy) {
     case "price_low":
-      query = query.order("price", { ascending: true });
+      query = query.order("customer_budget", { ascending: true });
       break;
     case "price_high":
-      query = query.order("price", { ascending: false });
+      query = query.order("customer_budget", { ascending: false });
       break;
-    case "rating":
-      query = query.order("tasker_rating", { ascending: false });
+    case "date":
+      query = query.order("preferred_date", { ascending: true });
       break;
-    case "reviews":
-      query = query.order("total_reviews", { ascending: false });
+    case "applications":
+      query = query.order("current_applications", { ascending: false });
       break;
     default:
       query = query.order("created_at", { ascending: false });
@@ -164,17 +174,17 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
 
   // Add pagination with validation
   const page = Math.max(1, parseInt(resolvedSearchParams.page || "1"));
-  const limit = 12; // Show 12 services per page
+  const limit = 12; // Show 12 jobs per page
   const offset = (page - 1) * limit;
 
   const {
-    data: services,
+    data: jobs,
     error,
     count,
   } = await query.range(offset, offset + limit - 1);
 
   if (error) {
-    console.error("Error fetching services:", error);
+    console.error("Error fetching jobs:", error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center p-8">
@@ -194,13 +204,13 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
             </svg>
           </div>
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
-            Error Loading Services
+            Error Loading Jobs
           </h2>
           <p className="text-[var(--color-text-secondary)] mb-4">
-            We're having trouble loading the services. Please try again later.
+            We're having trouble loading the jobs. Please try again later.
           </p>
           <Link
-            href={`/${locale}/search`}
+            href={`/${locale}/search/jobs`}
             className="inline-flex items-center px-4 py-2 bg-[var(--color-secondary)] text-white rounded-lg hover:bg-[var(--color-secondary-dark)] transition-colors"
           >
             Try Again
@@ -210,7 +220,40 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
     );
   }
 
-  const filteredServices = (services || []) as ServiceListing[];
+  // Transform the data to match our interface
+  const transformedJobs = (jobs || []).map(
+    (
+      job: JobListing & {
+        users: {
+          first_name: string;
+          last_name: string;
+          avatar_url: string;
+          verification_status: string;
+        } | null;
+        addresses: {
+          street_address: string;
+          city: string;
+          region: string;
+          postal_code: string;
+          country: string;
+        } | null;
+      }
+    ) => ({
+      ...job,
+      customer_first_name: job.users?.first_name || "",
+      customer_last_name: job.users?.last_name || "",
+      customer_avatar_url: job.users?.avatar_url || "",
+      customer_verification_status: job.users?.verification_status || "",
+      category_name_en: "", // Category info not available in jobs table
+      category_name_de: "", // Category info not available in jobs table
+      category_name_fr: "", // Category info not available in jobs table
+      street_address: job.addresses?.street_address || "",
+      city: job.addresses?.city || "",
+      region: job.addresses?.region || "",
+      postal_code: job.addresses?.postal_code || "",
+      country: job.addresses?.country || "",
+    })
+  ) as JobListing[];
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
@@ -222,16 +265,16 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-3 sm:mb-4 animate-fade-in-up">
               {resolvedSearchParams.q
                 ? `Search Results for "${resolvedSearchParams.q}"`
-                : "Find Your Perfect Service"}
+                : "Find Your Perfect Job"}
             </h1>
             <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto animate-fade-in-up animate-delay-200">
               {resolvedSearchParams.q
-                ? "Discover amazing services tailored to your needs"
-                : "Connect with skilled professionals in your area"}
+                ? "Discover amazing job opportunities tailored to your skills"
+                : "Connect with customers looking for your expertise"}
             </p>
           </div>
           <div className="max-w-2xl mx-auto animate-fade-in-up animate-delay-300">
-            <ServiceSearchBar defaultValue={resolvedSearchParams.q} />
+            <SearchBar defaultValue={resolvedSearchParams.q} type="jobs" />
           </div>
         </div>
       </div>
@@ -244,9 +287,11 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
               <SearchFilters
                 categories={categories}
                 locale={locale}
+                type="jobs"
                 translations={{
                   filters: t("filters"),
                   priceRange: t("priceRange"),
+                  budgetRange: t("budgetRange"),
                   location: t("location"),
                   enterLocation: t("enterLocation"),
                   rating: t("rating"),
@@ -265,9 +310,11 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
               <MobileFiltersDropdown
                 categories={categories}
                 locale={locale}
+                type="jobs"
                 translations={{
                   filters: t("filters"),
                   priceRange: t("priceRange"),
+                  budgetRange: t("budgetRange"),
                   location: t("location"),
                   enterLocation: t("enterLocation"),
                   rating: t("rating"),
@@ -284,12 +331,14 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   <div className="flex-1">
                     <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
                       {resolvedSearchParams.q
-                        ? t("searchResults", { query: resolvedSearchParams.q })
-                        : t("allServices")}
+                        ? t("jobSearchResults", {
+                            query: resolvedSearchParams.q,
+                          })
+                        : t("allJobs")}
                     </h2>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-secondary)]/10 text-[var(--color-secondary)] w-fit">
-                        {count || filteredServices.length} {t("resultsFound")}
+                        {count || transformedJobs.length} {t("resultsFound")}
                       </span>
                       {resolvedSearchParams.q && (
                         <span className="text-[var(--color-text-secondary)] text-sm">
@@ -303,6 +352,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   <div className="animate-fade-in-up animate-delay-200 w-full sm:w-auto">
                     <SortDropdown
                       currentSort={resolvedSearchParams.sort || "created_at"}
+                      type="jobs"
                     />
                   </div>
                 </div>
@@ -319,60 +369,49 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       className="animate-fade-in-up"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <ServiceCardSkeleton />
+                      <SearchCardSkeleton type="job" />
                     </div>
                   ))}
                 </div>
               }
             >
-              {filteredServices.length > 0 ? (
+              {transformedJobs.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                  {filteredServices.map((service, index) => (
+                  {transformedJobs.map((job, index) => (
                     <div
-                      key={service.tasker_service_id}
+                      key={job.id}
                       className="animate-fade-in-up"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <ServiceOfferCard
-                        service={{
-                          id: service.tasker_service_id,
-                          tasker_id: service.tasker_id,
-                          service_id: service.service_id,
-                          title: service.title,
-                          description: service.description,
-                          price: service.price,
-                          pricing_type: service.pricing_type as PricingType,
-                          service_status:
-                            service.service_status as ServiceStatus,
-                          service_area:
-                            service.service_area as unknown as object,
-                          verification_status:
-                            service.verification_status as ServiceVerificationStatus,
-                          has_active_booking: service.has_active_booking,
-                          created_at: service.created_at,
-                          updated_at: service.updated_at,
-                          portfolio_images: service.portfolio_images,
-                          minimum_duration:
-                            service.minimum_duration || undefined,
-                          extra_fees: service.extra_fees || undefined,
-                          is_promoted: false,
-                          promotion_expires_at: undefined,
-                          promotion_boost_score: undefined,
+                      <JobOfferCard
+                        job={{
+                          id: job.id,
+                          title: job.title,
+                          description: job.description,
+                          customer_budget: job.customer_budget || 0,
+                          currency: job.currency || "EUR",
+                          estimated_duration: job.estimated_duration || 0,
+                          preferred_date: job.preferred_date,
+                          is_flexible: job.is_flexible || false,
+                          is_promoted: job.is_promoted || false,
+                          current_applications: job.current_applications || 0,
+                          max_applications: job.max_applications || 0,
+                          created_at: job.created_at,
                         }}
-                        tasker={{
-                          id: service.tasker_id,
-                          first_name: service.tasker_first_name,
-                          last_name: service.tasker_last_name,
-                          avatar_url: service.tasker_avatar_url,
-                          email: service.tasker_phone, // Using phone as fallback since email not in view
-                          phone: service.tasker_phone,
-                          role: service.tasker_role as UserRole,
+                        customer={{
+                          id: job.customer_id,
+                          first_name: job.customer_first_name,
+                          last_name: job.customer_last_name,
+                          avatar_url: job.customer_avatar_url,
                           verification_status:
-                            service.tasker_verification_status as VerificationStatus,
-                          created_at: service.tasker_created_at,
+                            job.customer_verification_status as
+                              | "verified"
+                              | "unverified"
+                              | "under_review"
+                              | "rejected"
+                              | "suspended",
+                          email: "", // Email not available in this context
                         }}
-                        rating={service.tasker_rating}
-                        totalReviews={service.total_reviews}
                       />
                     </div>
                   ))}
@@ -402,7 +441,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       {t("tryAdjustingFilters")}
                     </p>
                     <Link
-                      href={`/${locale}/search`}
+                      href={`/${locale}/search/jobs`}
                       className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-secondary)] text-white rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium text-sm sm:text-base"
                     >
                       Clear All Filters
@@ -413,11 +452,11 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
             </Suspense>
 
             {/* Enhanced Pagination */}
-            {filteredServices.length > 0 && (count || 0) > limit && (
+            {transformedJobs.length > 0 && (count || 0) > limit && (
               <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-8 sm:mt-12 animate-fade-in-up">
                 {page > 1 && (
                   <Link
-                    href={`/${locale}/search?${new URLSearchParams({
+                    href={`/${locale}/search/jobs?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page - 1).toString(),
                     }).toString()}`}
@@ -449,7 +488,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
 
                 {page < Math.ceil((count || 0) / limit) && (
                   <Link
-                    href={`/${locale}/search?${new URLSearchParams({
+                    href={`/${locale}/search/jobs?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page + 1).toString(),
                     }).toString()}`}

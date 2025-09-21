@@ -32,6 +32,7 @@ import {
   Wallet,
   Home,
   CreditCard,
+  Users,
 } from "lucide-react";
 
 // Utils and Types
@@ -427,6 +428,18 @@ export default function CustomerDashboardPage() {
               </Link>
 
               <div className="grid grid-cols-2 gap-3">
+                <Link href="/search/services" className="block">
+                  <Button
+                    className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
+                    variant="outline"
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <Users className="h-4 w-4 text-[var(--color-secondary)]" />
+                      <span className="text-xs font-medium">Find Services</span>
+                    </div>
+                  </Button>
+                </Link>
+
                 <Link href="/customer/bookings" className="block">
                   <Button
                     className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"

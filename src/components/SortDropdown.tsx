@@ -13,10 +13,12 @@ import {
 
 interface SortDropdownProps {
   currentSort?: string;
+  type?: "services" | "jobs";
 }
 
 export default function SortDropdown({
   currentSort = "created_at",
+  type = "services",
 }: SortDropdownProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,15 +36,34 @@ export default function SortDropdown({
     // Reset to page 1 when sorting changes
     params.delete("page");
 
-    router.push(`/${locale}/search?${params.toString()}`);
+    router.push(`/${locale}/search/${type}?${params.toString()}`);
   };
 
   const sortOptions = [
     { value: "created_at", label: "Newest First", icon: Clock },
-    { value: "price_low", label: "Price: Low to High", icon: ArrowUp },
-    { value: "price_high", label: "Price: High to Low", icon: ArrowDown },
-    { value: "rating", label: "Highest Rated", icon: Star },
-    { value: "reviews", label: "Most Reviews", icon: MessageSquare },
+    {
+      value: "price_low",
+      label: type === "jobs" ? "Budget: Low to High" : "Price: Low to High",
+      icon: ArrowUp,
+    },
+    {
+      value: "price_high",
+      label: type === "jobs" ? "Budget: High to Low" : "Price: High to Low",
+      icon: ArrowDown,
+    },
+    ...(type === "services"
+      ? [
+          { value: "rating", label: "Highest Rated", icon: Star },
+          { value: "reviews", label: "Most Reviews", icon: MessageSquare },
+        ]
+      : [
+          { value: "date", label: "Date: Earliest First", icon: Clock },
+          {
+            value: "applications",
+            label: "Most Applications",
+            icon: MessageSquare,
+          },
+        ]),
   ];
 
   return (
