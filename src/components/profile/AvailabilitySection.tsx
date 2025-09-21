@@ -24,6 +24,7 @@ import { Edit, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { TaskerProfile, AvailabilitySlot } from "@/types/supabase";
 import { updateTaskerAvailability } from "@/actions/profile";
+import { convertOperationHoursToSlots } from "@/lib/availability-utils";
 
 interface AvailabilitySectionProps {
   taskerProfile: TaskerProfile | null;
@@ -66,10 +67,9 @@ export default function AvailabilitySection({
   // Update form when profile changes
   useEffect(() => {
     if (taskerProfile) {
-      // Filter out null values and ensure all slots have required properties
-      const validSlots = (taskerProfile.operation_hours || []).filter(
-        (slot): slot is AvailabilitySlot =>
-          slot !== null && typeof slot === "object" && "enabled" in slot
+      // Convert operation_hours to AvailabilitySlot array using utility function
+      const validSlots = convertOperationHoursToSlots(
+        taskerProfile.operation_hours
       );
       setAvailabilityForm(validSlots);
     }

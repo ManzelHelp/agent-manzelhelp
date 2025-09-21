@@ -162,7 +162,7 @@ export interface TaskerProfile {
   service_radius_km?: number;
   is_available?: boolean;
   updated_at?: string;
-  operation_hours?: AvailabilitySlot[] | null;
+  operation_hours?: OperationHoursObject | AvailabilitySlot[] | null;
   company_id?: string;
 }
 
@@ -625,6 +625,45 @@ export interface AvailabilitySlot {
   enabled: boolean;
   startTime: string;
   endTime: string;
+}
+
+// Type for the object format of operation hours (current database format)
+export interface OperationHoursObject {
+  monday?: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+  tuesday?: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+  wednesday?: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+  thursday?: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+  friday?: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+  saturday?: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
+  sunday?: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+  };
 }
 
 export interface Database {

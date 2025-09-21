@@ -630,7 +630,10 @@ export async function getProfileCompletion(userId: string): Promise<{
     // Availability Section
     if (
       !taskerProfile?.operation_hours ||
-      taskerProfile.operation_hours.length === 0
+      (Array.isArray(taskerProfile.operation_hours) &&
+        taskerProfile.operation_hours.length === 0) ||
+      (typeof taskerProfile.operation_hours === "object" &&
+        Object.keys(taskerProfile.operation_hours).length === 0)
     ) {
       missingFields.push({
         id: "availability",

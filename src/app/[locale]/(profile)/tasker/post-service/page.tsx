@@ -57,6 +57,7 @@ import type {
   PricingType,
   TaskerProfile,
 } from "@/types/supabase";
+import { convertOperationHoursToSlots } from "@/lib/availability-utils";
 
 // Form data interfaces
 interface BasicInfoData {
@@ -218,19 +219,11 @@ export default function CreateOfferPage() {
       if (profileResult.success && profileResult.profile) {
         setTaskerProfile(profileResult.profile);
 
-        if (profileResult.profile.operation_hours) {
-          // Filter out null values and ensure all slots have required properties
-          const validSlots = (
-            profileResult.profile.operation_hours as AvailabilitySlot[]
-          ).filter(
-            (slot): slot is AvailabilitySlot =>
-              slot !== null && typeof slot === "object" && "enabled" in slot
-          );
-          setAvailability(validSlots);
-        } else {
-          // Ensure availability is always an array, even if operation_hours is null
-          setAvailability([]);
-        }
+        // Convert operation_hours to AvailabilitySlot array using utility function
+        const validSlots = convertOperationHoursToSlots(
+          profileResult.profile.operation_hours
+        );
+        setAvailability(validSlots);
       } else {
         console.error("Error fetching profile:", profileResult.error);
         // Don't show error toast for profile as it's not critical
