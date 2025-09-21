@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
 import { getUserProfileAction } from "@/actions/auth";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
@@ -12,6 +13,7 @@ export default function ConfirmSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setUser = useUserStore((state) => state.setUser);
+  const t = useTranslations("auth");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,10 +38,10 @@ export default function ConfirmSuccessPage() {
           // Show success message based on user role
           const roleMessage =
             user.role === "tasker"
-              ? "Welcome! Your account is ready. Let's complete your profile to start helping others."
-              : "Welcome! Your account is ready. Let's show you how it works.";
+              ? t("pages.confirmSuccess.taskerWelcome")
+              : t("pages.confirmSuccess.customerWelcome");
 
-          toast.success("Email confirmed successfully!", {
+          toast.success(t("pages.confirmSuccess.emailConfirmed"), {
             description: roleMessage,
           });
 
@@ -59,11 +61,11 @@ export default function ConfirmSuccessPage() {
         } else {
           // Handle profile fetch failure
           const errorMessage =
-            profileResult.errorMessage || "Failed to fetch user profile";
+            profileResult.errorMessage ||
+            t("pages.confirmSuccess.failedToFetchProfile");
           setError(errorMessage);
-          toast.error("Account setup incomplete", {
-            description:
-              "Please try logging in to complete your account setup.",
+          toast.error(t("pages.confirmSuccess.accountSetupIncomplete"), {
+            description: t("pages.confirmSuccess.tryLoggingIn"),
           });
 
           setTimeout(() => {
@@ -75,10 +77,10 @@ export default function ConfirmSuccessPage() {
         const errorMessage =
           error instanceof Error
             ? error.message
-            : "An unexpected error occurred";
+            : t("pages.confirmSuccess.unexpectedError");
         setError(errorMessage);
-        toast.error("Something went wrong", {
-          description: "Please try logging in to access your account.",
+        toast.error(t("pages.confirmSuccess.somethingWentWrong"), {
+          description: t("pages.confirmSuccess.tryLoggingInToAccess"),
         });
 
         setTimeout(() => {
@@ -90,7 +92,7 @@ export default function ConfirmSuccessPage() {
     };
 
     handleConfirmation();
-  }, [router, setUser, searchParams]);
+  }, [router, setUser, searchParams, t]);
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -103,20 +105,22 @@ export default function ConfirmSuccessPage() {
               </div>
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-red-700">
-                  Setup Incomplete
+                  {t("pages.confirmSuccess.setupIncomplete")}
                 </h1>
                 <p className="text-gray-600">
-                  There was an issue setting up your account.
+                  {t("pages.confirmSuccess.setupIssue")}
                   <br />
-                  Redirecting to login...
+                  {t("pages.confirmSuccess.redirectingToLogin")}
                 </p>
                 {error && (
-                  <p className="text-sm text-red-500 mt-2">Error: {error}</p>
+                  <p className="text-sm text-red-500 mt-2">
+                    {t("pages.confirmSuccess.error")}: {error}
+                  </p>
                 )}
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Redirecting to login...</span>
+                <span>{t("pages.confirmSuccess.redirectingToLogin")}</span>
               </div>
             </>
           ) : (
@@ -130,14 +134,14 @@ export default function ConfirmSuccessPage() {
 
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-green-700">
-                  Email Confirmed!
+                  {t("pages.confirmSuccess.emailConfirmedTitle")}
                 </h1>
                 <p className="text-gray-600">
-                  Your email has been successfully verified.
+                  {t("pages.confirmSuccess.emailVerified")}
                   <br />
                   {isLoading
-                    ? "Setting up your account..."
-                    : "Account setup complete!"}
+                    ? t("pages.confirmSuccess.settingUpAccount")
+                    : t("pages.confirmSuccess.accountSetupComplete")}
                 </p>
               </div>
 
@@ -145,8 +149,8 @@ export default function ConfirmSuccessPage() {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>
                   {isLoading
-                    ? "Setting up your account..."
-                    : "Redirecting to your dashboard..."}
+                    ? t("pages.confirmSuccess.settingUpAccount")
+                    : t("pages.confirmSuccess.redirectingToDashboard")}
                 </span>
               </div>
             </>

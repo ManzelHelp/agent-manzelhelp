@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useUserStore } from "@/stores/userStore";
 import {
   createTaskerProfileAction,
@@ -62,6 +63,7 @@ interface UploadStatus {
 export default function FinishSignUpPage() {
   const router = useRouter();
   const { user } = useUserStore();
+  const t = useTranslations("auth");
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -98,7 +100,7 @@ export default function FinishSignUpPage() {
       setLoading(true);
       try {
         if (user?.role == "customer") {
-          toast.error("This page is only for taskers");
+          toast.error(t("pages.finishSignUp.onlyForTaskers"));
           router.push("/customer/dashboard");
           return;
         }
@@ -107,18 +109,18 @@ export default function FinishSignUpPage() {
         const profileCheck = await hasTaskerCompletedProfileAction();
 
         if (profileCheck.hasCompleted) {
-          toast.success("You have already completed your profile!");
+          toast.success(t("pages.finishSignUp.alreadyCompleted"));
           router.push("/tasker/dashboard");
           return;
         }
 
         if (profileCheck.errorMessage) {
-          toast.error("Failed to verify profile status");
+          toast.error(t("pages.finishSignUp.failedToVerify"));
           router.push("/login");
           return;
         }
       } catch {
-        toast.error("Failed to verify user status");
+        toast.error(t("pages.finishSignUp.failedToVerifyUser"));
         router.push("/login");
       } finally {
         setLoading(false);
@@ -126,7 +128,7 @@ export default function FinishSignUpPage() {
     };
 
     checkUser();
-  }, [user, router]);
+  }, [user, router, t]);
 
   const handleInputChange = (
     field: keyof FinishSignUpFormData,
@@ -161,11 +163,11 @@ export default function FinishSignUpPage() {
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (!allowedTypes.includes(file.type)) {
-      return "Please upload a valid image file (JPG, PNG, or WebP)";
+      return t("pages.finishSignUp.invalidFileType");
     }
 
     if (file.size > maxSize) {
-      return "File size must be less than 5MB";
+      return t("pages.finishSignUp.fileTooLarge");
     }
 
     return null;
@@ -193,9 +195,7 @@ export default function FinishSignUpPage() {
       [type]: document,
     }));
 
-    toast.success(
-      `${type === "front" ? "Front" : "Back"} ID document uploaded successfully`
-    );
+    toast.success(t(`pages.finishSignUp.${type}IdUploaded`));
   };
 
   // Remove ID document
@@ -218,7 +218,7 @@ export default function FinishSignUpPage() {
     try {
       // Validate required ID documents
       if (!idDocuments.front || !idDocuments.back) {
-        toast.error("Please upload both front and back of your ID document");
+        toast.error(t("pages.finishSignUp.uploadBothIdSides"));
         setUploadStatus({ uploading: false, progress: 0 });
         setIsSubmitting(false);
         return;
@@ -226,7 +226,7 @@ export default function FinishSignUpPage() {
 
       // Get user ID
       if (!user?.id) {
-        toast.error("User not found. Please try logging in again.");
+        toast.error(t("pages.finishSignUp.userNotFound"));
         setUploadStatus({ uploading: false, progress: 0 });
         setIsSubmitting(false);
         return;
@@ -242,7 +242,7 @@ export default function FinishSignUpPage() {
 
       if (!uploadResult.success) {
         toast.error(
-          uploadResult.errorMessage || "Failed to upload ID documents"
+          uploadResult.errorMessage || t("pages.finishSignUp.failedToUpload")
         );
         setUploadStatus({ uploading: false, progress: 0 });
         setIsSubmitting(false);
@@ -259,9 +259,7 @@ export default function FinishSignUpPage() {
 
       if (result.success) {
         setUploadStatus({ uploading: true, progress: 100 });
-        toast.success(
-          "Profile completed successfully! Welcome to the tasker community."
-        );
+        toast.success(t("pages.finishSignUp.profileCompleted"));
 
         // Clean up preview URLs
         if (idDocuments.front?.preview) {
@@ -273,12 +271,14 @@ export default function FinishSignUpPage() {
 
         router.push("/how-does-It-work");
       } else {
-        toast.error(result.errorMessage || "Failed to complete profile");
+        toast.error(
+          result.errorMessage || t("pages.finishSignUp.failedToComplete")
+        );
         setUploadStatus({ uploading: false, progress: 0 });
       }
     } catch (error) {
       console.error("Error completing profile:", error);
-      toast.error("An unexpected error occurred");
+      toast.error(t("pages.finishSignUp.unexpectedError"));
       setUploadStatus({
         uploading: false,
         progress: 0,
@@ -294,7 +294,7 @@ export default function FinishSignUpPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-white" />
-          <p className="text-white">Loading...</p>
+          <p className="text-white">{t("pages.finishSignUp.loading")}</p>
         </div>
       </div>
     );
@@ -307,29 +307,33 @@ export default function FinishSignUpPage() {
   }[] = [
     {
       value: "beginner",
-      label: "Beginner",
-      description: "New to providing services professionally",
+      label: t("pages.finishSignUp.experienceLevels.beginner.label"),
+      description: t(
+        "pages.finishSignUp.experienceLevels.beginner.description"
+      ),
     },
     {
       value: "intermediate",
-      label: "Intermediate",
-      description: "Some experience in your field",
+      label: t("pages.finishSignUp.experienceLevels.intermediate.label"),
+      description: t(
+        "pages.finishSignUp.experienceLevels.intermediate.description"
+      ),
     },
     {
       value: "expert",
-      label: "Expert",
-      description: "Highly experienced and skilled",
+      label: t("pages.finishSignUp.experienceLevels.expert.label"),
+      description: t("pages.finishSignUp.experienceLevels.expert.description"),
     },
   ];
 
   const days = [
-    { key: "monday", label: "Monday" },
-    { key: "tuesday", label: "Tuesday" },
-    { key: "wednesday", label: "Wednesday" },
-    { key: "thursday", label: "Thursday" },
-    { key: "friday", label: "Friday" },
-    { key: "saturday", label: "Saturday" },
-    { key: "sunday", label: "Sunday" },
+    { key: "monday", label: t("pages.finishSignUp.days.monday") },
+    { key: "tuesday", label: t("pages.finishSignUp.days.tuesday") },
+    { key: "wednesday", label: t("pages.finishSignUp.days.wednesday") },
+    { key: "thursday", label: t("pages.finishSignUp.days.thursday") },
+    { key: "friday", label: t("pages.finishSignUp.days.friday") },
+    { key: "saturday", label: t("pages.finishSignUp.days.saturday") },
+    { key: "sunday", label: t("pages.finishSignUp.days.sunday") },
   ];
 
   return (
@@ -346,16 +350,17 @@ export default function FinishSignUpPage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
               <Sparkles className="h-4 w-4" />
-              Complete Your Tasker Profile
+              {t("pages.finishSignUp.completeProfile")}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-white">
-              <span className="gradient-text">Finish Setting Up</span>
+              <span className="gradient-text">
+                {t("pages.finishSignUp.finishSettingUp")}
+              </span>
             </h1>
 
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              You're almost there! Complete your tasker profile to start helping
-              others and earning money.
+              {t("pages.finishSignUp.almostThere")}
             </p>
           </div>
         </div>
@@ -369,7 +374,7 @@ export default function FinishSignUpPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                 <Star className="h-5 w-5 text-[var(--color-secondary)]" />
-                Experience Level
+                {t("pages.finishSignUp.experienceLevel")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -403,7 +408,7 @@ export default function FinishSignUpPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                 <FileText className="h-5 w-5 text-[var(--color-secondary)]" />
-                Professional Bio
+                {t("pages.finishSignUp.professionalBio")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -412,18 +417,19 @@ export default function FinishSignUpPage() {
                   htmlFor="bio"
                   className="text-[var(--color-text-primary)]"
                 >
-                  Tell us about yourself and your skills
+                  {t("pages.finishSignUp.bioLabel")}
                 </Label>
                 <textarea
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => handleInputChange("bio", e.target.value)}
-                  placeholder="Describe your experience, skills, and what services you can provide. This will help clients understand your expertise."
+                  placeholder={t("pages.finishSignUp.bioPlaceholder")}
                   className="w-full min-h-[120px] p-3 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-transparent resize-none text-[var(--color-text-primary)]"
                   required
                 />
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                  {formData.bio.length}/500 characters (minimum 50)
+                  {formData.bio.length}/500{" "}
+                  {t("pages.finishSignUp.charactersMin50")}
                 </p>
               </div>
             </CardContent>
@@ -434,7 +440,7 @@ export default function FinishSignUpPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                 <Phone className="h-5 w-5 text-[var(--color-secondary)]" />
-                Contact Information
+                {t("pages.finishSignUp.contactInformation")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -443,18 +449,18 @@ export default function FinishSignUpPage() {
                   htmlFor="phone"
                   className="text-[var(--color-text-primary)]"
                 >
-                  Phone Number (Optional)
+                  {t("pages.finishSignUp.phoneNumberOptional")}
                 </Label>
                 <Input
                   id="phone"
                   type="tel"
                   value={formData.phone || ""}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="Enter your phone number"
+                  placeholder={t("pages.finishSignUp.enterPhoneNumber")}
                   className="w-full"
                 />
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                  This will help clients contact you directly
+                  {t("pages.finishSignUp.phoneHelp")}
                 </p>
               </div>
             </CardContent>
@@ -465,7 +471,7 @@ export default function FinishSignUpPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                 <MapPin className="h-5 w-5 text-[var(--color-secondary)]" />
-                Service Area
+                {t("pages.finishSignUp.serviceArea")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -474,7 +480,7 @@ export default function FinishSignUpPage() {
                   htmlFor="radius"
                   className="text-[var(--color-text-primary)]"
                 >
-                  Service radius (kilometers)
+                  {t("pages.finishSignUp.serviceRadius")}
                 </Label>
                 <Input
                   id="radius"
@@ -492,7 +498,7 @@ export default function FinishSignUpPage() {
                   required
                 />
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                  How far are you willing to travel for jobs? (1-200 km)
+                  {t("pages.finishSignUp.travelDistance")}
                 </p>
               </div>
             </CardContent>
@@ -503,7 +509,7 @@ export default function FinishSignUpPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                 <Clock className="h-5 w-5 text-[var(--color-secondary)]" />
-                Availability
+                {t("pages.finishSignUp.availability")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -522,13 +528,13 @@ export default function FinishSignUpPage() {
                     htmlFor="is_available"
                     className="text-[var(--color-text-primary)]"
                   >
-                    I am currently available for new jobs
+                    {t("pages.finishSignUp.currentlyAvailable")}
                   </Label>
                 </div>
 
                 <div className="space-y-4">
                   <h4 className="font-semibold text-[var(--color-text-primary)]">
-                    Operating Hours
+                    {t("pages.finishSignUp.operatingHours")}
                   </h4>
                   {days.map((day) => (
                     <div
@@ -578,7 +584,7 @@ export default function FinishSignUpPage() {
                             className="w-32"
                           />
                           <span className="text-[var(--color-text-secondary)]">
-                            to
+                            {t("pages.finishSignUp.to")}
                           </span>
                           <Input
                             type="time"
@@ -610,21 +616,20 @@ export default function FinishSignUpPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[var(--color-text-primary)]">
                 <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
-                Identity Verification
+                {t("pages.finishSignUp.identityVerification")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                  Please upload both sides of your government-issued ID for
-                  verification. This is required to become a tasker.
+                  {t("pages.finishSignUp.uploadIdDescription")}
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Front ID Upload */}
                   <div className="space-y-2">
                     <Label className="text-[var(--color-text-primary)] font-medium">
-                      Front of ID *
+                      {t("pages.finishSignUp.frontOfId")} *
                     </Label>
                     <div className="border-2 border-dashed border-[var(--color-border)] rounded-lg p-4 text-center">
                       {idDocuments.front ? (
@@ -639,7 +644,7 @@ export default function FinishSignUpPage() {
                           <div className="flex items-center justify-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500" />
                             <span className="text-sm text-green-600">
-                              Uploaded
+                              {t("pages.finishSignUp.uploaded")}
                             </span>
                             <button
                               type="button"
@@ -654,7 +659,7 @@ export default function FinishSignUpPage() {
                         <div className="space-y-2">
                           <Upload className="h-8 w-8 mx-auto text-[var(--color-text-secondary)]" />
                           <p className="text-sm text-[var(--color-text-secondary)]">
-                            Click to upload front of ID
+                            {t("pages.finishSignUp.clickToUploadFront")}
                           </p>
                           <input
                             type="file"
@@ -673,7 +678,7 @@ export default function FinishSignUpPage() {
                                 ?.click()
                             }
                           >
-                            Choose File
+                            {t("pages.finishSignUp.chooseFile")}
                           </Button>
                         </div>
                       )}
@@ -683,7 +688,7 @@ export default function FinishSignUpPage() {
                   {/* Back ID Upload */}
                   <div className="space-y-2">
                     <Label className="text-[var(--color-text-primary)] font-medium">
-                      Back of ID *
+                      {t("pages.finishSignUp.backOfId")} *
                     </Label>
                     <div className="border-2 border-dashed border-[var(--color-border)] rounded-lg p-4 text-center">
                       {idDocuments.back ? (
@@ -698,7 +703,7 @@ export default function FinishSignUpPage() {
                           <div className="flex items-center justify-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500" />
                             <span className="text-sm text-green-600">
-                              Uploaded
+                              {t("pages.finishSignUp.uploaded")}
                             </span>
                             <button
                               type="button"
@@ -713,7 +718,7 @@ export default function FinishSignUpPage() {
                         <div className="space-y-2">
                           <Upload className="h-8 w-8 mx-auto text-[var(--color-text-secondary)]" />
                           <p className="text-sm text-[var(--color-text-secondary)]">
-                            Click to upload back of ID
+                            {t("pages.finishSignUp.clickToUploadBack")}
                           </p>
                           <input
                             type="file"
@@ -730,7 +735,7 @@ export default function FinishSignUpPage() {
                               document.getElementById("back-id-upload")?.click()
                             }
                           >
-                            Choose File
+                            {t("pages.finishSignUp.chooseFile")}
                           </Button>
                         </div>
                       )}
@@ -739,9 +744,9 @@ export default function FinishSignUpPage() {
                 </div>
 
                 <div className="text-xs text-[var(--color-text-secondary)] space-y-1">
-                  <p>• Supported formats: JPG, PNG, WebP</p>
-                  <p>• Maximum file size: 5MB per image</p>
-                  <p>• Ensure images are clear and readable</p>
+                  <p>• {t("pages.finishSignUp.supportedFormats")}</p>
+                  <p>• {t("pages.finishSignUp.maxFileSize")}</p>
+                  <p>• {t("pages.finishSignUp.ensureClear")}</p>
                 </div>
               </div>
             </CardContent>
@@ -754,8 +759,7 @@ export default function FinishSignUpPage() {
                 <div className="flex items-center justify-center gap-2 text-[var(--color-text-secondary)]">
                   <Shield className="h-5 w-5" />
                   <span className="text-sm">
-                    Your profile will be reviewed before going live. This
-                    usually takes 24-48 hours.
+                    {t("pages.finishSignUp.profileReview")}
                   </span>
                 </div>
 
@@ -774,12 +778,14 @@ export default function FinishSignUpPage() {
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       {uploadStatus.uploading
-                        ? `Uploading... ${uploadStatus.progress}%`
-                        : "Completing Profile..."}
+                        ? `${t("pages.finishSignUp.uploading")}... ${
+                            uploadStatus.progress
+                          }%`
+                        : t("pages.finishSignUp.completingProfile")}
                     </>
                   ) : (
                     <>
-                      Complete Profile
+                      {t("pages.finishSignUp.completeProfile")}
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </>
                   )}
@@ -787,13 +793,12 @@ export default function FinishSignUpPage() {
 
                 {(!idDocuments.front || !idDocuments.back) && (
                   <p className="text-sm text-red-500">
-                    Please upload both front and back of your ID document
+                    {t("pages.finishSignUp.uploadBothIdSides")}
                   </p>
                 )}
 
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  By completing your profile, you agree to our terms of service
-                  and privacy policy.
+                  {t("pages.finishSignUp.termsAndPrivacy")}
                 </p>
               </div>
             </CardContent>

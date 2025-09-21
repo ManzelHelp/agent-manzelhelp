@@ -1,4 +1,7 @@
-export default function WaitForConfirmation() {
+import { getTranslations } from "next-intl/server";
+
+export default async function WaitForConfirmation() {
+  const t = await getTranslations("auth");
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
       <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full flex flex-col items-center">
@@ -17,11 +20,10 @@ export default function WaitForConfirmation() {
           />
         </svg>
         <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
-          Check your email
+          {t("pages.waitForConfirmation.title")}
         </h1>
         <p className="text-gray-600 text-center">
-          We&apos;ve sent you a confirmation link. Please check your inbox and
-          follow the instructions to activate your account.
+          {t("pages.waitForConfirmation.description")}
         </p>
       </div>
     </div>

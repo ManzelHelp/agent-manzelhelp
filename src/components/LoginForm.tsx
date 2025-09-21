@@ -3,6 +3,7 @@
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useTransition, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -22,14 +23,15 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
   const setUser = useUserStore((state) => state.setUser);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const t = useTranslations("auth");
 
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (showToast) {
-      toast.success("Account created! You can now log in.");
+      toast.success(t("pages.login.accountCreated"));
     }
-  }, [showToast]);
+  }, [showToast, t]);
 
   // Redirect if user already exists
   useEffect(() => {
@@ -51,10 +53,10 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
 
         if (profileResult.success && profileResult.user) {
           setUser(profileResult.user);
-          toast.success("Login successful");
+          toast.success(t("pages.login.loginSuccessful"));
           router.replace(`/${profileResult.user.role}/dashboard`);
         } else {
-          toast.error("Failed to load user profile");
+          toast.error(t("pages.login.failedToLoadProfile"));
         }
       } else {
         toast.error(result.errorMessage);
@@ -69,7 +71,7 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
       const result = await resetPasswordAction(email);
 
       if (!result.errorMessage) {
-        toast.success("Password reset email sent! Check your inbox.");
+        toast.success(t("forgotPassword.resetEmailSent"));
         setIsForgotPassword(false);
       } else {
         toast.error(result.errorMessage);
@@ -86,17 +88,16 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
             className="inline-flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-200 text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to login</span>
+            <span>{t("forgotPassword.backToLogin")}</span>
           </button>
         </div>
 
         <div className="text-center space-y-2">
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
-            Forgot Password?
+            {t("forgotPassword.title")}
           </h2>
           <p className="text-[var(--color-text-secondary)] text-sm">
-            Enter your email address and we'll send you a link to reset your
-            password.
+            {t("forgotPassword.description")}
           </p>
         </div>
 
@@ -109,14 +110,14 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
               htmlFor="forgot-email"
               className="text-sm font-medium text-[var(--color-text-primary)]"
             >
-              Email Address
+              {t("pages.login.emailLabel")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
               <Input
                 id="forgot-email"
                 name="email"
-                placeholder="Enter your email"
+                placeholder={t("pages.login.emailPlaceholder")}
                 type="email"
                 required
                 disabled={isPending}
@@ -134,10 +135,10 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
             {isPending ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Sending email...</span>
+                <span>{t("forgotPassword.sendingEmail")}</span>
               </div>
             ) : (
-              "Send Reset Link"
+              t("forgotPassword.sendResetLink")
             )}
           </Button>
         </form>
@@ -158,14 +159,14 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
             htmlFor="email"
             className="text-sm font-medium text-[var(--color-text-primary)]"
           >
-            Email Address
+            {t("pages.login.emailLabel")}
           </Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
             <Input
               id="email"
               name="email"
-              placeholder="Enter your email"
+              placeholder={t("pages.login.emailPlaceholder")}
               type="email"
               required
               disabled={isPending}
@@ -180,14 +181,14 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
             htmlFor="password"
             className="text-sm font-medium text-[var(--color-text-primary)]"
           >
-            Password
+            {t("pages.login.passwordLabel")}
           </Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
             <Input
               id="password"
               name="password"
-              placeholder="Enter your password"
+              placeholder={t("pages.login.passwordPlaceholder")}
               type={showPassword ? "text" : "password"}
               required
               disabled={isPending}
@@ -199,7 +200,7 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-200"
               disabled={isPending}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />
@@ -220,10 +221,10 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
           {isPending ? (
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Signing in...</span>
+              <span>{t("pages.login.signingIn")}</span>
             </div>
           ) : (
-            "Sign In"
+            t("pages.login.signIn")
           )}
         </Button>
 
@@ -233,18 +234,18 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
             onClick={() => setIsForgotPassword(true)}
             className="text-sm text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] font-medium transition-colors duration-200"
           >
-            Forgot your password?
+            {t("pages.login.forgotPassword")}
           </button>
 
           <p className="text-sm text-[var(--color-text-secondary)]">
-            Don't have an account?{" "}
+            {t("pages.login.noAccount")}{" "}
             <Link
               href="/sign-up"
               className={`text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] font-medium transition-colors duration-200 ${
                 isPending ? "pointer-events-none opacity-50" : ""
               }`}
             >
-              Sign up here
+              {t("pages.login.signUpHere")}
             </Link>
           </p>
         </div>

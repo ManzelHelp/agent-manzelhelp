@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { updatePasswordAction } from "@/actions/auth";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (formData: FormData) => {
@@ -21,19 +23,19 @@ export default function ResetPasswordPage() {
       const confirmPassword = formData.get("confirmPassword") as string;
 
       if (password !== confirmPassword) {
-        toast.error("Passwords do not match");
+        toast.error(t("pages.resetPassword.passwordsDoNotMatch"));
         return;
       }
 
       if (password.length < 6) {
-        toast.error("Password must be at least 6 characters long");
+        toast.error(t("pages.resetPassword.passwordTooShort"));
         return;
       }
 
       const result = await updatePasswordAction(password);
 
       if (!result.errorMessage) {
-        toast.success("Password updated successfully!");
+        toast.success(t("pages.resetPassword.passwordUpdated"));
         router.replace("/login");
       } else {
         toast.error(result.errorMessage);
@@ -56,7 +58,9 @@ export default function ResetPasswordPage() {
           className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors duration-200 text-sm"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="font-medium">Back to Login</span>
+          <span className="font-medium">
+            {t("pages.resetPassword.backToLogin")}
+          </span>
         </Link>
       </div>
 
@@ -69,10 +73,10 @@ export default function ResetPasswordPage() {
                 <Lock className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--color-text-primary)] mb-1 sm:mb-2">
-                Reset Password
+                {t("pages.resetPassword.title")}
               </CardTitle>
               <p className="text-[var(--color-text-secondary)] text-sm sm:text-base">
-                Enter your new password below
+                {t("pages.resetPassword.description")}
               </p>
             </CardHeader>
             <CardContent className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8">
@@ -83,14 +87,14 @@ export default function ResetPasswordPage() {
                       htmlFor="password"
                       className="text-sm font-medium text-[var(--color-text-primary)]"
                     >
-                      New Password
+                      {t("pages.resetPassword.newPassword")}
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
                       <Input
                         id="password"
                         name="password"
-                        placeholder="Enter new password"
+                        placeholder={t("pages.resetPassword.enterNewPassword")}
                         type="password"
                         required
                         disabled={isPending}
@@ -106,14 +110,16 @@ export default function ResetPasswordPage() {
                       htmlFor="confirmPassword"
                       className="text-sm font-medium text-[var(--color-text-primary)]"
                     >
-                      Confirm Password
+                      {t("pages.resetPassword.confirmPassword")}
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
                       <Input
                         id="confirmPassword"
                         name="confirmPassword"
-                        placeholder="Confirm new password"
+                        placeholder={t(
+                          "pages.resetPassword.confirmNewPassword"
+                        )}
                         type="password"
                         required
                         disabled={isPending}
@@ -133,10 +139,10 @@ export default function ResetPasswordPage() {
                   {isPending ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Updating password...</span>
+                      <span>{t("pages.resetPassword.updatingPassword")}</span>
                     </div>
                   ) : (
-                    "Update Password"
+                    t("pages.resetPassword.updatePassword")
                   )}
                 </Button>
               </form>
@@ -148,12 +154,12 @@ export default function ResetPasswordPage() {
       {/* Footer */}
       <div className="relative z-10 px-4 sm:px-6 py-3 sm:py-6 text-center">
         <p className="text-xs text-white/60">
-          Remember your password?{" "}
+          {t("pages.resetPassword.rememberPassword")}{" "}
           <Link
             href="/login"
             className="text-white/80 hover:text-white underline"
           >
-            Sign in here
+            {t("pages.resetPassword.signInHere")}
           </Link>
         </p>
       </div>

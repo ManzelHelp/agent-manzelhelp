@@ -3,6 +3,7 @@
 import { useRouter } from "@/i18n/navigation";
 import { useTransition, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -14,6 +15,7 @@ import { useUserStore } from "@/stores/userStore";
 function SignUpForm() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
+  const t = useTranslations("auth");
 
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
@@ -35,8 +37,8 @@ function SignUpForm() {
         const result = await signUpAction(email, password, userRole);
 
         if (result.success) {
-          toast.success("Sign up successful", {
-            description: "Please check your email for verification",
+          toast.success(t("pages.signUp.signUpSuccessful"), {
+            description: t("pages.signUp.checkEmailVerification"),
           });
           router.replace("/wait-for-confirmation");
         } else {
@@ -44,7 +46,7 @@ function SignUpForm() {
         }
       } catch (error) {
         console.error("Signup error:", error);
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error(t("pages.signUp.unexpectedError"));
       }
     });
   };
@@ -62,14 +64,14 @@ function SignUpForm() {
             htmlFor="email"
             className="text-sm font-medium text-[var(--color-text-primary)]"
           >
-            Email Address
+            {t("pages.signUp.emailLabel")}
           </Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
             <Input
               id="email"
               name="email"
-              placeholder="Enter your email"
+              placeholder={t("pages.signUp.emailPlaceholder")}
               type="email"
               required
               disabled={isPending}
@@ -84,14 +86,14 @@ function SignUpForm() {
             htmlFor="password"
             className="text-sm font-medium text-[var(--color-text-primary)]"
           >
-            Password
+            {t("pages.signUp.passwordLabel")}
           </Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
             <Input
               id="password"
               name="password"
-              placeholder="Enter your password (min. 8 characters)"
+              placeholder={t("pages.signUp.passwordPlaceholder")}
               type={showPassword ? "text" : "password"}
               required
               disabled={isPending}
@@ -106,7 +108,7 @@ function SignUpForm() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-200"
               disabled={isPending}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />
@@ -119,13 +121,13 @@ function SignUpForm() {
             id="password-requirements"
             className="text-xs text-[var(--color-text-secondary)] space-y-1"
           >
-            <p>Password must contain:</p>
+            <p>{t("passwordRequirements.title")}</p>
             <ul className="list-disc list-inside space-y-0.5 ml-2">
-              <li>At least 8 characters</li>
-              <li>One uppercase letter</li>
-              <li>One lowercase letter</li>
-              <li>One number</li>
-              <li>One special character (@$!%*?&)</li>
+              <li>{t("passwordRequirements.minCharacters")}</li>
+              <li>{t("passwordRequirements.uppercaseLetter")}</li>
+              <li>{t("passwordRequirements.lowercaseLetter")}</li>
+              <li>{t("passwordRequirements.number")}</li>
+              <li>{t("passwordRequirements.specialCharacter")}</li>
             </ul>
           </div>
         </div>
@@ -135,7 +137,7 @@ function SignUpForm() {
             htmlFor="userRole"
             className="text-sm font-medium text-[var(--color-text-primary)]"
           >
-            I want to:
+            {t("pages.signUp.userRoleLabel")}
           </Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
@@ -148,10 +150,10 @@ function SignUpForm() {
               defaultValue=""
             >
               <option value="" disabled>
-                Select an option
+                {t("pages.signUp.selectOption")}
               </option>
-              <option value="customer">Find Help</option>
-              <option value="tasker">Become a Helper</option>
+              <option value="customer">{t("pages.signUp.findHelp")}</option>
+              <option value="tasker">{t("pages.signUp.becomeHelper")}</option>
             </select>
           </div>
         </div>
@@ -166,23 +168,23 @@ function SignUpForm() {
           {isPending ? (
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Creating account...</span>
+              <span>{t("pages.signUp.creatingAccount")}</span>
             </div>
           ) : (
-            "Create Account"
+            t("pages.signUp.createAccount")
           )}
         </Button>
 
         <div className="text-center">
           <p className="text-sm text-[var(--color-text-secondary)]">
-            Already have an account?{" "}
+            {t("pages.signUp.alreadyHaveAccount")}{" "}
             <Link
               href="/login"
               className={`text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] font-medium transition-colors duration-200 ${
                 isPending ? "pointer-events-none opacity-50" : ""
               }`}
             >
-              Sign in here
+              {t("pages.signUp.signInHere")}
             </Link>
           </p>
         </div>

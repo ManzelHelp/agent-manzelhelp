@@ -2,6 +2,7 @@ import LoginForm from "@/components/LoginForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 export default async function LoginPage({
   searchParams,
@@ -10,6 +11,7 @@ export default async function LoginPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const emailConfirmed = resolvedSearchParams.emailConfirmed === "true";
+  const t = await getTranslations("auth");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] flex flex-col">
@@ -18,7 +20,7 @@ export default async function LoginPage({
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-white text-[var(--color-primary)] px-4 py-2 rounded-md font-medium z-50"
       >
-        Skip to main content
+        {t("pages.login.skipToMainContent")}
       </a>
       {/* Background Pattern - Reduced opacity and size for mobile */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -33,7 +35,7 @@ export default async function LoginPage({
           className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors duration-200 text-sm"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="font-medium">Back to Home</span>
+          <span className="font-medium">{t("pages.login.backToHome")}</span>
         </Link>
       </div>
 
@@ -50,10 +52,10 @@ export default async function LoginPage({
                 <Lock className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--color-text-primary)] mb-1 sm:mb-2">
-                Welcome Back
+                {t("pages.login.welcomeBack")}
               </CardTitle>
               <p className="text-[var(--color-text-secondary)] text-sm sm:text-base">
-                Sign in to your account to continue
+                {t("pages.login.signInToContinue")}
               </p>
             </CardHeader>
             <CardContent className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8">
@@ -66,7 +68,7 @@ export default async function LoginPage({
       {/* Compact Footer */}
       <div className="relative z-10 px-4 sm:px-6 py-3 sm:py-6 text-center">
         <p className="text-xs text-white/60">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          {t("pages.login.termsAndPrivacy")}
         </p>
       </div>
     </div>

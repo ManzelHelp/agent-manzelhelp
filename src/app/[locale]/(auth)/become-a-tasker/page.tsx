@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useUserStore } from "@/stores/userStore";
 import {
   becomeTaskerAction,
@@ -28,6 +29,7 @@ import type { ExperienceLevel } from "@/types/supabase";
 export default function BecomeATaskerPage() {
   const router = useRouter();
   const { user, setUser } = useUserStore();
+  const t = useTranslations("auth");
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,25 +58,25 @@ export default function BecomeATaskerPage() {
         const { isTasker } = await getCurrentUserRole();
 
         if (isTasker) {
-          toast.success("You are already a tasker!");
+          toast.success(t("pages.becomeTasker.alreadyTasker"));
           router.push("/tasker/dashboard");
           return;
         }
 
         if (!user) {
-          toast.error("Please log in to become a tasker");
+          toast.error(t("pages.becomeTasker.pleaseLogin"));
           router.push("/login");
           return;
         }
       } catch {
-        toast.error("Failed to check user status");
+        toast.error(t("pages.becomeTasker.failedToCheckStatus"));
       } finally {
         setLoading(false);
       }
     };
 
     checkUserRole();
-  }, [user, router]);
+  }, [user, router, t]);
 
   const handleInputChange = (
     field: keyof BecomeTaskerFormData,
@@ -112,15 +114,15 @@ export default function BecomeATaskerPage() {
 
       if (result.success && result.user) {
         setUser(result.user);
-        toast.success(
-          "Congratulations! You are now a tasker. Your profile is under review."
-        );
+        toast.success(t("pages.becomeTasker.congratulations"));
         router.push("/tasker/dashboard");
       } else {
-        toast.error(result.errorMessage || "Failed to become a tasker");
+        toast.error(
+          result.errorMessage || t("pages.becomeTasker.failedToBecomeTasker")
+        );
       }
     } catch {
-      toast.error("An unexpected error occurred");
+      toast.error(t("pages.becomeTasker.unexpectedError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +133,7 @@ export default function BecomeATaskerPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Loading...</p>
+          <p>{t("pages.becomeTasker.loading")}</p>
         </div>
       </div>
     );
@@ -144,29 +146,33 @@ export default function BecomeATaskerPage() {
   }[] = [
     {
       value: "beginner",
-      label: "Beginner",
-      description: "New to providing services professionally",
+      label: t("pages.becomeTasker.experienceLevels.beginner.label"),
+      description: t(
+        "pages.becomeTasker.experienceLevels.beginner.description"
+      ),
     },
     {
       value: "intermediate",
-      label: "Intermediate",
-      description: "Some experience in your field",
+      label: t("pages.becomeTasker.experienceLevels.intermediate.label"),
+      description: t(
+        "pages.becomeTasker.experienceLevels.intermediate.description"
+      ),
     },
     {
       value: "expert",
-      label: "Expert",
-      description: "Highly experienced and skilled",
+      label: t("pages.becomeTasker.experienceLevels.expert.label"),
+      description: t("pages.becomeTasker.experienceLevels.expert.description"),
     },
   ];
 
   const days = [
-    { key: "monday", label: "Monday" },
-    { key: "tuesday", label: "Tuesday" },
-    { key: "wednesday", label: "Wednesday" },
-    { key: "thursday", label: "Thursday" },
-    { key: "friday", label: "Friday" },
-    { key: "saturday", label: "Saturday" },
-    { key: "sunday", label: "Sunday" },
+    { key: "monday", label: t("pages.becomeTasker.days.monday") },
+    { key: "tuesday", label: t("pages.becomeTasker.days.tuesday") },
+    { key: "wednesday", label: t("pages.becomeTasker.days.wednesday") },
+    { key: "thursday", label: t("pages.becomeTasker.days.thursday") },
+    { key: "friday", label: t("pages.becomeTasker.days.friday") },
+    { key: "saturday", label: t("pages.becomeTasker.days.saturday") },
+    { key: "sunday", label: t("pages.becomeTasker.days.sunday") },
   ];
 
   return (
@@ -178,16 +184,17 @@ export default function BecomeATaskerPage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
               <Sparkles className="h-4 w-4" />
-              Start Your Tasker Journey
+              {t("pages.becomeTasker.startJourney")}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-              <span className="gradient-text">Become a Tasker</span>
+              <span className="gradient-text">
+                {t("pages.becomeTasker.title")}
+              </span>
             </h1>
 
             <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
-              Join our community of skilled professionals and start earning by
-              helping others. Complete your profile to get started.
+              {t("pages.becomeTasker.description")}
             </p>
           </div>
         </div>
@@ -201,7 +208,7 @@ export default function BecomeATaskerPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-blue-600" />
-                Experience Level
+                {t("pages.becomeTasker.experienceLevel")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -235,24 +242,23 @@ export default function BecomeATaskerPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-blue-600" />
-                Professional Bio
+                {t("pages.becomeTasker.professionalBio")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="bio">
-                  Tell us about yourself and your skills
-                </Label>
+                <Label htmlFor="bio">{t("pages.becomeTasker.bioLabel")}</Label>
                 <textarea
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => handleInputChange("bio", e.target.value)}
-                  placeholder="Describe your experience, skills, and what services you can provide. This will help clients understand your expertise."
+                  placeholder={t("pages.becomeTasker.bioPlaceholder")}
                   className="w-full min-h-[120px] p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   required
                 />
                 <p className="text-sm text-slate-500">
-                  {formData.bio.length}/500 characters (minimum 50)
+                  {formData.bio.length}/500{" "}
+                  {t("pages.becomeTasker.charactersMin50")}
                 </p>
               </div>
             </CardContent>
@@ -263,12 +269,14 @@ export default function BecomeATaskerPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-blue-600" />
-                Service Area
+                {t("pages.becomeTasker.serviceArea")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="radius">Service radius (kilometers)</Label>
+                <Label htmlFor="radius">
+                  {t("pages.becomeTasker.serviceRadius")}
+                </Label>
                 <Input
                   id="radius"
                   type="number"
@@ -285,7 +293,7 @@ export default function BecomeATaskerPage() {
                   required
                 />
                 <p className="text-sm text-slate-500">
-                  How far are you willing to travel for jobs? (1-200 km)
+                  {t("pages.becomeTasker.travelDistance")}
                 </p>
               </div>
             </CardContent>
@@ -296,7 +304,7 @@ export default function BecomeATaskerPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-blue-600" />
-                Availability
+                {t("pages.becomeTasker.availability")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -312,13 +320,13 @@ export default function BecomeATaskerPage() {
                     className="rounded border-slate-300"
                   />
                   <Label htmlFor="is_available">
-                    I am currently available for new jobs
+                    {t("pages.becomeTasker.currentlyAvailable")}
                   </Label>
                 </div>
 
                 <div className="space-y-4">
                   <h4 className="font-semibold text-slate-800 dark:text-slate-200">
-                    Operating Hours
+                    {t("pages.becomeTasker.operatingHours")}
                   </h4>
                   {days.map((day) => (
                     <div
@@ -367,7 +375,9 @@ export default function BecomeATaskerPage() {
                             }
                             className="w-32"
                           />
-                          <span className="text-slate-500">to</span>
+                          <span className="text-slate-500">
+                            {t("pages.becomeTasker.to")}
+                          </span>
                           <Input
                             type="time"
                             value={
@@ -400,8 +410,7 @@ export default function BecomeATaskerPage() {
                 <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
                   <Shield className="h-5 w-5" />
                   <span className="text-sm">
-                    Your profile will be reviewed before going live. This
-                    usually takes 24-48 hours.
+                    {t("pages.becomeTasker.profileReview")}
                   </span>
                 </div>
 
@@ -414,19 +423,18 @@ export default function BecomeATaskerPage() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Becoming a Tasker...
+                      {t("pages.becomeTasker.becomingTasker")}
                     </>
                   ) : (
                     <>
-                      Become a Tasker
+                      {t("pages.becomeTasker.becomeTasker")}
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </>
                   )}
                 </Button>
 
                 <p className="text-xs text-slate-500">
-                  By becoming a tasker, you agree to our terms of service and
-                  privacy policy.
+                  {t("pages.becomeTasker.termsAndPrivacy")}
                 </p>
               </div>
             </CardContent>
