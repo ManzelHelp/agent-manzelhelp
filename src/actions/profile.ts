@@ -9,6 +9,13 @@ import type {
   ExperienceLevel,
   AvailabilitySlot,
 } from "@/types/supabase";
+import {
+  convertSlotsToOperationHours,
+  isValidOperationHours,
+  isValidTimeFormat,
+  isValidTimeRange,
+  hasEnabledDays,
+} from "@/lib/availability-utils";
 
 // Optimized function to get complete profile data in one query
 export async function getCompleteProfileData(userId: string): Promise<{
@@ -277,15 +284,39 @@ export async function updateTaskerAvailability(
         };
       }
 
-      if (slot.startTime >= slot.endTime) {
-        return { success: false, error: "End time must be after start time" };
+      if (
+        !isValidTimeFormat(slot.startTime) ||
+        !isValidTimeFormat(slot.endTime)
+      ) {
+        return {
+          success: false,
+          error: "Invalid time format. Please use HH:MM format (e.g., 09:00)",
+        };
       }
+
+      if (!isValidTimeRange(slot.startTime, slot.endTime)) {
+        return {
+          success: false,
+          error: "End time must be after start time",
+        };
+      }
+    }
+
+    // Convert AvailabilitySlot array to OperationHoursObject for database storage
+    const operationHoursObject = convertSlotsToOperationHours(operationHours);
+
+    // Validate the converted object
+    if (!isValidOperationHours(operationHoursObject)) {
+      return {
+        success: false,
+        error: "Invalid availability data format",
+      };
     }
 
     const { data, error } = await supabase
       .from("tasker_profiles")
       .update({
-        operation_hours: operationHours,
+        operation_hours: operationHoursObject,
         updated_at: new Date().toISOString(),
       })
       .eq("id", userId)
@@ -628,13 +659,7 @@ export async function getProfileCompletion(userId: string): Promise<{
     }
 
     // Availability Section
-    if (
-      !taskerProfile?.operation_hours ||
-      (Array.isArray(taskerProfile.operation_hours) &&
-        taskerProfile.operation_hours.length === 0) ||
-      (typeof taskerProfile.operation_hours === "object" &&
-        Object.keys(taskerProfile.operation_hours).length === 0)
-    ) {
+    if (!hasEnabledDays(taskerProfile?.operation_hours)) {
       missingFields.push({
         id: "availability",
         label: "Availability",

@@ -162,7 +162,7 @@ export interface TaskerProfile {
   service_radius_km?: number;
   is_available?: boolean;
   updated_at?: string;
-  operation_hours?: OperationHoursObject | AvailabilitySlot[] | null;
+  operation_hours?: OperationHoursObject | null;
   company_id?: string;
 }
 
