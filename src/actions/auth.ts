@@ -374,27 +374,6 @@ export const hasTaskerCompletedProfileAction = async (): Promise<{
       };
     }
 
-    // Check if user is a tasker
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (userError || !userData) {
-      return {
-        hasCompleted: false,
-        errorMessage: "Failed to fetch user data",
-      };
-    }
-
-    if (userData.role !== "tasker") {
-      return {
-        hasCompleted: false,
-        errorMessage: "User is not a tasker",
-      };
-    }
-
     // Check if tasker profile exists
     const { data: profile, error: profileError } = await supabase
       .from("tasker_profiles")

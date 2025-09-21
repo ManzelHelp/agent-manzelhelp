@@ -1,6 +1,13 @@
-import React from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getUserProfileAction } from "@/actions/auth";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  getUserProfileAction,
+  hasTaskerCompletedProfileAction,
+} from "@/actions/auth";
 import { getTaskerServices, ServiceWithDetails } from "@/actions/services";
 import {
   Plus,
@@ -18,8 +25,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { format } from "date-fns";
-import { Suspense } from "react";
 import ServiceDeleteButton from "@/components/services/ServiceDeleteButton";
+import { User } from "@/types/supabase";
 
 // Enhanced loading component with modern design
 function ServicesLoadingSkeleton() {
@@ -261,10 +268,30 @@ function ServiceCard({
 }
 
 // Services list component with enhanced design
-async function ServicesList({ taskerId }: { taskerId: string }) {
-  try {
-    const services = await getTaskerServices(taskerId);
+function ServicesList({ taskerId }: { taskerId: string }) {
+  const [services, setServices] = useState<ServiceWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const servicesData = await getTaskerServices(taskerId);
+        setServices(servicesData);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, [taskerId]);
+
+  if (loading) {
+    return <ServicesLoadingSkeleton />;
+  }
+
+  try {
     // Calculate stats
     const activeServices = services.filter(
       (s) => s.service_status === "active"
@@ -429,9 +456,48 @@ async function ServicesList({ taskerId }: { taskerId: string }) {
   }
 }
 
-export default async function MyServicesPage() {
-  // Get current user (tasker)
-  const { user } = await getUserProfileAction();
+export default function MyServicesPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Run profile check and user data fetching in parallel
+        const [profileCheck, { user: userData }] = await Promise.all([
+          hasTaskerCompletedProfileAction(),
+          getUserProfileAction(),
+        ]);
+
+        // Check profile completion (non-blocking)
+        if (!profileCheck.hasCompleted) {
+          toast.info("Please complete your profile setup to continue");
+          router.replace("/finish-signUp");
+          return;
+        }
+
+        setUser(userData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
@@ -494,11 +560,9 @@ export default async function MyServicesPage() {
         </div>
       </section>
 
-      {/* Services Section with Suspense for better loading */}
+      {/* Services Section */}
       <section className="w-full max-w-4xl px-4 pb-8 flex-1 flex flex-col">
-        <Suspense fallback={<ServicesLoadingSkeleton />}>
-          <ServicesList taskerId={user.id} />
-        </Suspense>
+        <ServicesList taskerId={user.id} />
       </section>
     </main>
   );

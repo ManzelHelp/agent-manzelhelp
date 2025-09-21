@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
+import { hasTaskerCompletedProfileAction } from "@/actions/auth";
 import Image from "next/image";
 import {
   Card,
@@ -246,6 +247,25 @@ export default function CreateOfferPage() {
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
+
+  // Check if profile is completed
+  useEffect(() => {
+    const checkProfile = async () => {
+      try {
+        const profileCheck = await hasTaskerCompletedProfileAction();
+        if (!profileCheck.hasCompleted) {
+          toast.info("Please complete your profile setup to continue");
+          router.replace("/finish-signUp");
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking profile completion:", error);
+        toast.error("Failed to verify profile status");
+      }
+    };
+
+    checkProfile();
+  }, [router]);
 
   // Validation functions
   const validateStep1 = (): boolean => {

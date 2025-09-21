@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { hasTaskerCompletedProfileAction } from "@/actions/auth";
 
 // UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +44,8 @@ import {
 } from "@/actions/dashboard";
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   // State management for dashboard data
   const [stats, setStats] = useState<DashboardStats>({
     activeJobs: 0,
@@ -73,7 +77,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       setError(null);
       setStatsLoading(true);
       setNotificationsLoading(true);
@@ -81,7 +85,20 @@ export default function DashboardPage() {
       setActivityLoading(true);
 
       try {
-        const data = await fetchAllDashboardData();
+        // Run profile check and data fetching in parallel
+        const [profileCheck, data] = await Promise.all([
+          hasTaskerCompletedProfileAction(),
+          fetchAllDashboardData(),
+        ]);
+
+        // Check profile completion (non-blocking)
+        if (!profileCheck.hasCompleted) {
+          toast.info("Please complete your profile setup to continue");
+          router.replace("/finish-signUp");
+          return;
+        }
+
+        // Continue with data processing if profile is complete
 
         if (data.stats) {
           setStats(data.stats);
@@ -102,8 +119,8 @@ export default function DashboardPage() {
       }
     };
 
-    fetchDashboardData();
-  }, []);
+    fetchData();
+  }, [router]);
 
   // Helper functions for notification display
   const getNotificationIcon = (type: string) => {
