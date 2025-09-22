@@ -20,10 +20,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Plus, Trash2, MapPinIcon, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { Address } from "@/types/supabase";
-import { addAddress, deleteAddress } from "@/actions/profile";
+import {
+  addAddress,
+  deleteAddress,
+  checkAddressUsage,
+} from "@/actions/profile";
 
 interface AddressesSectionProps {
   addresses: Address[];
@@ -59,6 +64,8 @@ export default function AddressesSection({
   userId,
 }: AddressesSectionProps) {
   const [addAddressOpen, setAddAddressOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState<Address | null>(null);
   const [newAddressForm, setNewAddressForm] = useState<NewAddressForm>({
     label: "home",
     street_address: "",
@@ -118,20 +125,57 @@ export default function AddressesSection({
     }
   };
 
-  const handleDeleteAddress = async (addressId: string) => {
+  const handleDeleteClick = async (addressId: string) => {
+    // Find the address to get its details
+    const address = addresses.find((addr) => addr.id === addressId);
+
+    if (!address) {
+      toast.error("Address not found");
+      return;
+    }
+
     try {
-      const result = await deleteAddress(addressId);
+      // Check if address is being used in jobs
+      const usageCheck = await checkAddressUsage(addressId);
+
+      if (usageCheck.success && usageCheck.isUsed) {
+        toast.error(
+          `Cannot delete your ${address.label} location because it's being used in active job postings. Please delete or update those jobs first.`,
+          { duration: 6000 }
+        );
+        return;
+      }
+
+      // Set the address to delete and open confirmation dialog
+      setAddressToDelete(address);
+      setDeleteConfirmOpen(true);
+    } catch (error) {
+      console.error("Error checking address usage:", error);
+      toast.error("Failed to check address usage");
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!addressToDelete) return;
+
+    try {
+      const result = await deleteAddress(addressToDelete.id);
 
       if (result.success) {
-        toast.success("Address deleted successfully");
+        toast.success("Location deleted successfully");
         // Refresh profile data
         await onProfileRefresh();
       } else {
-        toast.error(result.error || "Failed to delete address");
+        // Show detailed error message
+        toast.error(result.error || "Failed to delete location");
       }
     } catch (error) {
       console.error("Error deleting address:", error);
-      toast.error("Failed to delete address");
+      toast.error("Failed to delete location");
+    } finally {
+      // Close dialog and reset state
+      setDeleteConfirmOpen(false);
+      setAddressToDelete(null);
     }
   };
 
@@ -148,7 +192,7 @@ export default function AddressesSection({
                 Service Locations
               </CardTitle>
               <CardDescription className="text-[var(--color-text-secondary)]">
-                Manage your service locations
+                Manage your locations
               </CardDescription>
             </div>
           </div>
@@ -189,9 +233,9 @@ export default function AddressesSection({
                       }
                       className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
                     >
-                      <option value="home">Home</option>
-                      <option value="work">Work</option>
-                      <option value="other">Other</option>
+                      <option value="home">Home Location</option>
+                      <option value="work">Work Location</option>
+                      <option value="other">Other Location</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -300,8 +344,7 @@ export default function AddressesSection({
               No service locations
             </h3>
             <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
-              Add locations where you provide your services to help customers
-              find you
+              Add locations for your services and job offers.
             </p>
             <Button onClick={() => setAddAddressOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -351,7 +394,7 @@ export default function AddressesSection({
                       variant="ghost"
                       size="sm"
                       onClick={() =>
-                        address.id && handleDeleteAddress(address.id)
+                        address.id && handleDeleteClick(address.id)
                       }
                       className="text-[var(--color-error)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10"
                     >
@@ -364,6 +407,21 @@ export default function AddressesSection({
           </div>
         )}
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setAddressToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Location"
+        description={`Are you sure you want to delete your ${addressToDelete?.label} location? This action cannot be undone.`}
+        confirmText="Delete Location"
+        cancelText="Cancel"
+        variant="destructive"
+      />
     </Card>
   );
 }

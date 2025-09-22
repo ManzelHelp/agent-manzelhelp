@@ -402,6 +402,40 @@ export async function addAddress(
   }
 }
 
+// Check if address is being used in jobs
+export async function checkAddressUsage(
+  addressId: string
+): Promise<{ success: boolean; isUsed: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    // Check if address is used in jobs
+    const { data: jobs, error } = await supabase
+      .from("jobs")
+      .select("id, title, status")
+      .eq("address_id", addressId)
+      .in("status", ["active", "under_review", "in_progress"]);
+
+    if (error) {
+      console.error("Error checking address usage:", error);
+      return {
+        success: false,
+        isUsed: false,
+        error: "Failed to check address usage",
+      };
+    }
+
+    return { success: true, isUsed: (jobs && jobs.length > 0) || false };
+  } catch (error) {
+    console.error("Error in checkAddressUsage:", error);
+    return {
+      success: false,
+      isUsed: false,
+      error: "An unexpected error occurred",
+    };
+  }
+}
+
 // Delete address
 export async function deleteAddress(
   addressId: string
@@ -416,6 +450,28 @@ export async function deleteAddress(
 
     if (error) {
       console.error("Error deleting address:", error);
+
+      // Handle foreign key constraint error
+      if (
+        error.code === "23503" &&
+        error.message.includes("jobs_address_id_fkey")
+      ) {
+        return {
+          success: false,
+          error:
+            "Cannot delete this address because it's being used in active job postings. Please delete or update those jobs first, then try again.",
+        };
+      }
+
+      // Handle other foreign key constraint errors
+      if (error.code === "23503") {
+        return {
+          success: false,
+          error:
+            "Cannot delete this address because it's being used elsewhere. Please remove all references to this address first, then try again.",
+        };
+      }
+
       return { success: false, error: "Failed to delete address" };
     }
 
@@ -1018,6 +1074,28 @@ export async function deleteCustomerAddress(
 
     if (error) {
       console.error("Error deleting customer address:", error);
+
+      // Handle foreign key constraint error
+      if (
+        error.code === "23503" &&
+        error.message.includes("jobs_address_id_fkey")
+      ) {
+        return {
+          success: false,
+          error:
+            "Cannot delete this address because it's being used in active job postings. Please delete or update those jobs first, then try again.",
+        };
+      }
+
+      // Handle other foreign key constraint errors
+      if (error.code === "23503") {
+        return {
+          success: false,
+          error:
+            "Cannot delete this address because it's being used elsewhere. Please remove all references to this address first, then try again.",
+        };
+      }
+
       return { success: false, error: "Failed to delete address" };
     }
 
