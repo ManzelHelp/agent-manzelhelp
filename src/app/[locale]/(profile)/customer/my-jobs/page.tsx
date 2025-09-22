@@ -72,7 +72,7 @@ async function JobCard({
   const t = await getTranslations("myJobs");
   const getStatusColor = (status?: string | null) => {
     switch (status) {
-      case "open":
+      case "active":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "under_review":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
@@ -91,7 +91,7 @@ async function JobCard({
 
   const getStatusIcon = (status?: string | null) => {
     switch (status) {
-      case "open":
+      case "active":
         return <Eye className="h-4 w-4" />;
       case "under_review":
         return <Clock className="h-4 w-4" />;
@@ -110,7 +110,7 @@ async function JobCard({
 
   const getStatusLabel = (status?: string | null) => {
     switch (status) {
-      case "open":
+      case "active":
         return t("status.open");
       case "under_review":
         return t("status.under_review");
@@ -155,7 +155,7 @@ async function JobCard({
                 {job.title}
               </h3>
               <div className="flex items-center gap-1">
-                {job.status === "open" ? (
+                {job.status === "active" ? (
                   <Eye className="h-4 w-4 text-[var(--color-success)]" />
                 ) : (
                   <EyeOff className="h-4 w-4 text-[var(--color-text-secondary)]" />
@@ -273,7 +273,7 @@ async function JobCard({
         {/* Action Buttons */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {job.status === "open" && job.application_count > 0 && (
+            {job.status === "active" && job.application_count > 0 && (
               <Button
                 asChild
                 size="sm"
@@ -321,7 +321,7 @@ async function JobCard({
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
-            {!job.assigned_tasker_id && job.status === "open" && (
+            {!job.assigned_tasker_id && job.status === "active" && (
               <JobDeleteButton
                 jobId={job.id}
                 customerId={customerId}

@@ -131,7 +131,7 @@ export default async function HomePage({
       max_applications,
       created_at,
       customer_id,
-      users!inner (
+      users!customer_id (
         id,
         first_name,
         last_name,
@@ -147,23 +147,42 @@ export default async function HomePage({
 
   // Transform the jobs data to match the expected format
   const transformedJobs =
-    featuredJobs?.map((job) => ({
-      job: {
-        id: job.id,
-        title: job.title,
-        description: job.description || "",
-        customer_budget: job.customer_budget,
-        currency: job.currency,
-        estimated_duration: job.estimated_duration,
-        preferred_date: job.preferred_date,
-        is_flexible: job.is_flexible,
-        is_promoted: job.is_promoted,
-        current_applications: job.current_applications,
-        max_applications: job.max_applications,
-        created_at: job.created_at,
-      },
-      customer: job.users as unknown as User,
-    })) || [];
+    featuredJobs?.map((job) => {
+      const user = Array.isArray(job.users) ? job.users[0] : job.users;
+      return {
+        job: {
+          id: job.id,
+          title: job.title,
+          description: job.description || "",
+          customer_budget: job.customer_budget,
+          currency: job.currency,
+          estimated_duration: job.estimated_duration,
+          preferred_date: job.preferred_date,
+          is_flexible: job.is_flexible,
+          is_promoted: job.is_promoted,
+          current_applications: job.current_applications,
+          max_applications: job.max_applications,
+          created_at: job.created_at,
+        },
+        customer: user
+          ? ({
+              id: user.id,
+              first_name: user.first_name || "Anonymous",
+              last_name: user.last_name || "Customer",
+              avatar_url: user.avatar_url || undefined,
+              verification_status: user.verification_status || "unverified",
+              email: "", // Add required email field
+            } as User)
+          : ({
+              id: job.customer_id,
+              first_name: "Anonymous",
+              last_name: "Customer",
+              avatar_url: undefined,
+              verification_status: "unverified",
+              email: "", // Add required email field
+            } as User),
+      };
+    }) || [];
 
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">

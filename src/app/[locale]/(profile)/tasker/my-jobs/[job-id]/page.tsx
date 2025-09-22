@@ -135,8 +135,8 @@ export default function JobDetailPage() {
           requirements: jobData.requirements || "",
         });
 
-        // Fetch applications if job is open
-        if (jobData.status === "open") {
+        // Fetch applications if job is active
+        if (jobData.status === "active") {
           try {
             const jobApplications = await getJobApplications(params["job-id"]);
             setApplications(jobApplications);
@@ -236,7 +236,7 @@ export default function JobDetailPage() {
 
   const getStatusColor = (status?: string | null) => {
     switch (status) {
-      case "open":
+      case "active":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "under_review":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
@@ -255,7 +255,7 @@ export default function JobDetailPage() {
 
   const getStatusIcon = (status?: string | null) => {
     switch (status) {
-      case "open":
+      case "active":
         return <Eye className="h-4 w-4" />;
       case "under_review":
         return <Clock className="h-4 w-4" />;
@@ -274,7 +274,7 @@ export default function JobDetailPage() {
 
   const getStatusLabel = (status?: string | null) => {
     switch (status) {
-      case "open":
+      case "active":
         return "Open";
       case "under_review":
         return "Under Review";
@@ -439,13 +439,13 @@ export default function JobDetailPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                      {data.status === "open" ? (
+                      {data.status === "active" ? (
                         <Eye className="h-5 w-5 text-[var(--color-success)]" />
                       ) : (
                         <EyeOff className="h-5 w-5 text-[var(--color-text-secondary)]" />
                       )}
                       <span className="font-medium text-[var(--color-text-primary)]">
-                        {data.status === "open" ? "Active" : "Paused"}
+                        Job Status
                       </span>
                     </div>
                   </div>
@@ -774,7 +774,7 @@ export default function JobDetailPage() {
           </div>
 
           {/* Applications Section */}
-          {data.status === "open" && applications.length > 0 && (
+          {data.status === "active" && applications.length > 0 && (
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
               <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
@@ -883,7 +883,7 @@ export default function JobDetailPage() {
           )}
 
           {/* Action Buttons */}
-          {!data.assigned_tasker_id && data.status === "open" && (
+          {!data.assigned_tasker_id && data.status === "active" && (
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
               <div className="p-8">
                 <JobDeleteButton
