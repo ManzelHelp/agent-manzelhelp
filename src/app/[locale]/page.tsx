@@ -345,7 +345,7 @@ export default async function HomePage({
 
           {/* Enhanced View All Services Button */}
           <div className="text-center mt-12 sm:mt-16">
-            <Link href={`/${locale}/search`}>
+            <Link href={`/${locale}/search/services`}>
               <Button
                 size="lg"
                 className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0"

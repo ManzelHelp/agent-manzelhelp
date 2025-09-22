@@ -56,7 +56,7 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
 
   return (
     <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 hover:-translate-y-2">
-      <div className="relative flex flex-col h-full">
+      <div className="relative flex flex-col h-full min-h-[500px]">
         {/* Enhanced Customer Profile Section with Gradient Background */}
         <div className="relative p-4 sm:p-6 bg-gradient-to-r from-[var(--color-accent)]/5 to-[var(--color-primary)]/5 border-b border-[var(--color-border)]">
           <div className="flex items-center gap-4">
@@ -101,26 +101,26 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
         </div>
 
         {/* Enhanced Job Details */}
-        <div className="p-4 sm:p-6 flex-1">
-          <h4 className="font-bold mb-3 text-[var(--color-text-primary)] text-lg sm:text-xl line-clamp-2 leading-tight">
+        <div className="p-4 sm:p-6 flex-1 flex flex-col">
+          <h4 className="font-bold mb-4 text-[var(--color-text-primary)] text-lg sm:text-xl line-clamp-2 leading-tight">
             {job.title}
           </h4>
-          <p className="text-sm sm:text-base text-[var(--color-text-secondary)] line-clamp-3 leading-relaxed mb-4">
+          <p className="text-sm sm:text-base text-[var(--color-text-secondary)] line-clamp-4 leading-relaxed mb-6 flex-1">
             {job.description}
           </p>
 
           {/* Job Features */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <div className="flex items-center gap-1 px-2 py-1 bg-[var(--color-primary)]/10 rounded-full text-xs text-[var(--color-text-secondary)]">
+          <div className="flex flex-wrap gap-2 mt-auto">
+            <div className="flex items-center gap-1 px-3 py-2 bg-[var(--color-primary)]/10 rounded-full text-xs text-[var(--color-text-secondary)]">
               <Clock size={12} />
               <span>{job.estimated_duration}h estimated</span>
             </div>
             {job.is_promoted && (
-              <div className="px-2 py-1 bg-[var(--color-secondary)]/10 rounded-full text-xs text-[var(--color-secondary)] font-medium">
+              <div className="px-3 py-2 bg-[var(--color-secondary)]/10 rounded-full text-xs text-[var(--color-secondary)] font-medium">
                 Promoted
               </div>
             )}
-            <div className="flex items-center gap-1 px-2 py-1 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)] font-medium">
+            <div className="flex items-center gap-1 px-3 py-2 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)] font-medium">
               <Users size={12} />
               <span>
                 {job.current_applications}/{job.max_applications} applied
@@ -130,8 +130,8 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
         </div>
 
         {/* Enhanced Budget Section with Modern Styling */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-primary)]/5 border-t border-[var(--color-border)] mt-auto">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-primary)]/5 border-t border-[var(--color-border)] mt-auto flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5">
             <div className="flex items-baseline gap-2">
               <DollarSign className="w-5 h-5 text-[var(--color-accent)]" />
               <span className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
@@ -143,9 +143,9 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
             </div>
             <Link
               href={`/${locale}/job-offer/${job.id}`}
-              className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dark)] text-white rounded-xl hover:from-[var(--color-accent-dark)] hover:to-[var(--color-accent)] transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white rounded-xl hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 min-w-[120px]"
             >
-              Apply Now
+              View Details
               <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
             </Link>
           </div>

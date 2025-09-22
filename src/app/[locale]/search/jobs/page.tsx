@@ -124,7 +124,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
       )
     `
     )
-    .eq("status", "under_review");
+    .in("status", ["under_review", "active"]);
 
   // Apply filters
   if (resolvedSearchParams.q && resolvedSearchParams.q.trim()) {
@@ -240,10 +240,11 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
       }
     ) => ({
       ...job,
-      customer_first_name: job.users?.first_name || "",
-      customer_last_name: job.users?.last_name || "",
-      customer_avatar_url: job.users?.avatar_url || "",
-      customer_verification_status: job.users?.verification_status || "",
+      customer_first_name: job.users?.first_name || "Anonymous",
+      customer_last_name: job.users?.last_name || "Customer",
+      customer_avatar_url: job.users?.avatar_url || null,
+      customer_verification_status:
+        job.users?.verification_status || "unverified",
       category_name_en: "", // Category info not available in jobs table
       category_name_de: "", // Category info not available in jobs table
       category_name_fr: "", // Category info not available in jobs table
