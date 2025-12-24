@@ -3,7 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import ServiceOfferCard from "@/components/ServiceOfferCard";
 import OfferedJobs from "@/components/OfferedJobs";
-import { User, TaskerService } from "@/types/supabase";
+import { User, TaskerService, VerificationStatus } from "@/types/supabase";
 import PopularServices from "@/components/PopularServices";
 import { createClient } from "@/supabase/server";
 import { Card } from "@/components/ui/card";
@@ -133,6 +133,7 @@ export default async function HomePage({
       customer_id,
       users!customer_id (
         id,
+        email,
         first_name,
         last_name,
         avatar_url,
@@ -170,16 +171,16 @@ export default async function HomePage({
               first_name: user.first_name || "Anonymous",
               last_name: user.last_name || "Customer",
               avatar_url: user.avatar_url || undefined,
-              verification_status: user.verification_status || "unverified",
-              email: "", // Add required email field
+              verification_status: (user.verification_status || "under_review") as VerificationStatus,
+              email: user.email || "", // Use user email if available
             } as User)
           : ({
               id: job.customer_id,
               first_name: "Anonymous",
               last_name: "Customer",
               avatar_url: undefined,
-              verification_status: "unverified",
-              email: "", // Add required email field
+              verification_status: "under_review" as VerificationStatus,
+              email: "", // No email available for anonymous customer
             } as User),
       };
     }) || [];

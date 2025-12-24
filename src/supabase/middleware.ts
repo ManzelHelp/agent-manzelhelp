@@ -1,24 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/**
+ * Options for authentication middleware
+ */
 interface AuthOptions {
   locale: string;
   pathname: string;
   protectedRoutes: string[];
-}
-
-interface CookieToSet {
-  name: string;
-  value: string;
-  options?: {
-    domain?: string;
-    expires?: Date;
-    httpOnly?: boolean;
-    maxAge?: number;
-    path?: string;
-    sameSite?: "strict" | "lax" | "none";
-    secure?: boolean;
-  };
 }
 
 export async function updateSession(
@@ -40,19 +29,50 @@ export async function updateSession(
     return supabaseResponse;
   }
 
+  // Create Supabase client with cookie handling for Next.js middleware
+  // Using the same pattern as server.ts but adapted for NextRequest/NextResponse
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
+        // Return all cookies from the request
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet: CookieToSet[]) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
-        );
+      setAll(cookiesToSet) {
+        // Update cookies in the request object (for internal use)
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+        
+        // Create a new response with updated cookies
         supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
+        
+        // Set all cookies in the response with their options
+        // The options type is compatible with Next.js cookie options
+        cookiesToSet.forEach(({ name, value, options }) => {
+          if (options) {
+            // Ensure sameSite is a valid string type (not boolean)
+            const cookieOptions: {
+              domain?: string;
+              expires?: Date;
+              httpOnly?: boolean;
+              maxAge?: number;
+              path?: string;
+              sameSite?: "strict" | "lax" | "none";
+              secure?: boolean;
+            } = {
+              ...options,
+              // Ensure sameSite is always a valid string type
+              sameSite: typeof options.sameSite === "string" 
+                ? options.sameSite 
+                : options.sameSite === false 
+                  ? "none" 
+                  : "lax",
+            };
+            supabaseResponse.cookies.set(name, value, cookieOptions);
+          } else {
+            supabaseResponse.cookies.set(name, value);
+          }
+        });
       },
     },
   });

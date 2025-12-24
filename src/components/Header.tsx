@@ -37,13 +37,22 @@ function Header() {
         {/* Logo Section - Left */}
         <div className="flex items-center">
           <Link href="/" className="relative flex items-center">
+            {/* 
+              HYDRATION-SAFE IMAGE LOADING
+              Using unoptimized to prevent Next.js image optimization issues.
+              The image is served directly from /public without optimization.
+              
+              Image dimensions: 400x110px (aspect ratio: 3.64:1)
+              Display size: 200x55px (maintains aspect ratio)
+            */}
             <Image
               src="/logo-manzelhelp.png"
               alt="ManzelHelp"
-              width={120}
-              height={100}
+              width={200}
+              height={55}
               priority
-              className="rounded-lg transition-transform duration-200 hover:scale-105"
+              unoptimized
+              className="rounded-lg transition-transform duration-200 hover:scale-105 object-contain"
             />
           </Link>
         </div>

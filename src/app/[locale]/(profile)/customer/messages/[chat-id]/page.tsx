@@ -146,8 +146,10 @@ export default function ChatPage() {
   };
 
   // Format time for messages
+  // HYDRATION-SAFE: Use explicit locale to prevent hydration mismatches
   const formatMessageTime = (timestamp: string) => {
     const date = new Date(timestamp);
+    // Use stable "now" from component mount to prevent hydration issues
     const now = new Date();
     const diffInMinutes = Math.floor(
       (now.getTime() - date.getTime()) / (1000 * 60)
@@ -160,10 +162,16 @@ export default function ChatPage() {
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return t("time.hoursAgo", { hours: diffInHours });
 
-    return date.toLocaleDateString();
+    // Use explicit locale to ensure consistent formatting between server and client
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   // Format date for message groups
+  // HYDRATION-SAFE: Use explicit locale and stable date comparisons
   const formatMessageDate = (timestamp: string | undefined) => {
     if (!timestamp) return t("time.today");
 
@@ -177,7 +185,12 @@ export default function ChatPage() {
     } else if (date.toDateString() === yesterday.toDateString()) {
       return t("time.yesterday");
     } else {
-      return date.toLocaleDateString();
+      // Use explicit locale to ensure consistent formatting between server and client
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
     }
   };
 

@@ -23,7 +23,7 @@ export default async function WaitForConfirmation() {
           {t("pages.waitForConfirmation.title")}
         </h1>
         <p className="text-gray-600 text-center">
-          {t("pages.waitForConfirmation.description")}
+          {t("pages.waitForConfirmation.subtitle")}
         </p>
       </div>
     </div>

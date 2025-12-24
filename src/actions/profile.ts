@@ -158,6 +158,72 @@ export async function updateUserPersonalInfo(
   }
 }
 
+// Fix incomplete avatar URL by finding the actual file in storage
+export async function fixAvatarUrlAction(
+  userId: string
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    // List files in user's folder in avatars bucket
+    const { data: files, error: listError } = await supabase.storage
+      .from("avatars")
+      .list(userId, {
+        limit: 10,
+        sortBy: { column: "created_at", order: "desc" },
+      });
+
+    if (listError) {
+      console.error("Error listing avatar files:", listError);
+      return { success: false, error: "Failed to find avatar file" };
+    }
+
+    // Find avatar file (should start with "avatar.")
+    const avatarFile = files?.find((file) => file.name.startsWith("avatar."));
+
+    if (!avatarFile) {
+      return { success: false, error: "No avatar file found" };
+    }
+
+    // Construct complete URL
+    const filePath = `${userId}/${avatarFile.name}`;
+    const { data: urlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
+
+    let publicUrl = urlData?.publicUrl;
+
+    // Ensure URL is complete
+    if (!publicUrl || !publicUrl.includes("/storage/v1/object/public/avatars/")) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (supabaseUrl) {
+        publicUrl = `${supabaseUrl}/storage/v1/object/public/avatars/${filePath}`;
+      } else {
+        return { success: false, error: "Missing Supabase URL configuration" };
+      }
+    }
+
+    // Update URL in database
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({
+        avatar_url: publicUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId);
+
+    if (updateError) {
+      console.error("Error updating avatar URL:", updateError);
+      return { success: false, error: "Failed to update avatar URL" };
+    }
+
+    return { success: true, url: publicUrl };
+  } catch (error) {
+    console.error("Error in fixAvatarUrlAction:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
 // Update user avatar
 export async function updateUserAvatar(
   userId: string,
@@ -507,28 +573,73 @@ export async function uploadProfileImage(
     }
 
     const fileExt = file.name.split(".").pop();
-    const fileName = `${userId}.${fileExt}`;
-    const filePath = `profile-images/${fileName}`;
+    const fileName = `avatar.${fileExt}`;
+    // RLS policy expects: (storage.foldername(name))[1] = auth.uid()::text
+    // So path must be: {userId}/avatar.{ext}
+    const filePath = `${userId}/${fileName}`;
 
-    // Upload to Supabase storage
+    // First, try to remove existing avatar files to avoid RLS issues with upsert
+    // List existing files in user's folder
+    const { data: existingFiles } = await supabase.storage
+      .from("avatars")
+      .list(userId, {
+        limit: 10,
+      });
+
+    // Remove existing avatar files (any file starting with "avatar.")
+    if (existingFiles && existingFiles.length > 0) {
+      const avatarFiles = existingFiles.filter((f) => f.name.startsWith("avatar."));
+      if (avatarFiles.length > 0) {
+        const filesToRemove = avatarFiles.map((f) => `${userId}/${f.name}`);
+        await supabase.storage.from("avatars").remove(filesToRemove);
+      }
+    }
+
+    // Upload to Supabase storage - use "avatars" bucket as per SCHEMA_ANALYSIS.md
     const { error: uploadError } = await supabase.storage
-      .from("profile-images")
+      .from("avatars")
       .upload(filePath, file, {
         cacheControl: "3600",
-        upsert: true, // Replace existing file
+        upsert: false, // Changed to false since we delete first
       });
 
     if (uploadError) {
       console.error("Error uploading to storage:", uploadError);
-      return { success: false, error: "Failed to upload image to storage" };
+      return { success: false, error: `Failed to upload image to storage: ${uploadError.message}` };
     }
 
-    // Get the public URL
+    // Get the public URL from avatars bucket
     const { data: urlData } = supabase.storage
-      .from("profile-images")
+      .from("avatars")
       .getPublicUrl(filePath);
 
-    return { success: true, url: urlData.publicUrl };
+    // Validate and ensure URL is complete
+    let publicUrl = urlData?.publicUrl;
+    
+    if (!publicUrl) {
+      console.error("Failed to get public URL for uploaded image");
+      return { success: false, error: "Failed to generate image URL" };
+    }
+
+    // If URL is incomplete (missing path), construct it manually
+    if (!publicUrl.includes("/storage/v1/object/public/avatars/")) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (supabaseUrl) {
+        // Construct complete URL manually
+        publicUrl = `${supabaseUrl}/storage/v1/object/public/avatars/${filePath}`;
+        console.log("[uploadProfileImage] Constructed URL manually:", publicUrl);
+      } else {
+        console.error("NEXT_PUBLIC_SUPABASE_URL not set, cannot construct URL");
+        return { success: false, error: "Failed to generate image URL: Missing Supabase URL" };
+      }
+    }
+
+    console.log("[uploadProfileImage] Image uploaded successfully:", {
+      filePath,
+      publicUrl,
+    });
+
+    return { success: true, url: publicUrl };
   } catch (error) {
     console.error("Error in uploadProfileImage:", error);
     return { success: false, error: "An unexpected error occurred" };

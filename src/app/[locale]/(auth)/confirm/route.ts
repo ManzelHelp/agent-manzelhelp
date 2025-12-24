@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const userRole = searchParams.get("userRole");
+  // Get userRole from query params, default to "customer" if not provided
+  const userRole = searchParams.get("userRole") || "customer";
 
   // Use next-intl's built-in locale detection
   const locale = await getLocale();
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
             email_verified: true,
             is_active: true,
             preferred_language: locale,
-            verification_status: "unverified", // Default status
+            verification_status: "pending", // Default status
             wallet_balance: 0, // Required field with default
           },
         ]);

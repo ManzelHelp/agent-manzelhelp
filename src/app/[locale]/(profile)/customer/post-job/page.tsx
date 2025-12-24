@@ -43,6 +43,7 @@ import { useUserStore } from "@/stores/userStore";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 import { createJob, type CreateJobData } from "@/actions/jobs";
 import { getUserAddresses } from "@/actions/profile";
+import { getServices } from "@/actions/services";
 import type { ServiceCategory, Service, Address } from "@/types/supabase";
 
 // Form data interfaces
@@ -159,25 +160,46 @@ export default function PostJobPage() {
       }));
       setCategories(localCategories);
 
-      // Get all services from local categories
-      const allServices: Service[] = [];
-      hierarchies.forEach(({ parent, subcategories }) => {
-        subcategories.forEach((service) => {
-          allServices.push({
-            id: service.id,
-            category_id: parent.id,
-            name_en: service.name_en,
-            name_fr: service.name_fr,
-            name_ar: service.name_ar,
-            description_en: service.description_en,
-            description_fr: service.description_fr,
-            description_ar: service.description_ar,
-            is_active: true,
-            sort_order: service.id,
+      // Get all services from the database to ensure we use correct IDs
+      // This prevents foreign key constraint errors when creating jobs
+      const servicesResult = await getServices();
+      if (servicesResult.success && servicesResult.services) {
+        // Map database services to the Service type expected by the component
+        const dbServices: Service[] = servicesResult.services.map((service) => ({
+          id: service.id,
+          category_id: service.category_id,
+          name_en: service.name_en,
+          name_fr: service.name_fr,
+          name_ar: service.name_ar,
+          description_en: service.description_en || undefined,
+          description_fr: service.description_fr || undefined,
+          description_ar: service.description_ar || undefined,
+          is_active: service.is_active,
+          sort_order: service.sort_order,
+        }));
+        setServices(dbServices);
+      } else {
+        // Fallback to local services if database fetch fails
+        console.warn("Failed to load services from database, using local services:", servicesResult.error);
+        const allServices: Service[] = [];
+        hierarchies.forEach(({ parent, subcategories }) => {
+          subcategories.forEach((service) => {
+            allServices.push({
+              id: service.id,
+              category_id: parent.id,
+              name_en: service.name_en,
+              name_fr: service.name_fr,
+              name_ar: service.name_ar,
+              description_en: service.description_en,
+              description_fr: service.description_fr,
+              description_ar: service.description_ar,
+              is_active: true,
+              sort_order: service.id,
+            });
           });
         });
-      });
-      setServices(allServices);
+        setServices(allServices);
+      }
 
       // Fetch user addresses using server action
       const addressesResult = await getUserAddresses();
@@ -1251,7 +1273,11 @@ export default function PostJobPage() {
                             <strong>Date:</strong>{" "}
                             {new Date(
                               formData.scheduleBudget.preferredDate
-                            ).toLocaleDateString()}
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
                           </p>
                           {!formData.scheduleBudget.isFlexible &&
                             formData.scheduleBudget.preferredTimeStart && (

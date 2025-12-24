@@ -38,6 +38,11 @@ export default async function LocaleLayout({
     return timezoneMap[locale] || "UTC";
   };
 
+  // CRITICAL: Use a stable date for hydration to prevent React hydration mismatches
+  // The date is captured once during server-side rendering and reused on client
+  // This ensures the same value is used on both server and client during hydration
+  const stableNow = new Date();
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -56,7 +61,7 @@ export default async function LocaleLayout({
             messages={messages}
             locale={locale}
             timeZone={getTimezoneForLocale(locale)}
-            now={new Date()}
+            now={stableNow}
           >
             <Header />
             {children}

@@ -74,6 +74,59 @@ function getCategoryAndServiceNames(serviceId: number) {
   };
 }
 
+/**
+ * Get all active services from the database
+ * This ensures we use the actual service IDs from the database
+ * instead of local hardcoded IDs that may not match
+ */
+export async function getServices(): Promise<{
+  success: boolean;
+  services?: Array<{
+    id: number;
+    category_id: number;
+    name_en: string;
+    name_fr: string;
+    name_ar: string;
+    description_en: string | null;
+    description_fr: string | null;
+    description_ar: string | null;
+    icon_url: string | null;
+    is_active: boolean;
+    sort_order: number;
+  }>;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("services")
+      .select("id, category_id, name_en, name_fr, name_ar, description_en, description_fr, description_ar, icon_url, is_active, sort_order")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching services:", error);
+      return {
+        success: false,
+        error: `Failed to fetch services: ${error.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      services: data || [],
+    };
+  } catch (error) {
+    console.error("Error in getServices:", error);
+    return {
+      success: false,
+      error: "Failed to load services. Please try again later.",
+    };
+  }
+}
+
 export interface ServiceWithDetails extends TaskerService {
   booking_count: number;
   category_name_en?: string;

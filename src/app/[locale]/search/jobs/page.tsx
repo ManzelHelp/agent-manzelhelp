@@ -244,7 +244,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
       customer_last_name: job.users?.last_name || "Customer",
       customer_avatar_url: job.users?.avatar_url || null,
       customer_verification_status:
-        job.users?.verification_status || "unverified",
+        job.users?.verification_status || "pending",
       category_name_en: "", // Category info not available in jobs table
       category_name_de: "", // Category info not available in jobs table
       category_name_fr: "", // Category info not available in jobs table

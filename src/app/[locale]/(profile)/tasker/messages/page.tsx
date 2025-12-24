@@ -95,7 +95,12 @@ export default function MessagesPage() {
     if (diffInDays < 7)
       return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 
-    return date.toLocaleDateString();
+    // HYDRATION-SAFE: Use explicit locale to prevent hydration mismatches
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   // Filter conversations based on status and search query

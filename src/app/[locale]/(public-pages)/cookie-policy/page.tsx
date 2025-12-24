@@ -1,6 +1,18 @@
 import React from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+/**
+ * HYDRATION-SAFE DATE
+ * 
+ * Use a stable date to prevent hydration mismatches.
+ * The date is captured once during server-side rendering.
+ */
+const LAST_UPDATED_DATE = new Date("2024-12-23").toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
 export async function generateMetadata({
   params,
 }: {
@@ -44,7 +56,7 @@ export default async function CookiePolicyPage({
             your experience.
           </p>
           <p className="text-sm opacity-90">
-            Last updated: {new Date().toLocaleDateString()}
+            Last updated: {LAST_UPDATED_DATE}
           </p>
         </div>
       </section>

@@ -587,7 +587,7 @@ export default function ApplicationsPage() {
               : t("applications.confirmations.confirmReject")
           }
           cancelText={t("applications.confirmations.cancel")}
-          variant={confirmDialog.type === "accept" ? "success" : "danger"}
+          variant={confirmDialog.type === "accept" ? "default" : "destructive"}
           isLoading={confirmDialog.isLoading}
         />
       </div>

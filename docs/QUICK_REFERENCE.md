@@ -29,7 +29,7 @@ pnpm lint                   # Run linter
 | Supabase Config | `src/supabase/` |
 | Types | `src/types/` |
 | Translations | `messages/{locale}.json` |
-| Middleware | `src/middleware.ts` |
+| Proxy (Middleware) | `src/proxy.ts` |
 
 ## 🔑 Common Patterns
 
@@ -163,7 +163,7 @@ const { data: { user } } = await supabase.auth.getUser();
 
 ### Protect Route
 ```typescript
-// Add to src/middleware.ts
+// Add to src/proxy.ts
 const PROTECTED_ROUTES = [
   "/my-route/",
 ];

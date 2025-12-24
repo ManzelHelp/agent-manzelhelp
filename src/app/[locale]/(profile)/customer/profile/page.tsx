@@ -595,7 +595,11 @@ export default function CustomerProfilePage() {
                     </Label>
                     <p className="text-[var(--color-text-primary)] font-medium">
                       {user.date_of_birth
-                        ? new Date(user.date_of_birth).toLocaleDateString()
+                        ? new Date(user.date_of_birth).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
                         : tCommon("notProvided")}
                     </p>
                   </div>

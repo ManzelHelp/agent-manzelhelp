@@ -259,6 +259,18 @@
         "addFirstPaymentMethod": "Add First Payment Method",
         "walletBalance": "Wallet Balance",
         "availableForPayments": "Available for payments and refunds"
+      },
+      "security": {
+        "title": "Security & Privacy",
+        "description": "Manage your account security and privacy settings"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Choose how you'd like to be notified"
+      },
+      "preferences": {
+        "title": "Preferences",
+        "description": "Customize your app experience"
       }
     },
     "dialog": {
@@ -551,6 +563,16 @@
       "login": {
         "title": "Welcome Back",
         "subtitle": "Sign in to your account to continue",
+        "skipToMainContent": "Skip to main content",
+        "welcomeBack": "Welcome Back",
+        "signInToContinue": "Sign in to your account to continue",
+        "termsAndPrivacy": "By signing in, you agree to our Terms of Service and Privacy Policy",
+        "emailLabel": "Email",
+        "passwordLabel": "Password",
+        "signIn": "Sign In",
+        "forgotPassword": "Forgot password?",
+        "noAccount": "Don't have an account?",
+        "signUpHere": "Sign Up Here",
         "emailPlaceholder": "Enter your email",
         "passwordPlaceholder": "Enter your password",
         "signingIn": "Signing in...",
@@ -562,6 +584,11 @@
       "signup": {
         "title": "Create Account",
         "subtitle": "Join thousands of users and start your journey",
+        "skipToMainContent": "Skip to main content",
+        "backToHome": "Back to Home",
+        "createAccountTitle": "Create Account",
+        "joinUsersDescription": "Join thousands of users and start your journey",
+        "termsAndPrivacy": "By signing up, you agree to our Terms of Service and Privacy Policy",
         "emailPlaceholder": "Enter your email",
         "passwordPlaceholder": "Enter your password (min. 8 characters)",
         "selectOption": "Select an option",
@@ -570,8 +597,7 @@
         "creatingAccount": "Creating account...",
         "signUpSuccessful": "Sign up successful",
         "checkEmailVerification": "Please check your email for verification",
-        "unexpectedError": "An unexpected error occurred. Please try again.",
-        "backToHome": "Back to Home"
+        "unexpectedError": "An unexpected error occurred. Please try again."
       },
       "becomeTasker": {
         "title": "Become a Tasker",
@@ -650,6 +676,8 @@
       "finishSignUp": {
         "title": "Finish Setting Up",
         "subtitle": "You're almost there! Complete your tasker profile to start helping others and earning money.",
+        "profileLoadError": "Failed to load user profile. Please refresh the page.",
+        "roleUpdateError": "Failed to update user role. Please contact support.",
         "completeProfile": "Complete Your Tasker Profile",
         "experienceLevel": "Experience Level",
         "professionalBio": "Professional Bio",
@@ -686,6 +714,8 @@
         "profileReview": "Your profile will be reviewed before going live. This usually takes 24-48 hours.",
         "completingProfile": "Completing Profile...",
         "uploading": "Uploading... {progress}%",
+        "frontIdUploaded": "Front ID uploaded",
+        "backIdUploaded": "Back ID uploaded",
         "termsAgreement": "By completing your profile, you agree to our terms of service and privacy policy.",
         "uploadBothIdDocuments": "Please upload both front and back of your ID document",
         "userNotFound": "User not found. Please try logging in again.",
@@ -698,13 +728,48 @@
         "alreadyCompletedProfile": "You have already completed your profile!",
         "failedToVerifyStatus": "Failed to verify profile status",
         "failedToVerifyUser": "Failed to verify user status",
+        "finishSettingUp": "Finish Setting Up",
+        "almostThere": "You're almost there!",
+        "bioLabel": "Biography",
+        "charactersMin50": "{count}/500 characters (minimum 50 required)",
+        "phoneNumberOptional": "Phone Number (Optional)",
+        "enterPhoneNumber": "Enter your phone number",
+        "phoneHelp": "This will help clients contact you directly",
+        "serviceRadius": "Service Radius (km)",
+        "travelDistance": "Travel Distance",
+        "uploadIdDescription": "Please upload both sides of your government-issued ID for verification. This is required to become a tasker.",
+        "termsAndPrivacy": "By completing your profile, you agree to our Terms of Service and Privacy Policy.",
+        "uploadBothIdSides": "Please upload both front and back of your ID document",
+        "loading": "Loading...",
+        "failedToUpload": "Upload failed",
+        "profileCompleted": "Profile completed successfully! Welcome to the tasker community.",
+        "failedToComplete": "Failed to complete profile",
+        "invalidFileType": "Invalid file type. Please upload JPG, PNG, or WebP files.",
+        "fileTooLarge": "File too large. Maximum size is 5MB per image.",
+        "alreadyCompleted": "You have already completed your profile!",
+        "failedToVerify": "Failed to verify profile status",
+        "days": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        },
         "experienceLevels": {
-          "beginner": "Beginner",
-          "beginnerDesc": "New to providing services professionally",
-          "intermediate": "Intermediate",
-          "intermediateDesc": "Some experience in your field",
-          "expert": "Expert",
-          "expertDesc": "Highly experienced and skilled"
+          "beginner": {
+            "label": "Beginner",
+            "description": "New to providing services professionally"
+          },
+          "intermediate": {
+            "label": "Intermediate",
+            "description": "Some experience in your field"
+          },
+          "expert": {
+            "label": "Expert",
+            "description": "Highly experienced and skilled"
+          }
         }
       },
       "resetPassword": {

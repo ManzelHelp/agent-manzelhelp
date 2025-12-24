@@ -12,6 +12,8 @@ export interface IDDocumentUploadResult {
   success: boolean;
   frontUrl?: string;
   backUrl?: string;
+  frontPath?: string; // Path in storage bucket (e.g., "userId/id-front.jpg")
+  backPath?: string; // Path in storage bucket (e.g., "userId/id-back.jpg")
   errorMessage?: string;
 }
 
@@ -23,6 +25,24 @@ export const uploadIDDocumentsAction = async (
 ): Promise<IDDocumentUploadResult> => {
   try {
     const supabase = await createClient();
+
+    // Get authenticated user to ensure we use auth.uid() for RLS policy
+    // This is critical: RLS policy checks (storage.foldername(name))[1] = auth.uid()::text
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return {
+        success: false,
+        errorMessage: "User not authenticated. Please log in again.",
+      };
+    }
+
+    // SECURITY: Use authUser.id (auth.uid()) instead of userId parameter
+    // This ensures the folder path matches what RLS policy expects
+    // The RLS policy enforces: (storage.foldername(name))[1] = auth.uid()::text
+    // This means users can ONLY upload to their own folder, preventing unauthorized access
+    // No need to validate userId parameter - RLS policy is the security layer
+    const authenticatedUserId = authUser.id;
 
     // Validate file types
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -46,16 +66,18 @@ export const uploadIDDocumentsAction = async (
     }
 
     // Upload both files in parallel
+    // CRITICAL: Use authenticatedUserId (auth.uid()) to match RLS policy
+    // The RLS policy checks: (storage.foldername(name))[1] = auth.uid()::text
     const uploadPromises = [
       supabase.storage
         .from("verification-documents")
-        .upload(`${userId}/id-front.jpg`, frontFile, {
+        .upload(`${authenticatedUserId}/id-front.jpg`, frontFile, {
           cacheControl: "3600",
           upsert: true,
         }),
       supabase.storage
         .from("verification-documents")
-        .upload(`${userId}/id-back.jpg`, backFile, {
+        .upload(`${authenticatedUserId}/id-back.jpg`, backFile, {
           cacheControl: "3600",
           upsert: true,
         }),
@@ -77,10 +99,31 @@ export const uploadIDDocumentsAction = async (
       };
     }
 
+    // Get public URLs for the uploaded files
+    // Since verification-documents bucket is private, we need to create signed URLs
+    // But for storage in database, we'll save the path and construct URL when needed
+    // For now, we'll save the full path that can be used to construct the URL
+    const frontPath = `${authenticatedUserId}/id-front.jpg`;
+    const backPath = `${authenticatedUserId}/id-back.jpg`;
+
+    // Create signed URLs (valid for 1 year) for immediate use
+    const [frontUrlResult, backUrlResult] = await Promise.all([
+      supabase.storage
+        .from("verification-documents")
+        .createSignedUrl(frontPath, 60 * 60 * 24 * 365), // 1 year
+      supabase.storage
+        .from("verification-documents")
+        .createSignedUrl(backPath, 60 * 60 * 24 * 365), // 1 year
+    ]);
+
+    // Return the signed URLs if available, otherwise return the paths
+    // The path can be used to construct URLs later
     return {
       success: true,
-      frontUrl: frontResult.data.path,
-      backUrl: backResult.data.path,
+      frontUrl: frontUrlResult.data?.signedUrl || frontPath,
+      backUrl: backUrlResult.data?.signedUrl || backPath,
+      frontPath: frontPath, // Also return path for database storage
+      backPath: backPath,
     };
   } catch (error) {
     console.error("Error uploading ID documents:", error);

@@ -47,19 +47,31 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
 
       const result = await loginAction(email, password);
 
-      if (result.success) {
-        // Get user profile after successful login
+      if (result.success && result.user) {
+        // After successful login, fetch the complete user profile from the database
+        // This includes additional user data not available in the auth user object
         const profileResult = await getUserProfileAction();
 
         if (profileResult.success && profileResult.user) {
+          // Update the Zustand store with the complete user profile
           setUser(profileResult.user);
           toast.success(t("pages.login.loginSuccessful"));
+          // Redirect to the appropriate dashboard based on user role
           router.replace(`/${profileResult.user.role}/dashboard`);
         } else {
+          // If profile fetch fails, show error but keep the auth user
+          // This allows the user to still access the app, though with limited data
+          console.error("Failed to load user profile:", profileResult.errorMessage);
           toast.error(t("pages.login.failedToLoadProfile"));
+          // Fallback: use the auth user if profile fetch fails
+          if (result.user) {
+            setUser(result.user as any); // Temporary fallback
+            router.replace(`/${result.user.user_metadata?.role || "customer"}/dashboard`);
+          }
         }
       } else {
-        toast.error(result.errorMessage);
+        // Login failed - show error message
+        toast.error(result.errorMessage || "Login failed. Please try again.");
       }
     });
   };

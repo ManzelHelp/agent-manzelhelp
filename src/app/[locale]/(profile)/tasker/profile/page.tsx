@@ -417,6 +417,7 @@ export default function TaskerProfilePage() {
           {activeSection === "personal" && (
             <PersonalInfoSection
               user={user}
+              taskerProfile={taskerProfile}
               loading={loading}
               onUserUpdate={setUser}
               onProfileRefresh={fetchProfileData}

@@ -412,7 +412,12 @@ export default function CustomerNotificationsPage() {
     return filteredNotifications.reduce<{
       [date: string]: Notification[];
     }>((groups, notification) => {
-      const date = new Date(notification.created_at!).toLocaleDateString();
+      // HYDRATION-SAFE: Use explicit locale to prevent hydration mismatches
+      const date = new Date(notification.created_at!).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -444,7 +449,12 @@ export default function CustomerNotificationsPage() {
       return t("time.minutesAgo", { minutes: diffInMinutes });
     if (diffInHours < 24) return t("time.hoursAgo", { hours: diffInHours });
     if (diffInDays < 7) return t("time.daysAgo", { days: diffInDays });
-    return date.toLocaleDateString();
+    // HYDRATION-SAFE: Use explicit locale to prevent hydration mismatches
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   if (!user) {

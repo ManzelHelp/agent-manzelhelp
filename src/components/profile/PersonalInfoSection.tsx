@@ -31,17 +31,19 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
-import type { User as UserType } from "@/types/supabase";
+import type { User as UserType, TaskerProfile } from "@/types/supabase";
 import {
   updateUserPersonalInfo,
   updateUserAvatar,
   uploadProfileImage,
   uploadVerificationDocument,
   updateVerificationDocument,
+  fixAvatarUrlAction,
 } from "@/actions/profile";
 
 interface PersonalInfoSectionProps {
   user: UserType | null;
+  taskerProfile?: TaskerProfile | null;
   loading: boolean;
   onUserUpdate: (updatedUser: UserType) => void;
   onProfileRefresh: () => Promise<void>;
@@ -73,6 +75,7 @@ const IMAGE_CONSTRAINTS = {
 
 export default function PersonalInfoSection({
   user,
+  taskerProfile,
   loading,
   onUserUpdate,
   onProfileRefresh,
@@ -325,9 +328,47 @@ export default function PersonalInfoSection({
     }
   };
 
+  // State to track if we're fixing the avatar URL
+  const [fixingAvatarUrl, setFixingAvatarUrl] = React.useState(false);
+
+  // Function to fix incomplete avatar URL
+  const handleFixAvatarUrl = React.useCallback(async (userId: string) => {
+    if (fixingAvatarUrl) return; // Prevent multiple calls
+    
+    setFixingAvatarUrl(true);
+    try {
+      const result = await fixAvatarUrlAction(userId);
+      
+      if (result.success && result.url) {
+        // Refresh user data to get updated URL
+        await onProfileRefresh();
+      }
+    } catch (error) {
+      console.error("Error fixing avatar URL:", error);
+    } finally {
+      setFixingAvatarUrl(false);
+    }
+  }, [fixingAvatarUrl, onProfileRefresh]);
+
+  // Helper function to check and fix incomplete avatar URLs
+  const checkAndFixAvatarUrl = React.useCallback((url: string | undefined | null, userId: string | undefined) => {
+    if (!url || !userId) return url || undefined;
+    
+    // If URL is incomplete (missing /storage/v1/object/public/avatars/)
+    if (!url.includes("/storage/v1/object/public/avatars/")) {
+      // Trigger server action to find and fix the URL
+      handleFixAvatarUrl(userId);
+      return undefined; // Return undefined while fixing
+    }
+    
+    return url;
+  }, [handleFixAvatarUrl]);
+
   // Memoize user display data for performance
-  const userDisplayData = React.useMemo(
-    () => ({
+  const userDisplayData = React.useMemo(() => {
+    const avatarUrl = checkAndFixAvatarUrl(user?.avatar_url, user?.id);
+    
+    return {
       fullName: user
         ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
         : "",
@@ -336,11 +377,10 @@ export default function PersonalInfoSection({
       dateOfBirth: user?.date_of_birth
         ? new Date(user.date_of_birth).toLocaleDateString()
         : "Not provided",
-      avatarUrl: user?.avatar_url,
+      avatarUrl: avatarUrl || undefined,
       emailVerified: user?.email_verified || false,
-    }),
-    [user]
-  );
+    };
+  }, [user, checkAndFixAvatarUrl]);
 
   const personalMissingFields = missingFields.filter(
     (field) => field.section === "personal"
@@ -399,6 +439,11 @@ export default function PersonalInfoSection({
                             height={80}
                             className="h-full w-full object-cover rounded-full"
                             style={{ objectFit: "cover" }}
+                            unoptimized
+                            onError={(e) => {
+                              console.error("Failed to load avatar image:", user.avatar_url);
+                              e.currentTarget.src = "/default-avatar.svg";
+                            }}
                           />
                         ) : (
                           <User className="h-8 w-8 text-[var(--color-text-secondary)]" />
@@ -571,6 +616,11 @@ export default function PersonalInfoSection({
                 height={64}
                 className="h-full w-full object-cover rounded-full"
                 style={{ objectFit: "cover" }}
+                unoptimized
+                onError={(e) => {
+                  console.error("Failed to load avatar image:", userDisplayData.avatarUrl);
+                  e.currentTarget.src = "/default-avatar.svg";
+                }}
               />
             ) : (
               <User className="h-6 w-6 text-color-text-secondary" />
@@ -664,53 +714,62 @@ export default function PersonalInfoSection({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file)
-                      handleVerificationDocumentUpload(file, "id-front");
-                  }}
-                  className="hidden"
-                  id="id-front-upload"
-                  disabled={uploadingDocument}
-                />
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleVerificationDocumentUpload(file, "id-back");
-                  }}
-                  className="hidden"
-                  id="id-back-upload"
-                  disabled={uploadingDocument}
-                />
-                <div className="flex flex-col gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      document.getElementById("id-front-upload")?.click()
-                    }
-                    disabled={uploadingDocument}
-                    className="text-xs"
-                  >
-                    {uploadingDocument ? "Uploading..." : "📄 Upload ID Front"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      document.getElementById("id-back-upload")?.click()
-                    }
-                    disabled={uploadingDocument}
-                    className="text-xs"
-                  >
-                    {uploadingDocument ? "Uploading..." : "📄 Upload ID Back"}
-                  </Button>
-                </div>
+                {taskerProfile?.identity_document_url ? (
+                  <div className="flex items-center gap-2 text-color-success">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="text-xs font-medium">Documents Uploaded</span>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file)
+                          handleVerificationDocumentUpload(file, "id-front");
+                      }}
+                      className="hidden"
+                      id="id-front-upload"
+                      disabled={uploadingDocument}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleVerificationDocumentUpload(file, "id-back");
+                      }}
+                      className="hidden"
+                      id="id-back-upload"
+                      disabled={uploadingDocument}
+                    />
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          document.getElementById("id-front-upload")?.click()
+                        }
+                        disabled={uploadingDocument}
+                        className="text-xs"
+                      >
+                        {uploadingDocument ? "Uploading..." : "📄 Upload ID Front"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          document.getElementById("id-back-upload")?.click()
+                        }
+                        disabled={uploadingDocument}
+                        className="text-xs"
+                      >
+                        {uploadingDocument ? "Uploading..." : "📄 Upload ID Back"}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

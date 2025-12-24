@@ -26,31 +26,27 @@ export const useUserStore = (() => {
   // Use require() inside the conditional to prevent SSR evaluation
   const { persist, createJSONStorage } = require("zustand/middleware");
   
+  // Create store with persist middleware for client-side only
+  // Zustand 5.x handles rehydration automatically when skipHydration is true
+  // The onRehydrateStorage callback is called automatically after rehydration
   const store = create<UserState>()(
     persist(storeState, {
       name: "user-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state: UserState) => ({ user: state.user }),
-      skipHydration: true,
+      skipHydration: true, // Prevents hydration mismatch between server and client
       onRehydrateStorage: () => (state: UserState | undefined) => {
-        console.log(
-          "User store rehydrated:",
-          state?.user ? "User found" : "No user"
-        );
+        // This callback is automatically called after rehydration completes
+        // No manual rehydration needed in Zustand 5.x
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            "User store rehydrated:",
+            state?.user ? "User found" : "No user"
+          );
+        }
       },
     })
   );
-
-  // Rehydrate on client
-  setTimeout(() => {
-    try {
-      if (store.persist?.hasHydrated() === false) {
-        store.persist.rehydrate();
-      }
-    } catch (error) {
-      console.error("Error rehydrating user store:", error);
-    }
-  }, 0);
 
   return store;
 })();

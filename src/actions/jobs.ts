@@ -631,6 +631,28 @@ export async function createJob(
     if (!jobData.service_id) {
       return { success: false, error: "Service selection is required" };
     }
+
+    // Verify the service exists in the services table
+    // This prevents foreign key constraint violations
+    // The service_id must exist in the services table for the foreign key to work
+    const { data: service, error: serviceError } = await supabase
+      .from("services")
+      .select("id, name_en")
+      .eq("id", jobData.service_id)
+      .single();
+
+    if (serviceError || !service) {
+      console.error("Service validation error:", {
+        serviceError,
+        serviceId: jobData.service_id,
+        message: `Service with ID ${jobData.service_id} does not exist in the services table. Please ensure the service is properly registered in the database.`,
+      });
+      return {
+        success: false,
+        error: `The selected service is not available. Please refresh the page and select a different service. If the problem persists, contact support.`,
+      };
+    }
+
     if (!jobData.preferred_date) {
       return { success: false, error: "Preferred date is required" };
     }

@@ -259,6 +259,18 @@
         "addFirstPaymentMethod": "Ajouter la Première Méthode de Paiement",
         "walletBalance": "Solde du Portefeuille",
         "availableForPayments": "Disponible pour les paiements et remboursements"
+      },
+      "security": {
+        "title": "Sécurité et Confidentialité",
+        "description": "Gérez les paramètres de sécurité et de confidentialité de votre compte"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Choisissez comment vous souhaitez être notifié"
+      },
+      "preferences": {
+        "title": "Préférences",
+        "description": "Personnalisez votre expérience de l'application"
       }
     },
     "dialog": {
@@ -551,6 +563,16 @@
       "login": {
         "title": "Bon retour",
         "subtitle": "Connectez-vous à votre compte pour continuer",
+        "skipToMainContent": "Aller au contenu principal",
+        "welcomeBack": "Bon retour",
+        "signInToContinue": "Connectez-vous à votre compte pour continuer",
+        "termsAndPrivacy": "En vous connectant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité",
+        "emailLabel": "E-mail",
+        "passwordLabel": "Mot de passe",
+        "signIn": "Se connecter",
+        "forgotPassword": "Mot de passe oublié ?",
+        "noAccount": "Vous n'avez pas de compte ?",
+        "signUpHere": "S'inscrire ici",
         "emailPlaceholder": "Entrez votre e-mail",
         "passwordPlaceholder": "Entrez votre mot de passe",
         "signingIn": "Connexion en cours...",
@@ -562,6 +584,11 @@
       "signup": {
         "title": "Créer un compte",
         "subtitle": "Rejoignez des milliers d'utilisateurs et commencez votre voyage",
+        "skipToMainContent": "Aller au contenu principal",
+        "backToHome": "Retour à l'accueil",
+        "createAccountTitle": "Créer un compte",
+        "joinUsersDescription": "Rejoignez des milliers d'utilisateurs et commencez votre voyage",
+        "termsAndPrivacy": "En vous inscrivant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité",
         "emailPlaceholder": "Entrez votre e-mail",
         "passwordPlaceholder": "Entrez votre mot de passe (min. 8 caractères)",
         "selectOption": "Sélectionner une option",
@@ -570,8 +597,7 @@
         "creatingAccount": "Création du compte...",
         "signUpSuccessful": "Inscription réussie",
         "checkEmailVerification": "Veuillez vérifier votre e-mail pour la vérification",
-        "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer.",
-        "backToHome": "Retour à l'accueil"
+        "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer."
       },
       "becomeTasker": {
         "title": "Devenir un Assistant",
@@ -650,6 +676,8 @@
       "finishSignUp": {
         "title": "Terminer la configuration",
         "subtitle": "Vous y êtes presque ! Complétez votre profil d'assistant pour commencer à aider les autres et gagner de l'argent.",
+        "profileLoadError": "Échec du chargement du profil utilisateur. Veuillez rafraîchir la page.",
+        "roleUpdateError": "Échec de la mise à jour du rôle utilisateur. Veuillez contacter le support.",
         "completeProfile": "Compléter votre profil d'assistant",
         "experienceLevel": "Niveau d'expérience",
         "professionalBio": "Biographie professionnelle",
@@ -686,6 +714,8 @@
         "profileReview": "Votre profil sera examiné avant d'être mis en ligne. Cela prend généralement 24-48 heures.",
         "completingProfile": "Complétion du profil...",
         "uploading": "Téléchargement... {progress}%",
+        "frontIdUploaded": "Recto de la pièce d'identité téléchargé",
+        "backIdUploaded": "Verso de la pièce d'identité téléchargé",
         "termsAgreement": "En complétant votre profil, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
         "uploadBothIdDocuments": "Veuillez télécharger le recto et le verso de votre pièce d'identité",
         "userNotFound": "Utilisateur non trouvé. Veuillez essayer de vous reconnecter.",
@@ -698,13 +728,48 @@
         "alreadyCompletedProfile": "Vous avez déjà complété votre profil !",
         "failedToVerifyStatus": "Échec de la vérification du statut du profil",
         "failedToVerifyUser": "Échec de la vérification du statut utilisateur",
+        "finishSettingUp": "Terminer la configuration",
+        "almostThere": "Vous y êtes presque !",
+        "bioLabel": "Biographie",
+        "charactersMin50": "{count}/500 caractères (minimum 50 requis)",
+        "phoneNumberOptional": "Numéro de téléphone (Optionnel)",
+        "enterPhoneNumber": "Entrez votre numéro de téléphone",
+        "phoneHelp": "Cela aidera les clients à vous contacter directement",
+        "serviceRadius": "Rayon de service (km)",
+        "travelDistance": "Distance de déplacement",
+        "uploadIdDescription": "Veuillez télécharger les deux côtés de votre pièce d'identité officielle pour vérification. Ceci est requis pour devenir assistant.",
+        "termsAndPrivacy": "En complétant votre profil, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité.",
+        "uploadBothIdSides": "Veuillez télécharger le recto et le verso de votre pièce d'identité",
+        "loading": "Chargement...",
+        "failedToUpload": "Échec du téléchargement",
+        "profileCompleted": "Profil complété avec succès ! Bienvenue dans la communauté des assistants.",
+        "failedToComplete": "Échec de la complétion du profil",
+        "invalidFileType": "Type de fichier invalide. Veuillez télécharger des fichiers JPG, PNG ou WebP.",
+        "fileTooLarge": "Fichier trop volumineux. La taille maximale est de 5MB par image.",
+        "alreadyCompleted": "Vous avez déjà complété votre profil !",
+        "failedToVerify": "Échec de la vérification du statut du profil",
+        "days": {
+          "monday": "Lundi",
+          "tuesday": "Mardi",
+          "wednesday": "Mercredi",
+          "thursday": "Jeudi",
+          "friday": "Vendredi",
+          "saturday": "Samedi",
+          "sunday": "Dimanche"
+        },
         "experienceLevels": {
-          "beginner": "Débutant",
-          "beginnerDesc": "Nouveau dans la fourniture de services professionnels",
-          "intermediate": "Intermédiaire",
-          "intermediateDesc": "Quelque expérience dans votre domaine",
-          "expert": "Expert",
-          "expertDesc": "Hautement expérimenté et qualifié"
+          "beginner": {
+            "label": "Débutant",
+            "description": "Nouveau dans la fourniture de services professionnels"
+          },
+          "intermediate": {
+            "label": "Intermédiaire",
+            "description": "Quelque expérience dans votre domaine"
+          },
+          "expert": {
+            "label": "Expert",
+            "description": "Hautement expérimenté et qualifié"
+          }
         }
       },
       "resetPassword": {

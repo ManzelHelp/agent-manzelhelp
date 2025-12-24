@@ -259,6 +259,18 @@
         "addFirstPaymentMethod": "Erste Zahlungsmethode Hinzufügen",
         "walletBalance": "Geldbörsen-Guthaben",
         "availableForPayments": "Verfügbar für Zahlungen und Rückerstattungen"
+      },
+      "security": {
+        "title": "Sicherheit & Datenschutz",
+        "description": "Verwalten Sie Ihre Kontosicherheits- und Datenschutzeinstellungen"
+      },
+      "notifications": {
+        "title": "Benachrichtigungen",
+        "description": "Wählen Sie, wie Sie benachrichtigt werden möchten"
+      },
+      "preferences": {
+        "title": "Einstellungen",
+        "description": "Passen Sie Ihre App-Erfahrung an"
       }
     },
     "dialog": {
@@ -551,6 +563,16 @@
       "login": {
         "title": "Willkommen zurück",
         "subtitle": "Melden Sie sich in Ihrem Konto an, um fortzufahren",
+        "skipToMainContent": "Zum Hauptinhalt springen",
+        "welcomeBack": "Willkommen zurück",
+        "signInToContinue": "Melden Sie sich in Ihrem Konto an, um fortzufahren",
+        "termsAndPrivacy": "Durch die Anmeldung stimmen Sie unseren Nutzungsbedingungen und unserer Datenschutzrichtlinie zu",
+        "emailLabel": "E-Mail",
+        "passwordLabel": "Passwort",
+        "signIn": "Anmelden",
+        "forgotPassword": "Passwort vergessen?",
+        "noAccount": "Noch kein Konto?",
+        "signUpHere": "Hier registrieren",
         "emailPlaceholder": "E-Mail eingeben",
         "passwordPlaceholder": "Passwort eingeben",
         "signingIn": "Anmeldung läuft...",
@@ -562,6 +584,11 @@
       "signup": {
         "title": "Konto erstellen",
         "subtitle": "Schließen Sie sich Tausenden von Benutzern an und beginnen Sie Ihre Reise",
+        "skipToMainContent": "Zum Hauptinhalt springen",
+        "backToHome": "Zurück zur Startseite",
+        "createAccountTitle": "Konto erstellen",
+        "joinUsersDescription": "Schließen Sie sich Tausenden von Benutzern an und beginnen Sie Ihre Reise",
+        "termsAndPrivacy": "Durch die Registrierung stimmen Sie unseren Nutzungsbedingungen und unserer Datenschutzrichtlinie zu",
         "emailPlaceholder": "E-Mail eingeben",
         "passwordPlaceholder": "Passwort eingeben (min. 8 Zeichen)",
         "selectOption": "Option auswählen",
@@ -570,8 +597,7 @@
         "creatingAccount": "Konto wird erstellt...",
         "signUpSuccessful": "Registrierung erfolgreich",
         "checkEmailVerification": "Bitte überprüfen Sie Ihre E-Mail zur Verifizierung",
-        "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
-        "backToHome": "Zurück zur Startseite"
+        "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
       },
       "becomeTasker": {
         "title": "Tasker werden",
@@ -650,6 +676,8 @@
       "finishSignUp": {
         "title": "Einrichtung abschließen",
         "subtitle": "Sie sind fast da! Vervollständigen Sie Ihr Tasker-Profil, um anderen zu helfen und Geld zu verdienen.",
+        "profileLoadError": "Benutzerprofil konnte nicht geladen werden. Bitte aktualisieren Sie die Seite.",
+        "roleUpdateError": "Benutzerrolle konnte nicht aktualisiert werden. Bitte kontaktieren Sie den Support.",
         "completeProfile": "Tasker-Profil vervollständigen",
         "experienceLevel": "Erfahrungslevel",
         "professionalBio": "Professionelle Biografie",
@@ -686,6 +714,8 @@
         "profileReview": "Ihr Profil wird überprüft, bevor es live geht. Dies dauert normalerweise 24-48 Stunden.",
         "completingProfile": "Profil wird vervollständigt...",
         "uploading": "Hochladen... {progress}%",
+        "frontIdUploaded": "Vorderseite des Ausweises hochgeladen",
+        "backIdUploaded": "Rückseite des Ausweises hochgeladen",
         "termsAgreement": "Durch das Vervollständigen Ihres Profils stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.",
         "uploadBothIdDocuments": "Bitte laden Sie sowohl die Vorder- als auch die Rückseite Ihres Ausweises hoch",
         "userNotFound": "Benutzer nicht gefunden. Bitte versuchen Sie, sich erneut anzumelden.",
@@ -698,13 +728,48 @@
         "alreadyCompletedProfile": "Sie haben Ihr Profil bereits vervollständigt!",
         "failedToVerifyStatus": "Profilstatus konnte nicht überprüft werden",
         "failedToVerifyUser": "Benutzerstatus konnte nicht überprüft werden",
+        "finishSettingUp": "Einrichtung abschließen",
+        "almostThere": "Sie sind fast da!",
+        "bioLabel": "Biografie",
+        "charactersMin50": "{count}/500 Zeichen (mindestens 50 erforderlich)",
+        "phoneNumberOptional": "Telefonnummer (Optional)",
+        "enterPhoneNumber": "Telefonnummer eingeben",
+        "phoneHelp": "Dies hilft Kunden, Sie direkt zu kontaktieren",
+        "serviceRadius": "Service-Radius (km)",
+        "travelDistance": "Reisedistanz",
+        "uploadIdDescription": "Bitte laden Sie beide Seiten Ihres amtlichen Ausweises zur Verifizierung hoch. Dies ist erforderlich, um Tasker zu werden.",
+        "termsAndPrivacy": "Durch das Vervollständigen Ihres Profils stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.",
+        "uploadBothIdSides": "Bitte laden Sie sowohl die Vorder- als auch die Rückseite Ihres Ausweises hoch",
+        "loading": "Laden...",
+        "failedToUpload": "Upload fehlgeschlagen",
+        "profileCompleted": "Profil erfolgreich vervollständigt! Willkommen in der Tasker-Gemeinschaft.",
+        "failedToComplete": "Profil konnte nicht vervollständigt werden",
+        "invalidFileType": "Ungültiger Dateityp. Bitte laden Sie JPG-, PNG- oder WebP-Dateien hoch.",
+        "fileTooLarge": "Datei zu groß. Die maximale Größe beträgt 5MB pro Bild.",
+        "alreadyCompleted": "Sie haben Ihr Profil bereits vervollständigt!",
+        "failedToVerify": "Profilstatus konnte nicht überprüft werden",
+        "days": {
+          "monday": "Montag",
+          "tuesday": "Dienstag",
+          "wednesday": "Mittwoch",
+          "thursday": "Donnerstag",
+          "friday": "Freitag",
+          "saturday": "Samstag",
+          "sunday": "Sonntag"
+        },
         "experienceLevels": {
-          "beginner": "Anfänger",
-          "beginnerDesc": "Neu in der professionellen Dienstleistungserbringung",
-          "intermediate": "Fortgeschritten",
-          "intermediateDesc": "Etwas Erfahrung in Ihrem Bereich",
-          "expert": "Experte",
-          "expertDesc": "Hochqualifiziert und erfahren"
+          "beginner": {
+            "label": "Anfänger",
+            "description": "Neu in der professionellen Dienstleistungserbringung"
+          },
+          "intermediate": {
+            "label": "Fortgeschritten",
+            "description": "Etwas Erfahrung in Ihrem Bereich"
+          },
+          "expert": {
+            "label": "Experte",
+            "description": "Hochqualifiziert und erfahren"
+          }
         }
       },
       "resetPassword": {

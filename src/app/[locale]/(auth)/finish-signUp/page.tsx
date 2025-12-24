@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -9,6 +9,7 @@ import { useUserStore } from "@/stores/userStore";
 import {
   createTaskerProfileAction,
   hasTaskerCompletedProfileAction,
+  getUserProfileAction,
 } from "@/actions/auth";
 import { uploadIDDocumentsAction } from "@/actions/file-uploads";
 import { Button } from "@/components/ui/button";
@@ -62,7 +63,7 @@ interface UploadStatus {
 
 export default function FinishSignUpPage() {
   const router = useRouter();
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
   const t = useTranslations("auth");
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -251,10 +252,11 @@ export default function FinishSignUpPage() {
 
       setUploadStatus({ uploading: true, progress: 70 });
 
-      // Create tasker profile with document URLs
+      // Create tasker profile with document path
+      // Save the path (not the signed URL) so we can generate fresh URLs when needed
       const result = await createTaskerProfileAction({
         ...formData,
-        identity_document_url: uploadResult.frontUrl || "",
+        identity_document_url: uploadResult.frontPath || uploadResult.frontUrl || "",
       });
 
       if (result.success) {
@@ -269,7 +271,22 @@ export default function FinishSignUpPage() {
           URL.revokeObjectURL(idDocuments.back.preview);
         }
 
-        router.push("/how-does-It-work");
+        // Update user store with updated role
+        if (result.user) {
+          setUser(result.user);
+        } else {
+          // Fallback: Refresh user profile to get updated role
+          const profileResult = await getUserProfileAction();
+          if (profileResult.success && profileResult.user) {
+            setUser(profileResult.user);
+          }
+        }
+
+        // Small delay to ensure database changes are propagated
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Redirect directly to dashboard after successful profile completion
+        router.replace("/tasker/dashboard");
       } else {
         toast.error(
           result.errorMessage || t("pages.finishSignUp.failedToComplete")
@@ -428,8 +445,9 @@ export default function FinishSignUpPage() {
                   required
                 />
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                  {formData.bio.length}/500{" "}
-                  {t("pages.finishSignUp.charactersMin50")}
+                  {t("pages.finishSignUp.charactersMin50", {
+                    count: formData.bio.length,
+                  })}
                 </p>
               </div>
             </CardContent>
@@ -778,9 +796,9 @@ export default function FinishSignUpPage() {
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       {uploadStatus.uploading
-                        ? `${t("pages.finishSignUp.uploading")}... ${
-                            uploadStatus.progress
-                          }%`
+                        ? t("pages.finishSignUp.uploading", {
+                            progress: uploadStatus.progress,
+                          })
                         : t("pages.finishSignUp.completingProfile")}
                     </>
                   ) : (

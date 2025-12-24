@@ -4,6 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Mail, CheckCircle, Star, Users, TrendingUp } from "lucide-react";
 
+/**
+ * HYDRATION-SAFE DATE CALCULATIONS
+ * 
+ * These dates are calculated once at module load time to prevent hydration mismatches.
+ * Using Date.now() directly in JSX causes different values between server and client renders,
+ * leading to React hydration errors.
+ * 
+ * By calculating these dates once and storing them as constants, we ensure:
+ * 1. Same value on server and client during initial render
+ * 2. No hydration warnings
+ * 3. Predictable, stable dates for newsletter archive display
+ */
+const NOW = Date.now();
+const SEVEN_DAYS_AGO = new Date(NOW - 7 * 24 * 60 * 60 * 1000);
+const FOURTEEN_DAYS_AGO = new Date(NOW - 14 * 24 * 60 * 60 * 1000);
+const TWENTY_ONE_DAYS_AGO = new Date(NOW - 21 * 24 * 60 * 60 * 1000);
+
 export async function generateMetadata({
   params,
 }: {
@@ -176,10 +193,7 @@ export default async function NewsletterPage({
                     and learn about upcoming improvements.
                   </p>
                   <span className="text-xs text-[var(--color-text-secondary)]">
-                    Published:{" "}
-                    {new Date(
-                      Date.now() - 7 * 24 * 60 * 60 * 1000
-                    ).toLocaleDateString()}
+                    Published: {SEVEN_DAYS_AGO.toLocaleDateString()}
                   </span>
                 </div>
                 <Button variant="outline" size="sm">
@@ -199,10 +213,7 @@ export default async function NewsletterPage({
                     businesses on our platform.
                   </p>
                   <span className="text-xs text-[var(--color-text-secondary)]">
-                    Published:{" "}
-                    {new Date(
-                      Date.now() - 14 * 24 * 60 * 60 * 1000
-                    ).toLocaleDateString()}
+                    Published: {FOURTEEN_DAYS_AGO.toLocaleDateString()}
                   </span>
                 </div>
                 <Button variant="outline" size="sm">
@@ -222,10 +233,7 @@ export default async function NewsletterPage({
                     strong reputation.
                   </p>
                   <span className="text-xs text-[var(--color-text-secondary)]">
-                    Published:{" "}
-                    {new Date(
-                      Date.now() - 21 * 24 * 60 * 60 * 1000
-                    ).toLocaleDateString()}
+                    Published: {TWENTY_ONE_DAYS_AGO.toLocaleDateString()}
                   </span>
                 </div>
                 <Button variant="outline" size="sm">

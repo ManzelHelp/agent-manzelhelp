@@ -5,6 +5,17 @@ import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
+/**
+ * Get the current year in a hydration-safe way.
+ * This constant is evaluated once at module load time on the client,
+ * preventing hydration mismatches between server and client renders.
+ * 
+ * Note: The year changes once per year, so this is safe for hydration.
+ * If the year changes between server and client render, React will handle
+ * the update gracefully during hydration.
+ */
+const CURRENT_YEAR = new Date().getFullYear();
+
 function Footer() {
   const t = useTranslations("Footer");
 
@@ -277,7 +288,7 @@ function Footer() {
         <div className="border-t border-[var(--color-border)] pt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-[var(--color-text-secondary)]">
-              &copy; {new Date().getFullYear()} ManzelHelp.{" "}
+              &copy; {CURRENT_YEAR} ManzelHelp.{" "}
               {t("allRightsReserved")}
             </div>
           </div>
