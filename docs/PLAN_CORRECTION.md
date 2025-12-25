@@ -17,27 +17,27 @@
 
 ## 📊 Tableau récapitulatif des problèmes
 
-| # | Problème | Type | Priorité | Statut | Fichiers | Temps |
-|---|----------|------|----------|--------|----------|-------|
-| 1 | Root Layout - Missing HTML tags | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/app/layout.tsx` | 5 min |
-| 2 | Variantes de boutons invalides | TypeScript Error | 🟡 Important | ✅ Corrigé | 2 fichiers applications/page.tsx | 2 min |
-| 3 | API Zustand persist obsolète | TypeScript Error | 🟡 Important | ✅ Corrigé | `src/stores/userStore.ts` | 3 min |
-| 4 | API Supabase SSR incompatible | TypeScript Error | 🔴 Bloquant | ✅ Corrigé | `src/supabase/middleware.ts` | 15 min |
-| 5 | Middleware déprécié | Warning | 🟡 Important | ✅ Corrigé | `src/middleware.ts` → `src/proxy.ts` | 20 min |
-| 6 | Lockfiles multiples | Warning | 🟢 Mineur | ✅ Documenté | `next.config.ts` | 5 min |
-| 7 | Build échoue | Build Error | 🔴 Bloquant | ✅ Résolu* | (Résolu via #2, #3, #4) | - |
-| 8 | Erreur d'hydratation React | Runtime Error | 🟡 Important | ✅ Corrigé | 15 fichiers | 45 min |
-| 9 | Clés de traduction manquantes | Runtime Error | 🟡 Important | ✅ Corrigé | `messages/*.json` | 20 min |
-| 10 | Image logo introuvable | Runtime Error | 🟢 Mineur | ✅ Corrigé | `src/components/Header.tsx` | 15 min |
-| 11 | Échec chargement profil utilisateur | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/auth.ts` + 4 fichiers | 30 min |
-| 12 | Erreur création job (service_id invalide) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/jobs.ts` + 3 fichiers | 25 min |
-| 13 | Création profil tasker (rôle non mis à jour) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/auth.ts` + 3 fichiers | 20 min |
-| 14 | Boucle de redirection et erreur duplicate email | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/app/[locale]/authenticated/dashboard/page.tsx` + 1 fichier | 25 min |
-| 15 | Redirection vers dashboard après complétion | Runtime Error | 🟡 Important | ✅ Corrigé | `src/app/[locale]/(auth)/finish-signUp/page.tsx` + 1 fichier | 15 min |
-| 16 | Récupération infos personnelles | Runtime Error | 🟡 Important | ✅ Corrigé | `src/components/profile/PersonalInfoSection.tsx` + 1 fichier | 10 min |
-| 17 | Sauvegarde documents d'identité | Runtime Error | 🟡 Important | ✅ Corrigé | `src/actions/file-uploads.ts` + 3 fichiers | 20 min |
-| 18 | Upload photo de profil (bucket incorrect) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/profile.ts` + `next.config.ts` | 15 min |
-| 19 | Erreur 400 avatar et erreur RLS upload | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/components/profile/PersonalInfoSection.tsx` + 2 fichiers | 20 min |
+| # | Problème | Type | Priorité | Statut | Fichiers |
+|---|----------|------|----------|--------|----------|
+| 1 | Root Layout - Missing HTML tags | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/app/layout.tsx` |
+| 2 | Variantes de boutons invalides | TypeScript Error | 🟡 Important | ✅ Corrigé | 2 fichiers applications/page.tsx |
+| 3 | API Zustand persist obsolète | TypeScript Error | 🟡 Important | ✅ Corrigé | `src/stores/userStore.ts` |
+| 4 | API Supabase SSR incompatible | TypeScript Error | 🔴 Bloquant | ✅ Corrigé | `src/supabase/middleware.ts` |
+| 5 | Middleware déprécié | Warning | 🟡 Important | ✅ Corrigé | `src/middleware.ts` → `src/proxy.ts` |
+| 6 | Lockfiles multiples | Warning | 🟢 Mineur | ✅ Documenté | `next.config.ts` |
+| 7 | Build échoue | Build Error | 🔴 Bloquant | ✅ Résolu* | (Résolu via #2, #3, #4) |
+| 8 | Erreur d'hydratation React | Runtime Error | 🟡 Important | ✅ Corrigé | 15 fichiers |
+| 9 | Clés de traduction manquantes | Runtime Error | 🟡 Important | ✅ Corrigé | `messages/*.json` |
+| 10 | Image logo introuvable | Runtime Error | 🟢 Mineur | ✅ Corrigé | `src/components/Header.tsx` |
+| 11 | Échec chargement profil utilisateur | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/auth.ts` + 4 fichiers |
+| 12 | Erreur création job (service_id invalide) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/jobs.ts` + 3 fichiers |
+| 13 | Création profil tasker (rôle non mis à jour) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/auth.ts` + 3 fichiers |
+| 14 | Boucle de redirection et erreur duplicate email | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/app/[locale]/authenticated/dashboard/page.tsx` + 1 fichier |
+| 15 | Redirection vers dashboard après complétion | Runtime Error | 🟡 Important | ✅ Corrigé | `src/app/[locale]/(auth)/finish-signUp/page.tsx` + 1 fichier |
+| 16 | Récupération infos personnelles | Runtime Error | 🟡 Important | ✅ Corrigé | `src/components/profile/PersonalInfoSection.tsx` + 1 fichier |
+| 17 | Sauvegarde documents d'identité | Runtime Error | 🟡 Important | ✅ Corrigé | `src/actions/file-uploads.ts` + 3 fichiers |
+| 18 | Upload photo de profil (bucket incorrect) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/profile.ts` + `next.config.ts` |
+| 19 | Erreur 400 avatar et erreur RLS upload | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/components/profile/PersonalInfoSection.tsx` + 2 fichiers |
 
 **Total : 19 problèmes détectés, 19 corrigés (100%)**
 
@@ -74,7 +74,6 @@
   ```
 - **Raison** : Next.js 16 a introduit une exigence stricte : le root layout doit contenir les balises `<html>` et `<body>`. Sans ces balises, l'application ne peut pas démarrer.
 - **Impact** : Erreur runtime résolue, l'application peut maintenant démarrer correctement
-- **Temps réel** : 5 minutes
 - **Statut** : ✅ Corrigé et testé
 
 #### ✅ Étape 1.1 : Corriger les variantes de boutons - **COMPLÉTÉ**
@@ -92,7 +91,6 @@
   variant={confirmDialog.type === "accept" ? "default" : "destructive"}
   ```
 - **Raison** : Les variantes `"success"` et `"danger"` n'existent plus dans le composant Button de shadcn/ui. Les variantes valides sont : `"default"`, `"destructive"`, `"outline"`, `"secondary"`, `"ghost"`, et `"link"`.
-- **Temps réel** : 2 minutes
 - **Statut** : ✅ Corrigé et testé
 
 #### ✅ Étape 1.2 : Corriger API Zustand persist - **COMPLÉTÉ**
@@ -118,7 +116,6 @@
   ```
 - **Raison** : Dans Zustand 5.x, l'API `persist` a changé. La propriété `store.persist` n'existe plus directement sur le store. La rehydratation est gérée automatiquement par Zustand lorsque `skipHydration: true` est utilisé. Le callback `onRehydrateStorage` est appelé automatiquement après la rehydratation.
 - **Amélioration** : Ajout de commentaires clairs expliquant le comportement de Zustand 5.x pour éviter les erreurs futures.
-- **Temps réel** : 3 minutes
 - **Statut** : ✅ Corrigé et testé
 
 #### ✅ Étape 1.3 : Corriger API Supabase SSR - **COMPLÉTÉ**
@@ -166,7 +163,6 @@
   - Gestion explicite du type `sameSite` pour éviter les erreurs futures
   - Code plus robuste avec vérification de type
 - **Validation** : `pnpm exec tsc --noEmit` passe sans erreur ✅
-- **Temps réel** : 15 minutes
 - **Statut** : ✅ Corrigé et testé
 
 ---
@@ -205,7 +201,6 @@
   5. `preferences.title`: "Preferences"
   6. `preferences.description`: "Customize your app experience"
 - **Solution appliquée** : Toutes les clés ont été ajoutées dans l'ordre logique au sein des objets appropriés pour maintenir la cohérence.
-- **Temps réel** : 20 minutes (5 minutes initial + 15 minutes pour toutes les langues)
 - **Statut** : ✅ Corrigé pour toutes les langues (en.json, fr.json, de.json)
 
 #### ✅ Étape 2.2 : Corriger échec chargement profil utilisateur - **COMPLÉTÉ**
@@ -331,7 +326,6 @@
   - Les services affichés sont toujours synchronisés avec la base de données
   - Meilleure expérience utilisateur avec des messages d'erreur clairs si un problème survient
   - Réduction des erreurs liées à la désynchronisation entre données locales et base de données
-- **Temps réel** : 25 minutes (10 minutes pour créer la fonction, 10 minutes pour mettre à jour les pages, 5 minutes pour ajouter la validation)
 - **Statut** : ✅ Corrigé et testé - Les services sont chargés depuis la base de données avec validation
 
 #### ✅ Étape 2.4 : Corriger création profil tasker (rôle non mis à jour) - **COMPLÉTÉ**
@@ -429,7 +423,6 @@
   - Le dashboard tasker s'affiche correctement après création du profil
   - L'utilisateur peut accéder à toutes les routes tasker immédiatement
   - Expérience utilisateur améliorée avec redirection directe vers le dashboard
-- **Temps réel** : 20 minutes (10 minutes pour identifier le problème, 10 minutes pour corriger)
 - **Statut** : ✅ Corrigé et testé - Le rôle est mis à jour et le dashboard tasker s'affiche correctement
 
 #### ✅ Étape 2.5 : Corriger boucle de redirection et erreur duplicate email - **COMPLÉTÉ**
@@ -537,7 +530,6 @@
   - Plus de boucle de redirection
   - Gestion robuste des cas où l'email existe déjà
   - Expérience utilisateur améliorée avec redirection automatique vers le bon dashboard
-- **Temps réel** : 25 minutes (10 minutes pour identifier le problème, 10 minutes pour créer la page de fallback, 5 minutes pour améliorer la gestion d'erreur)
 - **Statut** : ✅ Corrigé et testé - Route de fallback créée, boucle résolue, gestion d'erreur améliorée
 
 #### ✅ Étape 2.2 (détails) : Corriger échec chargement profil utilisateur - **COMPLÉTÉ**
@@ -621,7 +613,6 @@
   - Les utilisateurs peuvent maintenant se connecter même si leur profil n'existe pas encore
   - Plus d'erreurs d'enum lors de la création de profil
   - Expérience utilisateur améliorée (pas de blocage au login)
-- **Temps réel** : 30 minutes (15 minutes initial + 15 minutes pour corriger toutes les occurrences)
 - **Statut** : ✅ Corrigé et testé - Le profil se crée automatiquement si absent
 
 ---
@@ -690,7 +681,6 @@
   - Prévention des erreurs d'hydratation futures
   - Formatage de date explicite pour éviter les différences de locale
   - Code plus maintenable et compréhensible
-- **Temps réel** : 45 minutes (20 minutes initial + 10 minutes pour les pages de politique + 15 minutes pour les pages de messages/notifications/profile/post-job)
 - **Statut** : ✅ Corrigé et testé - Toutes les occurrences de formatage de dates sans locale explicite ont été corrigées
 
 #### ✅ Étape 3.2 : Corriger image logo - **COMPLÉTÉ**
@@ -731,7 +721,6 @@
   - Évite les erreurs liées à l'optimisation d'image
   - Commentaires explicatifs ajoutés
 - **Note** : Si le problème persiste, nettoyer le cache Next.js avec `rm -rf .next` ou redémarrer le serveur de développement.
-- **Temps réel** : 15 minutes (vérification + correction dimensions + correction optimisation)
 - **Statut** : ✅ Corrigé - Image servie sans optimisation avec dimensions correctes respectant le ratio d'aspect
 
 ---
@@ -770,7 +759,6 @@
   - Code prêt pour les futures versions de Next.js
   - Suppression du warning de dépréciation
 - **Note** : Le runtime Edge n'est pas supporté dans `proxy.ts`. Si des fonctionnalités Edge sont nécessaires, il faudra continuer à utiliser `middleware.ts` jusqu'à ce que Next.js fournisse des instructions supplémentaires.
-- **Temps réel** : 20 minutes
 - **Statut** : ✅ Migré et testé
 
 #### ✅ Étape 4.2 : Documenter warning lockfiles multiples - **COMPLÉTÉ**
@@ -806,32 +794,31 @@
   - Documentation claire sur la nature du warning
   - Instructions pour résoudre le warning si nécessaire
   - Code sans erreur TypeScript
-- **Temps réel** : 5 minutes
 - **Statut** : ✅ Documenté - Warning non bloquant, peut être ignoré
 
 ---
 
 ## 🚀 Ordre d'exécution recommandé
 
-### Session 1 : Corrections TypeScript (30-40 minutes)
+### Session 1 : Corrections TypeScript
 1. ✅ Étape 1.1 : Variantes de boutons
 2. ✅ Étape 1.2 : Zustand persist
 3. ✅ Étape 1.3 : Supabase SSR
 4. **Test** : `pnpm exec tsc --noEmit` doit passer sans erreur
 5. **Test** : `pnpm build` doit compiler
 
-### Session 2 : Corrections Runtime (55-65 minutes)
+### Session 2 : Corrections Runtime
 1. ✅ Étape 2.1 : Clés de traduction
 2. ✅ Étape 2.2 : Chargement profil utilisateur
 3. ✅ Étape 2.3 : Erreur création job (service_id invalide)
 4. **Test** : Lancer `pnpm dev` et tester la page de login et la création de jobs
 
-### Session 3 : Corrections importantes (20-40 minutes)
+### Session 3 : Corrections importantes
 1. ✅ Étape 3.1 : Erreur d'hydratation
 2. ✅ Étape 3.2 : Image logo
 3. **Test** : Vérifier la console du navigateur
 
-### Session 4 : Optimisations (15-20 minutes)
+### Session 4 : Optimisations
 1. ✅ Étape 4.1 : Migrer middleware
 2. ✅ Étape 4.2 : Lockfiles multiples
 3. **Test final** : `pnpm build` et `pnpm dev` sans erreurs
@@ -856,79 +843,58 @@ Après chaque correction :
 
 1. **✅ Problème #1** : Root Layout - Missing HTML tags - Corrigé
    - Fichier : src/app/layout.tsx
-   - Temps : 5 minutes
    - Statut : Ajout des balises <html> et <body> dans le root layout, application démarre correctement
 
 2. **✅ Problème #2** : Variantes de boutons - Corrigé
    - Fichiers : 2 fichiers applications/page.tsx
-   - Temps : 2 minutes
    - Statut : TypeScript compile sans erreur
 
-2. **✅ Problème #3** : API Zustand persist - Corrigé
+3. **✅ Problème #3** : API Zustand persist - Corrigé
    - Fichier : src/stores/userStore.ts
-   - Temps : 3 minutes
    - Statut : Code obsolète supprimé, commentaires ajoutés
 
-3. **✅ Problème #4** : API Supabase SSR - Corrigé
+4. **✅ Problème #4** : API Supabase SSR - Corrigé
    - Fichier : src/supabase/middleware.ts
-   - Temps : 15 minutes
    - Statut : TypeScript compile sans erreur, gestion des types améliorée
 
-4. **✅ Problème #9** : Clés de traduction - Corrigé
+5. **✅ Problème #9** : Clés de traduction - Corrigé
    - Fichiers : messages/en.json, messages/fr.json, messages/de.json
-   - Temps : 20 minutes
    - Statut : 18 clés ajoutées dans toutes les langues (login, signUp, profile.sections)
 
-5. **✅ Problème #11** : Chargement profil utilisateur - Corrigé
+6. **✅ Problème #11** : Chargement profil utilisateur - Corrigé
    - Fichiers : src/actions/auth.ts, src/components/LoginForm.tsx, src/app/[locale]/(auth)/confirm/route.ts, src/app/[locale]/page.tsx, src/app/[locale]/search/jobs/page.tsx
-   - Temps : 30 minutes
    - Statut : Création automatique du profil si absent, correction enum verification_status ("unverified" → "pending")
 
-6. **✅ Problème #12** : Erreur création job (service_id invalide) - Corrigé
+7. **✅ Problème #12** : Erreur création job (service_id invalide) - Corrigé
    - Fichiers : src/actions/jobs.ts, src/actions/services.ts, src/app/[locale]/(profile)/customer/post-job/page.tsx, src/app/[locale]/(profile)/tasker/post-job/page.tsx
-   - Temps : 25 minutes
    - Statut : Services chargés depuis la base de données avec validation, plus d'erreurs de contrainte de clé étrangère
 
-7. **✅ Problème #8** : Erreur d'hydratation React - Corrigé
+8. **✅ Problème #8** : Erreur d'hydratation React - Corrigé
    - Fichiers : src/app/[locale]/layout.tsx, src/components/Footer.tsx, src/app/[locale]/(public-pages)/newsletter/page.tsx, src/app/[locale]/(public-pages)/terms-of-service/page.tsx, src/app/[locale]/(public-pages)/privacy-policy/page.tsx, src/app/[locale]/(public-pages)/cookie-policy/page.tsx
-   - Temps : 30 minutes
    - Statut : Dates stables calculées au chargement du module, commentaires explicatifs
 
-8. **✅ Problème #5** : Middleware déprécié - Migré vers proxy.ts
+9. **✅ Problème #5** : Middleware déprécié - Migré vers proxy.ts
    - Fichiers : src/middleware.ts → src/proxy.ts (renommé)
-   - Temps : 20 minutes
    - Statut : Migration complète vers proxy.ts selon Next.js 16, fonctionnalité préservée
 
-9. **✅ Problème #6** : Lockfiles multiples - Documenté
+10. **✅ Problème #6** : Lockfiles multiples - Documenté
    - Fichier : next.config.ts
-   - Temps : 5 minutes
    - Statut : Warning non bloquant documenté (pas de configuration disponible dans Next.js 16)
 
-11. **✅ Problème #12** : Erreur création job (service_id invalide) - Corrigé
-   - Fichiers : src/actions/jobs.ts, src/actions/services.ts, src/app/[locale]/(profile)/customer/post-job/page.tsx, src/app/[locale]/(profile)/tasker/post-job/page.tsx
-   - Temps : 25 minutes
-   - Statut : Services chargés depuis la base de données avec validation, plus d'erreurs de contrainte de clé étrangère
-
-### ✅ Toutes les corrections complétées (19/19)
-
-10. **✅ Problème #10** : Image logo - Corrigé
+11. **✅ Problème #10** : Image logo - Corrigé
    - Fichier : src/components/Header.tsx
-   - Temps : 15 minutes
    - Statut : Ajout de `unoptimized` et correction des dimensions (200x55px) pour respecter le ratio d'aspect, logo s'affiche correctement
 
-11. **✅ Problème #13** : Création profil tasker (rôle non mis à jour) - Corrigé
+12. **✅ Problème #13** : Création profil tasker (rôle non mis à jour) - Corrigé
    - Fichiers : src/actions/auth.ts, src/app/[locale]/(auth)/finish-signUp/page.tsx, src/app/[locale]/(auth)/confirm/route.ts, src/app/[locale]/(auth)/wait-for-confirmation/page.tsx
-   - Temps : 20 minutes
    - Statut : Mise à jour du rôle dans la table users lors de la création du profil tasker, redirection vers dashboard tasker, clé de traduction corrigée
 
-12. **✅ Problème #14** : Boucle de redirection et erreur duplicate email - Corrigé
+13. **✅ Problème #14** : Boucle de redirection et erreur duplicate email - Corrigé
    - Fichiers : src/app/[locale]/authenticated/dashboard/page.tsx, src/actions/auth.ts
-   - Temps : 25 minutes
    - Statut : Route de fallback créée, gestion d'erreur 23505 améliorée, boucle de redirection résolue
 
 13. **✅ Problème #15** : Redirection vers dashboard après complétion du profil - Corrigé
    - Fichiers : src/app/[locale]/(auth)/finish-signUp/page.tsx, src/actions/auth.ts
-   - Temps : 15 minutes
    - Statut : Redirection directe vers /tasker/dashboard après complétion réussie du profil, amélioration de la vérification du profil complété avec retry mechanism
    - **Problème identifié** :
      1. **Redirection manquante** : Après avoir complété le profil avec succès, l'utilisateur n'était pas redirigé vers le dashboard
@@ -1029,7 +995,6 @@ Après chaque correction :
 
 14. **✅ Problème #16** : Récupération des informations personnelles dans Personal Information - Corrigé
    - Fichiers : src/components/profile/PersonalInfoSection.tsx, src/actions/auth.ts
-   - Temps : 10 minutes
    - Statut : Les informations personnelles (téléphone) sont maintenant récupérées et affichées correctement dans la section Personal Information
    - **Problème identifié** :
      1. **Informations manquantes** : La section Personal Information n'affichait que l'email, les autres informations (téléphone, nom, date de naissance) n'étaient pas récupérées
@@ -1074,7 +1039,6 @@ Après chaque correction :
 
 15. **✅ Problème #17** : Sauvegarde et récupération des documents d'identité - Corrigé
    - Fichiers : src/actions/file-uploads.ts, src/app/[locale]/(auth)/finish-signUp/page.tsx, src/components/profile/PersonalInfoSection.tsx, src/app/[locale]/(profile)/tasker/profile/page.tsx
-   - Temps : 20 minutes
    - Statut : Les documents d'identité sont maintenant correctement sauvegardés dans la base de données et leur état est affiché dans Personal Information
    - **Problème identifié** :
      1. **Documents non sauvegardés** : Les documents d'identité étaient uploadés dans le bucket `verification-documents` mais le chemin n'était pas sauvegardé dans `tasker_profiles.identity_document_url`
@@ -1141,7 +1105,6 @@ Après chaque correction :
 
 16. **✅ Problème #18** : Upload de photo de profil échoue (bucket incorrect) - Corrigé
    - Fichiers : src/actions/profile.ts, next.config.ts
-   - Temps : 15 minutes
    - Statut : La photo de profil est maintenant uploadée dans le bucket `avatars` comme spécifié dans SCHEMA_ANALYSIS.md, et le hostname Supabase est configuré pour les images
    - **Problème identifié** :
      1. **Bucket incorrect** : Le code utilisait le bucket `profile-images` qui n'existe pas, alors que le schéma spécifie le bucket `avatars`
