@@ -30,9 +30,9 @@ export default function SettingsPage() {
   };
 
   const sections = [
-    { id: "security", title: t("sections.security") },
-    { id: "notifications", title: t("sections.notifications") },
-    { id: "preferences", title: t("sections.preferences") },
+    { id: "security", title: t("sections.security.title") },
+    { id: "notifications", title: t("sections.notifications.title") },
+    { id: "preferences", title: t("sections.preferences.title") },
   ];
 
   return (
@@ -64,9 +64,9 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  {t("sections.security")}
+                  {t("sections.security.title")}
                 </CardTitle>
-                <CardDescription>{t("security.description")}</CardDescription>
+                <CardDescription>{t("sections.security.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Sign-in Methods */}
@@ -141,10 +141,10 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Bell className="h-5 w-5" />
-                  {t("sections.notifications")}
+                  {t("sections.notifications.title")}
                 </CardTitle>
                 <CardDescription>
-                  {t("notifications.description")}
+                  {t("sections.notifications.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -217,10 +217,10 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="h-5 w-5" />
-                  {t("sections.preferences")}
+                  {t("sections.preferences.title")}
                 </CardTitle>
                 <CardDescription>
-                  {t("preferences.description")}
+                  {t("sections.preferences.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent>

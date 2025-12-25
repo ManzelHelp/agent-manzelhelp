@@ -11,7 +11,13 @@ import { createClient } from "@/supabase/server";
  * 
  * Uses direct Supabase query to avoid potential loops in getUserProfileAction.
  */
-export default async function AuthenticatedDashboardPage() {
+export default async function AuthenticatedDashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  
   try {
     const supabase = await createClient();
     
@@ -19,7 +25,7 @@ export default async function AuthenticatedDashboardPage() {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
-      redirect("/login");
+      redirect(`/${locale}/login`);
     }
 
     // Fetch user profile directly (avoid getUserProfileAction to prevent loops)
@@ -33,18 +39,18 @@ export default async function AuthenticatedDashboardPage() {
     if (!profileError && profile) {
       const role = profile.role;
       if (role === "tasker") {
-        redirect("/tasker/dashboard");
+        redirect(`/${locale}/tasker/dashboard`);
       } else if (role === "customer") {
-        redirect("/customer/dashboard");
+        redirect(`/${locale}/customer/dashboard`);
       }
     }
 
     // Fallback: redirect to login if no profile or unknown role
-    redirect("/login");
+    redirect(`/${locale}/login`);
   } catch (error) {
     console.error("[AuthenticatedDashboardPage] Error:", error);
     // On any error, redirect to login to break the loop
-    redirect("/login");
+    redirect(`/${locale}/login`);
   }
 }
 

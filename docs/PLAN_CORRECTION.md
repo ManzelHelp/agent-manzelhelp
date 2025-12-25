@@ -38,8 +38,12 @@
 | 17 | Sauvegarde documents d'identité | Runtime Error | 🟡 Important | ✅ Corrigé | `src/actions/file-uploads.ts` + 3 fichiers |
 | 18 | Upload photo de profil (bucket incorrect) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/profile.ts` + `next.config.ts` |
 | 19 | Erreur 400 avatar et erreur RLS upload | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/components/profile/PersonalInfoSection.tsx` + 2 fichiers |
+| 20 | Upload photo de profil manquant dans dialog customer | Runtime Error | 🟡 Important | ✅ Corrigé | `src/app/[locale]/(profile)/customer/profile/page.tsx` |
+| 21 | Photo de profil ne s'affiche pas après upload | Runtime Error | 🟡 Important | ✅ Corrigé | `src/app/[locale]/(profile)/customer/profile/page.tsx` + `src/actions/profile.ts` |
+| 22 | Clés de traduction incorrectes dans settings | Runtime Error | 🟡 Important | ✅ Corrigé | `src/app/[locale]/(profile)/customer/settings/page.tsx` |
+| 23 | Erreur sérialisation Server Actions (finance/bookings) | Runtime Error | 🔴 Bloquant | ✅ Corrigé | `src/actions/bookings.ts` + `src/actions/finance.ts` |
 
-**Total : 19 problèmes détectés, 19 corrigés (100%)**
+**Total : 23 problèmes détectés, 23 corrigés (100%)**
 
 \* Le Problème #7 (Build échoue) a été résolu automatiquement après correction des problèmes #2, #3, et #4.
 
@@ -839,7 +843,7 @@ Après chaque correction :
 
 ## 📊 Résumé des corrections effectuées
 
-### ✅ Corrections complétées (19/19)
+### ✅ Corrections complétées (23/23)
 
 1. **✅ Problème #1** : Root Layout - Missing HTML tags - Corrigé
    - Fichier : src/app/layout.tsx
@@ -893,9 +897,41 @@ Après chaque correction :
    - Fichiers : src/app/[locale]/authenticated/dashboard/page.tsx, src/actions/auth.ts
    - Statut : Route de fallback créée, gestion d'erreur 23505 améliorée, boucle de redirection résolue
 
-13. **✅ Problème #15** : Redirection vers dashboard après complétion du profil - Corrigé
+15. **✅ Problème #15** : Redirection vers dashboard après complétion du profil - Corrigé
    - Fichiers : src/app/[locale]/(auth)/finish-signUp/page.tsx, src/actions/auth.ts
    - Statut : Redirection directe vers /tasker/dashboard après complétion réussie du profil, amélioration de la vérification du profil complété avec retry mechanism
+
+16. **✅ Problème #16** : Récupération infos personnelles - Corrigé
+   - Fichiers : src/components/profile/PersonalInfoSection.tsx, src/actions/auth.ts
+   - Statut : Les informations personnelles (téléphone) sont maintenant récupérées et affichées correctement dans la section Personal Information
+
+17. **✅ Problème #17** : Sauvegarde documents d'identité - Corrigé
+   - Fichiers : src/actions/file-uploads.ts, src/app/[locale]/(auth)/finish-signUp/page.tsx, src/components/profile/PersonalInfoSection.tsx
+   - Statut : Les documents d'identité sont maintenant correctement sauvegardés dans la base de données et leur état est affiché dans Personal Information
+
+18. **✅ Problème #18** : Upload photo de profil (bucket incorrect) - Corrigé
+   - Fichiers : src/actions/profile.ts, next.config.ts
+   - Statut : La photo de profil est maintenant uploadée dans le bucket `avatars` comme spécifié dans SCHEMA_ANALYSIS.md
+
+19. **✅ Problème #19** : Erreur 400 avatar et erreur RLS upload - Corrigé
+   - Fichiers : src/components/profile/PersonalInfoSection.tsx, src/actions/profile.ts, fix_avatars_rls.sql
+   - Statut : Correction de l'erreur 400 avec `unoptimized`, correction de la politique RLS, et ajout d'une action pour corriger les URLs incomplètes
+
+20. **✅ Problème #20** : Upload photo de profil manquant dans dialog customer - Corrigé
+   - Fichier : src/app/[locale]/(profile)/customer/profile/page.tsx
+   - Statut : Ajout de la fonctionnalité d'upload de photo de profil dans le dialog d'édition des informations personnelles pour les customers
+
+21. **✅ Problème #21** : Photo de profil ne s'affiche pas après upload - Corrigé
+   - Fichiers : src/app/[locale]/(profile)/customer/profile/page.tsx, src/actions/profile.ts
+   - Statut : Ajout de revalidatePath pour customer/profile, unoptimized et key sur Image pour forcer le re-render, mise à jour du state personalInfo
+
+22. **✅ Problème #22** : Clés de traduction incorrectes dans settings - Corrigé
+   - Fichier : src/app/[locale]/(profile)/customer/settings/page.tsx
+   - Statut : Correction de toutes les clés de traduction pour utiliser .title et .description selon la structure des fichiers de messages
+
+23. **✅ Problème #23** : Erreur sérialisation Server Actions (finance/bookings) - Corrigé
+   - Fichiers : src/actions/bookings.ts, src/actions/finance.ts
+   - Statut : Suppression du spread operator problématique, construction d'objets sérialisables, gestion des relations Supabase (tableaux/objets)
    - **Problème identifié** :
      1. **Redirection manquante** : Après avoir complété le profil avec succès, l'utilisateur n'était pas redirigé vers le dashboard
      2. **Vérification du profil incomplète** : La fonction `hasTaskerCompletedProfileAction` ne trouvait pas le profil immédiatement après sa création (problème de timing/consistency)
@@ -1187,6 +1223,14 @@ Après chaque correction :
 
 10. **✅ Upload photo de profil** : ✅ Complété - Correction du bucket (avatars) et du chemin pour respecter RLS
 
+11. **✅ Upload photo de profil dans dialog customer** : ✅ Complété - Ajout de la fonctionnalité d'upload de photo dans le dialog d'édition customer
+
+12. **✅ Affichage photo de profil après upload** : ✅ Complété - Correction de l'affichage avec revalidatePath, unoptimized et key sur Image
+
+13. **✅ Clés de traduction dans settings** : ✅ Complété - Correction des clés de traduction pour utiliser .title et .description
+
+14. **✅ Erreur sérialisation Server Actions** : ✅ Complété - Correction de l'erreur "An unexpected response was received from the server" en supprimant le spread operator et en construisant des objets sérialisables
+
 ---
 
 ## 📝 Notes importantes
@@ -1195,6 +1239,319 @@ Après chaque correction :
 - **Documenter les changements** : Mettre à jour `PROBLEMES_TESTS.md` après chaque correction
 - **Commits fréquents** : Faire un commit après chaque problème corrigé
 - **Rollback si nécessaire** : Si une correction cause plus de problèmes, revenir en arrière
+
+---
+
+#### ✅ Étape 2.6 : Ajouter upload photo de profil dans dialog customer - **COMPLÉTÉ**
+- **Problème #20**
+- **Fichier modifié** : `src/app/[locale]/(profile)/customer/profile/page.tsx`
+- **Type** : Runtime Error
+- **Priorité** : 🟡 Important
+- **Problème identifié** :
+  1. **Fonctionnalité manquante** : Le dialog d'édition des informations personnelles pour les customers n'incluait pas l'option d'upload de photo de profil
+  2. **Incohérence avec tasker** : Les taskers ont accès à l'upload de photo via `PersonalInfoSection`, mais les customers n'ont pas cette fonctionnalité dans leur dialog d'édition
+  3. **Expérience utilisateur incomplète** : Les customers ne peuvent pas modifier leur photo de profil depuis le dialog d'édition
+- **Actions effectuées** :
+  1. ✅ Ajout des imports `uploadProfileImage` et `updateUserAvatar` depuis `@/actions/profile`
+  2. ✅ Ajout des états `uploadingPhoto` et `processingPhoto` pour gérer l'état de l'upload
+  3. ✅ Ajout des constantes `IMAGE_CONSTRAINTS` pour la validation et compression d'images
+  4. ✅ Ajout de la fonction `compressAndResizeImage` pour compresser et redimensionner les images
+  5. ✅ Ajout de la fonction `handlePhotoUpload` pour valider et traiter l'upload
+  6. ✅ Ajout de la fonction `performPhotoUpload` pour uploader vers Supabase et mettre à jour l'avatar
+  7. ✅ Ajout de la section d'upload de photo dans le dialog d'édition avec :
+     - Aperçu de la photo actuelle
+     - Bouton d'upload avec icône caméra
+     - Instructions et exigences pour la photo
+     - Indicateurs de chargement pendant l'upload
+- **Solution appliquée** :
+  ```typescript
+  // AJOUTÉ - Imports nécessaires
+  import {
+    uploadProfileImage,
+    updateUserAvatar,
+  } from "@/actions/profile";
+
+  // AJOUTÉ - États pour l'upload
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [processingPhoto, setProcessingPhoto] = useState(false);
+
+  // AJOUTÉ - Constantes de validation
+  const IMAGE_CONSTRAINTS = {
+    maxFileSize: 2 * 1024 * 1024, // 2MB
+    maxDimensions: { width: 1024, height: 1024 },
+    minDimensions: { width: 200, height: 200 },
+    allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+    quality: 0.8,
+  };
+
+  // AJOUTÉ - Fonction de compression
+  const compressAndResizeImage = (file: File): Promise<File> => {
+    // ... logique de compression avec canvas
+  };
+
+  // AJOUTÉ - Fonction de validation et upload
+  const handlePhotoUpload = async (file: File) => {
+    // Validation du type, taille, dimensions
+    // Compression et upload
+  };
+
+  // AJOUTÉ - Fonction d'upload vers Supabase
+  const performPhotoUpload = async (file: File) => {
+    const uploadResult = await uploadProfileImage(user.id, file);
+    const result = await updateUserAvatar(user.id, uploadResult.url!);
+    // Mise à jour du store et refresh
+  };
+
+  // AJOUTÉ - Section dans le dialog
+  <div className="flex items-center gap-4 pb-4 border-b">
+    <div className="relative">
+      {/* Aperçu photo */}
+      <input type="file" id="customer-photo-upload" />
+      <label htmlFor="customer-photo-upload">
+        <Camera className="h-3 w-3" />
+      </label>
+    </div>
+    <div>
+      <h4>Profile Photo</h4>
+      {/* Instructions et exigences */}
+    </div>
+  </div>
+  ```
+- **Raison** :
+  - **Problème principal** : Le dialog d'édition des informations personnelles pour les customers était incomplet comparé à celui des taskers. Les customers ne pouvaient pas modifier leur photo de profil depuis le dialog, créant une incohérence dans l'expérience utilisateur.
+  - **Solution** : Ajouter la même fonctionnalité d'upload de photo que celle disponible dans `PersonalInfoSection` pour les taskers, en réutilisant les mêmes fonctions d'upload et de validation.
+- **Amélioration** :
+  - Expérience utilisateur cohérente entre customers et taskers
+  - Validation et compression automatique des images
+  - Feedback visuel pendant l'upload (spinner, états de chargement)
+  - Instructions claires pour les exigences de la photo
+  - Mise à jour automatique du store et refresh des données
+- **Impact** :
+  - Les customers peuvent maintenant modifier leur photo de profil depuis le dialog d'édition
+  - Expérience utilisateur améliorée et cohérente
+  - Fonctionnalité complète pour la gestion du profil customer
+- **Statut** : ✅ Corrigé et testé - Upload de photo de profil disponible dans le dialog customer
+
+#### ✅ Étape 2.7 : Corriger affichage photo de profil après upload - **COMPLÉTÉ**
+- **Problème #21**
+- **Fichiers modifiés** : 
+  - `src/app/[locale]/(profile)/customer/profile/page.tsx`
+  - `src/actions/profile.ts`
+- **Type** : Runtime Error
+- **Priorité** : 🟡 Important
+- **Problème identifié** :
+  1. **Photo ne s'affiche pas** : Après l'upload réussi de la photo de profil, l'image ne s'affichait pas immédiatement dans la section profil
+  2. **Cache Next.js** : L'image était mise en cache par Next.js et ne se rafraîchissait pas après l'upload
+  3. **Revalidation manquante** : Le chemin customer/profile n'était pas revalidé dans `updateUserAvatar`
+- **Actions effectuées** :
+  1. ✅ Ajout de `revalidatePath` pour customer/profile dans `updateUserAvatar`
+  2. ✅ Ajout de `unoptimized` et `key={user.avatar_url}` sur le composant Image pour forcer le re-render
+  3. ✅ Ajout d'un handler `onError` pour gérer les erreurs de chargement
+  4. ✅ Mise à jour du state `personalInfo` en plus du store pour synchroniser les données
+- **Solution appliquée** :
+  ```typescript
+  // CORRIGÉ - Revalidation des deux chemins
+  // src/actions/profile.ts
+  revalidatePath("/[locale]/(profile)/tasker/profile", "layout");
+  revalidatePath("/[locale]/(profile)/customer/profile", "layout"); // ✅ Ajouté
+  return { success: true, user: data };
+
+  // CORRIGÉ - Image avec unoptimized et key pour forcer le re-render
+  // src/app/[locale]/(profile)/customer/profile/page.tsx
+  <Image
+    src={user.avatar_url}
+    alt="Profile"
+    className="h-full w-full object-cover"
+    fill
+    sizes="80px"
+    style={{ objectFit: "cover" }}
+    priority
+    unoptimized // ✅ Désactive l'optimisation Next.js
+    key={user.avatar_url} // ✅ Force re-render quand URL change
+    onError={(e) => {
+      console.error("Failed to load avatar image:", user.avatar_url);
+      e.currentTarget.src = "/default-avatar.svg";
+    }}
+  />
+
+  // AJOUTÉ - Mise à jour du state personalInfo
+  if (result.success && result.user) {
+    setUser(result.user);
+    setPersonalInfo((prev) => ({
+      ...prev,
+      avatar_url: result.user!.avatar_url || "",
+    }));
+    await fetchProfileData();
+  }
+  ```
+- **Raison** :
+  - **Problème principal** : Après l'upload, l'image ne s'affichait pas car Next.js mettait en cache l'ancienne image et le composant Image ne détectait pas le changement d'URL
+  - **Solution** : Ajout de `unoptimized` pour désactiver le cache Next.js, `key={user.avatar_url}` pour forcer le re-render quand l'URL change, et `revalidatePath` pour invalider le cache serveur
+- **Amélioration** :
+  - Photo s'affiche immédiatement après l'upload
+  - Revalidation du cache Next.js pour les deux types de profils
+  - Gestion d'erreur avec fallback vers avatar par défaut
+  - Synchronisation des états (store et local state)
+- **Impact** :
+  - Les customers voient maintenant leur photo de profil immédiatement après l'upload
+  - Expérience utilisateur améliorée avec feedback visuel instantané
+  - Gestion robuste des erreurs de chargement d'image
+- **Statut** : ✅ Corrigé et testé - Photo de profil s'affiche correctement après upload
+
+#### ✅ Étape 2.8 : Corriger clés de traduction dans settings - **COMPLÉTÉ**
+- **Problème #22**
+- **Fichier modifié** : `src/app/[locale]/(profile)/customer/settings/page.tsx`
+- **Type** : Runtime Error
+- **Priorité** : 🟡 Important
+- **Problème identifié** :
+  1. **Clés de traduction incorrectes** : La page settings utilisait `t("sections.security")` au lieu de `t("sections.security.title")`
+  2. **Descriptions manquantes** : Les descriptions utilisaient `t("security.description")` au lieu de `t("sections.security.description")`
+  3. **Incohérence** : Les clés ne correspondaient pas à la structure des fichiers de traduction
+- **Actions effectuées** :
+  1. ✅ Correction de toutes les clés de traduction dans la navigation sidebar
+  2. ✅ Correction des titres dans les CardHeader
+  3. ✅ Correction des descriptions dans les CardDescription
+- **Solution appliquée** :
+  ```typescript
+  // CORRIGÉ - Navigation sidebar
+  const sections = [
+    { id: "security", title: t("sections.security.title") }, // ✅ Corrigé
+    { id: "notifications", title: t("sections.notifications.title") }, // ✅ Corrigé
+    { id: "preferences", title: t("sections.preferences.title") }, // ✅ Corrigé
+  ];
+
+  // CORRIGÉ - Security section
+  <CardTitle>
+    {t("sections.security.title")} // ✅ Corrigé
+  </CardTitle>
+  <CardDescription>
+    {t("sections.security.description")} // ✅ Corrigé
+  </CardDescription>
+
+  // CORRIGÉ - Notifications section
+  <CardTitle>
+    {t("sections.notifications.title")} // ✅ Corrigé
+  </CardTitle>
+  <CardDescription>
+    {t("sections.notifications.description")} // ✅ Corrigé
+  </CardDescription>
+
+  // CORRIGÉ - Preferences section
+  <CardTitle>
+    {t("sections.preferences.title")} // ✅ Corrigé
+  </CardTitle>
+  <CardDescription>
+    {t("sections.preferences.description")} // ✅ Corrigé
+  </CardDescription>
+  ```
+- **Raison** :
+  - **Problème principal** : Les clés de traduction ne correspondaient pas à la structure dans les fichiers de messages. Les sections sont structurées comme `profile.sections.security.title` et `profile.sections.security.description`, mais le code utilisait `profile.sections.security` (qui n'existe pas comme string directe)
+  - **Solution** : Utiliser les clés complètes avec `.title` et `.description` pour correspondre à la structure des fichiers de traduction
+- **Amélioration** :
+  - Clés de traduction correctes et cohérentes
+  - Titres et descriptions affichés correctement
+  - Structure alignée avec les fichiers de messages
+- **Impact** :
+  - Les titres et descriptions s'affichent correctement dans la page settings
+  - Expérience utilisateur améliorée avec des textes traduits correctement
+  - Code plus maintenable avec des clés de traduction cohérentes
+- **Statut** : ✅ Corrigé et testé - Clés de traduction corrigées dans settings
+
+#### ✅ Étape 2.9 : Corriger erreur sérialisation Server Actions - **COMPLÉTÉ**
+- **Problème #23**
+- **Fichiers modifiés** : 
+  - `src/actions/bookings.ts` (fonction `getCustomerBookings`)
+  - `src/actions/finance.ts` (fonction `getCustomerTransactionHistory`)
+- **Type** : Runtime Error
+- **Priorité** : 🔴 Bloquant
+- **Erreur** : `Error: An unexpected response was received from the server` dans `server-action-reducer.ts:205`
+- **Problème identifié** :
+  1. **Sérialisation impossible** : Les Server Actions retournaient des objets contenant des relations Supabase complexes non sérialisables
+  2. **Spread operator problématique** : L'utilisation de `...booking` incluait tous les objets Supabase (customer, tasker, tasker_service, address) qui peuvent contenir des propriétés non sérialisables
+  3. **Relations en tableau** : Les relations Supabase avec foreign keys peuvent retourner des tableaux au lieu d'objets uniques, causant des erreurs lors de l'accès aux propriétés
+  4. **Valeurs undefined** : Certaines valeurs `undefined` dans l'objet retourné ne sont pas sérialisables en JSON
+- **Actions effectuées** :
+  1. ✅ Suppression du spread operator `...booking` qui incluait des objets complexes
+  2. ✅ Construction d'un objet propre avec uniquement les champs nécessaires et sérialisables
+  3. ✅ Gestion des relations qui peuvent être des tableaux ou des objets
+  4. ✅ Conversion de toutes les valeurs `undefined` en `null` (sérialisable)
+  5. ✅ Conversion explicite des types (string vers number pour les prix)
+- **Solution appliquée** :
+  ```typescript
+  // AVANT - Problématique (spread inclut objets Supabase non sérialisables)
+  const formattedBookings = bookings.map((booking) => ({
+    ...booking, // ❌ Inclut customer, tasker, tasker_service, address (objets complexes)
+    customer_first_name: booking.customer?.first_name,
+    // ...
+  }));
+
+  // APRÈS - Sérialisable
+  const formattedBookings = bookings.map((booking) => {
+    // Gérer les relations qui peuvent être tableaux ou objets
+    const customer = Array.isArray(booking.customer) 
+      ? booking.customer[0] 
+      : booking.customer;
+    const tasker = Array.isArray(booking.tasker) 
+      ? booking.tasker[0] 
+      : booking.tasker;
+    const taskerService = Array.isArray(booking.tasker_service) 
+      ? booking.tasker_service[0] 
+      : booking.tasker_service;
+    const address = Array.isArray(booking.address) 
+      ? booking.address[0] 
+      : booking.address;
+
+    // Retourner uniquement des champs sérialisables (pas de spread)
+    return {
+      id: booking.id,
+      customer_id: booking.customer_id,
+      // ... tous les champs primitifs explicitement listés
+      agreed_price: typeof booking.agreed_price === 'string' 
+        ? parseFloat(booking.agreed_price) 
+        : (booking.agreed_price || 0),
+      // Relations extraites (toujours null au lieu de undefined)
+      customer_first_name: customer?.first_name || null,
+      customer_last_name: customer?.last_name || null,
+      // ...
+    };
+  });
+
+  // CORRIGÉ - getCustomerTransactionHistory
+  return transactionData.map((transaction) => {
+    // Gérer service_bookings qui peut être tableau ou objet
+    const serviceBooking = Array.isArray(transaction.service_bookings)
+      ? transaction.service_bookings[0]
+      : transaction.service_bookings;
+    
+    const taskerService = Array.isArray(serviceBooking?.tasker_services)
+      ? serviceBooking.tasker_services[0]
+      : serviceBooking?.tasker_services;
+
+    return {
+      id: transaction.id,
+      amount: parseFloat(transaction.amount || "0"),
+      // ... tous les champs explicitement listés
+      serviceTitle: taskerService?.title || null, // null au lieu de undefined
+      bookingStatus: serviceBooking?.status || null,
+    };
+  });
+  ```
+- **Raison** :
+  - **Problème principal** : Next.js Server Actions doivent retourner des objets JSON sérialisables. Le spread operator `...booking` incluait des objets Supabase complexes (customer, tasker, etc.) qui peuvent contenir des propriétés non sérialisables, des références circulaires, ou des fonctions, causant l'erreur "An unexpected response was received from the server"
+  - **Relations Supabase** : Les relations avec foreign keys peuvent retourner soit un objet unique, soit un tableau selon la configuration. Le code devait gérer les deux cas
+  - **Sérialisation JSON** : Les valeurs `undefined` ne sont pas sérialisables en JSON (contrairement à `null`). Il faut convertir toutes les valeurs `undefined` en `null`
+  - **Solution** : Construire un objet propre avec uniquement les champs nécessaires, gérer les relations qui peuvent être des tableaux, et convertir toutes les valeurs en types sérialisables
+- **Amélioration** :
+  - Données toujours sérialisables (pas d'objets complexes, pas d'undefined)
+  - Gestion robuste des relations Supabase (tableaux ou objets)
+  - Conversion explicite des types pour éviter les erreurs
+  - Code plus maintenable avec structure claire
+- **Impact** :
+  - Plus d'erreur "An unexpected response was received from the server"
+  - Les données finance et bookings se chargent correctement
+  - Expérience utilisateur améliorée sans erreurs dans la console
+  - Server Actions fonctionnent correctement avec Next.js
+- **Statut** : ✅ Corrigé et testé - Erreur de sérialisation résolue, données finance et bookings se chargent correctement
 
 ---
 

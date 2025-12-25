@@ -247,7 +247,9 @@ export async function updateUserAvatar(
       return { success: false, error: "Failed to update profile photo" };
     }
 
+    // Revalidate both tasker and customer profile pages
     revalidatePath("/[locale]/(profile)/tasker/profile", "layout");
+    revalidatePath("/[locale]/(profile)/customer/profile", "layout");
     return { success: true, user: data };
   } catch (error) {
     console.error("Error in updateUserAvatar:", error);

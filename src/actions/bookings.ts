@@ -319,22 +319,78 @@ export async function getCustomerBookings(
   // Ensure hasMore is false if we have no bookings at all
   const finalHasMore = bookings.length > 0 ? hasMore : false;
 
-  const formattedBookings = bookings.map((booking) => ({
-    ...booking,
-    customer_first_name: booking.customer?.first_name,
-    customer_last_name: booking.customer?.last_name,
-    customer_avatar: booking.customer?.avatar_url,
-    customer_email: booking.customer?.email,
-    customer_phone: booking.customer?.phone,
-    tasker_first_name: booking.tasker?.first_name,
-    tasker_last_name: booking.tasker?.last_name,
-    tasker_avatar: booking.tasker?.avatar_url,
-    service_title: booking.tasker_service?.title,
-    category_name: null,
-    street_address: booking.address?.street_address,
-    city: booking.address?.city,
-    region: booking.address?.region,
-  }));
+  // Format bookings and ensure all data is serializable
+  // Handle cases where relations might be arrays instead of objects
+  const formattedBookings = bookings.map((booking) => {
+    // Handle customer - can be object or array (Supabase foreign key relations)
+    const customer = Array.isArray(booking.customer) 
+      ? booking.customer[0] 
+      : booking.customer;
+    
+    // Handle tasker - can be object or array
+    const tasker = Array.isArray(booking.tasker) 
+      ? booking.tasker[0] 
+      : booking.tasker;
+    
+    // Handle tasker_service - can be object or array
+    const taskerService = Array.isArray(booking.tasker_service) 
+      ? booking.tasker_service[0] 
+      : booking.tasker_service;
+    
+    // Handle address - can be object or array
+    const address = Array.isArray(booking.address) 
+      ? booking.address[0] 
+      : booking.address;
+
+    // Return only serializable fields (no spread of complex Supabase objects)
+    // This prevents "An unexpected response was received from the server" errors
+    return {
+      id: booking.id,
+      customer_id: booking.customer_id,
+      tasker_id: booking.tasker_id,
+      tasker_service_id: booking.tasker_service_id,
+      booking_type: booking.booking_type,
+      scheduled_date: booking.scheduled_date,
+      scheduled_time_start: booking.scheduled_time_start,
+      scheduled_time_end: booking.scheduled_time_end,
+      estimated_duration: booking.estimated_duration,
+      address_id: booking.address_id,
+      service_address: booking.service_address,
+      agreed_price: typeof booking.agreed_price === 'string' 
+        ? parseFloat(booking.agreed_price) 
+        : (booking.agreed_price || 0),
+      currency: booking.currency || 'USD',
+      status: booking.status,
+      accepted_at: booking.accepted_at,
+      confirmed_at: booking.confirmed_at,
+      started_at: booking.started_at,
+      completed_at: booking.completed_at,
+      cancelled_at: booking.cancelled_at,
+      cancelled_by: booking.cancelled_by,
+      cancellation_reason: booking.cancellation_reason,
+      customer_requirements: booking.customer_requirements,
+      created_at: booking.created_at,
+      updated_at: booking.updated_at,
+      payment_method: booking.payment_method,
+      cancellation_fee: typeof booking.cancellation_fee === 'string'
+        ? parseFloat(booking.cancellation_fee)
+        : (booking.cancellation_fee || 0),
+      // Extracted relation data (ensure all values are serializable)
+      customer_first_name: customer?.first_name || null,
+      customer_last_name: customer?.last_name || null,
+      customer_avatar: customer?.avatar_url || null,
+      customer_email: customer?.email || null,
+      customer_phone: customer?.phone || null,
+      tasker_first_name: tasker?.first_name || null,
+      tasker_last_name: tasker?.last_name || null,
+      tasker_avatar: tasker?.avatar_url || null,
+      service_title: taskerService?.title || null,
+      category_name: null,
+      street_address: address?.street_address || null,
+      city: address?.city || null,
+      region: address?.region || null,
+    };
+  });
 
   return {
     bookings: formattedBookings,

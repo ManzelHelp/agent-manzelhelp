@@ -659,23 +659,33 @@ export async function getCustomerTransactionHistory(
 
     // If transactions exist, return them
     if (transactionData && transactionData.length > 0) {
-      return transactionData.map((transaction: TransactionWithBooking) => ({
-        id: transaction.id,
-        amount: parseFloat(transaction.amount),
-        netAmount: parseFloat(transaction.net_amount),
-        platformFee: parseFloat(transaction.platform_fee || "0"),
-        transactionType: transaction.transaction_type,
-        paymentStatus: transaction.payment_status,
-        paymentMethod: transaction.payment_method,
-        createdAt: transaction.created_at,
-        processedAt: transaction.processed_at,
-        bookingId: transaction.booking_id,
-        serviceTitle:
-          transaction.service_bookings?.[0]?.tasker_services?.[0]?.title ||
-          null,
-        bookingStatus: transaction.service_bookings?.[0]?.status || null,
-        currency: "USD", // Default currency
-      }));
+      return transactionData.map((transaction: TransactionWithBooking) => {
+        // Handle service_bookings - can be array or object
+        const serviceBooking = Array.isArray(transaction.service_bookings)
+          ? transaction.service_bookings[0]
+          : transaction.service_bookings;
+        
+        // Handle tasker_services - can be array or object
+        const taskerService = Array.isArray(serviceBooking?.tasker_services)
+          ? serviceBooking.tasker_services[0]
+          : serviceBooking?.tasker_services;
+
+        return {
+          id: transaction.id,
+          amount: parseFloat(transaction.amount || "0"),
+          netAmount: parseFloat(transaction.net_amount || "0"),
+          platformFee: parseFloat(transaction.platform_fee || "0"),
+          transactionType: transaction.transaction_type,
+          paymentStatus: transaction.payment_status,
+          paymentMethod: transaction.payment_method || null,
+          createdAt: transaction.created_at,
+          processedAt: transaction.processed_at || null,
+          bookingId: transaction.booking_id || null,
+          serviceTitle: taskerService?.title || null,
+          bookingStatus: serviceBooking?.status || null,
+          currency: "USD", // Default currency
+        };
+      });
     }
 
     // If no transactions, fallback to booking data

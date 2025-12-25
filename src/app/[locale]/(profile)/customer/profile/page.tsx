@@ -41,6 +41,8 @@ import {
   updateCustomerPersonalInfo,
   addCustomerAddress,
   deleteCustomerAddress,
+  uploadProfileImage,
+  updateUserAvatar,
 } from "@/actions/profile";
 
 type ProfileSection = "personal" | "addresses" | "payment";
@@ -110,6 +112,19 @@ export default function CustomerProfilePage() {
 
   // Dialog state
   const [personalInfoDialogOpen, setPersonalInfoDialogOpen] = useState(false);
+
+  // Photo upload states
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [processingPhoto, setProcessingPhoto] = useState(false);
+
+  // Image validation and compression constants
+  const IMAGE_CONSTRAINTS = {
+    maxFileSize: 2 * 1024 * 1024, // 2MB
+    maxDimensions: { width: 1024, height: 1024 },
+    minDimensions: { width: 200, height: 200 },
+    allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+    quality: 0.8,
+  };
 
   // Form states
   const [personalInfo, setPersonalInfo] = useState({
@@ -211,6 +226,171 @@ export default function CustomerProfilePage() {
       required: field.required,
     }));
   }, [profileStats.missingFields, getFieldIcon, getFieldDescription]);
+
+  // Compress and resize image using canvas
+  const compressAndResizeImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new window.Image();
+
+      img.onload = () => {
+        const { width: maxWidth, height: maxHeight } =
+          IMAGE_CONSTRAINTS.maxDimensions;
+
+        let { width, height } = img;
+
+        // Scale down if image is larger than max dimensions
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+
+        // Ensure minimum dimensions
+        if (
+          width < IMAGE_CONSTRAINTS.minDimensions.width ||
+          height < IMAGE_CONSTRAINTS.minDimensions.height
+        ) {
+          const ratio = Math.max(
+            IMAGE_CONSTRAINTS.minDimensions.width / width,
+            IMAGE_CONSTRAINTS.minDimensions.height / height
+          );
+          width *= ratio;
+          height *= ratio;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error("Failed to compress image"));
+            }
+          },
+          file.type,
+          IMAGE_CONSTRAINTS.quality
+        );
+      };
+
+      img.onerror = () => reject(new Error("Invalid image file"));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Handle photo upload
+  const handlePhotoUpload = async (file: File) => {
+    if (!user?.id) return;
+
+    // Validate file type
+    if (!IMAGE_CONSTRAINTS.allowedTypes.includes(file.type)) {
+      toast.error("Please select a valid image file (JPEG, PNG, or WebP)");
+      return;
+    }
+
+    // Validate file size
+    if (file.size > IMAGE_CONSTRAINTS.maxFileSize) {
+      toast.error(
+        `File size must be less than ${
+          IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)
+        }MB`
+      );
+      return;
+    }
+
+    // Validate initial dimensions before compression
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      URL.revokeObjectURL(url);
+
+      // Check minimum dimensions
+      if (
+        img.width < IMAGE_CONSTRAINTS.minDimensions.width ||
+        img.height < IMAGE_CONSTRAINTS.minDimensions.height
+      ) {
+        toast.error(
+          `Image must be at least ${IMAGE_CONSTRAINTS.minDimensions.width}x${IMAGE_CONSTRAINTS.minDimensions.height} pixels`
+        );
+        return;
+      }
+
+      try {
+        setProcessingPhoto(true);
+        const compressedFile = await compressAndResizeImage(file);
+
+        if (compressedFile.size > IMAGE_CONSTRAINTS.maxFileSize) {
+          toast.error(
+            "Image is still too large after compression. Please try a smaller image."
+          );
+          return;
+        }
+
+        await performPhotoUpload(compressedFile);
+      } catch (error) {
+        console.error("Error processing image:", error);
+        toast.error("Failed to process image. Please try again.");
+      } finally {
+        setProcessingPhoto(false);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      toast.error("Invalid image file");
+    };
+
+    img.src = url;
+  };
+
+  // Perform photo upload to Supabase
+  const performPhotoUpload = async (file: File) => {
+    if (!user?.id) return;
+
+    setUploadingPhoto(true);
+    try {
+      // Upload to Supabase storage using server action
+      const uploadResult = await uploadProfileImage(user.id, file);
+
+      if (!uploadResult.success) {
+        toast.error(uploadResult.error || "Failed to upload image");
+        return;
+      }
+
+      // Update user avatar using server action
+      const result = await updateUserAvatar(user.id, uploadResult.url!);
+
+      if (result.success && result.user) {
+        // Update store immediately with new avatar URL
+        setUser(result.user);
+        // Also update personalInfo state to reflect the change
+        setPersonalInfo((prev) => ({
+          ...prev,
+          avatar_url: result.user!.avatar_url || "",
+        }));
+        // Refresh profile data to ensure consistency
+        await fetchProfileData();
+        toast.success("Profile photo updated successfully");
+      } else {
+        toast.error(result.error || "Failed to update profile photo");
+      }
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      toast.error("Failed to upload photo");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   // Update personal info
   const updatePersonalInfo = async () => {
@@ -539,6 +719,12 @@ export default function CustomerProfilePage() {
                           sizes="80px"
                           style={{ objectFit: "cover" }}
                           priority
+                          unoptimized
+                          key={user.avatar_url} // Force re-render when URL changes
+                          onError={(e) => {
+                            console.error("Failed to load avatar image:", user.avatar_url);
+                            e.currentTarget.src = "/default-avatar.svg";
+                          }}
                         />
                       ) : (
                         <UserIcon className="h-8 w-8 text-white" />
@@ -954,6 +1140,84 @@ export default function CustomerProfilePage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Profile Photo Upload Section */}
+            <div className="flex items-center gap-4 pb-4 border-b border-[var(--color-border)]">
+              <div className="relative">
+                <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 flex items-center justify-center overflow-hidden border-4 border-[var(--color-surface)] shadow-lg">
+                  {user?.avatar_url ? (
+                    <Image
+                      src={user.avatar_url}
+                      alt="Profile"
+                      width={80}
+                      height={80}
+                      className="h-full w-full object-cover rounded-full"
+                      style={{ objectFit: "cover" }}
+                      unoptimized
+                      onError={(e) => {
+                        console.error("Failed to load avatar image:", user.avatar_url);
+                        e.currentTarget.src = "/default-avatar.svg";
+                      }}
+                    />
+                  ) : (
+                    <UserIcon className="h-8 w-8 text-[var(--color-text-secondary)]" />
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handlePhotoUpload(file);
+                  }}
+                  className="hidden"
+                  id="customer-photo-upload"
+                  disabled={uploadingPhoto || processingPhoto}
+                />
+                <label
+                  htmlFor="customer-photo-upload"
+                  className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white cursor-pointer flex items-center justify-center transition-all duration-200 shadow-lg disabled:opacity-50"
+                >
+                  {uploadingPhoto || processingPhoto ? (
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
+                    <Camera className="h-3 w-3" />
+                  )}
+                </label>
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-[var(--color-text-primary)]">
+                  Profile Photo
+                </h4>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {user?.avatar_url
+                    ? "Click the camera icon to change"
+                    : "Add a profile photo"}
+                </p>
+                <div className="mt-2 p-3 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    <strong>📸 Photo Requirements:</strong>
+                  </p>
+                  <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
+                    <li>• Formats: JPEG, PNG, or WebP</li>
+                    <li>
+                      • Max size: {IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)}MB
+                    </li>
+                    <li>
+                      • Min dimensions: {IMAGE_CONSTRAINTS.minDimensions.width}x
+                      {IMAGE_CONSTRAINTS.minDimensions.height}px
+                    </li>
+                    <li>
+                      • Max dimensions: {IMAGE_CONSTRAINTS.maxDimensions.width}x
+                      {IMAGE_CONSTRAINTS.maxDimensions.height}px
+                    </li>
+                    <li>
+                      • Auto-resized and compressed for optimal performance
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label
