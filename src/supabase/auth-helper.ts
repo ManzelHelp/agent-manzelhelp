@@ -2,7 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Options for authentication middleware
+ * Helper functions for authentication and session management.
+ * Used by src/proxy.ts for route protection and role-based access control.
+ * 
+ * Options for authentication helper
  */
 interface AuthOptions {
   locale: string;
@@ -23,13 +26,13 @@ export async function updateSession(
 
   if (!supabaseUrl || !supabaseKey) {
     console.error(
-      "Missing Supabase environment variables in middleware. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"
+      "Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"
     );
     // Return response without auth if env vars are missing
     return supabaseResponse;
   }
 
-  // Create Supabase client with cookie handling for Next.js middleware
+  // Create Supabase client with cookie handling for Next.js
   // Using the same pattern as server.ts but adapted for NextRequest/NextResponse
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
@@ -102,7 +105,7 @@ export async function updateSession(
 
     // Handle auth errors
     if (error) {
-      console.error("Auth error in middleware:", error);
+      console.error("Auth error:", error);
       // Ensure locale is valid before redirecting
       const loginUrl = locale
         ? new URL(`/${locale}/login`, request.url)
@@ -119,6 +122,50 @@ export async function updateSession(
       return NextResponse.redirect(loginUrl);
     }
 
+    // Role-based access control: Verify user has access to the requested route
+    if (user && isProtectedRoute) {
+      // Check if route is role-specific
+      const isCustomerRoute = pathname.startsWith("/customer/");
+      const isTaskerRoute = pathname.startsWith("/tasker/");
+
+      if (isCustomerRoute || isTaskerRoute) {
+        // Fetch user role from database
+        const { data: userProfile, error: profileError } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (profileError || !userProfile) {
+          console.error("Error fetching user role:", profileError);
+          // If we can't verify role, redirect to login for security
+          const loginUrl = locale
+            ? new URL(`/${locale}/login`, request.url)
+            : new URL("/login", request.url);
+          return NextResponse.redirect(loginUrl);
+        }
+
+        const userRole = userProfile.role;
+
+        // Check role-based access
+        if (isCustomerRoute && userRole !== "customer" && userRole !== "both") {
+          // Customer route but user is not customer or both
+          const dashboardUrl = locale
+            ? new URL(`/${locale}/tasker/dashboard`, request.url)
+            : new URL("/tasker/dashboard", request.url);
+          return NextResponse.redirect(dashboardUrl);
+        }
+
+        if (isTaskerRoute && userRole !== "tasker" && userRole !== "both") {
+          // Tasker route but user is not tasker or both
+          const dashboardUrl = locale
+            ? new URL(`/${locale}/customer/dashboard`, request.url)
+            : new URL("/customer/dashboard", request.url);
+          return NextResponse.redirect(dashboardUrl);
+        }
+      }
+    }
+
     return supabaseResponse;
   } catch (error) {
     console.error("Unexpected auth error:", error);
@@ -129,3 +176,4 @@ export async function updateSession(
     return NextResponse.redirect(loginUrl);
   }
 }
+

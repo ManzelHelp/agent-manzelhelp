@@ -34,6 +34,7 @@
     "create_offer": "Create Offer",
     "close_menu": "Close Menu",
     "open_menu": "Open Menu",
+    "jobs": "Jobs",
     "bookings": "Bookings",
     "finance": "Finance",
     "messages": "Messages",
@@ -581,7 +582,7 @@
         "loginSuccessful": "Login successful",
         "failedToLoadProfile": "Failed to load user profile"
       },
-      "signup": {
+      "signUp": {
         "title": "Create Account",
         "subtitle": "Join thousands of users and start your journey",
         "skipToMainContent": "Skip to main content",
@@ -589,12 +590,18 @@
         "createAccountTitle": "Create Account",
         "joinUsersDescription": "Join thousands of users and start your journey",
         "termsAndPrivacy": "By signing up, you agree to our Terms of Service and Privacy Policy",
+        "emailLabel": "Email",
         "emailPlaceholder": "Enter your email",
+        "passwordLabel": "Password",
         "passwordPlaceholder": "Enter your password (min. 8 characters)",
+        "userRoleLabel": "I want to",
         "selectOption": "Select an option",
         "findHelp": "Find Help",
         "becomeHelper": "Become a Helper",
+        "createAccount": "Create Account",
         "creatingAccount": "Creating account...",
+        "alreadyHaveAccount": "Already have an account?",
+        "signInHere": "Sign In Here",
         "signUpSuccessful": "Sign up successful",
         "checkEmailVerification": "Please check your email for verification",
         "unexpectedError": "An unexpected error occurred. Please try again."
@@ -1574,10 +1581,15 @@
       "withdrawn": "Withdrawn"
     },
     "jobStatus": {
-      "open": "Open",
+      "under_review": "Under Review",
+      "active": "Active",
+      "assigned": "Assigned",
       "in_progress": "In Progress",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "disputed": "Disputed",
+      "draft": "Draft",
+      "open": "Open"
     },
     "labels": {
       "jobPoster": "Job Poster",

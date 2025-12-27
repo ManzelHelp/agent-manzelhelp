@@ -62,6 +62,13 @@ function Header() {
           {user?.role === "tasker" && (
             <>
               <Link
+                href="/search/jobs"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+              >
+                {t("jobs")}
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+              </Link>
+              <Link
                 href="/tasker/bookings"
                 className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
               >
@@ -285,6 +292,13 @@ function Header() {
           <div className="space-y-4">
             {user?.role === "tasker" && (
               <>
+                <Link
+                  href="/search/jobs"
+                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t("jobs")}
+                </Link>
                 <Link
                   href="/tasker/bookings"
                   className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"

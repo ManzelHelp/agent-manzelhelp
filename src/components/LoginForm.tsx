@@ -56,8 +56,19 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
           // Update the Zustand store with the complete user profile
           setUser(profileResult.user);
           toast.success(t("pages.login.loginSuccessful"));
-          // Redirect to the appropriate dashboard based on user role
-          router.replace(`/${profileResult.user.role}/dashboard`);
+          
+          // Determine the role to use for redirection
+          const userRole = profileResult.user.role || "customer";
+          const redirectPath = `/${userRole}/dashboard`;
+          
+          console.log("[LoginForm] Redirecting to:", redirectPath, "Role:", userRole);
+          
+          // Small delay to ensure state is updated before redirect
+          setTimeout(() => {
+            // Redirect to the appropriate dashboard based on user role
+            // useRouter from next-intl automatically handles locale
+            router.replace(redirectPath);
+          }, 100);
         } else {
           // If profile fetch fails, show error but keep the auth user
           // This allows the user to still access the app, though with limited data
@@ -65,8 +76,10 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
           toast.error(t("pages.login.failedToLoadProfile"));
           // Fallback: use the auth user if profile fetch fails
           if (result.user) {
+            const fallbackRole = result.user.user_metadata?.userRole || result.user.user_metadata?.role || "customer";
+            console.log("[LoginForm] Using fallback role:", fallbackRole);
             setUser(result.user as any); // Temporary fallback
-            router.replace(`/${result.user.user_metadata?.role || "customer"}/dashboard`);
+            router.replace(`/${fallbackRole}/dashboard`);
           }
         }
       } else {

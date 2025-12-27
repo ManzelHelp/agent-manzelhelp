@@ -30,12 +30,16 @@ import {
   type MessageWithDetails,
   type ConversationWithDetails,
 } from "@/actions/messages";
+import { useUserStore } from "@/stores/userStore";
+import { usePathname } from "next/navigation";
 
 export default function ChatPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const params = useParams();
   const t = useTranslations("chat");
   const chatId = params["chat-id"] as string;
+  const { user } = useUserStore();
 
   const [messages, setMessages] = useState<MessageWithDetails[]>([]);
   const [conversation, setConversation] =
@@ -79,9 +83,37 @@ export default function ChatPage() {
           setMessages(fetchedMessages);
           setConversation(fetchedConversation);
 
-          // Mark messages as read
-          if (fetchedMessages.length > 0) {
-            await markMessagesAsReadAction(chatId);
+          // Mark messages as read (only messages from other participants)
+          if (fetchedMessages.length > 0 && user?.id) {
+            console.log("Marking messages as read for conversation:", chatId, "User:", user.id);
+            const { success, errorMessage } = await markMessagesAsReadAction(chatId);
+            console.log("Mark as read result:", { success, errorMessage });
+            if (success) {
+              // Small delay to ensure database update is complete
+              await new Promise(resolve => setTimeout(resolve, 200));
+              // Refetch messages to get updated read status from database
+              const { messages: refreshedMessages } = await getMessagesAction(chatId);
+              if (refreshedMessages) {
+                setMessages(refreshedMessages);
+              } else {
+                // Fallback: Update local state if refetch fails
+                setMessages((prevMessages) =>
+                  prevMessages.map((msg) =>
+                    msg.sender_id !== user.id ? { ...msg, is_read: true } : msg
+                  )
+                );
+              }
+              // Dispatch event to refresh conversations list immediately
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('messagesMarkedAsRead', { 
+                  detail: { conversationId: chatId } 
+                }));
+              }
+              // Force refresh of the router to update the conversation list
+              router.refresh();
+            } else {
+              console.error("Failed to mark messages as read:", errorMessage);
+            }
           }
         }
       } catch (err) {
@@ -138,11 +170,8 @@ export default function ChatPage() {
 
   // Check if message is from current user
   const isOwnMessage = (message: MessageWithDetails) => {
-    if (!conversation) return false;
-    return (
-      message.sender_id === conversation.participant1_id ||
-      message.sender_id === conversation.participant2_id
-    );
+    if (!user?.id) return false;
+    return message.sender_id === user.id;
   };
 
   // Format time for messages
@@ -308,6 +337,10 @@ export default function ChatPage() {
                     width={40}
                     height={40}
                     className="h-10 w-10 rounded-full object-cover"
+                    unoptimized
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 ) : (
                   <User className="h-5 w-5 text-[var(--color-primary)]" />
@@ -396,7 +429,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Messages for this date */}
-                <div className="space-y-3">
+                <div className="space-y-1">
                   {dateMessages.map((message, index) => {
                     const isOwn = isOwnMessage(message);
                     const showAvatar =
@@ -406,7 +439,7 @@ export default function ChatPage() {
                     return (
                       <div
                         key={message.id}
-                        className={`flex gap-3 ${
+                        className={`flex gap-3 mb-4 ${
                           isOwn ? "justify-end" : "justify-start"
                         }`}
                       >
@@ -421,6 +454,10 @@ export default function ChatPage() {
                                     width={32}
                                     height={32}
                                     className="h-8 w-8 rounded-full object-cover"
+                                    unoptimized
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
                                   />
                                 ) : (
                                   <User className="h-4 w-4 text-[var(--color-primary)]" />
@@ -445,31 +482,37 @@ export default function ChatPage() {
                           )}
 
                           <div
-                            className={`px-4 py-3 rounded-2xl mobile-leading ${
+                            className={`px-4 py-3 rounded-2xl mobile-leading shadow-sm ${
                               isOwn
-                                ? "bg-[var(--color-primary)] text-white rounded-br-md"
-                                : "bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-bl-md"
+                                ? "bg-[var(--color-primary)] text-white rounded-br-sm"
+                                : "bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] border border-gray-200 dark:border-gray-700 rounded-bl-sm"
                             }`}
                           >
-                            <p className="text-sm mobile-leading">
+                            <p className={`text-sm mobile-leading ${
+                              isOwn ? "text-white" : "text-[var(--color-text-primary)]"
+                            }`}>
                               {message.content}
                             </p>
                           </div>
 
                           <div
-                            className={`flex items-center gap-1 mt-1 ${
+                            className={`flex items-center gap-1.5 mt-1.5 ${
                               isOwn ? "flex-row-reverse" : ""
                             }`}
                           >
-                            <span className="text-xs text-[var(--color-text-secondary)]">
+                            <span className={`text-xs ${
+                              isOwn 
+                                ? "text-white/70" 
+                                : "text-[var(--color-text-secondary)]"
+                            }`}>
                               {formatMessageTime(message.created_at || "")}
                             </span>
                             {isOwn && (
                               <div className="flex items-center">
                                 {message.is_read ? (
-                                  <CheckCircle2 className="h-3 w-3 text-[var(--color-secondary)]" />
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-white/80" />
                                 ) : (
-                                  <Clock className="h-3 w-3 text-[var(--color-text-secondary)]" />
+                                  <Clock className="h-3.5 w-3.5 text-white/60" />
                                 )}
                               </div>
                             )}

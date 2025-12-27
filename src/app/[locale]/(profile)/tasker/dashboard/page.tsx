@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "@/i18n/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { hasTaskerCompletedProfileAction } from "@/actions/auth";
 
@@ -45,6 +46,8 @@ import {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
   // State management for dashboard data
   const [stats, setStats] = useState<DashboardStats>({
@@ -442,7 +445,7 @@ export default function DashboardPage() {
               </Link>
 
               <div className="grid grid-cols-2 gap-3">
-                <Link href="/search/jobs" className="block">
+                <Link href={`/${locale}/search/jobs`} className="block">
                   <Button
                     className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
                     variant="outline"

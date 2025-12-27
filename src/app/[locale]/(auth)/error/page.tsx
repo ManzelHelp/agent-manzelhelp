@@ -17,34 +17,50 @@ export default function AuthErrorPage() {
     switch (error) {
       case "confirmation_expired":
         return {
-          title: t("pages.error.confirmationExpired.title"),
-          description: t("pages.error.confirmationExpired.description"),
+          title: t("pages.error.confirmationExpired"),
+          description: t("pages.error.confirmationExpiredDesc"),
           icon: <Mail className="h-12 w-12 text-orange-500" />,
-          actionText: t("pages.error.confirmationExpired.actionText"),
+          actionText: t("pages.error.requestNewLink"),
           actionHref: "/sign-up",
         };
       case "confirmation_invalid":
         return {
-          title: t("pages.error.confirmationInvalid.title"),
-          description: t("pages.error.confirmationInvalid.description"),
+          title: t("pages.error.confirmationInvalid"),
+          description: t("pages.error.confirmationInvalidDesc"),
           icon: <AlertTriangle className="h-12 w-12 text-red-500" />,
-          actionText: t("pages.error.confirmationInvalid.actionText"),
+          actionText: t("pages.error.goToLogin"),
           actionHref: "/login",
         };
       case "already_confirmed":
         return {
-          title: t("pages.error.alreadyConfirmed.title"),
-          description: t("pages.error.alreadyConfirmed.description"),
+          title: t("pages.error.alreadyConfirmed"),
+          description: t("pages.error.alreadyConfirmedDesc"),
           icon: <Mail className="h-12 w-12 text-green-500" />,
-          actionText: t("pages.error.alreadyConfirmed.actionText"),
+          actionText: t("pages.error.goToLogin"),
+          actionHref: "/login",
+        };
+      case "user_creation_failed":
+        return {
+          title: t("pages.error.authenticationError"),
+          description: message || t("pages.error.authenticationErrorDesc"),
+          icon: <AlertTriangle className="h-12 w-12 text-red-500" />,
+          actionText: t("pages.error.tryAgain"),
+          actionHref: "/sign-up",
+        };
+      case "database_error":
+        return {
+          title: t("pages.error.authenticationError"),
+          description: message || t("pages.error.authenticationErrorDesc"),
+          icon: <AlertTriangle className="h-12 w-12 text-red-500" />,
+          actionText: t("pages.error.tryAgain"),
           actionHref: "/login",
         };
       default:
         return {
-          title: t("pages.error.default.title"),
-          description: message || t("pages.error.default.description"),
+          title: t("pages.error.authenticationError"),
+          description: message || t("pages.error.authenticationErrorDesc"),
           icon: <AlertTriangle className="h-12 w-12 text-red-500" />,
-          actionText: t("pages.error.default.actionText"),
+          actionText: t("pages.error.goToLogin"),
           actionHref: "/login",
         };
     }

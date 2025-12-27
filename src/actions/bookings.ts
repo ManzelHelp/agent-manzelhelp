@@ -783,6 +783,11 @@ export async function createServiceBooking(
     }
 
     // Create the booking with enhanced data
+    // Convert estimated_duration to integer (round to nearest integer)
+    const estimatedDurationInt = bookingData.estimated_duration
+      ? Math.round(bookingData.estimated_duration)
+      : null;
+
     const { data: booking, error: bookingError } = await supabase
       .from("service_bookings")
       .insert({
@@ -793,7 +798,7 @@ export async function createServiceBooking(
         scheduled_date: bookingData.scheduled_date || null,
         scheduled_time_start: bookingData.scheduled_time_start || null,
         scheduled_time_end: bookingData.scheduled_time_end || null,
-        estimated_duration: bookingData.estimated_duration || null,
+        estimated_duration: estimatedDurationInt,
         address_id: addressId,
         service_address: bookingData.service_address || null,
         agreed_price: bookingData.agreed_price,

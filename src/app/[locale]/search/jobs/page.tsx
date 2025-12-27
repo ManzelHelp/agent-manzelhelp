@@ -104,6 +104,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const categories = getParentCategoriesForSearch();
 
   // Fetch jobs with related data using proper joins
+  // Note: RLS policies must allow reading jobs with status 'active' or 'in_progress'
+  // and must allow reading related users and addresses data
   let query = supabase
     .from("jobs")
     .select(
@@ -124,7 +126,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
       )
     `
     )
-    .in("status", ["under_review", "active"]);
+    .in("status", ["active", "in_progress"]);
 
   // Apply filters
   if (resolvedSearchParams.q && resolvedSearchParams.q.trim()) {
@@ -184,7 +186,12 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   } = await query.range(offset, offset + limit - 1);
 
   if (error) {
-    console.error("Error fetching jobs:", error);
+    console.error("Error fetching jobs:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     return (
       <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center p-8">

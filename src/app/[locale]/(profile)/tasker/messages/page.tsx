@@ -75,6 +75,17 @@ export default function MessagesPage() {
 
   useEffect(() => {
     fetchConversations();
+    
+    // Listen for messages marked as read event
+    const handleMessagesMarkedAsRead = () => {
+      fetchConversations(true);
+    };
+    
+    window.addEventListener('messagesMarkedAsRead', handleMessagesMarkedAsRead);
+    
+    return () => {
+      window.removeEventListener('messagesMarkedAsRead', handleMessagesMarkedAsRead);
+    };
   }, [fetchConversations]);
 
   // Helper function to format time
@@ -321,6 +332,10 @@ export default function MessagesPage() {
                               width={48}
                               height={48}
                               className="h-12 w-12 rounded-full object-cover"
+                              unoptimized
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                              }}
                             />
                           ) : (
                             <User className="h-6 w-6 text-[var(--color-primary)]" />

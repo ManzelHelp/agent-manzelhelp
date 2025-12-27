@@ -117,16 +117,47 @@ export const signUpAction = async (
     // Ensure origin has protocol
     const baseUrl = origin.startsWith("http") ? origin : `https://${origin}`;
 
-    // Construct the confirmation URL with role - next-intl middleware will handle locale
-    const emailRedirectTo = `${baseUrl}/confirm?userRole=${userRole}`;
+    // Get locale from Accept-Language header or use default
+    const acceptLanguage = headersList.get("accept-language");
+    const defaultLocale = "fr"; // Default locale for your app
+    let locale = defaultLocale;
+    
+    if (acceptLanguage) {
+      // Try to extract locale from Accept-Language header
+      const preferredLocale = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
+      if (preferredLocale && ["fr", "en", "de"].includes(preferredLocale)) {
+        locale = preferredLocale;
+      }
+    }
 
+    // Construct the confirmation URL with locale and role
+    // Supabase will append token_hash and type automatically
+    const emailRedirectTo = `${baseUrl}/${locale}/confirm?userRole=${userRole}`;
+
+    // Validate and normalize userRole
+    const normalizedRole = userRole === "tasker" ? "tasker" : "customer";
+    
+    console.log("[signUpAction] Creating account with role:", normalizedRole, "Original:", userRole);
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo,
+        // Store userRole in user metadata so we can retrieve it during confirmation
+        // Store it in multiple places to ensure we can retrieve it
+        data: {
+          userRole: normalizedRole,
+          role: normalizedRole, // Also store as "role" for compatibility
+        },
       },
     });
+    
+    if (error) {
+      console.error("[signUpAction] Sign up error:", error);
+    } else {
+      console.log("[signUpAction] ✅ Sign up successful, role stored in metadata:", normalizedRole);
+    }
     if (error) throw error;
 
     return {

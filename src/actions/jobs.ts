@@ -4,8 +4,8 @@ import { createClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 
-// Helper function to get category and service names by service ID
-function getCategoryAndServiceNames(serviceId: number) {
+// Helper function to get category and service names by service ID (synchronous version for fallback)
+function getCategoryAndServiceNamesSync(serviceId: number) {
   const hierarchies = getAllCategoryHierarchies();
   for (const { parent, subcategories } of hierarchies) {
     const foundService = subcategories.find((s) => s.id === serviceId);
@@ -93,7 +93,7 @@ export async function getCustomerJobs(
     total = count || 0;
   }
 
-  // Get jobs with pagination
+  // Get jobs with pagination, including service and category information
   const { data, error } = await supabase
     .from("jobs")
     .select(
@@ -109,6 +109,14 @@ export async function getCustomerJobs(
         first_name,
         last_name,
         avatar_url
+      ),
+      service:services!jobs_service_id_fkey(
+        id,
+        name_en,
+        category_id,
+        category:service_categories!services_category_id_fkey(
+          name_en
+        )
       )
     `
     )
@@ -125,11 +133,22 @@ export async function getCustomerJobs(
   const hasMore = data.length > limit;
   const jobs = data.slice(0, limit);
 
-  // Format the data and add category names
+  // Format the data and add category names from database or fallback to local
   const formattedJobs: JobWithDetails[] = jobs.map((job) => {
-    const { categoryName, serviceName } = getCategoryAndServiceNames(
-      job.service_id
-    );
+    // Try to get category name from database relation first
+    const service = job.service as any;
+    const categoryName = service?.category?.name_en || 
+      (() => {
+        // Fallback to local categories
+        const { categoryName } = getCategoryAndServiceNamesSync(job.service_id);
+        return categoryName;
+      })();
+    const serviceName = service?.name_en || 
+      (() => {
+        // Fallback to local categories
+        const { serviceName } = getCategoryAndServiceNamesSync(job.service_id);
+        return serviceName;
+      })();
 
     return {
       ...job,
@@ -201,7 +220,7 @@ export async function getJobById(
     throw new Error(`Failed to fetch job: ${error.message}`);
   }
 
-  const { categoryName, serviceName } = getCategoryAndServiceNames(
+  const { categoryName, serviceName } = getCategoryAndServiceNamesSync(
     data.service_id
   );
 
@@ -676,6 +695,11 @@ export async function createJob(
     }
 
     // Create the job
+    // Convert estimated_duration to integer (round to nearest integer)
+    const estimatedDurationInt = jobData.estimated_duration
+      ? Math.round(jobData.estimated_duration)
+      : null;
+
     const { data: newJob, error: jobError } = await supabase
       .from("jobs")
       .insert({
@@ -687,7 +711,7 @@ export async function createJob(
         preferred_time_start: jobData.preferred_time_start || null,
         preferred_time_end: jobData.preferred_time_end || null,
         is_flexible: jobData.is_flexible || false,
-        estimated_duration: jobData.estimated_duration || null,
+        estimated_duration: estimatedDurationInt,
         customer_budget: jobData.customer_budget,
         currency: jobData.currency || "MAD",
         address_id: jobData.address_id,
@@ -753,6 +777,8 @@ export async function acceptJobApplication(
         `
         *,
         job:jobs!job_applications_job_id_fkey(
+          id,
+          title,
           customer_id,
           assigned_tasker_id,
           status
@@ -819,8 +845,28 @@ export async function acceptJobApplication(
       // Don't fail the operation for this
     }
 
+    // Create notification for the tasker that their application was accepted
+    const jobTitle = (application.job as any)?.title || "the job";
+    const { error: notificationError } = await supabase
+      .from("notifications")
+      .insert({
+        user_id: application.tasker_id,
+        type: "application_accepted",
+        title: "Application Accepted",
+        message: `Your application for job "${jobTitle}" has been accepted.`,
+        related_job_id: application.job_id,
+        is_read: false,
+      });
+
+    if (notificationError) {
+      console.error("Error creating notification:", notificationError);
+      // Don't fail the operation for this
+    }
+
     revalidatePath(`/customer/my-jobs/${application.job_id}/applications`);
     revalidatePath("/customer/my-jobs");
+    revalidatePath("/tasker/my-jobs");
+    revalidatePath("/tasker/notifications");
 
     return { success: true };
   } catch (error) {
@@ -919,6 +965,110 @@ export async function createJobApplication(
       return { success: false, error: "Authentication required" };
     }
 
+    // Check if user exists in users table (by ID first, then by email if ID doesn't match)
+    const { data: dbUser, error: dbUserError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // If not found by ID, check by email (in case of ID mismatch)
+    let dbUserByEmail = null;
+    if ((dbUserError || !dbUser) && user.email) {
+      const { data: emailUser } = await supabase
+        .from("users")
+        .select("id, email")
+        .eq("email", user.email)
+        .maybeSingle();
+      dbUserByEmail = emailUser;
+      
+      if (emailUser && emailUser.id !== user.id) {
+        console.warn("ID mismatch detected:", {
+          authId: user.id,
+          dbId: emailUser.id,
+          email: user.email,
+        });
+        // Use the existing user from DB instead of creating a new one
+        // This handles the case where user was created with different ID
+      }
+    }
+
+    if (dbUserError || (!dbUser && !dbUserByEmail)) {
+      // User doesn't exist in users table, create it
+      console.log("User not found in users table, creating...", {
+        userId: user.id,
+        email: user.email,
+        role: user.user_metadata?.role,
+      });
+      
+      const { data: newUser, error: createError } = await supabase
+        .from("users")
+        .insert([
+          {
+            id: user.id,
+            email: user.email || "",
+            role: (user.user_metadata?.role as "customer" | "tasker") || "tasker",
+            email_verified: user.email_confirmed_at ? true : false,
+            is_active: true,
+            preferred_language: "en",
+            verification_status: "pending",
+            wallet_balance: 0,
+          },
+        ])
+        .select("id")
+        .single();
+
+      if (createError) {
+        console.error("Failed to create user in users table:", {
+          error: createError,
+          code: createError.code,
+          message: createError.message,
+          details: createError.details,
+          hint: createError.hint,
+        });
+        
+        // If it's a duplicate key error (email or ID), try to fetch by email
+        if (createError.code === "23505" && user.email) {
+          console.log("User already exists (duplicate), fetching by email...");
+          const { data: existingUser } = await supabase
+            .from("users")
+            .select("id")
+            .eq("email", user.email)
+            .maybeSingle();
+          
+          if (existingUser) {
+            console.log("Found existing user by email, continuing...");
+            // User exists with different ID, continue with existing user
+          } else {
+            return {
+              success: false,
+              error: `Your account is not properly set up: ${createError.message}. Please contact support.`,
+            };
+          }
+        } else {
+          return {
+            success: false,
+            error: `Your account is not properly set up: ${createError.message}. Please contact support.`,
+          };
+        }
+      } else if (!newUser) {
+        console.error("User creation returned no data");
+        return {
+          success: false,
+          error: "Your account is not properly set up. Please contact support.",
+        };
+      } else {
+        console.log("User created successfully in users table");
+      }
+    } else if (dbUserByEmail && dbUserByEmail.id !== user.id) {
+      // User exists but with different ID - log warning but continue
+      console.warn("User exists with different ID, using existing user:", {
+        authId: user.id,
+        dbId: dbUserByEmail.id,
+        email: user.email,
+      });
+    }
+
     // Validate required fields
     if (!applicationData.job_id) {
       return { success: false, error: "Job ID is required" };
@@ -984,14 +1134,54 @@ export async function createJobApplication(
       };
     }
 
+    // Final verification: ensure user exists in users table before creating application
+    const { data: finalUserCheck, error: finalUserCheckError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (finalUserCheckError) {
+      console.error("Error verifying user before application creation:", {
+        userId: user.id,
+        error: finalUserCheckError,
+      });
+      return {
+        success: false,
+        error: "Error verifying your account. Please try again or contact support.",
+      };
+    }
+
+    if (!finalUserCheck) {
+      console.error("User does not exist in users table before application creation:", {
+        userId: user.id,
+        email: user.email,
+      });
+      return {
+        success: false,
+        error: "Your account is not properly set up. Please contact support.",
+      };
+    }
+
     // Create the job application
+    // Convert estimated_duration to integer (round to nearest integer)
+    const estimatedDurationInt = applicationData.estimated_duration
+      ? Math.round(applicationData.estimated_duration)
+      : null;
+
+    console.log("Creating job application with:", {
+      job_id: applicationData.job_id,
+      tasker_id: user.id,
+      user_exists: !!finalUserCheck,
+    });
+
     const { data: newApplication, error: applicationError } = await supabase
       .from("job_applications")
       .insert({
         job_id: applicationData.job_id,
         tasker_id: user.id,
         proposed_price: applicationData.proposed_price,
-        estimated_duration: applicationData.estimated_duration || null,
+        estimated_duration: estimatedDurationInt,
         message: applicationData.message?.trim() || null,
         availability: applicationData.availability?.trim() || null,
         experience_level: applicationData.experience_level || null,
@@ -1006,7 +1196,24 @@ export async function createJobApplication(
       .single();
 
     if (applicationError) {
-      console.error("Error creating job application:", applicationError);
+      console.error("Error creating job application:", {
+        error: applicationError,
+        code: applicationError.code,
+        message: applicationError.message,
+        details: applicationError.details,
+        hint: applicationError.hint,
+        userId: user.id,
+        userExists: !!finalUserCheck,
+      });
+      
+      // Check if it's a foreign key constraint error
+      if (applicationError.code === "23503") {
+        return {
+          success: false,
+          error: "Your account is not properly set up. The system cannot verify your user account. Please contact support.",
+        };
+      }
+      
       return {
         success: false,
         error: `Failed to create application: ${applicationError.message}`,
@@ -1035,6 +1242,118 @@ export async function createJobApplication(
     console.error("Error in createJobApplication:", error);
     return { success: false, error: "Failed to create job application" };
   }
+}
+
+/**
+ * Get jobs assigned to a tasker
+ */
+export async function getTaskerJobs(
+  taskerId: string,
+  limit: number = 20,
+  offset: number = 0,
+  includeTotal: boolean = true
+): Promise<{
+  jobs: JobWithDetails[];
+  total: number;
+  hasMore: boolean;
+}> {
+  const supabase = await createClient();
+
+  // Get total count only when needed
+  let total = 0;
+  if (includeTotal || offset === 0) {
+    const { count, error: countError } = await supabase
+      .from("jobs")
+      .select("*", { count: "exact", head: true })
+      .eq("assigned_tasker_id", taskerId);
+
+    if (countError) {
+      console.error("Error fetching tasker jobs count:", countError);
+      throw new Error(`Failed to fetch tasker jobs count: ${countError.message}`);
+    }
+    total = count || 0;
+  }
+
+  // Get jobs assigned to this tasker with pagination, including service and category information
+  const { data, error } = await supabase
+    .from("jobs")
+    .select(
+      `
+      *,
+      application_count:job_applications(count),
+      address:addresses(
+        street_address,
+        city,
+        region
+      ),
+      customer:users!jobs_customer_id_fkey(
+        id,
+        first_name,
+        last_name,
+        avatar_url,
+        email,
+        phone
+      ),
+      service:services!jobs_service_id_fkey(
+        id,
+        name_en,
+        category_id,
+        category:service_categories!services_category_id_fkey(
+          name_en
+        )
+      )
+    `
+    )
+    .eq("assigned_tasker_id", taskerId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit);
+
+  if (error) {
+    console.error("Error fetching tasker jobs:", error);
+    throw new Error(`Failed to fetch tasker jobs: ${error.message}`);
+  }
+
+  // Check if there are more items
+  const hasMore = data.length > limit;
+  const jobs = data.slice(0, limit);
+
+  // Format the data and add category names from database or fallback to local
+  const formattedJobs: JobWithDetails[] = jobs.map((job) => {
+    // Try to get category name from database relation first
+    const service = job.service as any;
+    const categoryName = service?.category?.name_en || 
+      (() => {
+        // Fallback to local categories
+        const { categoryName } = getCategoryAndServiceNamesSync(job.service_id);
+        return categoryName;
+      })();
+    const serviceName = service?.name_en || 
+      (() => {
+        // Fallback to local categories
+        const { serviceName } = getCategoryAndServiceNamesSync(job.service_id);
+        return serviceName;
+      })();
+
+    return {
+      ...job,
+      application_count: job.application_count?.[0]?.count || 0,
+      category_name_en: categoryName,
+      service_name_en: serviceName,
+      street_address: job.address?.street_address,
+      city: job.address?.city,
+      region: job.address?.region,
+      // For tasker view, we don't need assigned_tasker info (it's the tasker themselves)
+      assigned_tasker_first_name: null,
+      assigned_tasker_last_name: null,
+      assigned_tasker_avatar: null,
+    };
+  });
+
+  return {
+    jobs: formattedJobs,
+    total,
+    hasMore,
+  };
 }
 
 export interface JobWithCustomerDetails {
@@ -1127,7 +1446,7 @@ export async function getJobWithCustomerDetails(
       throw new Error(`Failed to fetch job: ${error.message}`);
     }
 
-    const { categoryName, serviceName } = getCategoryAndServiceNames(
+    const { categoryName, serviceName } = getCategoryAndServiceNamesSync(
       data.service_id
     );
 

@@ -1,0 +1,291 @@
+{
+  "backup_info": {
+    "date": "2025-12-23",
+    "description": "Backup complet avant migration ENUM vers CHECK Constraints",
+    "database": "Supabase",
+    "method": "SQL Editor Export"
+  },
+  "schema_columns_enum": [
+    {
+      "table_name": "companies",
+      "column_name": "verification_status",
+      "data_type": "USER-DEFINED",
+      "udt_name": "verification_status"
+    },
+    {
+      "table_name": "job_applications",
+      "column_name": "status",
+      "data_type": "USER-DEFINED",
+      "udt_name": "application_status"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "status",
+      "data_type": "USER-DEFINED",
+      "udt_name": "job_status"
+    },
+    {
+      "table_name": "jobs",
+      "column_name": "verification_status",
+      "data_type": "USER-DEFINED",
+      "udt_name": "verification_status"
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "type",
+      "data_type": "USER-DEFINED",
+      "udt_name": "notification_type"
+    },
+    {
+      "table_name": "tasker_profiles",
+      "column_name": "experience_level",
+      "data_type": "USER-DEFINED",
+      "udt_name": "experience_level"
+    },
+    {
+      "table_name": "tasker_profiles",
+      "column_name": "verification_status",
+      "data_type": "USER-DEFINED",
+      "udt_name": "verification_status"
+    },
+    {
+      "table_name": "tasker_services",
+      "column_name": "pricing_type",
+      "data_type": "USER-DEFINED",
+      "udt_name": "pricing_type"
+    },
+    {
+      "table_name": "transactions",
+      "column_name": "payment_status",
+      "data_type": "USER-DEFINED",
+      "udt_name": "payment_status"
+    },
+    {
+      "table_name": "transactions",
+      "column_name": "transaction_type",
+      "data_type": "USER-DEFINED",
+      "udt_name": "transaction_type"
+    },
+    {
+      "table_name": "users",
+      "column_name": "role",
+      "data_type": "USER-DEFINED",
+      "udt_name": "user_role"
+    },
+    {
+      "table_name": "users",
+      "column_name": "verification_status",
+      "data_type": "USER-DEFINED",
+      "udt_name": "verification_status"
+    }
+  ],
+  "enum_definitions": [
+    {
+      "enum_name": "application_status",
+      "enum_values": ["pending", "accepted", "rejected", "withdrawn"]
+    },
+    {
+      "enum_name": "experience_level",
+      "enum_values": ["beginner", "intermediate", "expert"]
+    },
+    {
+      "enum_name": "job_status",
+      "enum_values": ["pending", "active", "in_progress", "completed", "cancelled", "under_review", "assigned", "disputed", "draft"]
+    },
+    {
+      "enum_name": "notification_type",
+      "enum_values": ["job_created", "application_received", "application_accepted", "job_completed", "payment_received", "message_received"]
+    },
+    {
+      "enum_name": "payment_status",
+      "enum_values": ["pending", "paid", "failed", "refunded"]
+    },
+    {
+      "enum_name": "pricing_type",
+      "enum_values": ["fixed", "hourly", "per_item"]
+    },
+    {
+      "enum_name": "transaction_type",
+      "enum_values": ["job_payment", "platform_fee", "premium_application", "refund", "job_promotion", "service_promotion"]
+    },
+    {
+      "enum_name": "user_role",
+      "enum_values": ["customer", "tasker", "both", "admin"]
+    },
+    {
+      "enum_name": "verification_status",
+      "enum_values": ["pending", "verified", "rejected"]
+    }
+  ],
+  "data_export": {
+    "users": [
+      {
+        "id": "6c8e8ac5-3b32-4759-b239-2b35006abd7c",
+        "email": "jbs2jonas@gmail.com",
+        "phone": null,
+        "role": "tasker",
+        "is_active": true,
+        "email_verified": true,
+        "first_name": null,
+        "last_name": null,
+        "avatar_url": null,
+        "date_of_birth": null,
+        "preferred_language": "fr",
+        "created_at": "2025-07-20T19:11:20.249051Z",
+        "updated_at": "2025-07-20T19:11:29.947Z",
+        "last_login": null,
+        "wallet_balance": "0.00",
+        "verification_status": "pending"
+      },
+      {
+        "id": "7ad1bbb7-9f59-43b9-bfd2-92fd0e450667",
+        "email": "nasslimmesbah17@gmail.com",
+        "phone": "0611067639",
+        "role": "tasker",
+        "is_active": true,
+        "email_verified": true,
+        "first_name": "Nassima",
+        "last_name": "Mesbah",
+        "avatar_url": "https://tajxdctsdxbhskoxjtca.supabase.co/storage/v1/object/public/avatars/7ad1bbb7-9f59-43b9-bfd2-92fd0e450667/avatar.jfif",
+        "date_of_birth": "2002-07-05",
+        "preferred_language": "en",
+        "created_at": "2025-12-23T20:25:49.106159Z",
+        "updated_at": "2025-12-24T14:24:55.112Z",
+        "last_login": null,
+        "wallet_balance": "0.00",
+        "verification_status": "pending"
+      },
+      {
+        "id": "bfc5dcb6-9352-4b87-81d6-6ebeb0c0ad63",
+        "email": "mesbahnassima0@gmail.com",
+        "phone": "0697897516",
+        "role": "customer",
+        "is_active": true,
+        "email_verified": true,
+        "first_name": "Nassima",
+        "last_name": "Mesbah",
+        "avatar_url": "https://tajxdctsdxbhskoxjtca.supabase.co/storage/v1/object/public/avatars/bfc5dcb6-9352-4b87-81d6-6ebeb0c0ad63/avatar.jfif",
+        "date_of_birth": "2002-07-04",
+        "preferred_language": "en",
+        "created_at": "2025-12-23T19:36:09.431998Z",
+        "updated_at": "2025-12-25T12:16:25.842Z",
+        "last_login": "2025-12-25T12:17:16.325Z",
+        "wallet_balance": "0.00",
+        "verification_status": "pending"
+      }
+    ],
+    "tasker_profiles": [
+      {
+        "id": "7ad1bbb7-9f59-43b9-bfd2-92fd0e450667",
+        "experience_level": "beginner",
+        "bio": "Bricoleur polyvalent avec plus de 5 ans d'expérience dans la maintenance résidentielle. Je suis spécialisé dans le montage de meubles (IKEA, Kitea), les petites réparations de plomberie (fuites, robinetterie) et l'installation électrique simple (luminaires, prises). Je suis ponctuel, soigneux et je dispose de ma propre caisse à outils complète. Mon objectif est de laisser votre maison impeccable après chaque intervention.",
+        "identity_document_url": "4fc46d7a-8da9-4af0-8780-50b3acbd90ad/id-front.jpg",
+        "verification_status": "pending",
+        "service_radius_km": 50,
+        "is_available": true,
+        "updated_at": "2025-12-23T23:25:21.950793Z",
+        "operation_hours": {
+          "friday": {
+            "enabled": true,
+            "endTime": "17:00",
+            "startTime": "09:00"
+          },
+          "monday": {
+            "enabled": true,
+            "endTime": "17:00",
+            "startTime": "09:00"
+          },
+          "sunday": {
+            "enabled": false,
+            "endTime": "17:00",
+            "startTime": "09:00"
+          },
+          "tuesday": {
+            "enabled": true,
+            "endTime": "17:00",
+            "startTime": "09:00"
+          },
+          "saturday": {
+            "enabled": false,
+            "endTime": "17:00",
+            "startTime": "09:00"
+          },
+          "thursday": {
+            "enabled": true,
+            "endTime": "17:00",
+            "startTime": "09:00"
+          },
+          "wednesday": {
+            "enabled": true,
+            "endTime": "17:00",
+            "startTime": "09:00"
+          }
+        },
+        "company_id": null
+      }
+    ],
+    "jobs": [
+      {
+        "id": "ce5e1d5a-c8ef-40b0-8786-1f7123995252",
+        "customer_id": "bfc5dcb6-9352-4b87-81d6-6ebeb0c0ad63",
+        "service_id": 1,
+        "address_id": 1,
+        "title": "Grand nettoyage de printemps appartement T3",
+        "description": "Je cherche quelqu'un pour nettoyer mon appartement de 80m² au centre-ville. Cela inclut le lavage des sols, le dépoussiérage et le nettoyage des vitres. Produits fournis.",
+        "preferred_date": "2025-12-24",
+        "preferred_time_start": null,
+        "preferred_time_end": null,
+        "is_flexible": true,
+        "estimated_duration": 3,
+        "customer_budget": "100.00",
+        "final_price": null,
+        "is_promoted": false,
+        "promotion_expires_at": null,
+        "promotion_boost_score": 0,
+        "status": "under_review",
+        "assigned_tasker_id": null,
+        "started_at": null,
+        "completed_at": null,
+        "created_at": "2025-12-23T20:03:41.968227Z",
+        "updated_at": "2025-12-23T20:03:41.968227Z",
+        "images": null,
+        "requirements": null,
+        "currency": "MAD",
+        "max_applications": 3,
+        "premium_applications_purchased": 0,
+        "current_applications": 0,
+        "verification_status": "pending"
+      }
+    ],
+    "job_applications": [],
+    "transactions": []
+  },
+  "summary": {
+    "total_enum_to_migrate": 9,
+    "total_columns_to_migrate": 12,
+    "total_tables_affected": 8,
+    "data_counts": {
+      "users": 3,
+      "tasker_profiles": 1,
+      "jobs": 1,
+      "job_applications": 0,
+      "transactions": 0
+    },
+    "enum_values_in_use": {
+      "user_role": {
+        "tasker": 2,
+        "customer": 1
+      },
+      "verification_status": {
+        "pending": 5
+      },
+      "experience_level": {
+        "beginner": 1
+      },
+      "job_status": {
+        "under_review": 1
+      }
+    }
+  }
+}
+

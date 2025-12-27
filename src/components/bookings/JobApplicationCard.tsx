@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,7 @@ export function JobApplicationCard({
   actionButton,
 }: JobApplicationCardProps) {
   const t = useTranslations("jobApplications");
+  const [imageError, setImageError] = useState(false);
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t("labels.flexible");
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -116,14 +117,16 @@ export function JobApplicationCard({
 
         {/* Customer Info */}
         <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-            {application.customer_avatar ? (
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {application.customer_avatar && !imageError ? (
               <Image
                 src={application.customer_avatar}
                 alt={getCustomerName()}
                 width={40}
                 height={40}
                 className="w-10 h-10 rounded-full object-cover"
+                unoptimized
+                onError={() => setImageError(true)}
               />
             ) : (
               <User className="w-5 h-5 text-white" />

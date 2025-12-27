@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -24,9 +24,10 @@ export default function SearchBar({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(
-      `/${locale}/search/${type}?q=${encodeURIComponent(searchQuery.trim())}`
-    );
+    const query = searchQuery.trim();
+    if (query) {
+      router.push(`/search/${type}?q=${encodeURIComponent(query)}`);
+    }
   };
 
   return (

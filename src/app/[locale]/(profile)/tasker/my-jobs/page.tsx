@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { getUserProfileAction } from "@/actions/auth";
-import { getCustomerJobs, JobWithDetails } from "@/actions/jobs";
+import { getTaskerJobs, JobWithDetails } from "@/actions/jobs";
 import {
   Plus,
   Eye,
@@ -64,10 +64,10 @@ function JobsLoadingSkeleton() {
 // Job card component
 async function JobCard({
   job,
-  customerId,
+  taskerId,
 }: {
   job: JobWithDetails;
-  customerId: string;
+  taskerId: string;
 }) {
   const t = await getTranslations("myJobs");
   const getStatusColor = (status?: string | null) => {
@@ -321,13 +321,7 @@ async function JobCard({
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
-            {!job.assigned_tasker_id && job.status === "active" && (
-              <JobDeleteButton
-                jobId={job.id}
-                customerId={customerId}
-                jobTitle={job.title}
-              />
-            )}
+            {/* Taskers cannot delete jobs assigned to them */}
           </div>
         </div>
       </div>
@@ -336,11 +330,11 @@ async function JobCard({
 }
 
 // Jobs list component
-async function JobsList({ customerId }: { customerId: string }) {
+async function JobsList({ taskerId }: { taskerId: string }) {
   const t = await getTranslations("myJobs");
 
   try {
-    const { jobs } = await getCustomerJobs(customerId);
+    const { jobs } = await getTaskerJobs(taskerId);
 
     return (
       <>
@@ -365,20 +359,14 @@ async function JobsList({ customerId }: { customerId: string }) {
               {t("noJobs")}
             </h2>
             <p className="text-[var(--color-text-secondary)] mb-4 max-w-xs text-center">
-              {t("noJobsDescription")}
+              {t("noAssignedJobsDescription") || "You don't have any assigned jobs yet. Keep checking for new opportunities!"}
             </p>
-            <Link
-              href="./post-job"
-              className="px-5 py-2.5 rounded-lg bg-[var(--color-secondary)] text-white font-semibold hover:bg-[var(--color-secondary-dark)] transition-all text-base shadow"
-            >
-              {t("createJob")}
-            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 mt-2">
             {await Promise.all(
               jobs.map(async (job) => (
-                <JobCard key={job.id} job={job} customerId={customerId} />
+                <JobCard key={job.id} job={job} taskerId={taskerId} />
               ))
             )}
           </div>
@@ -459,7 +447,7 @@ export default async function MyJobsPage() {
       {/* Jobs Section with Suspense for better loading */}
       <section className="w-full max-w-2xl px-4 pb-8 flex-1 flex flex-col">
         <Suspense fallback={<JobsLoadingSkeleton />}>
-          <JobsList customerId={user.id} />
+          <JobsList taskerId={user.id} />
         </Suspense>
       </section>
     </main>

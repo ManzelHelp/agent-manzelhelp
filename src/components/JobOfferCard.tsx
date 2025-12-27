@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { User } from "@/types/supabase";
@@ -10,6 +12,8 @@ import {
   Calendar,
   DollarSign,
   Users,
+  MapPin,
+  CheckCircle2,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 
@@ -35,6 +39,37 @@ interface JobOfferCardProps {
 
 function JobOfferCard({ job, customer }: JobOfferCardProps) {
   const locale = useLocale();
+  const [relativeTime, setRelativeTime] = useState<string>("");
+  const [imageError, setImageError] = useState(false);
+
+  // Format relative time on client side only to avoid hydration mismatch
+  useEffect(() => {
+    const formatRelativeTime = (dateString: string) => {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInMs = now.getTime() - date.getTime();
+      const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+      const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+      if (diffInMinutes < 1) return locale === "fr" ? "À l'instant" : "Just now";
+      if (diffInMinutes < 60)
+        return locale === "fr"
+          ? `Il y a ${diffInMinutes} min`
+          : `${diffInMinutes}m ago`;
+      if (diffInHours < 24)
+        return locale === "fr"
+          ? `Il y a ${diffInHours}h`
+          : `${diffInHours}h ago`;
+      if (diffInDays === 1)
+        return locale === "fr" ? "Il y a 1 jour" : "1 day ago";
+      return locale === "fr"
+        ? `Il y a ${diffInDays} jours`
+        : `${diffInDays} days ago`;
+    };
+
+    setRelativeTime(formatRelativeTime(job.created_at));
+  }, [job.created_at, locale]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -54,99 +89,138 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
     }).format(amount);
   };
 
+  // Get initials for avatar fallback
+  const getInitials = (firstName: string, lastName: string) => {
+    const first = firstName?.[0]?.toUpperCase() || "";
+    const last = lastName?.[0]?.toUpperCase() || "";
+    return first + last || "U";
+  };
+
   return (
-    <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 hover:-translate-y-2">
-      <div className="relative flex flex-col h-full min-h-[500px]">
-        {/* Enhanced Customer Profile Section with Gradient Background */}
-        <div className="relative p-4 sm:p-6 bg-gradient-to-r from-[var(--color-accent)]/5 to-[var(--color-primary)]/5 border-b border-[var(--color-border)]">
-          <div className="flex items-center gap-4">
-            <div className="relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-primary)] p-0.5">
-                <div className="h-full w-full rounded-full bg-[var(--color-surface)] p-0.5">
+    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600 hover:-translate-y-0.5 rounded-xl">
+      <div className="relative flex flex-col h-full">
+        {/* Promoted Badge */}
+        {job.is_promoted && (
+          <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-semibold rounded-full shadow-md flex items-center gap-1">
+            <CheckCircle2 size={11} />
+            <span>{locale === "fr" ? "Promu" : "Promoted"}</span>
+          </div>
+        )}
+
+        {/* Header: Customer Profile */}
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-start gap-3">
+            {/* Avatar */}
+            <div className="relative h-12 w-12 flex-shrink-0">
+              {customer.avatar_url && !imageError ? (
+                <div className="absolute inset-0 rounded-full ring-2 ring-slate-200 dark:ring-slate-600">
                   <Image
-                    src={customer.avatar_url || "/default-avatar.svg"}
+                    src={customer.avatar_url}
                     alt={`${customer.first_name}'s profile`}
                     className="rounded-full object-cover"
                     fill
-                    sizes="(max-width: 640px) 48px, 64px"
+                    sizes="48px"
+                    unoptimized
+                    onError={() => setImageError(true)}
                   />
                 </div>
+              ) : null}
+              <div
+                className={`absolute inset-0 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm ring-2 ring-slate-200 dark:ring-slate-600 ${
+                  customer.avatar_url && !imageError ? "hidden" : ""
+                }`}
+              >
+                {getInitials(
+                  customer.first_name || "U",
+                  customer.last_name || ""
+                )}
               </div>
             </div>
-            <div className="min-w-0 flex-1">
+
+            {/* Customer Info */}
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-[var(--color-text-primary)] text-base sm:text-lg truncate">
+                <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
                   {customer.first_name || "Unknown"}{" "}
                   {customer.last_name?.[0] || ""}.
                 </h3>
                 {customer.verification_status === "verified" && (
-                  <Shield className="w-4 h-4 text-[var(--color-secondary)] flex-shrink-0" />
+                  <Shield className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 )}
               </div>
-              <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
-                <div className="flex items-center gap-1 min-w-0">
-                  <Calendar size={14} className="flex-shrink-0" />
-                  <span className="truncate">
-                    {formatDate(job.preferred_date)}
-                  </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <Calendar size={12} />
+                  <span>{relativeTime || formatDate(job.created_at)}</span>
                 </div>
                 {job.is_flexible && (
-                  <div className="px-2 py-1 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-accent)] font-medium">
-                    Flexible
-                  </div>
+                  <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-md">
+                    {locale === "fr" ? "Flexible" : "Flexible"}
+                  </span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Job Details */}
-        <div className="p-4 sm:p-6 flex-1 flex flex-col">
-          <h4 className="font-bold mb-4 text-[var(--color-text-primary)] text-lg sm:text-xl line-clamp-2 leading-tight">
+        {/* Content: Job Details */}
+        <div className="p-4 flex-1 flex flex-col gap-3">
+          {/* Title */}
+          <h4 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg line-clamp-2 leading-snug group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
             {job.title}
           </h4>
-          <p className="text-sm sm:text-base text-[var(--color-text-secondary)] line-clamp-4 leading-relaxed mb-6 flex-1">
+
+          {/* Description */}
+          <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed flex-1">
             {job.description}
           </p>
 
-          {/* Job Features */}
-          <div className="flex flex-wrap gap-2 mt-auto">
-            <div className="flex items-center gap-1 px-3 py-2 bg-[var(--color-primary)]/10 rounded-full text-xs text-[var(--color-text-secondary)]">
-              <Clock size={12} />
-              <span>{job.estimated_duration}h estimated</span>
+          {/* Metrics Row */}
+          <div className="flex items-center gap-2 flex-wrap pt-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-700/50 rounded-md">
+              <Clock size={13} className="text-slate-500 dark:text-slate-400" />
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                {job.estimated_duration}h
+              </span>
             </div>
-            {job.is_promoted && (
-              <div className="px-3 py-2 bg-[var(--color-secondary)]/10 rounded-full text-xs text-[var(--color-secondary)] font-medium">
-                Promoted
-              </div>
-            )}
-            <div className="flex items-center gap-1 px-3 py-2 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)] font-medium">
-              <Users size={12} />
-              <span>
-                {job.current_applications}/{job.max_applications} applied
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-700/50 rounded-md">
+              <Users size={13} className="text-slate-500 dark:text-slate-400" />
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                {job.current_applications}/{job.max_applications}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-700/50 rounded-md">
+              <Calendar size={13} className="text-slate-500 dark:text-slate-400" />
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                {formatDate(job.preferred_date)}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Budget Section with Modern Styling */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-primary)]/5 border-t border-[var(--color-border)] mt-auto flex-shrink-0">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5">
-            <div className="flex items-baseline gap-2">
-              <DollarSign className="w-5 h-5 text-[var(--color-accent)]" />
-              <span className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
-                {formatCurrency(job.customer_budget, job.currency)}
-              </span>
-              <span className="text-sm text-[var(--color-text-secondary)] font-medium">
-                budget
-              </span>
+        {/* Footer: Budget & CTA */}
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between gap-3">
+            {/* Budget */}
+            <div className="flex items-center gap-2 min-w-0">
+              <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="text-lg font-bold text-slate-900 dark:text-white">
+                  {formatCurrency(job.customer_budget, job.currency)}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {locale === "fr" ? "Budget" : "Budget"}
+                </p>
+              </div>
             </div>
+
+            {/* CTA Button */}
             <Link
               href={`/${locale}/job-offer/${job.id}`}
-              className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white rounded-xl hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 min-w-[120px]"
+              className="group/btn inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 text-sm font-semibold shadow-sm hover:shadow-md transform hover:scale-105 whitespace-nowrap flex-shrink-0"
             >
-              View Details
-              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
+              {locale === "fr" ? "Voir" : "View"}
+              <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
             </Link>
           </div>
         </div>

@@ -34,6 +34,7 @@
     "create_offer": "Angebot erstellen",
     "close_menu": "Menü schließen",
     "open_menu": "Menü öffnen",
+    "jobs": "Jobs",
     "bookings": "Buchungen",
     "finance": "Finanzen",
     "messages": "Nachrichten",
@@ -581,7 +582,7 @@
         "loginSuccessful": "Anmeldung erfolgreich",
         "failedToLoadProfile": "Benutzerprofil konnte nicht geladen werden"
       },
-      "signup": {
+      "signUp": {
         "title": "Konto erstellen",
         "subtitle": "Schließen Sie sich Tausenden von Benutzern an und beginnen Sie Ihre Reise",
         "skipToMainContent": "Zum Hauptinhalt springen",
@@ -589,12 +590,18 @@
         "createAccountTitle": "Konto erstellen",
         "joinUsersDescription": "Schließen Sie sich Tausenden von Benutzern an und beginnen Sie Ihre Reise",
         "termsAndPrivacy": "Durch die Registrierung stimmen Sie unseren Nutzungsbedingungen und unserer Datenschutzrichtlinie zu",
+        "emailLabel": "E-Mail",
         "emailPlaceholder": "E-Mail eingeben",
+        "passwordLabel": "Passwort",
         "passwordPlaceholder": "Passwort eingeben (min. 8 Zeichen)",
+        "userRoleLabel": "Ich möchte",
         "selectOption": "Option auswählen",
         "findHelp": "Hilfe finden",
         "becomeHelper": "Helfer werden",
+        "createAccount": "Konto erstellen",
         "creatingAccount": "Konto wird erstellt...",
+        "alreadyHaveAccount": "Bereits ein Konto?",
+        "signInHere": "Hier anmelden",
         "signUpSuccessful": "Registrierung erfolgreich",
         "checkEmailVerification": "Bitte überprüfen Sie Ihre E-Mail zur Verifizierung",
         "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
@@ -1574,10 +1581,15 @@
       "withdrawn": "Zurückgezogen"
     },
     "jobStatus": {
-      "open": "Offen",
+      "under_review": "In Prüfung",
+      "active": "Aktiv",
+      "assigned": "Zugewiesen",
       "in_progress": "In Bearbeitung",
       "completed": "Abgeschlossen",
-      "cancelled": "Storniert"
+      "cancelled": "Storniert",
+      "disputed": "Bestritten",
+      "draft": "Entwurf",
+      "open": "Offen"
     },
     "labels": {
       "jobPoster": "Stellenausschreiber",

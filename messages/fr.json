@@ -34,6 +34,7 @@
     "create_offer": "Créer une offre",
     "close_menu": "Fermer le menu",
     "open_menu": "Ouvrir le menu",
+    "jobs": "Emplois",
     "bookings": "Réservations",
     "finance": "Finance",
     "messages": "Messages",
@@ -581,7 +582,7 @@
         "loginSuccessful": "Connexion réussie",
         "failedToLoadProfile": "Échec du chargement du profil utilisateur"
       },
-      "signup": {
+      "signUp": {
         "title": "Créer un compte",
         "subtitle": "Rejoignez des milliers d'utilisateurs et commencez votre voyage",
         "skipToMainContent": "Aller au contenu principal",
@@ -589,12 +590,18 @@
         "createAccountTitle": "Créer un compte",
         "joinUsersDescription": "Rejoignez des milliers d'utilisateurs et commencez votre voyage",
         "termsAndPrivacy": "En vous inscrivant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité",
+        "emailLabel": "E-mail",
         "emailPlaceholder": "Entrez votre e-mail",
+        "passwordLabel": "Mot de passe",
         "passwordPlaceholder": "Entrez votre mot de passe (min. 8 caractères)",
+        "userRoleLabel": "Je veux",
         "selectOption": "Sélectionner une option",
         "findHelp": "Trouver de l'aide",
         "becomeHelper": "Devenir assistant",
+        "createAccount": "Créer un compte",
         "creatingAccount": "Création du compte...",
+        "alreadyHaveAccount": "Vous avez déjà un compte ?",
+        "signInHere": "Se connecter ici",
         "signUpSuccessful": "Inscription réussie",
         "checkEmailVerification": "Veuillez vérifier votre e-mail pour la vérification",
         "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer."
@@ -1574,10 +1581,15 @@
       "withdrawn": "Retiré"
     },
     "jobStatus": {
-      "open": "Ouvert",
+      "under_review": "En cours d'examen",
+      "active": "Actif",
+      "assigned": "Assigné",
       "in_progress": "En cours",
       "completed": "Terminé",
-      "cancelled": "Annulé"
+      "cancelled": "Annulé",
+      "disputed": "En litige",
+      "draft": "Brouillon",
+      "open": "Ouvert"
     },
     "labels": {
       "jobPoster": "Annonceur d'emploi",

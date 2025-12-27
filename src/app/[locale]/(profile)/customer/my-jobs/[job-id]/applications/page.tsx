@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import {
@@ -10,6 +11,7 @@ import {
   rejectJobApplication,
   JobApplicationWithDetails,
 } from "@/actions/jobs";
+import { getTaskerServices } from "@/actions/services";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,11 +103,13 @@ function ApplicationCard({
   t,
   onAccept,
   onReject,
+  onViewProfile,
 }: {
   application: JobApplicationWithDetails;
   t: ReturnType<typeof useTranslations>;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
+  onViewProfile: (taskerId: string) => void;
 }) {
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -175,6 +179,7 @@ function ApplicationCard({
                 width={48}
                 height={48}
                 className="w-full h-full object-cover"
+                unoptimized
               />
             ) : (
               <User className="w-6 h-6 text-[var(--color-text-secondary)]" />
@@ -323,6 +328,7 @@ function ApplicationCard({
                 variant="outline"
                 className="border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)] touch-target"
                 size="sm"
+                onClick={() => onViewProfile(application.tasker_id)}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 {t("applications.actions.viewProfile")}
@@ -399,6 +405,26 @@ export default function ApplicationsPage() {
       applicationId,
       isLoading: false,
     });
+  };
+
+  const handleViewProfile = async (taskerId: string) => {
+    try {
+      // Get tasker services to redirect to first service if available
+      // This is a temporary solution until we have a public tasker profile page
+      const services = await getTaskerServices(taskerId);
+      
+      if (services && services.length > 0) {
+        // Redirect to the first service (most recent)
+        router.push(`/service-offer/${services[0].id}`);
+      } else {
+        // If no services, redirect to services search filtered by tasker
+        router.push(`/search/services?tasker=${taskerId}`);
+      }
+    } catch (error) {
+      console.error("Error fetching tasker services:", error);
+      // Fallback: redirect to services search
+      router.push(`/search/services?tasker=${taskerId}`);
+    }
   };
 
   const handleConfirmAction = async () => {
@@ -554,13 +580,14 @@ export default function ApplicationsPage() {
           <div className="w-full max-w-4xl px-4 pb-8">
             <div className="grid grid-cols-1 gap-4">
               {applications.map((application) => (
-                <ApplicationCard
-                  key={application.id}
-                  application={application}
-                  t={t}
-                  onAccept={handleAccept}
-                  onReject={handleReject}
-                />
+              <ApplicationCard
+                key={application.id}
+                application={application}
+                t={t}
+                onAccept={handleAccept}
+                onReject={handleReject}
+                onViewProfile={handleViewProfile}
+              />
               ))}
             </div>
           </div>

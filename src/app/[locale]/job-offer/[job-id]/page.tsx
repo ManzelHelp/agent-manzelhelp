@@ -441,15 +441,27 @@ export default function JobOfferPage() {
               <div className="flex flex-col lg:flex-row lg:items-start gap-8 mb-8">
                 {/* Profile Picture */}
                 <div className="relative group">
-                  <div className="relative h-32 w-32 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl">
-                    <Image
-                      src={jobData.customer_avatar_url || "/default-avatar.svg"}
-                      alt={`${jobData.customer_first_name || "Customer"} ${
-                        jobData.customer_last_name || ""
-                      }`}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+                  <div className="relative h-32 w-32 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl bg-gradient-to-br from-emerald-400 to-emerald-600">
+                    {jobData.customer_avatar_url ? (
+                      <Image
+                        src={jobData.customer_avatar_url}
+                        alt={`${jobData.customer_first_name || "Customer"} ${
+                          jobData.customer_last_name || ""
+                        }`}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        unoptimized
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          const fallback = e.currentTarget.parentElement?.querySelector(".avatar-fallback");
+                          if (fallback) fallback.classList.remove("hidden");
+                        }}
+                      />
+                    ) : null}
+                    <div className={`avatar-fallback absolute inset-0 flex items-center justify-center text-white font-bold text-3xl ${jobData.customer_avatar_url ? "hidden" : ""}`}>
+                      {jobData.customer_first_name?.[0]?.toUpperCase() || "U"}
+                      {jobData.customer_last_name?.[0]?.toUpperCase() || ""}
+                    </div>
                   </div>
                 </div>
 

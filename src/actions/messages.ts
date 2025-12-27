@@ -138,10 +138,35 @@ export const getConversationsAction = async (): Promise<{
           unreadCounts?.filter((count) => count.conversation_id === conv.id)
             .length || 0;
 
+        // Explicitly serialize conversation to avoid non-serializable objects
         return {
-          ...conv,
-          other_participant: otherParticipant,
-          last_message: lastMessage,
+          id: String(conv.id),
+          participant1_id: String(conv.participant1_id),
+          participant2_id: String(conv.participant2_id),
+          job_id: conv.job_id ? String(conv.job_id) : undefined,
+          service_id: conv.service_id ? String(conv.service_id) : undefined,
+          booking_id: conv.booking_id ? String(conv.booking_id) : undefined,
+          last_message_at: conv.last_message_at ? new Date(conv.last_message_at).toISOString() : undefined,
+          created_at: conv.created_at ? new Date(conv.created_at).toISOString() : new Date().toISOString(),
+          other_participant: otherParticipant ? {
+            first_name: otherParticipant.first_name ? String(otherParticipant.first_name) : undefined,
+            last_name: otherParticipant.last_name ? String(otherParticipant.last_name) : undefined,
+            avatar_url: otherParticipant.avatar_url ? String(otherParticipant.avatar_url) : undefined,
+          } : undefined,
+          last_message: lastMessage ? {
+            id: String(lastMessage.id),
+            conversation_id: String(lastMessage.conversation_id),
+            sender_id: String(lastMessage.sender_id),
+            content: String(lastMessage.content),
+            attachment_url: lastMessage.attachment_url ? String(lastMessage.attachment_url) : undefined,
+            is_read: Boolean(lastMessage.is_read),
+            created_at: lastMessage.created_at ? new Date(lastMessage.created_at).toISOString() : new Date().toISOString(),
+            sender: lastMessage.sender ? {
+              first_name: lastMessage.sender.first_name ? String(lastMessage.sender.first_name) : undefined,
+              last_name: lastMessage.sender.last_name ? String(lastMessage.sender.last_name) : undefined,
+              avatar_url: lastMessage.sender.avatar_url ? String(lastMessage.sender.avatar_url) : undefined,
+            } : undefined,
+          } : undefined,
           unread_count: unreadCount,
         };
       }
@@ -197,6 +222,15 @@ export const getMessagesAction = async (
       .single();
 
     if (conversationError) {
+      console.error("Error fetching conversation in getMessagesAction:", {
+        error: conversationError,
+        code: conversationError.code,
+        message: conversationError.message,
+        details: conversationError.details,
+        hint: conversationError.hint,
+        conversationId,
+        userId: user.id,
+      });
       throw conversationError;
     }
 
@@ -225,6 +259,15 @@ export const getMessagesAction = async (
       .order("created_at", { ascending: true });
 
     if (messagesError) {
+      console.error("Error fetching messages:", {
+        error: messagesError,
+        code: messagesError.code,
+        message: messagesError.message,
+        details: messagesError.details,
+        hint: messagesError.hint,
+        conversationId,
+        userId: user.id,
+      });
       throw messagesError;
     }
 
@@ -234,13 +277,42 @@ export const getMessagesAction = async (
         ? conversation.participant2
         : conversation.participant1;
 
+    // Explicitly serialize the conversation data to avoid non-serializable objects
     const processedConversation: ConversationWithDetails = {
-      ...conversation,
-      other_participant: otherParticipant,
+      id: String(conversation.id),
+      participant1_id: String(conversation.participant1_id),
+      participant2_id: String(conversation.participant2_id),
+      job_id: conversation.job_id ? String(conversation.job_id) : undefined,
+      service_id: conversation.service_id ? String(conversation.service_id) : undefined,
+      booking_id: conversation.booking_id ? String(conversation.booking_id) : undefined,
+      last_message_at: conversation.last_message_at ? new Date(conversation.last_message_at).toISOString() : undefined,
+      created_at: conversation.created_at ? new Date(conversation.created_at).toISOString() : new Date().toISOString(),
+      other_participant: otherParticipant ? {
+        first_name: otherParticipant.first_name ? String(otherParticipant.first_name) : undefined,
+        last_name: otherParticipant.last_name ? String(otherParticipant.last_name) : undefined,
+        avatar_url: otherParticipant.avatar_url ? String(otherParticipant.avatar_url) : undefined,
+      } : undefined,
     };
 
+    // Explicitly serialize messages to avoid non-serializable objects
+    // Convert all types to ensure JSON serialization
+    const serializedMessages: MessageWithDetails[] = (messages || []).map((msg: any) => ({
+      id: String(msg.id),
+      conversation_id: String(msg.conversation_id),
+      sender_id: String(msg.sender_id),
+      content: String(msg.content),
+      attachment_url: msg.attachment_url ? String(msg.attachment_url) : undefined,
+      is_read: Boolean(msg.is_read),
+      created_at: msg.created_at ? new Date(msg.created_at).toISOString() : new Date().toISOString(),
+      sender: msg.sender ? {
+        first_name: msg.sender.first_name ? String(msg.sender.first_name) : undefined,
+        last_name: msg.sender.last_name ? String(msg.sender.last_name) : undefined,
+        avatar_url: msg.sender.avatar_url ? String(msg.sender.avatar_url) : undefined,
+      } : undefined,
+    }));
+
     return {
-      messages: messages || [],
+      messages: serializedMessages,
       conversation: processedConversation,
       errorMessage: null,
     };
@@ -280,13 +352,33 @@ export const sendMessageAction = async (
       .single();
 
     if (conversationError) {
+      console.error("Error fetching conversation:", {
+        error: conversationError,
+        code: conversationError.code,
+        message: conversationError.message,
+        details: conversationError.details,
+        hint: conversationError.hint,
+        conversationId,
+        userId: user.id,
+      });
       throw conversationError;
+    }
+
+    if (!conversation) {
+      console.error("Conversation not found:", conversationId);
+      throw new Error("Conversation not found");
     }
 
     if (
       conversation.participant1_id !== user.id &&
       conversation.participant2_id !== user.id
     ) {
+      console.error("Unauthorized access to conversation:", {
+        conversationId,
+        userId: user.id,
+        participant1: conversation.participant1_id,
+        participant2: conversation.participant2_id,
+      });
       throw new Error("Unauthorized access to conversation");
     }
 
@@ -313,18 +405,60 @@ export const sendMessageAction = async (
       .single();
 
     if (messageError) {
+      console.error("Error inserting message:", {
+        error: messageError,
+        code: messageError.code,
+        message: messageError.message,
+        details: messageError.details,
+        hint: messageError.hint,
+        conversationId,
+        senderId: user.id,
+      });
       throw messageError;
     }
 
+    if (!message) {
+      console.error("Message insertion returned no data");
+      throw new Error("Failed to create message");
+    }
+
     // Update conversation's last_message_at
-    await supabase
+    const { error: updateError } = await supabase
       .from("conversations")
       .update({ last_message_at: new Date().toISOString() })
       .eq("id", conversationId);
 
-    return { message, errorMessage: null };
-  } catch (error) {
-    console.error("Error sending message:", error);
+    if (updateError) {
+      console.error("Error updating conversation last_message_at:", updateError);
+      // Don't throw, the message was inserted successfully
+    }
+
+    // Explicitly serialize the message to avoid non-serializable objects
+    // Convert id to string if it's a number (PostgreSQL integer)
+    const serializedMessage: MessageWithDetails = {
+      id: String(message.id),
+      conversation_id: String(message.conversation_id),
+      sender_id: String(message.sender_id),
+      content: String(message.content),
+      attachment_url: message.attachment_url ? String(message.attachment_url) : undefined,
+      is_read: Boolean(message.is_read),
+      created_at: message.created_at ? new Date(message.created_at).toISOString() : new Date().toISOString(),
+      sender: message.sender ? {
+        first_name: message.sender.first_name ? String(message.sender.first_name) : undefined,
+        last_name: message.sender.last_name ? String(message.sender.last_name) : undefined,
+        avatar_url: message.sender.avatar_url ? String(message.sender.avatar_url) : undefined,
+      } : undefined,
+    };
+
+    return { message: serializedMessage, errorMessage: null };
+  } catch (error: any) {
+    console.error("Error sending message:", {
+      error,
+      code: error?.code,
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint,
+    });
     return { message: null, ...handleError(error) };
   }
 };
@@ -350,15 +484,57 @@ export const markMessagesAsReadAction = async (
     }
 
     // Mark all messages in the conversation as read (except those sent by the user)
-    const { error } = await supabase
+    // Only mark messages that are currently unread
+    const { data: updatedMessages, error, count } = await supabase
       .from("messages")
       .update({ is_read: true })
       .eq("conversation_id", conversationId)
-      .neq("sender_id", user.id);
+      .neq("sender_id", user.id)
+      .eq("is_read", false)
+      .select("id, sender_id, is_read");
 
     if (error) {
+      console.error("Error marking messages as read:", {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        conversationId,
+        userId: user.id,
+      });
       throw error;
     }
+
+    if (error) {
+      const supabaseError = error as any;
+      console.error("Error marking messages as read:", {
+        error,
+        code: supabaseError.code,
+        message: supabaseError.message,
+        details: supabaseError.details,
+        hint: supabaseError.hint,
+        conversationId,
+        userId: user.id,
+      });
+      throw error;
+    }
+
+    console.log("Messages marked as read:", {
+      conversationId,
+      userId: user.id,
+      updatedCount: updatedMessages?.length || 0,
+      updatedMessageIds: updatedMessages?.map(m => m.id) || [],
+    });
+
+    // Check if any messages were actually updated
+    if (updatedMessages && updatedMessages.length === 0) {
+      console.warn("No messages were updated. This might be due to RLS policies or all messages are already read.");
+    }
+
+    // Revalidate conversation list pages to update unread counts
+    revalidatePath("/tasker/messages");
+    revalidatePath("/customer/messages");
 
     return { success: true, errorMessage: null };
   } catch (error) {
@@ -424,17 +600,133 @@ export const createConversationAction = async (
       }
     }
 
+    // Check if the current user exists in the users table (by ID first, then by email)
+    const { data: currentUser, error: currentUserError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // If not found by ID, check by email (in case of ID mismatch)
+    let currentUserByEmail = null;
+    if ((currentUserError || !currentUser) && user.email) {
+      const { data: emailUser } = await supabase
+        .from("users")
+        .select("id, email")
+        .eq("email", user.email)
+        .maybeSingle();
+      currentUserByEmail = emailUser;
+      
+      if (emailUser && emailUser.id !== user.id) {
+        console.warn("ID mismatch detected in createConversation:", {
+          authId: user.id,
+          dbId: emailUser.id,
+          email: user.email,
+        });
+      }
+    }
+
+    if (currentUserError || (!currentUser && !currentUserByEmail)) {
+      // User doesn't exist in users table, create it
+      console.log("User not found in users table, creating...", {
+        userId: user.id,
+        email: user.email,
+        role: user.user_metadata?.role,
+      });
+      
+      const { data: newUser, error: createError } = await supabase
+        .from("users")
+        .insert([
+          {
+            id: user.id,
+            email: user.email || "",
+            role: (user.user_metadata?.role as "customer" | "tasker") || "customer",
+            email_verified: user.email_confirmed_at ? true : false,
+            is_active: true,
+            preferred_language: "en",
+            verification_status: "pending",
+            wallet_balance: 0,
+          },
+        ])
+        .select("id")
+        .single();
+
+      if (createError) {
+        console.error("Failed to create user in users table:", {
+          error: createError,
+          code: createError.code,
+          message: createError.message,
+          details: createError.details,
+          hint: createError.hint,
+        });
+        
+        // If it's a duplicate key error (email or ID), try to fetch by email
+        if (createError.code === "23505" && user.email) {
+          console.log("User already exists (duplicate), fetching by email...");
+          const { data: existingUser } = await supabase
+            .from("users")
+            .select("id")
+            .eq("email", user.email)
+            .maybeSingle();
+          
+          if (existingUser) {
+            console.log("Found existing user by email, continuing...");
+            // User exists with different ID, continue with existing user
+          } else {
+            return {
+              conversation: null,
+              errorMessage: `Your account is not properly set up: ${createError.message}. Please contact support.`,
+            };
+          }
+        } else {
+          return {
+            conversation: null,
+            errorMessage: `Your account is not properly set up: ${createError.message}. Please contact support.`,
+          };
+        }
+      } else if (!newUser) {
+        console.error("User creation returned no data");
+        return {
+          conversation: null,
+          errorMessage: "Your account is not properly set up. Please contact support.",
+        };
+      } else {
+        console.log("User created successfully in users table");
+      }
+    } else if (currentUserByEmail && currentUserByEmail.id !== user.id) {
+      // User exists but with different ID - log warning but continue
+      console.warn("User exists with different ID, using existing user:", {
+        authId: user.id,
+        dbId: currentUserByEmail.id,
+        email: user.email,
+      });
+    }
+
     // Check if the other participant exists and is active
     const { data: otherUser, error: otherUserError } = await supabase
       .from("users")
       .select("id, first_name, last_name, avatar_url, is_active")
       .eq("id", otherParticipantId)
-      .single();
+      .maybeSingle();
 
-    if (otherUserError || !otherUser) {
+    if (otherUserError) {
+      console.error("Error checking other participant:", {
+        error: otherUserError,
+        otherParticipantId,
+      });
       return {
         conversation: null,
-        errorMessage: "Recipient not found",
+        errorMessage: `Error checking recipient: ${otherUserError.message}`,
+      };
+    }
+
+    if (!otherUser) {
+      console.error("Other participant not found in users table:", {
+        otherParticipantId,
+      });
+      return {
+        conversation: null,
+        errorMessage: "Recipient not found. The recipient's account may not be properly set up.",
       };
     }
 
@@ -490,6 +782,43 @@ export const createConversationAction = async (
       };
     }
 
+    // Final verification: ensure both participants exist in users table before creating conversation
+    const { data: currentUserFinal, error: currentUserFinalError } = await supabase
+      .from("users")
+      .select("id, email, role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (currentUserFinalError) {
+      console.error("Error checking current user before conversation creation:", {
+        userId: user.id,
+        error: currentUserFinalError,
+      });
+      return {
+        conversation: null,
+        errorMessage: `Error verifying your account: ${currentUserFinalError.message}. Please contact support.`,
+      };
+    }
+
+    if (!currentUserFinal) {
+      console.error("Current user does not exist in users table before conversation creation:", {
+        userId: user.id,
+        email: user.email,
+        authUserExists: !!user,
+      });
+      return {
+        conversation: null,
+        errorMessage: "Your account is not properly set up. Please contact support.",
+      };
+    }
+
+    console.log("Creating conversation with:", {
+      participant1_id: user.id,
+      participant2_id: otherParticipantId,
+      currentUserExists: !!currentUserFinal,
+      otherUserExists: !!otherUser,
+    });
+
     // Create new conversation
     const { data: conversation, error: conversationError } = await supabase
       .from("conversations")
@@ -519,7 +848,33 @@ export const createConversationAction = async (
       .single();
 
     if (conversationError) {
-      console.error("Error creating conversation:", conversationError);
+      console.error("Error creating conversation:", {
+        error: conversationError,
+        code: conversationError.code,
+        message: conversationError.message,
+        details: conversationError.details,
+        hint: conversationError.hint,
+        participant1_id: user.id,
+        participant2_id: otherParticipantId,
+        currentUserExists: !!currentUserFinal,
+        otherUserExists: !!otherUser,
+      });
+      
+      // Check if it's a foreign key constraint error
+      if (conversationError.code === "23503") {
+        if (conversationError.message.includes("participant1_id")) {
+          return {
+            conversation: null,
+            errorMessage: "Your account is not properly set up. Please contact support.",
+          };
+        } else if (conversationError.message.includes("participant2_id")) {
+          return {
+            conversation: null,
+            errorMessage: "The recipient's account is not properly set up.",
+          };
+        }
+      }
+      
       return {
         conversation: null,
         errorMessage: `Failed to create conversation: ${conversationError.message}`,
