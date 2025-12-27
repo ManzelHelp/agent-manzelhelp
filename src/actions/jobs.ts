@@ -1259,23 +1259,53 @@ export async function getTaskerJobs(
 }> {
   const supabase = await createClient();
 
-  // Get total count only when needed
-  let total = 0;
-  if (includeTotal || offset === 0) {
-    const { count, error: countError } = await supabase
-      .from("jobs")
-      .select("*", { count: "exact", head: true })
-      .eq("assigned_tasker_id", taskerId);
+  // Get job IDs where tasker has accepted application
+  const { data: acceptedApplications, error: acceptedAppsError } = await supabase
+    .from("job_applications")
+    .select("job_id")
+    .eq("tasker_id", taskerId)
+    .eq("status", "accepted");
 
-    if (countError) {
-      console.error("Error fetching tasker jobs count:", countError);
-      throw new Error(`Failed to fetch tasker jobs count: ${countError.message}`);
-    }
-    total = count || 0;
+  const acceptedJobIds = acceptedAppsError
+    ? []
+    : (acceptedApplications || []).map((app) => app.job_id).filter((id) => id !== null);
+
+  // Get job IDs assigned to this tasker
+  const { data: assignedJobs, error: assignedError } = await supabase
+    .from("jobs")
+    .select("id")
+    .eq("assigned_tasker_id", taskerId);
+
+  if (assignedError) {
+    console.error("Error fetching assigned jobs:", assignedError);
   }
 
-  // Get jobs assigned to this tasker with pagination, including service and category information
-  const { data, error } = await supabase
+  const assignedJobIds = (assignedJobs || []).map((job) => job.id);
+
+  // Combine both lists (remove duplicates)
+  const allJobIds = [...new Set([...assignedJobIds, ...acceptedJobIds])];
+
+  // Get total count
+  let total = 0;
+  if (includeTotal || offset === 0) {
+    if (allJobIds.length > 0) {
+      const { count, error: countError } = await supabase
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .in("id", allJobIds);
+
+      if (countError) {
+        console.error("Error fetching tasker jobs count:", countError);
+        throw new Error(`Failed to fetch tasker jobs count: ${countError.message}`);
+      }
+      total = count || 0;
+    } else {
+      total = 0;
+    }
+  }
+
+  // Build the query: jobs assigned to this tasker OR jobs where tasker has accepted application
+  let query = supabase
     .from("jobs")
     .select(
       `
@@ -1303,8 +1333,16 @@ export async function getTaskerJobs(
         )
       )
     `
-    )
-    .eq("assigned_tasker_id", taskerId)
+    );
+
+  if (allJobIds.length > 0) {
+    query = query.in("id", allJobIds);
+  } else {
+    // Fallback: if no jobs found, return empty result
+    query = query.eq("id", "00000000-0000-0000-0000-000000000000"); // Non-existent ID
+  }
+
+  const { data, error } = await query
     .order("created_at", { ascending: false })
     .range(offset, offset + limit);
 
