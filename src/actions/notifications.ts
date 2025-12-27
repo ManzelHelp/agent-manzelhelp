@@ -58,9 +58,21 @@ export async function getNotifications(
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching notifications:", error);
+      console.error("Error fetching notifications:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        userId,
+      });
       return { data: null, error: "Failed to fetch notifications" };
     }
+
+    console.log("Notifications fetched successfully:", {
+      userId,
+      count: data?.length || 0,
+      unreadCount: data?.filter((n) => !n.is_read).length || 0,
+    });
 
     return { data: data || [], error: null };
   } catch (error) {

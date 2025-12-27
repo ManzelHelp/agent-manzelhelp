@@ -44,7 +44,7 @@ import { useUserStore } from "@/stores/userStore";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 import { createJob, type CreateJobData } from "@/actions/jobs";
 import { getUserAddresses } from "@/actions/profile";
-import { getServices } from "@/actions/services";
+import { getServices, getServiceCategories } from "@/actions/services";
 import type { ServiceCategory, Service, Address } from "@/types/supabase";
 
 // Form data interfaces
@@ -145,30 +145,50 @@ export default function PostJobPage() {
     setLoading(true);
 
     try {
-      // Use local categories from categories.ts
-      const hierarchies = getAllCategoryHierarchies();
-      const localCategories = hierarchies.map(({ parent }) => ({
-        id: parent.id,
-        name_en: parent.name_en,
-        name_fr: parent.name_fr,
-        name_ar: parent.name_ar,
-        description_en: parent.description_en,
-        description_fr: parent.description_fr,
-        description_ar: parent.description_ar,
-        icon_url: undefined,
-        is_active: true,
-        sort_order: parent.id,
-      }));
-      setCategories(localCategories);
+      // Get categories from database to ensure they match with services
+      const categoriesResult = await getServiceCategories();
+      if (categoriesResult.success && categoriesResult.categories) {
+        const dbCategories = categoriesResult.categories.map((category) => ({
+          id: category.id,
+          name_en: category.name_en,
+          name_fr: category.name_fr,
+          name_ar: category.name_ar,
+          description_en: category.description_en || undefined,
+          description_fr: category.description_fr || undefined,
+          description_ar: category.description_ar || undefined,
+          icon_url: category.icon_url || undefined,
+          is_active: category.is_active,
+          sort_order: category.sort_order,
+        }));
+        setCategories(dbCategories);
+      } else {
+        // Fallback to local categories if database fetch fails
+        console.warn("Failed to load categories from database, using local categories:", categoriesResult.error);
+        const hierarchies = getAllCategoryHierarchies();
+        const localCategories = hierarchies.map(({ parent }) => ({
+          id: parent.id,
+          name_en: parent.name_en,
+          name_fr: parent.name_fr,
+          name_ar: parent.name_ar,
+          description_en: parent.description_en,
+          description_fr: parent.description_fr,
+          description_ar: parent.description_ar,
+          icon_url: undefined,
+          is_active: true,
+          sort_order: parent.id,
+        }));
+        setCategories(localCategories);
+      }
 
       // Get all services from the database to ensure we use correct IDs
       // This prevents foreign key constraint errors when creating jobs
       const servicesResult = await getServices();
       if (servicesResult.success && servicesResult.services) {
         // Map database services to the Service type expected by the component
+        // Services from DB already have category_id that matches service_categories.id
         const dbServices: Service[] = servicesResult.services.map((service) => ({
           id: service.id,
-          category_id: service.category_id,
+          category_id: service.category_id, // This already matches the category ID from DB
           name_en: service.name_en,
           name_fr: service.name_fr,
           name_ar: service.name_ar,

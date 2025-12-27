@@ -40,6 +40,7 @@ export type NotificationType =
   | "job_created"
   | "application_received"
   | "application_accepted"
+  | "job_started"
   | "job_completed"
   | "payment_received"
   | "message_received"
@@ -209,6 +210,7 @@ export interface Job {
   assigned_tasker_id?: string;
   started_at?: string;
   completed_at?: string;
+  customer_confirmed_at?: string;
   created_at?: string;
   updated_at?: string;
   images?: object | null;

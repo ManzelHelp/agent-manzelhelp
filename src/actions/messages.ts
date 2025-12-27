@@ -347,7 +347,7 @@ export const sendMessageAction = async (
     // Verify user is a participant in the conversation
     const { data: conversation, error: conversationError } = await supabase
       .from("conversations")
-      .select("participant1_id, participant2_id")
+      .select("participant1_id, participant2_id, job_id, service_id, booking_id")
       .eq("id", conversationId)
       .single();
 
@@ -431,6 +431,42 @@ export const sendMessageAction = async (
     if (updateError) {
       console.error("Error updating conversation last_message_at:", updateError);
       // Don't throw, the message was inserted successfully
+    }
+
+    // Create notification for the receiver
+    const receiverId =
+      conversation.participant1_id === user.id
+        ? conversation.participant2_id
+        : conversation.participant1_id;
+
+    if (receiverId) {
+      const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: receiverId,
+          type: "message_received",
+          title: "New Message",
+          message: `You have received a new message${conversation.job_id ? " about a job" : ""}.`,
+          related_job_id: conversation.job_id || undefined,
+          is_read: false,
+        });
+
+      if (notificationError) {
+        console.error("Error creating notification (message_received):", {
+          message: notificationError.message,
+          code: notificationError.code,
+          details: notificationError.details,
+          hint: notificationError.hint,
+          receiverId,
+          conversationId,
+        });
+        // Don't fail the operation for this
+      } else {
+        console.log("Notification created successfully (message_received):", {
+          receiverId,
+          conversationId,
+        });
+      }
     }
 
     // Explicitly serialize the message to avoid non-serializable objects

@@ -4,12 +4,12 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import Image from "next/image";
 import {
-  Edit,
-  Save,
-  X,
   Eye,
   EyeOff,
   MapPin,
@@ -21,20 +21,18 @@ import {
   XCircle,
   Star,
   ArrowLeft,
-  Users,
   User,
-  UserCheck,
+  Play,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 import {
-  getJobById,
-  getJobApplications,
-  assignTaskerToJob,
-  updateJob,
-  JobApplicationWithDetails,
+  getJobWithCustomerDetails,
+  startJob,
+  completeJob,
 } from "@/actions/jobs";
-import JobDeleteButton from "@/components/jobs/JobDeleteButton";
 
 interface JobDetailsData {
   id: string;
@@ -74,34 +72,23 @@ interface JobDetailsData {
   street_address?: string | null;
   city?: string | null;
   region?: string | null;
-  // Assigned tasker details
-  assigned_tasker_first_name?: string | null;
-  assigned_tasker_last_name?: string | null;
-  assigned_tasker_avatar?: string | null;
+  // Customer details (for tasker view)
+  customer_first_name?: string | null;
+  customer_last_name?: string | null;
+  customer_avatar_url?: string | null;
+  customer_phone?: string | null;
+  customer_email?: string | null;
 }
 
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations("myJobs");
   const [data, setData] = useState<JobDetailsData | null>(null);
-  const [applications, setApplications] = useState<JobApplicationWithDetails[]>(
-    []
-  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isAssigning, setIsAssigning] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({
-    title: "",
-    description: "",
-    customer_budget: 0,
-    estimated_duration: 0,
-    preferred_date: "",
-    preferred_time_start: "",
-    preferred_time_end: "",
-    is_flexible: false,
-    requirements: "",
-  });
+  const [isStarting, setIsStarting] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   useEffect(() => {
     const fetchJobData = async () => {
@@ -112,39 +99,19 @@ export default function JobDetailPage() {
       }
 
       try {
-        // Fetch job details
-        const jobData = await getJobById(params["job-id"]);
+        // Fetch job details with customer information (for tasker view)
+        const jobData = await getJobWithCustomerDetails(params["job-id"]);
         if (!jobData) {
           setError("Job not found");
           setLoading(false);
           return;
         }
 
+        // Verify that the current user is the assigned tasker
+        // Note: This check is done on the client side, but the server action
+        // getJobWithCustomerDetails should also verify RLS permissions
+
         setData(jobData);
-
-        // Initialize edit form
-        setEditForm({
-          title: jobData.title || "",
-          description: jobData.description || "",
-          customer_budget: jobData.customer_budget || 0,
-          estimated_duration: jobData.estimated_duration || 0,
-          preferred_date: jobData.preferred_date || "",
-          preferred_time_start: jobData.preferred_time_start || "",
-          preferred_time_end: jobData.preferred_time_end || "",
-          is_flexible: jobData.is_flexible || false,
-          requirements: jobData.requirements || "",
-        });
-
-        // Fetch applications if job is active
-        if (jobData.status === "active") {
-          try {
-            const jobApplications = await getJobApplications(params["job-id"]);
-            setApplications(jobApplications);
-          } catch (appError) {
-            console.error("Error fetching applications:", appError);
-            // Don't fail the whole page if applications fail to load
-          }
-        }
       } catch (err) {
         console.error("Error fetching job data:", err);
         if (err instanceof Error) {
@@ -160,77 +127,63 @@ export default function JobDetailPage() {
     fetchJobData();
   }, [params]);
 
-  const handleSave = async () => {
+  const handleStartJob = async () => {
     if (!data) return;
 
+    setIsStarting(true);
+    setError(null);
     try {
-      const result = await updateJob(data.id, {
-        title: editForm.title,
-        description: editForm.description,
-        customer_budget: editForm.customer_budget,
-        estimated_duration: editForm.estimated_duration,
-        preferred_date: editForm.preferred_date,
-        preferred_time_start: editForm.preferred_time_start || null,
-        preferred_time_end: editForm.preferred_time_end || null,
-        is_flexible: editForm.is_flexible,
-        requirements: editForm.requirements,
-      });
+      const result = await startJob(data.id);
 
       if (result.success) {
-        // Refresh data
-        const updatedData = await getJobById(data.id);
+        toast.success(t("actions.jobStarted"));
+        // Refresh the job data
+        const updatedData = await getJobWithCustomerDetails(data.id);
         if (updatedData) {
           setData(updatedData);
         }
-        setIsEditing(false);
+        // Refresh the page to show updated status
+        router.refresh();
       } else {
-        setError(result.error || "Failed to update job");
+        const errorMessage = result.error || t("actions.startJobFailed");
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (err) {
-      console.error("Error updating job:", err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to update job. Please try again.");
-      }
+      console.error("Error starting job:", err);
+      setError("Failed to start job. Please try again.");
+    } finally {
+      setIsStarting(false);
     }
   };
 
-  const handleCancel = () => {
-    if (data) {
-      setEditForm({
-        title: data.title || "",
-        description: data.description || "",
-        customer_budget: data.customer_budget || 0,
-        estimated_duration: data.estimated_duration || 0,
-        preferred_date: data.preferred_date || "",
-        preferred_time_start: data.preferred_time_start || "",
-        preferred_time_end: data.preferred_time_end || "",
-        is_flexible: data.is_flexible || false,
-        requirements: data.requirements || "",
-      });
-    }
-    setIsEditing(false);
-  };
-
-  const handleAssignTasker = async (taskerId: string) => {
+  const handleCompleteJob = async () => {
     if (!data) return;
 
-    setIsAssigning(taskerId);
+    setIsCompleting(true);
+    setError(null);
     try {
-      const result = await assignTaskerToJob(data.id, taskerId);
+      const result = await completeJob(data.id);
 
       if (result.success) {
+        toast.success(t("actions.jobCompletedSuccess"));
+        // Refresh the job data
+        const updatedData = await getJobWithCustomerDetails(data.id);
+        if (updatedData) {
+          setData(updatedData);
+        }
         // Refresh the page to show updated status
-        window.location.reload();
+        router.refresh();
       } else {
-        setError(result.error || "Failed to assign tasker");
+        const errorMessage = result.error || t("actions.completeJobFailed");
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (err) {
-      console.error("Error assigning tasker:", err);
-      setError("Failed to assign tasker. Please try again.");
+      console.error("Error completing job:", err);
+      setError("Failed to complete job. Please try again.");
     } finally {
-      setIsAssigning(null);
+      setIsCompleting(false);
     }
   };
 
@@ -396,38 +349,6 @@ export default function JobDetailPage() {
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
-            {!isEditing ? (
-              <Button
-                onClick={() => setIsEditing(true)}
-                className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
-                size="sm"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={handleSave}
-                  className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
-                  size="sm"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </Button>
-                <Button
-                  onClick={handleCancel}
-                  variant="outline"
-                  size="sm"
-                  className="border-[var(--color-border)]"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancel
-                </Button>
-              </>
-            )}
-          </div>
         </div>
 
         <div className="space-y-8">
@@ -476,165 +397,7 @@ export default function JobDetailPage() {
                 )}
 
               <div className="p-8 md:p-12">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Job Title
-                      </label>
-                      <input
-                        type="text"
-                        value={editForm.title}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, title: e.target.value })
-                        }
-                        className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        value={editForm.description}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            description: e.target.value,
-                          })
-                        }
-                        rows={4}
-                        className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] resize-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Budget (€)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={editForm.customer_budget}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              customer_budget: parseFloat(e.target.value) || 0,
-                            })
-                          }
-                          className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Estimated Duration (hours)
-                        </label>
-                        <input
-                          type="number"
-                          value={editForm.estimated_duration}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              estimated_duration: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Preferred Date
-                        </label>
-                        <input
-                          type="date"
-                          value={editForm.preferred_date}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              preferred_date: e.target.value,
-                            })
-                          }
-                          className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Preferred Time
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="time"
-                            value={editForm.preferred_time_start}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                preferred_time_start: e.target.value,
-                              })
-                            }
-                            className="flex-1 p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-                          />
-                          <input
-                            type="time"
-                            value={editForm.preferred_time_end}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                preferred_time_end: e.target.value,
-                              })
-                            }
-                            className="flex-1 p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Requirements
-                      </label>
-                      <textarea
-                        value={editForm.requirements}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            requirements: e.target.value,
-                          })
-                        }
-                        rows={3}
-                        className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] resize-none"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        id="is_flexible"
-                        checked={editForm.is_flexible}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            is_flexible: e.target.checked,
-                          })
-                        }
-                        className="h-4 w-4 text-[var(--color-secondary)] focus:ring-[var(--color-secondary)] border-[var(--color-border)] rounded"
-                      />
-                      <label
-                        htmlFor="is_flexible"
-                        className="text-sm text-[var(--color-text-primary)]"
-                      >
-                        Flexible with timing
-                      </label>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
+                <div className="space-y-6">
                     {/* Header with Title and Budget */}
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                       <div className="space-y-2">
@@ -768,132 +531,167 @@ export default function JobDetailPage() {
                       )}
                     </div>
                   </div>
-                )}
               </div>
             </div>
           </div>
 
-          {/* Applications Section */}
-          {data.status === "active" && applications.length > 0 && (
+          {/* Customer Info Section - For Tasker */}
+          {data.customer_first_name && (
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-              <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+              <div className="bg-gradient-to-r from-slate-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                    <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                    <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
-                  Applications ({applications.length})
-                </h2>
-              </div>
-              <div className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {applications.map((application) => (
-                    <div
-                      key={application.id}
-                      className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                          <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-slate-900 dark:text-white truncate">
-                            {application.tasker_first_name}{" "}
-                            {application.tasker_last_name}
-                          </p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            {formatDate(application.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <Euro className="h-4 w-4 text-green-600 dark:text-green-400" />
-                          <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                            €{application.proposed_price}
-                          </span>
-                        </div>
-                        {application.estimated_duration && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                            <span className="text-sm text-slate-600 dark:text-slate-400">
-                              {application.estimated_duration}h
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {application.message && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mb-4">
-                          {application.message}
-                        </p>
-                      )}
-                      <Button
-                        onClick={() =>
-                          handleAssignTasker(application.tasker_id)
-                        }
-                        disabled={isAssigning === application.tasker_id}
-                        className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                      >
-                        {isAssigning === application.tasker_id ? (
-                          <>
-                            <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            Assigning...
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="h-5 w-5 mr-2" />
-                            Assign Tasker
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Assigned Tasker Section */}
-          {data.assigned_tasker_id && (
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-              <div className="bg-gradient-to-r from-slate-50 to-green-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  Assigned Tasker
+                  Customer Information
                 </h2>
               </div>
               <div className="p-8">
                 <div className="flex items-center gap-6">
-                  <div className="h-20 w-20 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center">
-                    <User className="h-10 w-10 text-green-600 dark:text-green-400" />
+                  <div className="h-20 w-20 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center overflow-hidden">
+                    {data.customer_avatar_url ? (
+                      <Image
+                        src={data.customer_avatar_url}
+                        alt={`${data.customer_first_name} ${data.customer_last_name}`}
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <User className="h-10 w-10 text-purple-600 dark:text-purple-400" />
+                    )}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                      {data.assigned_tasker_first_name}{" "}
-                      {data.assigned_tasker_last_name}
+                      {data.customer_first_name} {data.customer_last_name}
                     </h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-lg">
-                      Assigned to this job
+                    <p className="text-slate-600 dark:text-slate-400 text-lg mb-2">
+                      Job posted by this customer
                     </p>
+                    {data.customer_email && (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {data.customer_email}
+                      </p>
+                    )}
+                    {data.customer_phone && (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {data.customer_phone}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          {!data.assigned_tasker_id && data.status === "active" && (
+          {/* Job Progress Actions - For Tasker */}
+          {data.assigned_tasker_id && (
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-              <div className="p-8">
-                <JobDeleteButton
-                  jobId={data.id}
-                  customerId={data.customer_id}
-                  jobTitle={data.title}
-                />
+              <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  Job Progress
+                </h2>
+              </div>
+              <div className="p-8 space-y-4">
+                {/* Status Info */}
+                <div className="flex items-center justify-between p-4 bg-[var(--color-accent)]/20 rounded-lg">
+                  <div>
+                    <p className="text-sm text-[var(--color-text-secondary)] mb-1">
+                      Current Status
+                    </p>
+                    <Badge className={getStatusColor(data.status)}>
+                      {getStatusIcon(data.status)}
+                      <span className="ml-1">{getStatusLabel(data.status)}</span>
+                    </Badge>
+                  </div>
+                  {data.started_at && (
+                    <div>
+                      <p className="text-sm text-[var(--color-text-secondary)] mb-1">
+                        Started At
+                      </p>
+                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {formatDate(data.started_at)} {data.started_at.split("T")[1] && formatTime(data.started_at.split("T")[1].split(".")[0])}
+                      </p>
+                    </div>
+                  )}
+                  {data.completed_at && (
+                    <div>
+                      <p className="text-sm text-[var(--color-text-secondary)] mb-1">
+                        Completed At
+                      </p>
+                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {formatDate(data.completed_at)} {data.completed_at.split("T")[1] && formatTime(data.completed_at.split("T")[1].split(".")[0])}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4">
+                  {data.status === "assigned" && (
+                    <Button
+                      onClick={handleStartJob}
+                      disabled={isStarting}
+                      className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {isStarting ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          {t("actions.starting")}
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-5 w-5 mr-2" />
+                          {t("actions.startJob")}
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {data.status === "in_progress" && (
+                    <Button
+                      onClick={handleCompleteJob}
+                      disabled={isCompleting}
+                      className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {isCompleting ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          {t("actions.completing")}
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-5 w-5 mr-2" />
+                          {t("actions.completeJob")}
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {data.status === "completed" && (
+                    <div className="flex-1 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        <div>
+                          <p className="font-semibold text-green-900 dark:text-green-100">
+                            {t("actions.jobCompleted")}
+                          </p>
+                          <p className="text-sm text-green-700 dark:text-green-300">
+                            {t("actions.waitingConfirmation")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>

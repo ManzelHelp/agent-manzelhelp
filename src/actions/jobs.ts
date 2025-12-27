@@ -41,6 +41,7 @@ export interface JobWithDetails {
   assigned_tasker_id: string | null;
   started_at: string | null;
   completed_at: string | null;
+  customer_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
   images: string[] | null;
@@ -64,6 +65,10 @@ export interface JobWithDetails {
   assigned_tasker_first_name?: string | null;
   assigned_tasker_last_name?: string | null;
   assigned_tasker_avatar?: string | null;
+  // Customer details (for tasker view)
+  customer_first_name?: string | null;
+  customer_last_name?: string | null;
+  customer_avatar_url?: string | null;
 }
 
 export async function getCustomerJobs(
@@ -205,6 +210,18 @@ export async function getJobById(
         avatar_url,
         email,
         phone
+      ),
+      service:services!jobs_service_id_fkey(
+        id,
+        name_en,
+        name_fr,
+        name_ar,
+        category:service_categories!services_category_id_fkey(
+          id,
+          name_en,
+          name_fr,
+          name_ar
+        )
       )
     `
     )
@@ -220,9 +237,9 @@ export async function getJobById(
     throw new Error(`Failed to fetch job: ${error.message}`);
   }
 
-  const { categoryName, serviceName } = getCategoryAndServiceNamesSync(
-    data.service_id
-  );
+  // Get category and service names from database
+  const categoryName = data.service?.category?.name_en || "Unknown Category";
+  const serviceName = data.service?.name_en || "Unknown Service";
 
   return {
     ...data,
@@ -377,7 +394,8 @@ export async function assignTaskerToJob(
       return { success: false, error: "Unauthorized" };
     }
 
-    if (existingJob.status !== "open") {
+    // Allow assignment if job is active or under_review
+    if (existingJob.status !== "active" && existingJob.status !== "under_review") {
       return {
         success: false,
         error: "Job is no longer available for assignment",
@@ -859,8 +877,20 @@ export async function acceptJobApplication(
       });
 
     if (notificationError) {
-      console.error("Error creating notification:", notificationError);
+      console.error("Error creating notification (application_accepted):", {
+        message: notificationError.message,
+        code: notificationError.code,
+        details: notificationError.details,
+        hint: notificationError.hint,
+        taskerId: application.tasker_id,
+        jobId: application.job_id,
+      });
       // Don't fail the operation for this
+    } else {
+      console.log("Notification created successfully (application_accepted):", {
+        taskerId: application.tasker_id,
+        jobId: application.job_id,
+      });
     }
 
     revalidatePath(`/customer/my-jobs/${application.job_id}/applications`);
@@ -1084,7 +1114,7 @@ export async function createJobApplication(
     const { data: job, error: jobError } = await supabase
       .from("jobs")
       .select(
-        "id, customer_id, status, assigned_tasker_id, max_applications, current_applications"
+        "id, customer_id, status, assigned_tasker_id, max_applications, current_applications, title"
       )
       .eq("id", applicationData.job_id)
       .single();
@@ -1234,8 +1264,42 @@ export async function createJobApplication(
       // Don't fail the application creation for this
     }
 
+    // Create notification for the customer that a new application was received
+    if (job.customer_id) {
+      const jobTitle = job.title || "your job";
+      const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: job.customer_id,
+          type: "application_received",
+          title: "New Application Received",
+          message: `A tasker has applied to your job: "${jobTitle}".`,
+          related_job_id: applicationData.job_id,
+          is_read: false,
+        });
+
+      if (notificationError) {
+        console.error("Error creating notification (application_received):", {
+          message: notificationError.message,
+          code: notificationError.code,
+          details: notificationError.details,
+          hint: notificationError.hint,
+          customerId: job.customer_id,
+          jobId: applicationData.job_id,
+        });
+        // Don't fail the operation for this
+      } else {
+        console.log("Notification created successfully (application_received):", {
+          customerId: job.customer_id,
+          jobId: applicationData.job_id,
+        });
+      }
+    }
+
     revalidatePath(`/job-offer/${applicationData.job_id}`);
     revalidatePath("/tasker/my-jobs");
+    revalidatePath("/customer/my-jobs");
+    revalidatePath("/customer/notifications");
 
     return { success: true, applicationId: newApplication.id };
   } catch (error) {
@@ -1247,6 +1311,372 @@ export async function createJobApplication(
 /**
  * Get jobs assigned to a tasker
  */
+/**
+ * Start a job - Change status from 'assigned' to 'in_progress' and set started_at
+ * Only the assigned tasker can start the job
+ */
+export async function startJob(
+  jobId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user (tasker)
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const taskerId = user.id;
+
+    // Get the job and verify it's assigned to this tasker
+    const { data: job, error: fetchError } = await supabase
+      .from("jobs")
+      .select("id, assigned_tasker_id, status, customer_id, title")
+      .eq("id", jobId)
+      .single();
+
+    if (fetchError || !job) {
+      return { success: false, error: "Job not found" };
+    }
+
+    // Verify the job is assigned to this tasker
+    if (job.assigned_tasker_id !== taskerId) {
+      return {
+        success: false,
+        error: "You are not assigned to this job",
+      };
+    }
+
+    // Verify the job status is 'assigned'
+    if (job.status !== "assigned") {
+      return {
+        success: false,
+        error: `Job must be in 'assigned' status to start. Current status: ${job.status}`,
+      };
+    }
+
+    // Update the job: change status to 'in_progress' and set started_at
+    const { error: updateError } = await supabase
+      .from("jobs")
+      .update({
+        status: "in_progress",
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", jobId);
+
+    if (updateError) {
+      console.error("Error starting job:", {
+        message: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
+      return {
+        success: false,
+        error: `Failed to start job: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+      };
+    }
+
+    // Create notification for the customer that the tasker has started the job
+    if (job.customer_id) {
+      const jobTitle = job.title || "your job";
+      const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: job.customer_id,
+          type: "job_started",
+          title: "Job Started",
+          message: `The tasker has started working on your job: "${jobTitle}".`,
+          related_job_id: jobId,
+          is_read: false,
+        });
+
+      if (notificationError) {
+        console.error("Error creating notification (job_started):", {
+          message: notificationError.message,
+          code: notificationError.code,
+          details: notificationError.details,
+          hint: notificationError.hint,
+          customerId: job.customer_id,
+          jobId: jobId,
+        });
+        // Don't fail the operation for this
+      } else {
+        console.log("Notification created successfully (job_started):", {
+          customerId: job.customer_id,
+          jobId: jobId,
+        });
+      }
+    }
+
+    // Revalidate relevant paths
+    revalidatePath("/tasker/my-jobs");
+    revalidatePath(`/tasker/my-jobs/${jobId}`);
+    revalidatePath("/customer/my-jobs");
+    revalidatePath(`/customer/my-jobs/${jobId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in startJob:", error);
+    return { success: false, error: "Failed to start job" };
+  }
+}
+
+/**
+ * Complete a job - Change status from 'in_progress' to 'completed' and set completed_at
+ * Only the assigned tasker can complete the job
+ */
+export async function completeJob(
+  jobId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user (tasker)
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const taskerId = user.id;
+
+    // Get the job and verify it's assigned to this tasker
+    const { data: job, error: fetchError } = await supabase
+      .from("jobs")
+      .select("id, assigned_tasker_id, status, customer_id, title")
+      .eq("id", jobId)
+      .single();
+
+    if (fetchError || !job) {
+      return { success: false, error: "Job not found" };
+    }
+
+    // Verify the job is assigned to this tasker
+    if (job.assigned_tasker_id !== taskerId) {
+      return {
+        success: false,
+        error: "You are not assigned to this job",
+      };
+    }
+
+    // Verify the job status is 'in_progress'
+    if (job.status !== "in_progress") {
+      return {
+        success: false,
+        error: `Job must be in 'in_progress' status to complete. Current status: ${job.status}`,
+      };
+    }
+
+    // Update the job: change status to 'completed' and set completed_at
+    const { error: updateError } = await supabase
+      .from("jobs")
+      .update({
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", jobId);
+
+    if (updateError) {
+      console.error("Error completing job:", {
+        message: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
+      return {
+        success: false,
+        error: `Failed to complete job: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+      };
+    }
+
+    // Create notification for the customer that the tasker has completed the job
+    if (job.customer_id) {
+      const jobTitle = job.title || "your job";
+      const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: job.customer_id,
+          type: "job_completed",
+          title: "Job Completed",
+          message: `The tasker has completed your job: "${jobTitle}". Please review and confirm completion.`,
+          related_job_id: jobId,
+          is_read: false,
+        });
+
+      if (notificationError) {
+        console.error("Error creating notification (job_completed):", {
+          message: notificationError.message,
+          code: notificationError.code,
+          details: notificationError.details,
+          hint: notificationError.hint,
+          customerId: job.customer_id,
+          jobId: jobId,
+        });
+        // Don't fail the operation for this
+      } else {
+        console.log("Notification created successfully (job_completed):", {
+          customerId: job.customer_id,
+          jobId: jobId,
+        });
+      }
+    }
+
+    // Revalidate relevant paths
+    revalidatePath("/tasker/my-jobs");
+    revalidatePath(`/tasker/my-jobs/${jobId}`);
+    revalidatePath("/customer/my-jobs");
+    revalidatePath(`/customer/my-jobs/${jobId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in completeJob:", error);
+    return { success: false, error: "Failed to complete job" };
+  }
+}
+
+/**
+ * Confirm job completion - Customer confirms that the tasker has completed the job
+ * Only the customer who owns the job can confirm completion
+ */
+export async function confirmJobCompletion(
+  jobId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user (customer)
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const customerId = user.id;
+
+    // Get the job and verify it belongs to this customer
+    const { data: job, error: fetchError } = await supabase
+      .from("jobs")
+      .select("id, customer_id, status, completed_at, customer_confirmed_at, title, assigned_tasker_id")
+      .eq("id", jobId)
+      .single();
+
+    if (fetchError || !job) {
+      return { success: false, error: "Job not found" };
+    }
+
+    // Verify the job belongs to this customer
+    if (job.customer_id !== customerId) {
+      return {
+        success: false,
+        error: "You are not authorized to confirm this job",
+      };
+    }
+
+    // Verify the job status is 'completed'
+    if (job.status !== "completed") {
+      return {
+        success: false,
+        error: `Job must be in 'completed' status to confirm. Current status: ${job.status}`,
+      };
+    }
+
+    // Verify the job has been completed by the tasker
+    if (!job.completed_at) {
+      return {
+        success: false,
+        error: "The tasker has not yet completed this job",
+      };
+    }
+
+    // Verify the job hasn't already been confirmed
+    if (job.customer_confirmed_at) {
+      return {
+        success: false,
+        error: "This job has already been confirmed",
+      };
+    }
+
+    // Update the job: set customer_confirmed_at
+    const { error: updateError } = await supabase
+      .from("jobs")
+      .update({
+        customer_confirmed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", jobId);
+
+    if (updateError) {
+      console.error("Error confirming job completion:", {
+        message: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
+      return {
+        success: false,
+        error: `Failed to confirm job completion: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+      };
+    }
+
+    // Create notification for the tasker that the customer has confirmed completion
+    if (job.assigned_tasker_id) {
+      const jobTitle = job.title || "the job";
+      const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: job.assigned_tasker_id,
+          type: "job_completed",
+          title: "Job Confirmed by Customer",
+          message: `The customer has confirmed that you completed the job: "${jobTitle}".`,
+          related_job_id: jobId,
+          is_read: false,
+        });
+
+      if (notificationError) {
+        console.error("Error creating notification (job_confirmed_by_customer):", {
+          message: notificationError.message,
+          code: notificationError.code,
+          details: notificationError.details,
+          hint: notificationError.hint,
+          taskerId: job.assigned_tasker_id,
+          jobId: jobId,
+        });
+        // Don't fail the operation for this
+      } else {
+        console.log("Notification created successfully (job_confirmed_by_customer):", {
+          taskerId: job.assigned_tasker_id,
+          jobId: jobId,
+        });
+      }
+    }
+
+    // Revalidate relevant paths
+    revalidatePath("/customer/my-jobs");
+    revalidatePath(`/customer/my-jobs/${jobId}`);
+    revalidatePath("/tasker/my-jobs");
+    revalidatePath(`/tasker/my-jobs/${jobId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in confirmJobCompletion:", error);
+    return { success: false, error: "Failed to confirm job completion" };
+  }
+}
+
 export async function getTaskerJobs(
   taskerId: string,
   limit: number = 20,
@@ -1384,6 +1814,10 @@ export async function getTaskerJobs(
       assigned_tasker_first_name: null,
       assigned_tasker_last_name: null,
       assigned_tasker_avatar: null,
+      // Add customer info for tasker view
+      customer_first_name: (job.customer as any)?.first_name || null,
+      customer_last_name: (job.customer as any)?.last_name || null,
+      customer_avatar_url: (job.customer as any)?.avatar_url || null,
     };
   });
 
@@ -1470,6 +1904,18 @@ export async function getJobWithCustomerDetails(
           region,
           postal_code,
           country
+        ),
+        service:services!jobs_service_id_fkey(
+          id,
+          name_en,
+          name_fr,
+          name_ar,
+          category:service_categories!services_category_id_fkey(
+            id,
+            name_en,
+            name_fr,
+            name_ar
+          )
         )
       `
       )
@@ -1484,9 +1930,9 @@ export async function getJobWithCustomerDetails(
       throw new Error(`Failed to fetch job: ${error.message}`);
     }
 
-    const { categoryName, serviceName } = getCategoryAndServiceNamesSync(
-      data.service_id
-    );
+    // Get category and service names from database
+    const categoryName = data.service?.category?.name_en || "Unknown Category";
+    const serviceName = data.service?.name_en || "Unknown Service";
 
     return {
       ...data,

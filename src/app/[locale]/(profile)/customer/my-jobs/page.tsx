@@ -23,6 +23,7 @@ import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
+import ConfirmJobCompletionButton from "@/components/jobs/ConfirmJobCompletionButton";
 
 // Loading component for better UX
 function JobsLoadingSkeleton() {
@@ -264,6 +265,52 @@ async function JobCard({
                 </p>
                 <p className="text-xs text-[var(--color-text-secondary)]">
                   {t("jobCard.taskerAssigned")}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Job Completion Confirmation Section */}
+        {job.status === "completed" && 
+         job.completed_at && 
+         !job.customer_confirmed_at && (
+          <div className="mb-4 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">
+                  Job Completed - Awaiting Your Confirmation
+                </p>
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  The tasker has marked this job as completed. Please review and confirm.
+                </p>
+              </div>
+            </div>
+            <ConfirmJobCompletionButton
+              jobId={job.id}
+              completedAt={job.completed_at}
+            />
+          </div>
+        )}
+
+        {/* Job Confirmed Section */}
+        {job.status === "completed" && 
+         job.completed_at && 
+         job.customer_confirmed_at && (
+          <div className="mb-4 p-3 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                  Job Confirmed
+                </p>
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  You have confirmed this job completion.
                 </p>
               </div>
             </div>

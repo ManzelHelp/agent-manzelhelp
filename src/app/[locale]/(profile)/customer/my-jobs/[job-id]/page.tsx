@@ -32,6 +32,7 @@ import {
   getJobApplications,
   assignTaskerToJob,
   updateJob,
+  confirmJobCompletion,
   JobApplicationWithDetails,
 } from "@/actions/jobs";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
@@ -55,6 +56,7 @@ interface JobDetailsData {
   assigned_tasker_id: string | null;
   started_at: string | null;
   completed_at: string | null;
+  customer_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
   images: string[] | null;
@@ -91,6 +93,7 @@ export default function JobDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAssigning, setIsAssigning] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
@@ -878,6 +881,93 @@ export default function JobDetailPage() {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Job Completion Confirmation Section */}
+          {data.status === "completed" && 
+           data.completed_at && 
+           !data.customer_confirmed_at && (
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-3xl shadow-2xl border-2 border-blue-200 dark:border-blue-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 px-8 py-6 border-b border-blue-200 dark:border-blue-700">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  Job Completed - Awaiting Your Confirmation
+                </h2>
+              </div>
+              <div className="p-8 space-y-4">
+                <p className="text-slate-700 dark:text-slate-300 text-lg">
+                  The tasker has marked this job as completed. Please review the work and confirm completion.
+                </p>
+                {data.completed_at && (
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Completed on: {format(new Date(data.completed_at), "PPP 'at' p")}
+                  </p>
+                )}
+                <Button
+                  onClick={async () => {
+                    if (!data.id) return;
+                    setIsConfirming(true);
+                    try {
+                      const result = await confirmJobCompletion(data.id);
+                      if (result.success) {
+                        // Refresh the page to show updated status
+                        window.location.reload();
+                      } else {
+                        setError(result.error || "Failed to confirm job completion");
+                      }
+                    } catch (err) {
+                      console.error("Error confirming job:", err);
+                      setError("Failed to confirm job completion");
+                    } finally {
+                      setIsConfirming(false);
+                    }
+                  }}
+                  disabled={isConfirming}
+                  className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  size="lg"
+                >
+                  {isConfirming ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Confirming...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Confirm Job Completion
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Job Confirmed Section */}
+          {data.status === "completed" && 
+           data.completed_at && 
+           data.customer_confirmed_at && (
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-3xl shadow-2xl border-2 border-emerald-200 dark:border-emerald-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 px-8 py-6 border-b border-emerald-200 dark:border-emerald-700">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  Job Confirmed
+                </h2>
+              </div>
+              <div className="p-8">
+                <p className="text-slate-700 dark:text-slate-300 text-lg mb-4">
+                  You have confirmed that this job has been completed successfully.
+                </p>
+                {data.customer_confirmed_at && (
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Confirmed on: {format(new Date(data.customer_confirmed_at), "PPP 'at' p")}
+                  </p>
+                )}
               </div>
             </div>
           )}

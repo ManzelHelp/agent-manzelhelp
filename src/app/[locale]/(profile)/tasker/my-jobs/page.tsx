@@ -13,6 +13,7 @@ import {
   Star,
   Calendar,
   Users,
+  User,
   CheckCircle,
   AlertCircle,
   XCircle,
@@ -226,16 +227,6 @@ async function JobCard({
                 <span>{formatTime(job.preferred_time_start)}</span>
               </>
             )}
-            <span>•</span>
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              <span>
-                {job.application_count || 0}{" "}
-                {(job.application_count || 0) === 1
-                  ? t("jobCard.application")
-                  : t("jobCard.applications")}
-              </span>
-            </div>
           </div>
           <div className="flex items-center gap-2">
             <Badge className={getStatusColor(job.status)}>
@@ -250,42 +241,38 @@ async function JobCard({
           </div>
         </div>
 
-        {/* Assigned Tasker Info */}
-        {job.assigned_tasker_id && (
+        {/* Customer Info - For Tasker View */}
+        {job.customer_first_name && (
           <div className="mb-4 p-3 bg-[var(--color-accent)]/20 rounded-lg">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-[var(--color-secondary)] rounded-full flex items-center justify-center">
-                <Users className="h-4 w-4 text-white" />
+              <div className="h-8 w-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center overflow-hidden">
+                {job.customer_avatar_url ? (
+                  <img
+                    src={job.customer_avatar_url}
+                    alt={`${job.customer_first_name} ${job.customer_last_name}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                  {t("jobCard.assignedTo")} {job.assigned_tasker_first_name}{" "}
-                  {job.assigned_tasker_last_name}
+                  {t("jobCard.postedBy")} {job.customer_first_name}{" "}
+                  {job.customer_last_name}
                 </p>
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  {t("jobCard.taskerAssigned")}
+                  {t("jobCard.customerPosted")}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Buttons - For Tasker */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {job.status === "active" && job.application_count > 0 && (
-              <Button
-                asChild
-                size="sm"
-                className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
-              >
-                <Link href={`./my-jobs/${job.id}`}>
-                  {t("jobCard.viewApplications")}
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            )}
-            {job.status === "assigned" && (
+            {(job.status === "assigned" || job.status === "in_progress") && (
               <Button
                 asChild
                 size="sm"
@@ -307,21 +294,10 @@ async function JobCard({
               variant="outline"
               className="border-[var(--color-border)]"
             >
-              <Link href={`./my-jobs/${job.id}/applications`}>
-                <Users className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="border-[var(--color-border)]"
-            >
               <Link href={`./my-jobs/${job.id}`}>
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
-            {/* Taskers cannot delete jobs assigned to them */}
           </div>
         </div>
       </div>
@@ -417,20 +393,20 @@ export default async function MyJobsPage() {
       <section className="w-full max-w-2xl px-4 pt-6 pb-2">
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-4 sm:p-6 border border-[var(--color-border)] mb-4">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-2">
-            {t("pageTitle")}
+            {t("taskerPageTitle")}
           </h1>
           <p className="text-[var(--color-text-secondary)] mb-4 text-sm sm:text-base">
-            {t("pageDescription")}
+            {t("taskerPageDescription")}
           </p>
           <div>
             <h2 className="font-semibold text-[var(--color-text-primary)] mb-1 text-base">
               {t("quickSteps")}
             </h2>
             <ol className="list-decimal list-inside space-y-1 text-[var(--color-text-secondary)] text-sm sm:text-base">
-              <li>{t("step1")}</li>
-              <li>{t("step2")}</li>
-              <li>{t("step3")}</li>
-              <li>{t("step4")}</li>
+              <li>{t("taskerStep1")}</li>
+              <li>{t("taskerStep2")}</li>
+              <li>{t("taskerStep3")}</li>
+              <li>{t("taskerStep4")}</li>
             </ol>
           </div>
         </div>
