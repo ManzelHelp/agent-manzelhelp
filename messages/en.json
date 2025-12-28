@@ -782,18 +782,24 @@
       "resetPassword": {
         "title": "Reset Password",
         "subtitle": "Enter your new password below",
+        "description": "Enter your new password below",
         "newPassword": "New Password",
         "confirmPassword": "Confirm Password",
         "newPasswordPlaceholder": "Enter new password",
         "confirmPasswordPlaceholder": "Confirm new password",
+        "enterNewPassword": "Enter your new password",
+        "confirmNewPassword": "Confirm your new password",
         "updatingPassword": "Updating password...",
         "updatePassword": "Update Password",
+        "passwordUpdated": "Password updated successfully!",
         "passwordUpdatedSuccess": "Password updated successfully!",
         "passwordsDoNotMatch": "Passwords do not match",
         "passwordTooShort": "Password must be at least 6 characters long",
         "backToLogin": "Back to Login",
         "rememberPassword": "Remember your password?",
-        "signInHere": "Sign in here"
+        "signInHere": "Sign in here",
+        "verifyingCode": "Verifying reset code...",
+        "invalidCode": "Invalid or expired reset link. Redirecting to login..."
       },
       "waitForConfirmation": {
         "title": "Check your email",
@@ -803,10 +809,12 @@
     "forgotPassword": {
       "title": "Forgot Password?",
       "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
       "backToLogin": "Back to login",
       "emailPlaceholder": "Enter your email",
       "sendingEmail": "Sending email...",
       "sendResetLink": "Send Reset Link",
+      "resetEmailSent": "Password reset email sent! Check your inbox.",
       "passwordResetEmailSent": "Password reset email sent! Check your inbox."
     },
     "passwordRequirements": {

@@ -38,6 +38,7 @@ export type TransactionType =
   | "cash_payment";
 export type NotificationType =
   | "job_created"
+  | "job_approved"
   | "application_received"
   | "application_accepted"
   | "job_started"

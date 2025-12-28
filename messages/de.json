@@ -782,18 +782,24 @@
       "resetPassword": {
         "title": "Passwort zurücksetzen",
         "subtitle": "Geben Sie Ihr neues Passwort unten ein",
+        "description": "Geben Sie Ihr neues Passwort unten ein",
         "newPassword": "Neues Passwort",
         "confirmPassword": "Passwort bestätigen",
         "newPasswordPlaceholder": "Neues Passwort eingeben",
         "confirmPasswordPlaceholder": "Neues Passwort bestätigen",
+        "enterNewPassword": "Geben Sie Ihr neues Passwort ein",
+        "confirmNewPassword": "Bestätigen Sie Ihr neues Passwort",
         "updatingPassword": "Passwort wird aktualisiert...",
         "updatePassword": "Passwort aktualisieren",
+        "passwordUpdated": "Passwort erfolgreich aktualisiert!",
         "passwordUpdatedSuccess": "Passwort erfolgreich aktualisiert!",
         "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
         "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
         "backToLogin": "Zurück zur Anmeldung",
         "rememberPassword": "Passwort vergessen?",
-        "signInHere": "Hier anmelden"
+        "signInHere": "Hier anmelden",
+        "verifyingCode": "Reset-Code wird überprüft...",
+        "invalidCode": "Ungültiger oder abgelaufener Reset-Link. Weiterleitung zur Anmeldung..."
       },
       "waitForConfirmation": {
         "title": "Überprüfen Sie Ihre E-Mail",
@@ -803,10 +809,12 @@
     "forgotPassword": {
       "title": "Passwort vergessen?",
       "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.",
+      "description": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.",
       "backToLogin": "Zurück zur Anmeldung",
       "emailPlaceholder": "E-Mail eingeben",
       "sendingEmail": "E-Mail wird gesendet...",
       "sendResetLink": "Reset-Link senden",
+      "resetEmailSent": "Passwort-Reset-E-Mail gesendet! Überprüfen Sie Ihren Posteingang.",
       "passwordResetEmailSent": "Passwort-Reset-E-Mail gesendet! Überprüfen Sie Ihren Posteingang."
     },
     "passwordRequirements": {

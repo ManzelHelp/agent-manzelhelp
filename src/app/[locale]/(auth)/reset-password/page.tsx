@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +10,54 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Lock, ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { updatePasswordAction } from "@/actions/auth";
+import { updatePasswordAction, verifyPasswordResetCodeAction } from "@/actions/auth";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("auth");
   const [isPending, startTransition] = useTransition();
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
+
+  // Verify the reset code when the page loads
+  useEffect(() => {
+    const verifyCode = async () => {
+      const code = searchParams.get("code");
+      const token_hash = searchParams.get("token_hash");
+      const type = searchParams.get("type");
+
+      // If no code or token_hash, assume user is already verified or returning
+      if (!code && !token_hash) {
+        setIsVerifying(false);
+        setIsVerified(true);
+        return;
+      }
+
+      // Verify the code
+      const result = await verifyPasswordResetCodeAction(code || undefined, token_hash || undefined, type || undefined);
+
+      if (result.success) {
+        setIsVerified(true);
+        // Remove code from URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete("code");
+        newUrl.searchParams.delete("token_hash");
+        newUrl.searchParams.delete("type");
+        window.history.replaceState({}, "", newUrl.toString());
+      } else {
+        toast.error(result.errorMessage || "Invalid or expired reset link");
+        // Redirect to login after a delay
+        setTimeout(() => {
+          router.replace("/login");
+        }, 3000);
+      }
+
+      setIsVerifying(false);
+    };
+
+    verifyCode();
+  }, [searchParams, router]);
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
@@ -67,6 +109,28 @@ export default function ResetPasswordPage() {
       {/* Main Content */}
       <div className="relative z-10 flex-1 flex flex-col justify-center px-4 sm:px-6 py-6">
         <div className="w-full max-w-md mx-auto">
+          {isVerifying ? (
+            <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl sm:shadow-2xl">
+              <CardContent className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 pt-6 sm:pt-8">
+                <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-[var(--color-secondary)]" />
+                  <p className="text-[var(--color-text-secondary)] text-sm sm:text-base">
+                    {t("pages.resetPassword.verifyingCode") || "Verifying reset code..."}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : !isVerified ? (
+            <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl sm:shadow-2xl">
+              <CardContent className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 pt-6 sm:pt-8">
+                <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                  <p className="text-[var(--color-text-error)] text-sm sm:text-base text-center">
+                    {t("pages.resetPassword.invalidCode") || "Invalid or expired reset link. Redirecting to login..."}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
           <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl sm:shadow-2xl">
             <CardHeader className="text-center pb-4 sm:pb-6 pt-6 sm:pt-8">
               <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[var(--color-secondary)] rounded-full mb-3 sm:mb-4">
@@ -148,6 +212,7 @@ export default function ResetPasswordPage() {
               </form>
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
 

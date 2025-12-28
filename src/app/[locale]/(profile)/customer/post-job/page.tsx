@@ -125,6 +125,7 @@ export default function PostJobPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const [formData, setFormData] = useState<JobFormData>({
     jobDetails: INITIAL_JOB_DETAILS,
     scheduleBudget: INITIAL_SCHEDULE_BUDGET,
@@ -527,19 +528,21 @@ export default function PostJobPage() {
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden shadow-lg">
-                            {user?.avatar_url ? (
+                            {user?.avatar_url && !avatarError ? (
                               <Image
                                 src={user.avatar_url}
                                 alt="Profile"
                                 width={64}
                                 height={64}
                                 className="w-full h-full object-cover"
+                                unoptimized
+                                onError={() => setAvatarError(true)}
                               />
                             ) : (
                               <User className="h-8 w-8 text-white" />
                             )}
                           </div>
-                          {!user?.avatar_url && (
+                          {(!user?.avatar_url || avatarError) && (
                             <div className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-warning)] rounded-full flex items-center justify-center">
                               <AlertCircle className="h-3 w-3 text-white" />
                             </div>

@@ -190,8 +190,11 @@ export const resetPasswordAction = async (email: string) => {
     // Ensure origin has protocol
     const baseUrl = origin.startsWith("http") ? origin : `https://${origin}`;
 
+    // Get locale from headers or default to 'fr'
+    const locale = headersList.get("x-locale") || "fr";
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${baseUrl}/reset-password`,
+      redirectTo: `${baseUrl}/${locale}/reset-password`,
     });
     if (error) throw error;
 
@@ -199,6 +202,106 @@ export const resetPasswordAction = async (email: string) => {
   } catch (error) {
     console.error("Password reset error:", error);
     return handleError(error);
+  }
+};
+
+/**
+ * Verifies the password reset code and creates a session
+ * This must be called before updatePasswordAction
+ * 
+ * For password reset, Supabase sends a `code` in the URL.
+ * We use `exchangeCodeForSession` to exchange the code for a session.
+ * 
+ * Alternatively, Supabase can send `token_hash` + `type` for OTP verification.
+ */
+export const verifyPasswordResetCodeAction = async (
+  code?: string,
+  token_hash?: string,
+  type?: string
+) => {
+  try {
+    const supabase = await createClient();
+
+    console.log("[verifyPasswordResetCodeAction] Parameters:", {
+      hasCode: !!code,
+      hasTokenHash: !!token_hash,
+      type,
+      codeLength: code?.length,
+      tokenHashLength: token_hash?.length,
+    });
+
+    if (!code && !token_hash) {
+      return {
+        success: false,
+        errorMessage: "Missing reset code",
+      };
+    }
+
+    let data: any;
+    let error: any;
+
+    // For password reset, Supabase typically sends a `code` parameter
+    // Use exchangeCodeForSession for code-based reset (recommended method)
+    if (code) {
+      console.log("[verifyPasswordResetCodeAction] Using exchangeCodeForSession with code");
+      const { auth } = supabase;
+      const result = await auth.exchangeCodeForSession(code);
+      data = result.data;
+      error = result.error;
+      console.log("[verifyPasswordResetCodeAction] exchangeCodeForSession result:", {
+        hasSession: !!data?.session,
+        hasUser: !!data?.user,
+        error: error?.message,
+      });
+    } 
+    // If token_hash is provided, use verifyOtp (alternative method)
+    else if (token_hash) {
+      console.log("[verifyPasswordResetCodeAction] Using verifyOtp with token_hash");
+      // Ensure type is "recovery" for password reset
+      const otpType = "recovery" as const;
+      const result = await supabase.auth.verifyOtp({
+        token_hash,
+        type: otpType,
+      });
+      data = result.data;
+      error = result.error;
+      console.log("[verifyPasswordResetCodeAction] verifyOtp result:", {
+        hasSession: !!data?.session,
+        hasUser: !!data?.user,
+        error: error?.message,
+      });
+    } else {
+      return {
+        success: false,
+        errorMessage: "Missing reset code or token",
+      };
+    }
+
+    if (error) {
+      console.error("Password reset code verification error:", error);
+      return {
+        success: false,
+        errorMessage: error.message || "Invalid or expired reset link",
+      };
+    }
+
+    if (!data.session) {
+      return {
+        success: false,
+        errorMessage: "Failed to create session",
+      };
+    }
+
+    return {
+      success: true,
+      errorMessage: null,
+    };
+  } catch (error) {
+    console.error("Password reset code verification error:", error);
+    return {
+      success: false,
+      errorMessage: "An error occurred while verifying the reset code",
+    };
   }
 };
 

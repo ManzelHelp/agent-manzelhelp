@@ -782,18 +782,24 @@
       "resetPassword": {
         "title": "Réinitialiser le mot de passe",
         "subtitle": "Entrez votre nouveau mot de passe ci-dessous",
+        "description": "Entrez votre nouveau mot de passe ci-dessous",
         "newPassword": "Nouveau mot de passe",
         "confirmPassword": "Confirmer le mot de passe",
         "newPasswordPlaceholder": "Entrez le nouveau mot de passe",
         "confirmPasswordPlaceholder": "Confirmez le nouveau mot de passe",
+        "enterNewPassword": "Entrez votre nouveau mot de passe",
+        "confirmNewPassword": "Confirmez votre nouveau mot de passe",
         "updatingPassword": "Mise à jour du mot de passe...",
         "updatePassword": "Mettre à jour le mot de passe",
+        "passwordUpdated": "Mot de passe mis à jour avec succès !",
         "passwordUpdatedSuccess": "Mot de passe mis à jour avec succès !",
         "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
         "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
         "backToLogin": "Retour à la connexion",
         "rememberPassword": "Vous vous souvenez de votre mot de passe ?",
-        "signInHere": "Connectez-vous ici"
+        "signInHere": "Connectez-vous ici",
+        "verifyingCode": "Vérification du code de réinitialisation...",
+        "invalidCode": "Lien de réinitialisation invalide ou expiré. Redirection vers la connexion..."
       },
       "waitForConfirmation": {
         "title": "Vérifiez votre e-mail",
@@ -803,10 +809,12 @@
     "forgotPassword": {
       "title": "Mot de passe oublié ?",
       "subtitle": "Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+      "description": "Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
       "backToLogin": "Retour à la connexion",
       "emailPlaceholder": "Entrez votre e-mail",
       "sendingEmail": "Envoi de l'e-mail...",
       "sendResetLink": "Envoyer le lien de réinitialisation",
+      "resetEmailSent": "E-mail de réinitialisation du mot de passe envoyé ! Vérifiez votre boîte de réception.",
       "passwordResetEmailSent": "E-mail de réinitialisation du mot de passe envoyé ! Vérifiez votre boîte de réception."
     },
     "passwordRequirements": {

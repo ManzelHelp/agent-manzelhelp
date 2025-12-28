@@ -1677,6 +1677,127 @@ export async function confirmJobCompletion(
   }
 }
 
+/**
+ * Approve a job by admin - Changes job status from "under_review" to "active"
+ * and sends a notification to the customer
+ * Only admins can call this function
+ */
+export async function approveJobByAdmin(
+  jobId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Verify the user is an admin
+    const { data: userData, error: userDataError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (userDataError || !userData) {
+      return { success: false, error: "Failed to verify user" };
+    }
+
+    if (userData.role !== "admin") {
+      return { success: false, error: "Only admins can approve jobs" };
+    }
+
+    // Get the job and verify it exists and is in "under_review" status
+    const { data: job, error: fetchError } = await supabase
+      .from("jobs")
+      .select("id, customer_id, status, title")
+      .eq("id", jobId)
+      .single();
+
+    if (fetchError || !job) {
+      return { success: false, error: "Job not found" };
+    }
+
+    // Verify the job is in "under_review" status
+    if (job.status !== "under_review") {
+      return {
+        success: false,
+        error: `Job cannot be approved. Current status: ${job.status}. Only jobs with status "under_review" can be approved.`,
+      };
+    }
+
+    // Update the job status to "active"
+    const { error: updateError } = await supabase
+      .from("jobs")
+      .update({
+        status: "active",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", jobId);
+
+    if (updateError) {
+      console.error("Error approving job:", {
+        message: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
+      return {
+        success: false,
+        error: `Failed to approve job: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+      };
+    }
+
+    // Create notification for the customer that their job has been approved
+    if (job.customer_id) {
+      const jobTitle = job.title || "your job";
+      const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: job.customer_id,
+          type: "job_approved",
+          title: "Job Approved",
+          message: `Your job "${jobTitle}" has been approved and is now live! Taskers can now see and apply to your job.`,
+          related_job_id: jobId,
+          is_read: false,
+        });
+
+      if (notificationError) {
+        console.error("Error creating notification (job_approved):", {
+          message: notificationError.message,
+          code: notificationError.code,
+          details: notificationError.details,
+          hint: notificationError.hint,
+          customerId: job.customer_id,
+          jobId: jobId,
+        });
+        // Don't fail the operation for this, but log the error
+      } else {
+        console.log("Notification created successfully (job_approved):", {
+          customerId: job.customer_id,
+          jobId: jobId,
+        });
+      }
+    }
+
+    // Revalidate relevant paths
+    revalidatePath("/customer/my-jobs");
+    revalidatePath(`/customer/my-jobs/${jobId}`);
+    revalidatePath("/customer/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in approveJobByAdmin:", error);
+    return { success: false, error: "Failed to approve job" };
+  }
+}
+
 export async function getTaskerJobs(
   taskerId: string,
   limit: number = 20,
