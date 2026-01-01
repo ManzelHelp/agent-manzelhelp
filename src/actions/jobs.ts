@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/supabase/server";
+import { createClient, createServiceRoleClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 
@@ -98,8 +98,8 @@ export async function getCustomerJobs(
     total = count || 0;
   }
 
-  // Get jobs with pagination, including service and category information
-  const { data, error } = await supabase
+  // Get all jobs first (without ordering) to sort them by status priority
+  const { data: allJobs, error: fetchError } = await supabase
     .from("jobs")
     .select(
       `
@@ -125,18 +125,45 @@ export async function getCustomerJobs(
       )
     `
     )
-    .eq("customer_id", customerId)
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit);
+    .eq("customer_id", customerId);
 
-  if (error) {
-    console.error("Error fetching jobs:", error);
-    throw new Error(`Failed to fetch jobs: ${error.message}`);
+  if (fetchError) {
+    console.error("Error fetching jobs:", fetchError);
+    throw new Error(`Failed to fetch jobs: ${fetchError.message}`);
   }
 
+  // Sort jobs by status priority: active jobs first, then completed
+  // Priority order: active > assigned > in_progress > under_review > completed > cancelled > others
+  const statusPriority: Record<string, number> = {
+    active: 1,
+    assigned: 2,
+    in_progress: 3,
+    under_review: 4,
+    completed: 5,
+    cancelled: 6,
+  };
+
+  const sortedJobs = (allJobs || []).sort((a, b) => {
+    const statusA = statusPriority[a.status || ""] || 999;
+    const statusB = statusPriority[b.status || ""] || 999;
+
+    // First sort by status priority
+    if (statusA !== statusB) {
+      return statusA - statusB;
+    }
+
+    // If same status, sort by created_at (newest first)
+    const dateA = new Date(a.created_at || 0).getTime();
+    const dateB = new Date(b.created_at || 0).getTime();
+    return dateB - dateA;
+  });
+
+  // Apply pagination after sorting
+  const paginatedJobs = sortedJobs.slice(offset, offset + limit);
+
   // Check if there are more items
-  const hasMore = data.length > limit;
-  const jobs = data.slice(0, limit);
+  const hasMore = sortedJobs.length > offset + limit;
+  const jobs = paginatedJobs;
 
   // Format the data and add category names from database or fallback to local
   const formattedJobs: JobWithDetails[] = jobs.map((job) => {
@@ -512,17 +539,39 @@ export async function getJobApplications(
       throw new Error(`Failed to fetch applications: ${error.message}`);
     }
 
+    // Explicitly serialize all fields to ensure proper JSON serialization
     const applications: JobApplicationWithDetails[] = (data || []).map(
-      (app) => ({
-        ...app,
-        tasker_first_name: app.tasker?.first_name,
-        tasker_last_name: app.tasker?.last_name,
-        tasker_avatar_url: app.tasker?.avatar_url,
-        tasker_phone: app.tasker?.phone,
-        tasker_email: app.tasker?.email,
-        tasker_created_at: app.tasker?.created_at,
-        tasker_verification_status: app.tasker?.verification_status,
-      })
+      (app: any) => {
+        // Extract tasker data before removing it
+        const tasker = app.tasker || {};
+        
+        // Return a clean, serializable object
+        return {
+          id: String(app.id),
+          job_id: String(app.job_id),
+          tasker_id: String(app.tasker_id),
+          proposed_price: Number(app.proposed_price || 0),
+          estimated_duration: app.estimated_duration ? Number(app.estimated_duration) : null,
+          message: app.message ? String(app.message) : null,
+          status: app.status ? String(app.status) : null,
+          is_premium: app.is_premium === true,
+          created_at: app.created_at ? new Date(app.created_at).toISOString() : new Date().toISOString(),
+          updated_at: app.updated_at ? new Date(app.updated_at).toISOString() : new Date().toISOString(),
+          availability: app.availability ? String(app.availability) : null,
+          experience_level: app.experience_level ? String(app.experience_level) : null,
+          experience_description: app.experience_description ? String(app.experience_description) : null,
+          availability_details: app.availability_details ? String(app.availability_details) : null,
+          is_flexible_schedule: app.is_flexible_schedule === true,
+          // Tasker details - explicitly serialize
+          tasker_first_name: tasker.first_name ? String(tasker.first_name) : null,
+          tasker_last_name: tasker.last_name ? String(tasker.last_name) : null,
+          tasker_avatar_url: tasker.avatar_url ? String(tasker.avatar_url) : null,
+          tasker_phone: tasker.phone ? String(tasker.phone) : null,
+          tasker_email: tasker.email ? String(tasker.email) : null,
+          tasker_created_at: tasker.created_at ? new Date(tasker.created_at).toISOString() : null,
+          tasker_verification_status: tasker.verification_status ? String(tasker.verification_status) : null,
+        };
+      }
     );
 
     return applications;
@@ -1570,7 +1619,7 @@ export async function confirmJobCompletion(
     // Get the job and verify it belongs to this customer
     const { data: job, error: fetchError } = await supabase
       .from("jobs")
-      .select("id, customer_id, status, completed_at, customer_confirmed_at, title, assigned_tasker_id")
+      .select("id, customer_id, status, completed_at, customer_confirmed_at, title, assigned_tasker_id, final_price, customer_budget, currency")
       .eq("id", jobId)
       .single();
 
@@ -1610,6 +1659,38 @@ export async function confirmJobCompletion(
       };
     }
 
+    // Extract values to avoid serialization issues
+    const taskerId = String(job.assigned_tasker_id || "");
+    const finalPrice = Number(job.final_price || job.customer_budget || 0);
+    const currency = String(job.currency || "MAD");
+    const jobTitle = String(job.title || "the job");
+
+    console.log("🔍 Job confirmation data:", {
+      jobId,
+      taskerId,
+      finalPrice,
+      customerBudget: job.customer_budget,
+      finalPriceFromJob: job.final_price,
+      hasTaskerId: !!taskerId,
+      hasPrice: finalPrice > 0,
+    });
+
+    // Get tasker's current wallet balance for payment processing
+    let taskerWalletBalance = 0;
+    if (taskerId) {
+      const { data: taskerData, error: taskerError } = await supabase
+        .from("users")
+        .select("wallet_balance")
+        .eq("id", taskerId)
+        .single();
+
+      if (taskerError) {
+        console.error("Error fetching tasker wallet balance:", taskerError);
+      } else {
+        taskerWalletBalance = taskerData?.wallet_balance || 0;
+      }
+    }
+
     // Update the job: set customer_confirmed_at
     const { error: updateError } = await supabase
       .from("jobs")
@@ -1632,36 +1713,354 @@ export async function confirmJobCompletion(
       };
     }
 
-    // Create notification for the tasker that the customer has confirmed completion
-    if (job.assigned_tasker_id) {
-      const jobTitle = job.title || "the job";
-      const { error: notificationError } = await supabase
+    console.log("✅ Job confirmed: customer_confirmed_at set");
+
+    // --- Payment Processing ---
+    if (taskerId && finalPrice > 0) {
+      const platformFeeRate = 0.10; // 10% platform fee
+      const totalAmount = finalPrice;
+      const platformFee = totalAmount * platformFeeRate;
+      const netAmount = totalAmount - platformFee;
+
+      console.log("💰 Processing payment for job:", {
+        jobId,
+        taskerId,
+        customerId,
+        totalAmount,
+        platformFee,
+        netAmount,
+        currentWalletBalance: taskerWalletBalance,
+      });
+
+      // 1. Create a transaction record
+      console.log("💳 Attempting to create transaction:", {
+        job_id: jobId,
+        booking_id: null,
+        payer_id: customerId,
+        payee_id: taskerId,
+        transaction_type: "job_payment",
+        amount: totalAmount,
+        platform_fee: platformFee,
+        payment_status: "paid",
+      });
+
+      const { data: transaction, error: transactionError } = await supabase
+        .from("transactions")
+        .insert({
+          job_id: jobId,
+          booking_id: null, // No booking_id for jobs
+          payer_id: customerId,
+          payee_id: taskerId,
+          transaction_type: "job_payment",
+          amount: totalAmount,
+          platform_fee: platformFee,
+          payment_status: "paid",
+          processed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (transactionError) {
+        console.error("❌ CRITICAL: Error creating transaction for job completion:", {
+          message: transactionError.message,
+          code: transactionError.code,
+          details: transactionError.details,
+          hint: transactionError.hint,
+          jobId,
+          taskerId,
+          customerId,
+          totalAmount,
+          platformFee,
+        });
+        // Continue with wallet and stats updates even if transaction creation fails
+        // But log this as a critical error
+      } else {
+        console.log("✅ Transaction created successfully:", {
+          transactionId: transaction?.id,
+          jobId: transaction?.job_id,
+          amount: transaction?.amount,
+          platformFee: transaction?.platform_fee,
+        });
+      }
+
+      // 2. Update tasker's wallet balance - DÉDUIRE les frais de plateforme
+      // Le wallet est un crédit donné par l'admin, on déduit les frais à chaque transaction
+      const newWalletBalance = taskerWalletBalance - platformFee;
+      
+      console.log(`[confirmJobCompletion] Wallet update calculation:`, {
+        taskerId,
+        currentBalance: taskerWalletBalance,
+        platformFee,
+        newBalance: newWalletBalance,
+        jobId,
+        transactionId: transaction?.id,
+      });
+      
+      if (newWalletBalance < 0) {
+        console.error("❌ CRITICAL: Wallet balance would be negative:", {
+          taskerId,
+          currentBalance: taskerWalletBalance,
+          platformFee,
+          newBalance: newWalletBalance,
+        });
+        return {
+          success: false,
+          error: `Insufficient wallet balance. Current: ${taskerWalletBalance} MAD, Fee: ${platformFee} MAD`,
+        };
+      }
+
+      // Use service role client to bypass RLS for wallet updates
+      // Fallback to regular client if service role is not available
+      let walletUpdateError;
+      let walletUpdateSuccess = false;
+      
+      const serviceSupabase = createServiceRoleClient();
+      if (serviceSupabase) {
+        // Service role client is available - use it (bypasses RLS)
+        try {
+          console.log(`[confirmJobCompletion] Attempting wallet update with service role client for tasker ${taskerId}`);
+          const result = await serviceSupabase
+            .from("users")
+            .update({ wallet_balance: newWalletBalance })
+            .eq("id", taskerId)
+            .select("wallet_balance");
+          walletUpdateError = result.error;
+          if (!walletUpdateError && result.data && result.data.length > 0) {
+            walletUpdateSuccess = true;
+            console.log(`[confirmJobCompletion] ✅ Wallet updated successfully. New balance: ${result.data[0].wallet_balance}`);
+          }
+        } catch (serviceRoleError) {
+          console.error("❌ Error using service role client:", serviceRoleError);
+          walletUpdateError = serviceRoleError instanceof Error ? serviceRoleError : new Error(String(serviceRoleError));
+        }
+      }
+      
+      // If service role client is not available or failed, try with regular client (RLS must allow it)
+      if (!walletUpdateSuccess && !serviceSupabase) {
+        console.warn("⚠️ Service role client not available, attempting with regular client (RLS must allow wallet_balance updates)");
+        const { error, data } = await supabase
+          .from("users")
+          .update({ wallet_balance: newWalletBalance })
+          .eq("id", taskerId)
+          .select("wallet_balance");
+        walletUpdateError = error;
+        if (!walletUpdateError && data && data.length > 0) {
+          walletUpdateSuccess = true;
+          console.log(`[confirmJobCompletion] ✅ Wallet updated successfully with regular client. New balance: ${data[0].wallet_balance}`);
+        } else if (walletUpdateError) {
+          console.error("❌ Regular client also failed to update wallet:", walletUpdateError);
+        }
+      }
+
+      if (walletUpdateError) {
+        console.error("❌ CRITICAL: Error updating tasker wallet balance:", {
+          error: walletUpdateError,
+          errorMessage: walletUpdateError.message,
+          errorCode: walletUpdateError.code,
+          errorDetails: walletUpdateError.details,
+          taskerId,
+          currentBalance: taskerWalletBalance,
+          platformFee,
+          newBalance: newWalletBalance,
+        });
+        return {
+          success: false,
+          error: `Failed to update wallet: ${walletUpdateError.message}`,
+        };
+      }
+      
+      if (!walletUpdateSuccess) {
+        console.error("❌ CRITICAL: Wallet update appeared to succeed but no data returned:", {
+          taskerId,
+          currentBalance: taskerWalletBalance,
+          platformFee,
+          newBalance: newWalletBalance,
+          walletUpdateError,
+        });
+        // Verify the wallet was actually updated by fetching it
+        try {
+          const verifySupabase = createServiceRoleClient();
+          const { data: verifyData, error: verifyError } = await verifySupabase
+            .from("users")
+            .select("wallet_balance")
+            .eq("id", taskerId)
+            .single();
+          
+          if (verifyError) {
+            console.error("❌ CRITICAL: Could not verify wallet update:", verifyError);
+            return {
+              success: false,
+              error: `Wallet update verification failed: ${verifyError.message}`,
+            };
+          }
+          
+          if (verifyData && parseFloat(String(verifyData.wallet_balance)) !== newWalletBalance) {
+            console.error("❌ CRITICAL: Wallet was NOT updated correctly!", {
+              expected: newWalletBalance,
+              actual: verifyData.wallet_balance,
+              taskerId,
+            });
+            return {
+              success: false,
+              error: `Wallet update failed: Expected ${newWalletBalance} but got ${verifyData.wallet_balance}`,
+            };
+          } else {
+            console.log(`✅ Wallet update verified: ${verifyData.wallet_balance}`);
+            walletUpdateSuccess = true;
+          }
+        } catch (verifyException) {
+          console.error("❌ CRITICAL: Exception verifying wallet update:", verifyException);
+          return {
+            success: false,
+            error: `Wallet update verification exception: ${verifyException instanceof Error ? verifyException.message : 'Unknown error'}`,
+          };
+        }
+      }
+      
+      if (walletUpdateSuccess) {
+        console.log(`✅ Tasker ${taskerId} wallet updated: ${taskerWalletBalance} - ${platformFee} (fees) = ${newWalletBalance}`);
+        
+        // Log wallet transaction for audit trail
+        try {
+          console.log(`[confirmJobCompletion] Attempting to insert wallet_transaction for tasker ${taskerId}, amount: -${platformFee}`);
+          const serviceSupabase = createServiceRoleClient();
+          if (!serviceSupabase) {
+            console.warn("⚠️ Service role client not available, skipping wallet_transaction logging");
+          } else {
+            const { data: walletTxData, error: walletTxError } = await serviceSupabase
+              .from("wallet_transactions")
+              .insert({
+                user_id: taskerId,
+                amount: -platformFee, // Negative because it's a deduction
+                type: "fee_deduction",
+                related_job_id: jobId,
+                notes: `Platform fee (10%) deducted for job payment. Transaction ID: ${transaction?.id || 'N/A'}`,
+              })
+              .select()
+              .single();
+            
+            if (walletTxError) {
+              console.error("❌ CRITICAL: Failed to insert wallet_transaction:", {
+                error: walletTxError,
+                errorMessage: walletTxError.message,
+                errorCode: walletTxError.code,
+                errorDetails: walletTxError.details,
+                errorHint: walletTxError.hint,
+                taskerId,
+                platformFee,
+                jobId,
+                transactionId: transaction?.id,
+              });
+            } else {
+              console.log(`✅ Wallet transaction logged successfully: ID ${walletTxData?.id} for tasker ${taskerId}, amount: -${platformFee}`);
+            }
+          }
+        } catch (walletTransactionError) {
+          // Don't fail the whole operation if wallet_transactions insert fails
+          console.error("❌ CRITICAL: Exception inserting wallet_transaction:", {
+            error: walletTransactionError,
+            errorMessage: walletTransactionError instanceof Error ? walletTransactionError.message : String(walletTransactionError),
+            taskerId,
+            platformFee,
+            jobId,
+          });
+        }
+      }
+
+      // 3. Update tasker's user_stats
+      const { data: taskerStats, error: taskerStatsFetchError } = await supabase
+        .from("user_stats")
+        .select("completed_jobs, total_earnings")
+        .eq("id", taskerId)
+        .maybeSingle();
+
+      if (taskerStatsFetchError && taskerStatsFetchError.code !== "PGRST116") {
+        console.error("Error fetching tasker stats:", taskerStatsFetchError);
+      } else {
+        const currentCompletedJobs = taskerStats?.completed_jobs || 0;
+        const currentTotalEarnings = parseFloat(String(taskerStats?.total_earnings || 0));
+
+        const { error: taskerStatsUpdateError } = await supabase
+          .from("user_stats")
+          .upsert({
+            id: taskerId,
+            completed_jobs: currentCompletedJobs + 1,
+            total_earnings: currentTotalEarnings + netAmount,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: "id"
+          });
+
+        if (taskerStatsUpdateError) {
+          console.error("Error updating tasker stats:", taskerStatsUpdateError);
+        } else {
+          console.log(`✅ Tasker ${taskerId} stats updated: completed_jobs=${currentCompletedJobs + 1}, total_earnings=${currentTotalEarnings + netAmount}`);
+        }
+      }
+
+      // 4. Update customer's user_stats
+      const { data: customerStats, error: customerStatsFetchError } = await supabase
+        .from("user_stats")
+        .select("total_spent")
+        .eq("id", customerId)
+        .maybeSingle();
+
+      if (customerStatsFetchError && customerStatsFetchError.code !== "PGRST116") {
+        console.error("Error fetching customer stats:", customerStatsFetchError);
+      } else {
+        const currentTotalSpent = parseFloat(String(customerStats?.total_spent || 0));
+
+        const { error: customerStatsUpdateError } = await supabase
+          .from("user_stats")
+          .upsert({
+            id: customerId,
+            total_spent: currentTotalSpent + totalAmount,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: "id"
+          });
+
+        if (customerStatsUpdateError) {
+          console.error("Error updating customer stats:", customerStatsUpdateError);
+        } else {
+          console.log(`✅ Customer ${customerId} stats updated: total_spent=${currentTotalSpent + totalAmount}`);
+        }
+      }
+
+      // 5. Create notification for customer about payment processed
+      const { error: customerPaymentNotificationError } = await supabase
         .from("notifications")
         .insert({
-          user_id: job.assigned_tasker_id,
+          user_id: customerId,
+          type: "payment_received",
+          title: "Payment Processed",
+          message: `Your payment of ${totalAmount} ${currency} for job "${jobTitle}" has been processed.`,
+          related_job_id: jobId,
+          is_read: false,
+        });
+      if (customerPaymentNotificationError) {
+        console.error("Error creating customer payment notification:", customerPaymentNotificationError);
+      }
+
+      // 6. Create notification for tasker
+      const { error: taskerNotificationError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: taskerId,
           type: "job_completed",
           title: "Job Confirmed by Customer",
           message: `The customer has confirmed that you completed the job: "${jobTitle}".`,
           related_job_id: jobId,
           is_read: false,
         });
-
-      if (notificationError) {
-        console.error("Error creating notification (job_confirmed_by_customer):", {
-          message: notificationError.message,
-          code: notificationError.code,
-          details: notificationError.details,
-          hint: notificationError.hint,
-          taskerId: job.assigned_tasker_id,
-          jobId: jobId,
-        });
-        // Don't fail the operation for this
-      } else {
-        console.log("Notification created successfully (job_confirmed_by_customer):", {
-          taskerId: job.assigned_tasker_id,
-          jobId: jobId,
-        });
+      if (taskerNotificationError) {
+        console.error("Error creating tasker notification:", taskerNotificationError);
       }
+    } else {
+      console.warn("⚠️ Payment processing skipped:", {
+        hasTaskerId: !!taskerId,
+        hasFinalPrice: !!finalPrice,
+      });
     }
 
     // Revalidate relevant paths
@@ -1669,6 +2068,9 @@ export async function confirmJobCompletion(
     revalidatePath(`/customer/my-jobs/${jobId}`);
     revalidatePath("/tasker/my-jobs");
     revalidatePath(`/tasker/my-jobs/${jobId}`);
+    revalidatePath("/tasker/finance");
+    revalidatePath("/tasker/dashboard");
+    revalidatePath("/customer/finance");
 
     return { success: true };
   } catch (error) {
@@ -1893,18 +2295,43 @@ export async function getTaskerJobs(
     query = query.eq("id", "00000000-0000-0000-0000-000000000000"); // Non-existent ID
   }
 
-  const { data, error } = await query
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit);
+  // First, get all jobs without ordering to sort them by status priority
+  const { data: allJobs, error: fetchError } = await query;
 
-  if (error) {
-    console.error("Error fetching tasker jobs:", error);
-    throw new Error(`Failed to fetch tasker jobs: ${error.message}`);
+  if (fetchError) {
+    console.error("Error fetching tasker jobs:", fetchError);
+    throw new Error(`Failed to fetch tasker jobs: ${fetchError.message}`);
   }
 
+  // Sort jobs by status priority: active jobs first, then completed
+  // Priority order: assigned > in_progress > completed > others
+  const statusPriority: Record<string, number> = {
+    assigned: 1,
+    in_progress: 2,
+    completed: 3,
+  };
+
+  const sortedJobs = (allJobs || []).sort((a, b) => {
+    const statusA = statusPriority[a.status || ""] || 999;
+    const statusB = statusPriority[b.status || ""] || 999;
+
+    // First sort by status priority
+    if (statusA !== statusB) {
+      return statusA - statusB;
+    }
+
+    // If same status, sort by created_at (newest first)
+    const dateA = new Date(a.created_at || 0).getTime();
+    const dateB = new Date(b.created_at || 0).getTime();
+    return dateB - dateA;
+  });
+
+  // Apply pagination after sorting
+  const paginatedJobs = sortedJobs.slice(offset, offset + limit);
+
   // Check if there are more items
-  const hasMore = data.length > limit;
-  const jobs = data.slice(0, limit);
+  const hasMore = sortedJobs.length > offset + limit;
+  const jobs = paginatedJobs;
 
   // Format the data and add category names from database or fallback to local
   const formattedJobs: JobWithDetails[] = jobs.map((job) => {

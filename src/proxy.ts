@@ -41,6 +41,14 @@ const SYSTEM_ROUTES = [
   "/sitemap.xml",
   "/api/webhook",
   "/api/health",
+  "/public", // Skip public folder assets
+];
+
+// Asset file extensions to ignore
+const ASSET_EXTENSIONS = [
+  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico",
+  ".css", ".js", ".woff", ".woff2", ".ttf", ".eot",
+  ".mp4", ".mp3", ".pdf", ".zip", ".json"
 ];
 
 /**
@@ -88,6 +96,25 @@ export async function proxy(request: NextRequest) {
   // Performance optimization: Skip all processing for system routes
   // This prevents unnecessary i18n and auth checks for static assets
   if (SYSTEM_ROUTES.some((route) => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
+  // Skip processing for public folder assets (logo, images, etc.)
+  // Next.js serves files from /public directly, so paths like /logo.svg, /images/logo.png, etc.
+  // Also check for common logo file patterns
+  if (
+    pathname.startsWith("/public/") || 
+    pathname.startsWith("/logo") || 
+    pathname.startsWith("/images/") ||
+    pathname.startsWith("/assets/") ||
+    (pathname.includes("logo") && (pathname.endsWith(".svg") || pathname.endsWith(".png") || pathname.endsWith(".jpg") || pathname.endsWith(".jpeg")))
+  ) {
+    return NextResponse.next();
+  }
+
+  // Skip processing for asset files (images, fonts, etc.)
+  const isAsset = ASSET_EXTENSIONS.some((ext) => pathname.toLowerCase().endsWith(ext));
+  if (isAsset) {
     return NextResponse.next();
   }
 
@@ -186,7 +213,7 @@ export const config = {
     // Skip all internal paths (_next, _vercel) - these are handled by Next.js
     "/((?!_next/static|_next/image|_vercel|favicon.ico).*)",
     // Skip all file extensions (images, fonts, etc.) - static assets don't need processing
-    "/((?!.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|css|js|woff|woff2|ttf|eot)$).*)",
+    "/((?!.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|css|js|woff|woff2|ttf|eot|mp4|mp3|pdf|zip|json)$).*)",
     // Include API routes we want to process (exclude webhook and health for performance)
     "/api/((?!webhook|health).*)",
   ],

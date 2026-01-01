@@ -3,7 +3,6 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import DarkModeButton from "./buttons/DarkModeButton";
 import LanguageDropDown from "./buttons/LanguageDropDown";
 import ProfileDropDown from "./buttons/ProfileDropDown";
@@ -24,6 +23,7 @@ import LogOutButton from "./buttons/LogOutButton";
 function Header() {
   const { user } = useUserStore();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [logoError, setLogoError] = React.useState(false);
   const t = useTranslations("Header");
 
   // Close mobile menu when route changes
@@ -45,15 +45,26 @@ function Header() {
               Image dimensions: 400x110px (aspect ratio: 3.64:1)
               Display size: 200x55px (maintains aspect ratio)
             */}
-            <Image
-              src="/logo-manzelhelp.png"
-              alt="ManzelHelp"
-              width={200}
-              height={55}
-              priority
-              unoptimized
-              className="rounded-lg transition-transform duration-200 hover:scale-105 object-contain"
-            />
+            {!logoError ? (
+              <img
+                src="/logo-manzelhelp-.png"
+                alt="ManzelHelp"
+                width={200}
+                height={55}
+                onError={() => {
+                  console.error("Failed to load logo image from /logo-manzelhelp-.png");
+                  setLogoError(true);
+                }}
+                className="rounded-lg transition-transform duration-200 hover:scale-105 object-contain"
+                style={{ maxWidth: "200px", height: "auto" }}
+              />
+            ) : (
+              <div className="flex items-center h-[55px]">
+                <span className="text-2xl font-bold text-[var(--color-primary)]">
+                  ManzelHelp
+                </span>
+              </div>
+            )}
           </Link>
         </div>
 

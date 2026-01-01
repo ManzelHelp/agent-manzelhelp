@@ -19,7 +19,18 @@ function LogOutButton() {
 
     const { errorMessage } = await logOutAction();
     if (!errorMessage) {
-      setUser(null);
+      // Clear localStorage AFTER setting user to null
+      // This ensures the storage event fires for other tabs
+      if (typeof window !== "undefined") {
+        const oldValue = localStorage.getItem("user-storage");
+        setUser(null);
+        // Small delay to ensure state update happens first
+        setTimeout(() => {
+          localStorage.removeItem("user-storage");
+        }, 100);
+      } else {
+        setUser(null);
+      }
       toast("Logged out successfully");
       router.push("/");
     } else {

@@ -2,28 +2,7 @@
 
 import { createClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
-
-// Enhanced type definitions with better organization
-export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
-export type TransactionType =
-  | "job_payment"
-  | "platform_fee"
-  | "premium_application"
-  | "refund"
-  | "job_promotion"
-  | "service_promotion"
-  | "booking_payment"
-  | "service_payment"
-  | "cash_payment";
-export type BookingStatus =
-  | "pending"
-  | "accepted"
-  | "confirmed"
-  | "in_progress"
-  | "completed"
-  | "cancelled"
-  | "disputed"
-  | "refunded";
+import type { TransactionType, PaymentStatus, BookingStatus } from "@/types/supabase";
 
 // Enhanced interfaces with better type safety
 export interface EarningsData {
@@ -99,9 +78,8 @@ export interface FinanceSummary {
 
 interface TransactionWithBooking {
   id: string;
-  amount: string;
-  net_amount: string;
-  platform_fee: string | null;
+  amount: string | number;
+  platform_fee: string | number | null;
   transaction_type: TransactionType;
   payment_status: PaymentStatus;
   payment_method: string | null;
@@ -129,6 +107,8 @@ export async function getEarningsData(): Promise<EarningsData> {
   }
 
   try {
+    // Force fresh data - no caching
+    const fetchOptions = { cache: 'no-store' as const };
     // Get current period earnings
     const today = new Date();
     const startOfToday = new Date(
@@ -140,36 +120,40 @@ export async function getEarningsData(): Promise<EarningsData> {
     startOfWeek.setDate(today.getDate() - today.getDay());
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    // Current period queries
-    const [todayResult, weekResult, monthResult, totalResult] =
-      await Promise.all([
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .eq("payee_id", user.id)
-          .eq("payment_status", "paid")
-          .gte("created_at", startOfToday.toISOString()),
+    // Fetch all transactions and filter by date in JavaScript (more reliable)
+    // This ensures we get all transactions regardless of created_at vs processed_at
+    const { data: allTransactions, error: transactionsError } = await supabase
+      .from("transactions")
+      .select("amount, platform_fee, created_at, processed_at")
+      .eq("payee_id", user.id)
+      .eq("payment_status", "paid")
+      .order("created_at", { ascending: false });
 
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .eq("payee_id", user.id)
-          .eq("payment_status", "paid")
-          .gte("created_at", startOfWeek.toISOString()),
+    if (transactionsError) {
+      console.error("Error fetching transactions:", transactionsError);
+      throw transactionsError;
+    }
 
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .eq("payee_id", user.id)
-          .eq("payment_status", "paid")
-          .gte("created_at", startOfMonth.toISOString()),
+    // Filter transactions by date using processed_at if available, otherwise created_at
+    const filterByDate = (data: any[], startDate: Date, endDate?: Date) => {
+      return data.filter((item) => {
+        const dateToUse = item.processed_at || item.created_at;
+        if (!dateToUse) return false;
+        const itemDate = new Date(dateToUse);
+        if (endDate) {
+          return itemDate >= startDate && itemDate < endDate;
+        }
+        return itemDate >= startDate;
+      });
+    };
 
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .eq("payee_id", user.id)
-          .eq("payment_status", "paid"),
-      ]);
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setDate(endOfToday.getDate() + 1);
+
+    const todayData = filterByDate(allTransactions || [], startOfToday, endOfToday);
+    const weekData = filterByDate(allTransactions || [], startOfWeek);
+    const monthData = filterByDate(allTransactions || [], startOfMonth);
+    const totalData = allTransactions || [];
 
     // Previous period queries for trend calculation
     const yesterday = new Date(startOfToday);
@@ -179,44 +163,38 @@ export async function getEarningsData(): Promise<EarningsData> {
     const startOfLastMonth = new Date(startOfMonth);
     startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
 
-    const [yesterdayResult, lastWeekResult, lastMonthResult] =
-      await Promise.all([
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .eq("payee_id", user.id)
-          .eq("payment_status", "paid")
-          .gte("created_at", yesterday.toISOString())
-          .lt("created_at", startOfToday.toISOString()),
+    // Use the same allTransactions data and filter for previous periods
+    const yesterdayData = filterByDate(allTransactions || [], yesterday, startOfToday);
+    const lastWeekData = filterByDate(allTransactions || [], startOfLastWeek, startOfWeek);
+    const lastMonthData = filterByDate(allTransactions || [], startOfLastMonth, startOfMonth);
 
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .eq("payee_id", user.id)
-          .eq("payment_status", "paid")
-          .gte("created_at", startOfLastWeek.toISOString())
-          .lt("created_at", startOfWeek.toISOString()),
+    const calculateTotal = (data: { amount: string | number; platform_fee: string | number }[]) =>
+      data.reduce((sum, item) => {
+        const amount = typeof item.amount === 'string' ? parseFloat(item.amount) : (item.amount || 0);
+        const fee = typeof item.platform_fee === 'string' ? parseFloat(item.platform_fee) : (item.platform_fee || 0);
+        return sum + (amount - fee);
+      }, 0);
 
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .eq("payee_id", user.id)
-          .eq("payment_status", "paid")
-          .gte("created_at", startOfLastMonth.toISOString())
-          .lt("created_at", startOfMonth.toISOString()),
-      ]);
+    const todayEarnings = calculateTotal(todayData);
+    const weekEarnings = calculateTotal(weekData);
+    const monthEarnings = calculateTotal(monthData);
+    const totalEarnings = calculateTotal(totalData);
 
-    const calculateTotal = (data: { net_amount: string }[]) =>
-      data.reduce((sum, item) => sum + (parseFloat(item.net_amount) || 0), 0);
+    const yesterdayEarnings = calculateTotal(yesterdayData);
+    const lastWeekEarnings = calculateTotal(lastWeekData);
+    const lastMonthEarnings = calculateTotal(lastMonthData);
 
-    const todayEarnings = calculateTotal(todayResult.data || []);
-    const weekEarnings = calculateTotal(weekResult.data || []);
-    const monthEarnings = calculateTotal(monthResult.data || []);
-    const totalEarnings = calculateTotal(totalResult.data || []);
-
-    const yesterdayEarnings = calculateTotal(yesterdayResult.data || []);
-    const lastWeekEarnings = calculateTotal(lastWeekResult.data || []);
-    const lastMonthEarnings = calculateTotal(lastMonthResult.data || []);
+    // Debug logging (only primitives to avoid serialization issues)
+    console.log("📊 Earnings calculation:", {
+      totalTransactions: allTransactions?.length || 0,
+      todayCount: todayData.length,
+      weekCount: weekData.length,
+      monthCount: monthData.length,
+      todayEarnings,
+      weekEarnings,
+      monthEarnings,
+      totalEarnings,
+    });
 
     const calculateChange = (current: number, previous: number) => {
       if (previous === 0) return current > 0 ? 100 : 0;
@@ -231,7 +209,7 @@ export async function getEarningsData(): Promise<EarningsData> {
       todayChange: calculateChange(todayEarnings, yesterdayEarnings),
       weekChange: calculateChange(weekEarnings, lastWeekEarnings),
       monthChange: calculateChange(monthEarnings, lastMonthEarnings),
-      currency: "USD",
+      currency: "MAD",
     };
   } catch (error) {
     console.error("Error fetching earnings data:", error);
@@ -243,7 +221,7 @@ export async function getEarningsData(): Promise<EarningsData> {
       todayChange: 0,
       weekChange: 0,
       monthChange: 0,
-      currency: "USD",
+      currency: "MAD",
     };
   }
 }
@@ -260,24 +238,64 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
   }
 
   try {
-    const [reviewsResult, bookingsResult] = await Promise.all([
+    const [reviewsResult, bookingsResult, jobsResult] = await Promise.all([
       supabase
         .from("reviews")
         .select("overall_rating")
         .eq("reviewee_id", user.id),
 
+      // Get all completed bookings, then filter by customer_confirmed_at in JS
       supabase
         .from("service_bookings")
-        .select("status, created_at, accepted_at")
-        .eq("tasker_id", user.id),
+        .select("id, status, created_at, accepted_at, customer_confirmed_at")
+        .eq("tasker_id", user.id)
+        .eq("status", "completed"),
+
+      // Get all completed jobs, then filter by customer_confirmed_at in JS
+      // Note: jobs table doesn't have accepted_at, only created_at
+      supabase
+        .from("jobs")
+        .select("id, status, created_at, customer_confirmed_at")
+        .eq("assigned_tasker_id", user.id)
+        .eq("status", "completed"),
     ]);
 
-    const reviews = reviewsResult.data || [];
-    const bookings = bookingsResult.data || [];
+    // Check for errors
+    if (bookingsResult.error) {
+      console.error("❌ Error fetching bookings:", bookingsResult.error);
+    }
+    if (jobsResult.error) {
+      console.error("❌ Error fetching jobs:", jobsResult.error);
+    }
 
-    const completedJobs = bookings.filter(
-      (b) => b.status === "completed"
-    ).length;
+    const reviews = reviewsResult.data || [];
+    const allBookingsData = bookingsResult.data || [];
+    const allJobsData = jobsResult.data || [];
+
+    // Filter to only confirmed bookings/jobs (customer_confirmed_at IS NOT NULL)
+    const confirmedBookings = allBookingsData.filter(
+      (b) => b.customer_confirmed_at !== null && b.customer_confirmed_at !== undefined
+    );
+    const confirmedJobs = allJobsData.filter(
+      (j) => j.customer_confirmed_at !== null && j.customer_confirmed_at !== undefined
+    );
+
+    // Total completed jobs = confirmed bookings + confirmed jobs
+    const completedJobs = confirmedBookings.length + confirmedJobs.length;
+    
+    console.log("📊 [getPerformanceMetrics] Completed jobs calculation:", {
+      taskerId: user.id,
+      allCompletedBookings: allBookingsData.length,
+      confirmedBookings: confirmedBookings.length,
+      allCompletedJobs: allJobsData.length,
+      confirmedJobs: confirmedJobs.length,
+      totalCompletedJobs: completedJobs,
+      bookingsError: bookingsResult.error?.message,
+      jobsError: jobsResult.error?.message,
+      sampleConfirmedBooking: confirmedBookings[0]?.id,
+      sampleConfirmedJob: confirmedJobs[0]?.id,
+      firstJobCustomerConfirmed: allJobsData[0]?.customer_confirmed_at,
+    });
     const totalReviews = reviews.length;
     const averageRating =
       totalReviews > 0
@@ -285,20 +303,43 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
         : 0;
     const positiveReviews = reviews.filter((r) => r.overall_rating >= 4).length;
 
+    // For response time calculation, we need all bookings/jobs (not just completed)
+    // Note: jobs table doesn't have accepted_at, so we'll skip response time for jobs
+    const [allBookingsResult] = await Promise.all([
+      supabase
+        .from("service_bookings")
+        .select("created_at, accepted_at")
+        .eq("tasker_id", user.id),
+    ]);
+    
+    const allBookings = allBookingsResult.data || [];
+    
     // Calculate average response time (time between booking creation and acceptance)
-    const acceptedBookings = bookings.filter(
+    // Jobs don't have accepted_at, so we only calculate for bookings
+    const acceptedBookings = allBookings.filter(
       (b) => b.accepted_at && b.created_at
     );
-    const responseTimes = acceptedBookings.map((b) => {
+    
+    const allResponseTimes = acceptedBookings.map((b) => {
       const created = new Date(b.created_at);
       const accepted = new Date(b.accepted_at!);
       return accepted.getTime() - created.getTime();
     });
+    
     const averageResponseTime =
-      responseTimes.length > 0
-        ? responseTimes.reduce((sum, time) => sum + time, 0) /
-          responseTimes.length
+      allResponseTimes.length > 0
+        ? allResponseTimes.reduce((sum, time) => sum + time, 0) /
+          allResponseTimes.length
         : 0;
+
+    // Total bookings + jobs for completion rate
+    // We need to fetch all jobs separately since we didn't fetch them for response time
+    const { data: allJobsForCount } = await supabase
+      .from("jobs")
+      .select("id")
+      .eq("assigned_tasker_id", user.id);
+    
+    const totalBookingsAndJobs = allBookings.length + (allJobsForCount?.length || 0);
 
     return {
       completedJobs,
@@ -307,7 +348,9 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
       responseTime: Math.round(averageResponseTime / (1000 * 60 * 60)), // Convert to hours
       positiveReviews,
       completionRate:
-        completedJobs > 0 ? (completedJobs / bookings.length) * 100 : 0,
+        completedJobs > 0 && totalBookingsAndJobs > 0 
+          ? (completedJobs / totalBookingsAndJobs) * 100 
+          : 0,
     };
   } catch (error) {
     console.error("Error fetching performance metrics:", error);
@@ -345,51 +388,128 @@ export async function getTransactionHistory(
   }
 
   try {
-    const { data, error } = await supabase
-      .from("transactions")
-      .select(
-        `
-        id,
-        amount,
-        net_amount,
-        platform_fee,
-        transaction_type,
-        payment_status,
-        payment_method,
-        created_at,
-        processed_at,
-        booking_id,
-      service_bookings(
-        id,
-        status,
-        tasker_services(
-          title
-        )
-      )
-      `
-      )
-      .eq("payee_id", user.id)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    // Fetch transactions and bookings/jobs separately to avoid serialization issues
+    const [transactionsResult, bookingsResult] = await Promise.all([
+      // Get transactions (tasker is payee) - include both booking_id and job_id
+      supabase
+        .from("transactions")
+        .select("id, amount, platform_fee, transaction_type, payment_status, payment_method, created_at, processed_at, booking_id, job_id")
+        .eq("payee_id", user.id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1),
 
-    if (error) throw error;
+      // Get bookings for fallback - no nested relations
+      supabase
+        .from("service_bookings")
+        .select("id, agreed_price, currency, status, payment_method, created_at, completed_at, tasker_service_id")
+        .eq("tasker_id", user.id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1),
+    ]);
 
-    return (data || []).map((transaction: TransactionWithBooking) => ({
-      id: transaction.id,
-      amount: parseFloat(transaction.amount),
-      netAmount: parseFloat(transaction.net_amount),
-      platformFee: parseFloat(transaction.platform_fee || "0"),
-      transactionType: transaction.transaction_type,
-      paymentStatus: transaction.payment_status,
-      paymentMethod: transaction.payment_method,
-      createdAt: transaction.created_at,
-      processedAt: transaction.processed_at,
-      bookingId: transaction.booking_id,
-      serviceTitle:
-        transaction.service_bookings?.[0]?.tasker_services?.[0]?.title || null,
-      bookingStatus: transaction.service_bookings?.[0]?.status || null,
-      currency: "USD",
-    }));
+    const transactions = transactionsResult.data || [];
+    const bookings = bookingsResult.data || [];
+
+    // If transactions exist, fetch service titles and job titles separately and join manually
+    if (transactions.length > 0) {
+      // Get unique booking IDs and job IDs from transactions
+      const bookingIds = transactions
+        .map((t) => t.booking_id)
+        .filter((id): id is string => id !== null && id !== undefined);
+
+      const jobIds = transactions
+        .map((t) => t.job_id)
+        .filter((id): id is string => id !== null && id !== undefined);
+
+      console.log("[getTransactionHistory] Extracted IDs:", {
+        totalTransactions: transactions.length,
+        bookingIds: bookingIds.length,
+        jobIds: jobIds.length,
+        jobIdsList: jobIds,
+      });
+
+      // Fetch bookings with service titles
+      let bookingsMap = new Map<string, { status: string; serviceTitle: string; paymentMethod: string }>();
+      if (bookingIds.length > 0) {
+        const { data: bookingsData, error: bookingsError } = await supabase
+          .from("service_bookings")
+          .select("id, status, payment_method, tasker_service_id, tasker_services(title)")
+          .in("id", bookingIds);
+
+        if (!bookingsError && bookingsData) {
+          bookingsData.forEach((booking: any) => {
+            const serviceTitle = Array.isArray(booking.tasker_services)
+              ? booking.tasker_services[0]?.title
+              : booking.tasker_services?.title || "Service";
+            bookingsMap.set(booking.id, {
+              status: booking.status,
+              serviceTitle: serviceTitle,
+              paymentMethod: booking.payment_method || "cash",
+            });
+          });
+        }
+      }
+
+      // Fetch jobs with titles
+      let jobsMap = new Map<string, { title: string; status: string; paymentMethod: string }>();
+      if (jobIds.length > 0) {
+        const { data: jobsData, error: jobsError } = await supabase
+          .from("jobs")
+          .select("id, title, status, currency")
+          .in("id", jobIds);
+
+        if (!jobsError && jobsData) {
+          jobsData.forEach((job: any) => {
+            jobsMap.set(job.id, {
+              title: String(job.title || "Job"),
+              status: String(job.status || ""),
+              paymentMethod: "cash", // Jobs typically use cash payment
+            });
+          });
+        }
+      }
+
+      // Map transactions to return format
+      return transactions.map((transaction: any) => {
+        const amount = typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : (transaction.amount || 0);
+        const fee = typeof transaction.platform_fee === 'string' ? parseFloat(transaction.platform_fee) : (transaction.platform_fee || 0);
+        
+        // Prioritize job_id for title, then fallback to booking_id
+        let serviceTitle: string | null = null;
+        let bookingStatus: BookingStatus | null = null;
+        let paymentMethod: string | null = transaction.payment_method || "cash";
+
+        if (transaction.job_id && jobsMap.has(transaction.job_id)) {
+          const jobInfo = jobsMap.get(transaction.job_id)!;
+          serviceTitle = jobInfo.title;
+          paymentMethod = jobInfo.paymentMethod;
+        } else if (transaction.booking_id && bookingsMap.has(transaction.booking_id)) {
+          const bookingInfo = bookingsMap.get(transaction.booking_id)!;
+          serviceTitle = bookingInfo.serviceTitle;
+          bookingStatus = bookingInfo.status as BookingStatus;
+          paymentMethod = bookingInfo.paymentMethod;
+        }
+
+        return {
+          id: String(transaction.id),
+          amount: amount,
+          netAmount: amount - fee,
+          platformFee: fee,
+          transactionType: transaction.transaction_type as TransactionType,
+          paymentStatus: transaction.payment_status as PaymentStatus,
+          paymentMethod: paymentMethod,
+          createdAt: transaction.created_at ? new Date(transaction.created_at).toISOString() : new Date().toISOString(),
+          processedAt: transaction.processed_at ? new Date(transaction.processed_at).toISOString() : null,
+          bookingId: transaction.booking_id ? String(transaction.booking_id) : null,
+          serviceTitle: serviceTitle,
+          bookingStatus: bookingStatus,
+          currency: "MAD",
+        };
+      });
+    }
+
+    // If no transactions, return empty array
+    return [];
   } catch (error) {
     console.error("Error fetching transaction history:", error);
     return [];
@@ -436,16 +556,15 @@ export async function getChartData(
         break;
     }
 
+    // Remove !inner to include all transactions, not just those with bookings
     const { data, error } = await supabase
       .from("transactions")
       .select(
         `
-        net_amount,
+        amount,
+        platform_fee,
         created_at,
-        booking_id,
-        service_bookings!inner(
-          id
-        )
+        booking_id
       `
       )
       .eq("payee_id", user.id)
@@ -459,6 +578,9 @@ export async function getChartData(
     const groupedData = new Map<string, { earnings: number; jobs: number }>();
 
     (data || []).forEach((transaction) => {
+      const amount = typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : (transaction.amount || 0);
+      const fee = typeof transaction.platform_fee === 'string' ? parseFloat(transaction.platform_fee) : (transaction.platform_fee || 0);
+      const netAmount = amount - fee;
       const date = new Date(transaction.created_at);
       let key: string;
 
@@ -486,7 +608,7 @@ export async function getChartData(
       }
 
       const current = groupedData.get(key)!;
-      current.earnings += parseFloat(transaction.net_amount);
+      current.earnings += netAmount;
       current.jobs += 1;
     });
 
@@ -533,7 +655,7 @@ export async function getCustomerFinanceSummary(
         break;
     }
 
-    const [spentResult, pendingResult, bookingsResult] = await Promise.all([
+    const [spentResult, pendingResult, bookingsResult, jobsResult] = await Promise.all([
       // Total spent (as payer) - handle empty transactions table
       supabase
         .from("transactions")
@@ -550,38 +672,72 @@ export async function getCustomerFinanceSummary(
         .eq("payment_status", "pending"),
 
       // Completed bookings - use actual data
+      // Also include jobs for customer
       supabase
         .from("service_bookings")
-        .select("agreed_price, currency, status, completed_at")
+        .select("agreed_price, currency, status, completed_at, customer_confirmed_at")
         .eq("customer_id", user.id)
-        .eq("status", "completed")
-        .gte("completed_at", startDate.toISOString()),
+        .eq("status", "completed"),
+      
+      // Also get completed jobs
+      supabase
+        .from("jobs")
+        .select("final_price, currency, status, completed_at, customer_confirmed_at")
+        .eq("customer_id", user.id)
+        .eq("status", "completed"),
     ]);
 
     // Calculate total spent from transactions (if any exist)
-    const totalSpent = (spentResult.data || []).reduce(
-      (sum, t) => sum + parseFloat(t.amount || "0"),
+    let totalSpent = (spentResult.data || []).reduce(
+      (sum, t) => sum + parseFloat(String(t.amount || "0")),
       0
     );
+    
+    // Filter bookings and jobs by date and customer_confirmed_at
+    const confirmedBookings = (bookingsResult.data || []).filter(
+      (b) => b.customer_confirmed_at !== null && 
+             b.customer_confirmed_at !== undefined &&
+             new Date(b.completed_at) >= startDate
+    );
+    
+    const confirmedJobs = (jobsResult.data || []).filter(
+      (j) => j.customer_confirmed_at !== null && 
+             j.customer_confirmed_at !== undefined &&
+             new Date(j.completed_at) >= startDate
+    );
+    
+    // Fallback: If no transactions but confirmed bookings/jobs exist, use their total
+    if (totalSpent === 0 && (confirmedBookings.length > 0 || confirmedJobs.length > 0)) {
+      const bookingsTotal = confirmedBookings.reduce(
+        (sum, b) => sum + parseFloat(String(b.agreed_price || "0")),
+        0
+      );
+      const jobsTotal = confirmedJobs.reduce(
+        (sum, j) => sum + parseFloat(String(j.final_price || "0")),
+        0
+      );
+      totalSpent = bookingsTotal + jobsTotal;
+    }
 
     // Calculate pending payments from transactions (if any exist)
     const pendingPayments = (pendingResult.data || []).reduce(
-      (sum, t) => sum + parseFloat(t.amount || "0"),
+      (sum, t) => sum + parseFloat(String(t.amount || "0")),
       0
     );
 
-    // Get completed jobs and calculate average
-    const completedJobs = bookingsResult.data?.length || 0;
-    const averageJobValue =
-      completedJobs > 0
-        ? (bookingsResult.data || []).reduce(
-            (sum, b) => sum + parseFloat(b.agreed_price || "0"),
-            0
-          ) / completedJobs
-        : 0;
+    // Get completed jobs count (bookings + jobs) and calculate average
+    const completedJobs = confirmedBookings.length + confirmedJobs.length;
+    const totalValue = confirmedBookings.reduce(
+      (sum, b) => sum + parseFloat(String(b.agreed_price || "0")),
+      0
+    ) + confirmedJobs.reduce(
+      (sum, j) => sum + parseFloat(String(j.final_price || "0")),
+      0
+    );
+    const averageJobValue = completedJobs > 0 ? totalValue / completedJobs : 0;
 
-    // Get currency from first booking or default to USD
-    const currency = bookingsResult.data?.[0]?.currency || "USD";
+    // Get currency from first booking/job or default to MAD
+    const currency = confirmedBookings[0]?.currency || confirmedJobs[0]?.currency || "MAD";
 
     return {
       totalSpent,
@@ -600,7 +756,7 @@ export async function getCustomerFinanceSummary(
       pendingPayments: 0,
       completedJobs: 0,
       averageJobValue: 0,
-      currency: "USD",
+      currency: "MAD",
       period,
     };
   }
@@ -629,119 +785,236 @@ export async function getCustomerTransactionHistory(
   }
 
   try {
-    // First try to get transactions
-    const { data: transactionData } = await supabase
-      .from("transactions")
-      .select(
-        `
-        id,
-        amount,
-        net_amount,
-        platform_fee,
-        transaction_type,
-        payment_status,
-        payment_method,
-        created_at,
-        processed_at,
-        booking_id,
-        service_bookings(
-          id,
-          status,
-          tasker_services(
-            title
-          )
-        )
-        `
-      )
-      .eq("payer_id", user.id) // Customer is the payer
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    // Fetch transactions and bookings separately to avoid serialization issues
+    const [transactionsResult, bookingsResult] = await Promise.all([
+      // Get transactions (customer is payer) - include both booking_id and job_id
+      supabase
+        .from("transactions")
+        .select("id, amount, platform_fee, transaction_type, payment_status, payment_method, created_at, processed_at, booking_id, job_id")
+        .eq("payer_id", user.id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1),
 
-    // If transactions exist, return them
-    if (transactionData && transactionData.length > 0) {
-      return transactionData.map((transaction: TransactionWithBooking) => {
-        // Handle service_bookings - can be array or object
-        const serviceBooking = Array.isArray(transaction.service_bookings)
-          ? transaction.service_bookings[0]
-          : transaction.service_bookings;
+      // Get bookings for fallback - no nested relations
+      supabase
+        .from("service_bookings")
+        .select("id, agreed_price, currency, status, payment_method, created_at, completed_at, tasker_service_id")
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1),
+    ]);
+
+    const transactions = transactionsResult.data || [];
+    const bookings = bookingsResult.data || [];
+
+    // If transactions exist, fetch service titles and job titles separately and join manually
+    if (transactions.length > 0) {
+      // Get unique booking IDs and job IDs from transactions
+      const bookingIds = transactions
+        .map((t) => t.booking_id)
+        .filter((id): id is string => id !== null && id !== undefined);
+
+      const jobIds = transactions
+        .map((t) => t.job_id)
+        .filter((id): id is string => id !== null && id !== undefined);
+
+      console.log("[getCustomerTransactionHistory] Extracted IDs:", {
+        totalTransactions: transactions.length,
+        bookingIds: bookingIds.length,
+        jobIds: jobIds.length,
+        jobIdsList: jobIds,
+        sampleTransaction: transactions[0] ? {
+          id: transactions[0].id,
+          booking_id: transactions[0].booking_id,
+          job_id: transactions[0].job_id,
+        } : null,
+      });
+
+      // Fetch bookings with service info for these transaction booking IDs
+      let bookingServiceMap: Record<string, { title: string; status: string; payment_method?: string | null }> = {};
+      
+      if (bookingIds.length > 0) {
+        const { data: bookingServices } = await supabase
+          .from("service_bookings")
+          .select("id, status, tasker_service_id, payment_method, tasker_services(title)")
+          .in("id", bookingIds);
+
+        // Extract service titles - fetch separately if needed
+        const serviceIds = (bookingServices || [])
+          .map((b: any) => b.tasker_service_id)
+          .filter((id: any): id is string => id !== null && id !== undefined);
+
+        if (serviceIds.length > 0) {
+          const { data: services } = await supabase
+            .from("tasker_services")
+            .select("id, title")
+            .in("id", serviceIds);
+
+          const serviceTitleMap: Record<string, string> = {};
+          for (const service of services || []) {
+            serviceTitleMap[service.id] = service.title || "Service";
+          }
+
+          // Map bookings to service titles and payment_method
+          for (const booking of bookingServices || []) {
+            bookingServiceMap[booking.id] = {
+              title: serviceTitleMap[booking.tasker_service_id] || "Service",
+              status: booking.status,
+              payment_method: booking.payment_method || null,
+            };
+          }
+        }
+      }
+
+      // Fetch jobs with titles and status for these transaction job IDs
+      // Note: jobs table does NOT have payment_method column
+      let jobTitleMap: Record<string, { title: string; status: string }> = {};
+      
+      if (jobIds.length > 0) {
+        console.log("[getCustomerTransactionHistory] Fetching jobs with IDs:", jobIds);
         
-        // Handle tasker_services - can be array or object
-        const taskerService = Array.isArray(serviceBooking?.tasker_services)
-          ? serviceBooking.tasker_services[0]
-          : serviceBooking?.tasker_services;
+        // Try to fetch jobs - customer should be able to read their own jobs
+        // Add .eq("customer_id", user.id) to ensure RLS allows access
+        // Note: jobs table does NOT have payment_method column
+        const { data: jobs, error: jobsError } = await supabase
+          .from("jobs")
+          .select("id, title, status")
+          .eq("customer_id", user.id) // Ensure customer can only read their own jobs
+          .in("id", jobIds);
 
+        if (jobsError) {
+          console.error("Error fetching jobs for transactions:", jobsError);
+        }
+
+        console.log("[getCustomerTransactionHistory] Jobs query result:", {
+          jobIdsRequested: jobIds,
+          customerId: user.id,
+          jobsFound: jobs?.length || 0,
+          jobs: jobs?.map(j => ({ id: String(j.id), title: j.title })) || [],
+          error: jobsError?.message,
+          errorCode: jobsError?.code,
+        });
+
+        // Map jobs to titles and status
+        // Use String() to ensure consistent key format (UUID as string)
+        for (const job of jobs || []) {
+          const jobIdKey = String(job.id);
+          jobTitleMap[jobIdKey] = {
+            title: job.title || "Job",
+            status: job.status,
+          };
+        }
+
+        console.log("[getCustomerTransactionHistory] Final jobTitleMap:", {
+          jobIdsRequested: jobIds,
+          jobIdsCount: jobIds.length,
+          jobsFound: jobs?.length || 0,
+          jobTitleMapKeys: Object.keys(jobTitleMap),
+        });
+      } else {
+        console.log("[getCustomerTransactionHistory] No job IDs found in transactions");
+      }
+
+
+      // Map transactions to Transaction format with explicit serialization
+      return transactions.map((transaction) => {
+        // Check if transaction is for a job or booking
+        let title = "Service";
+        let status: string | null = null;
+        let paymentMethod = transaction.payment_method || "unknown";
+        
+        if (transaction.job_id) {
+          // Transaction is for a job
+          // Use String() to ensure consistent key format
+          const jobIdKey = String(transaction.job_id);
+          const jobInfo = jobTitleMap[jobIdKey];
+          if (jobInfo) {
+            title = jobInfo.title;
+            status = jobInfo.status;
+            // Payment method for jobs is stored in transactions table, not jobs table
+            // Keep transaction.payment_method or default to "cash"
+            if (!transaction.payment_method) {
+              paymentMethod = "cash"; // Default for jobs
+            }
+          } else {
+            // Job not found in map - log for debugging
+            console.warn("[getCustomerTransactionHistory] Job not found in map:", {
+              transactionId: transaction.id,
+              jobId: transaction.job_id,
+              jobIdKey,
+              availableJobIds: Object.keys(jobTitleMap),
+            });
+            title = "Job"; // Fallback
+          }
+        } else if (transaction.booking_id) {
+          // Transaction is for a booking
+          const bookingInfo = bookingServiceMap[transaction.booking_id] || { title: "Service", status: null, payment_method: null };
+          title = bookingInfo.title;
+          status = bookingInfo.status;
+          // Use booking payment_method if transaction doesn't have one
+          if (!transaction.payment_method && bookingInfo.payment_method) {
+            paymentMethod = bookingInfo.payment_method;
+          }
+        }
+        
+        // Default payment method if still unknown
+        if (paymentMethod === "unknown" || !paymentMethod) {
+          paymentMethod = "cash"; // Default to cash for jobs/bookings
+        }
+        
         return {
-          id: transaction.id,
-          amount: parseFloat(transaction.amount || "0"),
-          netAmount: parseFloat(transaction.net_amount || "0"),
-          platformFee: parseFloat(transaction.platform_fee || "0"),
-          transactionType: transaction.transaction_type,
-          paymentStatus: transaction.payment_status,
-          paymentMethod: transaction.payment_method || null,
-          createdAt: transaction.created_at,
-          processedAt: transaction.processed_at || null,
-          bookingId: transaction.booking_id || null,
-          serviceTitle: taskerService?.title || null,
-          bookingStatus: serviceBooking?.status || null,
-          currency: "USD", // Default currency
+          id: String(transaction.id),
+          amount: parseFloat(String(transaction.amount || "0")),
+          netAmount: parseFloat(String(transaction.amount || "0")) - parseFloat(String(transaction.platform_fee || "0")),
+          platformFee: parseFloat(String(transaction.platform_fee || "0")),
+          transactionType: String(transaction.transaction_type) as TransactionType,
+          paymentStatus: String(transaction.payment_status) as PaymentStatus,
+          paymentMethod: String(paymentMethod),
+          createdAt: transaction.created_at ? new Date(transaction.created_at).toISOString() : new Date().toISOString(),
+          processedAt: transaction.processed_at ? new Date(transaction.processed_at).toISOString() : (transaction.created_at ? new Date(transaction.created_at).toISOString() : new Date().toISOString()),
+          bookingId: transaction.booking_id ? String(transaction.booking_id) : null,
+          serviceTitle: title, // Use job title or service title
+          bookingStatus: status as BookingStatus | null,
+          currency: "MAD", // Default, could be made dynamic
         };
       });
     }
 
-    // If no transactions, fallback to booking data
-    console.warn("No transactions found, falling back to booking data");
-    const { data: bookingData, error: bookingError } = await supabase
-      .from("service_bookings")
-      .select(
-        `
-        id,
-        agreed_price,
-        currency,
-        status,
-        payment_method,
-        created_at,
-        completed_at,
-        tasker_services(
-          title
-        )
-        `
-      )
-      .eq("customer_id", user.id)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    // If no transactions, get bookings and convert to transaction format
+    // Fetch service titles separately
+    const serviceIds = bookings
+      .map((b) => b.tasker_service_id)
+      .filter((id): id is string => id !== null && id !== undefined);
 
-    if (bookingError) {
-      console.error("Error fetching booking data:", bookingError);
-      return [];
+    let serviceTitleMap: Record<string, string> = {};
+    
+    if (serviceIds.length > 0) {
+      const { data: services } = await supabase
+        .from("tasker_services")
+        .select("id, title")
+        .in("id", serviceIds);
+
+      for (const service of services || []) {
+        serviceTitleMap[service.id] = service.title || "Service";
+      }
     }
 
-    // Convert booking data to transaction format
-    return (bookingData || []).map(
-      (booking: {
-        id: string;
-        agreed_price: string;
-        currency: string;
-        status: string;
-        payment_method: string;
-        created_at: string;
-        completed_at: string;
-        tasker_services: { title: string }[];
-      }) => ({
-        id: booking.id,
-        amount: parseFloat(booking.agreed_price || "0"),
-        netAmount: parseFloat(booking.agreed_price || "0"),
-        platformFee: 0,
-        transactionType: "booking_payment" as TransactionType,
-        paymentStatus: booking.status === "completed" ? "paid" : "pending",
-        paymentMethod: booking.payment_method || "unknown",
-        createdAt: booking.created_at,
-        processedAt: booking.completed_at,
-        bookingId: booking.id,
-        serviceTitle: booking.tasker_services?.[0]?.title || "Service",
-        bookingStatus: booking.status as BookingStatus,
-        currency: booking.currency || "USD",
-      })
-    );
+    // Convert booking data to transaction format with explicit serialization
+    return bookings.map((booking) => ({
+      id: String(booking.id),
+      amount: parseFloat(String(booking.agreed_price || "0")),
+      netAmount: parseFloat(String(booking.agreed_price || "0")),
+      platformFee: 0,
+      transactionType: "job_payment" as TransactionType, // Use job_payment as booking and job are the same
+      paymentStatus: booking.status === "completed" ? ("paid" as PaymentStatus) : ("pending" as PaymentStatus),
+      paymentMethod: String(booking.payment_method || "unknown"),
+      createdAt: booking.created_at ? new Date(booking.created_at).toISOString() : new Date().toISOString(),
+      processedAt: booking.completed_at ? new Date(booking.completed_at).toISOString() : null,
+      bookingId: String(booking.id),
+      serviceTitle: serviceTitleMap[booking.tasker_service_id] || "Service",
+      bookingStatus: booking.status as BookingStatus,
+      currency: String(booking.currency || "MAD"),
+    }));
   } catch (error) {
     console.error("Error fetching customer transaction history:", error);
     return [];
@@ -791,7 +1064,7 @@ export async function getWalletBalance(): Promise<WalletBalance> {
     return {
       available: parseFloat(userData.wallet_balance || "0"),
       pending,
-      currency: "USD", // Default currency, could be made dynamic
+      currency: "MAD", // Default currency, could be made dynamic
       lastUpdated: new Date().toISOString(),
     };
   } catch (error) {
@@ -799,7 +1072,7 @@ export async function getWalletBalance(): Promise<WalletBalance> {
     return {
       available: 0,
       pending: 0,
-      currency: "USD",
+      currency: "MAD",
       lastUpdated: new Date().toISOString(),
     };
   }

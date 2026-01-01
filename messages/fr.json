@@ -22,7 +22,18 @@
     "required": "requis",
     "fields": "champs",
     "remaining": "restants",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "timeAgo": {
+      "justNow": "À l'instant",
+      "minutesAgo": "Il y a {count} min",
+      "hoursAgo": "Il y a {count}h",
+      "dayAgo": "Il y a 1 jour",
+      "daysAgo": "Il y a {count} jours"
+    },
+    "promoted": "Promu",
+    "flexible": "Flexible",
+    "budget": "Budget",
+    "view": "Voir"
   },
   "Header": {
     "services": "Services",
@@ -1117,7 +1128,14 @@
       "noDescription": "Aucune description disponible",
       "noDateSet": "Aucune date définie",
       "locationNotSpecified": "Lieu non spécifié",
-      "unknownCategory": "Catégorie inconnue"
+      "unknownCategory": "Catégorie inconnue",
+      "clone": "Cloner",
+      "cloneConfirmTitle": "Cloner l'emploi",
+      "cloneConfirmDescription": "Êtes-vous sûr de vouloir cloner cet emploi ? Un nouvel emploi sera créé avec les mêmes détails que vous pourrez modifier.",
+      "cloneConfirm": "Cloner l'emploi",
+      "cancel": "Annuler",
+      "cloneSuccess": "Emploi cloné avec succès !",
+      "cloneError": "Échec du clonage de l'emploi"
     },
     "status": {
       "open": "Ouvert",
@@ -1296,7 +1314,9 @@
         "selectStartTime": "Veuillez sélectionner une heure de début",
         "selectEndTime": "Veuillez sélectionner une heure de fin",
         "priceGreaterThanZero": "Le prix doit être supérieur à 0",
-        "durationGreaterThanZero": "La durée doit être supérieure à 0"
+        "durationGreaterThanZero": "La durée doit être supérieure à 0",
+        "messageRequired": "Le message est requis",
+        "messageTooShort": "Le message doit contenir au moins {min} caractères"
       },
       "toasts": {
         "failedToLoadAddresses": "Échec du chargement des adresses",
@@ -1476,6 +1496,28 @@
     "errors": {
       "updateFailed": "Échec de la mise à jour du statut de la réservation",
       "unexpectedError": "Une erreur inattendue s'est produite"
+    },
+    "cancellation": {
+      "title": "Annuler la Réservation",
+      "description": "Veuillez nous dire pourquoi vous annulez cette réservation",
+      "reasonLabel": "Raison de l'annulation",
+      "customCommentLabel": "Veuillez fournir des détails",
+      "customCommentPlaceholder": "Dites-nous pourquoi vous annulez...",
+      "cancel": "Annuler",
+      "confirm": "Confirmer l'Annulation",
+      "confirming": "Confirmation...",
+      "reasons": {
+        "changed_my_mind": "J'ai changé d'avis",
+        "found_another_tasker": "J'ai trouvé un autre assistant",
+        "no_longer_needed": "Je n'ai plus besoin de ce service",
+        "scheduling_conflict": "Conflit d'horaire",
+        "price_too_high": "Le prix est trop élevé",
+        "other": "Autre raison"
+      },
+      "errors": {
+        "reasonRequired": "Veuillez sélectionner une raison d'annulation",
+        "customCommentRequired": "Veuillez fournir un commentaire personnalisé"
+      }
     },
     "confirmations": {
       "accept": {

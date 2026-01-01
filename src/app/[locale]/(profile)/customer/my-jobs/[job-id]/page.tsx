@@ -14,7 +14,6 @@ import {
   EyeOff,
   MapPin,
   Clock,
-  Euro,
   Calendar,
   AlertCircle,
   CheckCircle,
@@ -24,8 +23,10 @@ import {
   Users,
   User,
   UserCheck,
+  Copy,
 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 import {
   getJobById,
@@ -33,9 +34,12 @@ import {
   assignTaskerToJob,
   updateJob,
   confirmJobCompletion,
+  createJob,
   JobApplicationWithDetails,
 } from "@/actions/jobs";
+import { checkReviewExists } from "@/actions/reviews";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
+import ReviewForm from "@/components/reviews/ReviewForm";
 
 interface JobDetailsData {
   id: string;
@@ -94,6 +98,8 @@ export default function JobDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isAssigning, setIsAssigning] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [reviewExists, setReviewExists] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
@@ -124,6 +130,12 @@ export default function JobDetailPage() {
         }
 
         setData(jobData);
+
+        // Check if review already exists
+        if (jobData.customer_confirmed_at) {
+          const reviewCheck = await checkReviewExists(jobData.id, undefined);
+          setReviewExists(reviewCheck.exists);
+        }
 
         // Initialize edit form
         setEditForm({
@@ -401,14 +413,58 @@ export default function JobDetailPage() {
           </div>
           <div className="flex gap-2">
             {!isEditing ? (
-              <Button
-                onClick={() => setIsEditing(true)}
-                className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
-                size="sm"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
+              <>
+                {data.status !== "completed" && (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
+                    size="sm"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                )}
+                {data.status === "completed" && (
+                  <Button
+                    onClick={async () => {
+                      try {
+                        // Clone job by creating a new job with the same data
+                        const result = await createJob({
+                          title: `${data.title} (Copy)`,
+                          description: data.description || "",
+                          service_id: data.service_id,
+                          preferred_date: new Date().toISOString().split('T')[0], // Today's date
+                          preferred_time_start: data.preferred_time_start || undefined,
+                          preferred_time_end: data.preferred_time_end || undefined,
+                          is_flexible: data.is_flexible || false,
+                          estimated_duration: data.estimated_duration || undefined,
+                          customer_budget: data.customer_budget || 0,
+                          currency: data.currency || "MAD",
+                          address_id: data.address_id,
+                          max_applications: data.max_applications || undefined,
+                          requirements: data.requirements || undefined,
+                          images: data.images || undefined,
+                        });
+                        
+                        if (result.success && result.jobId) {
+                          toast.success("Job cloned successfully!");
+                          router.push(`/customer/my-jobs/${result.jobId}`);
+                        } else {
+                          toast.error(result.error || "Failed to clone job");
+                        }
+                      } catch (error) {
+                        console.error("Error cloning job:", error);
+                        toast.error("Failed to clone job");
+                      }
+                    }}
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
+                    size="sm"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Clone
+                  </Button>
+                )}
+              </>
             ) : (
               <>
                 <Button
@@ -515,7 +571,7 @@ export default function JobDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Budget (€)
+                          Budget (MAD)
                         </label>
                         <input
                           type="number"
@@ -655,9 +711,8 @@ export default function JobDetailPage() {
                       <div className="flex flex-col items-end gap-2">
                         {data.customer_budget && (
                           <div className="flex items-center gap-2">
-                            <Euro className="h-5 w-5 text-[var(--color-secondary)]" />
                             <span className="text-2xl font-bold text-[var(--color-secondary)]">
-                              €{data.customer_budget}
+                              {data.currency || "MAD"} {data.customer_budget}
                             </span>
                           </div>
                         )}
@@ -777,7 +832,8 @@ export default function JobDetailPage() {
           </div>
 
           {/* Applications Section */}
-          {data.status === "active" && applications.length > 0 && (
+          {/* Only show applications if job is active AND no tasker is assigned yet */}
+          {data.status === "active" && !data.assigned_tasker_id && applications.length > 0 && (
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
               <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
@@ -789,67 +845,68 @@ export default function JobDetailPage() {
               </div>
               <div className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {applications.map((application) => (
-                    <div
-                      key={application.id}
-                      className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                          <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  {applications
+                    .filter((app) => app.status === "pending") // Only show pending applications
+                    .map((application) => (
+                      <div
+                        key={application.id}
+                        className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                            <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-slate-900 dark:text-white truncate">
+                              {application.tasker_first_name}{" "}
+                              {application.tasker_last_name}
+                            </p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                              {formatDate(application.created_at)}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-slate-900 dark:text-white truncate">
-                            {application.tasker_first_name}{" "}
-                            {application.tasker_last_name}
-                          </p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            {formatDate(application.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <Euro className="h-4 w-4 text-green-600 dark:text-green-400" />
-                          <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                            €{application.proposed_price}
-                          </span>
-                        </div>
-                        {application.estimated_duration && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                            <span className="text-sm text-slate-600 dark:text-slate-400">
-                              {application.estimated_duration}h
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                              MAD {application.proposed_price}
                             </span>
                           </div>
+                          {application.estimated_duration && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                              <span className="text-sm text-slate-600 dark:text-slate-400">
+                                {application.estimated_duration}h
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        {application.message && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mb-4">
+                            {application.message}
+                          </p>
                         )}
+                        <Button
+                          onClick={() =>
+                            handleAssignTasker(application.tasker_id)
+                          }
+                          disabled={isAssigning === application.tasker_id || !!data.assigned_tasker_id}
+                          className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isAssigning === application.tasker_id ? (
+                            <>
+                              <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Assigning...
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="h-5 w-5 mr-2" />
+                              Assign Tasker
+                            </>
+                          )}
+                        </Button>
                       </div>
-                      {application.message && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 mb-4">
-                          {application.message}
-                        </p>
-                      )}
-                      <Button
-                        onClick={() =>
-                          handleAssignTasker(application.tasker_id)
-                        }
-                        disabled={isAssigning === application.tasker_id}
-                        className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                      >
-                        {isAssigning === application.tasker_id ? (
-                          <>
-                            <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            Assigning...
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="h-5 w-5 mr-2" />
-                            Assign Tasker
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             </div>
@@ -964,10 +1021,50 @@ export default function JobDetailPage() {
                   You have confirmed that this job has been completed successfully.
                 </p>
                 {data.customer_confirmed_at && (
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                     Confirmed on: {format(new Date(data.customer_confirmed_at), "PPP 'at' p")}
                   </p>
                 )}
+                {!reviewExists && !showReviewForm && (
+                  <Button
+                    onClick={() => setShowReviewForm(true)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                  >
+                    <Star className="h-5 w-5 mr-2" />
+                    Leave a Review
+                  </Button>
+                )}
+                {reviewExists && (
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                    ✓ You have already left a review for this job
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Review Form Section */}
+          {showReviewForm && data.customer_confirmed_at && (
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 px-8 py-6 border-b border-slate-200 dark:border-slate-700">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Star className="h-5 w-5 text-white" />
+                  </div>
+                  Leave a Review
+                </h2>
+              </div>
+              <div className="p-8">
+                <ReviewForm
+                  jobId={data.id}
+                  onSuccess={() => {
+                    setReviewExists(true);
+                    setShowReviewForm(false);
+                    // Refresh the page to show updated status
+                    window.location.reload();
+                  }}
+                  onCancel={() => setShowReviewForm(false)}
+                />
               </div>
             </div>
           )}

@@ -11,7 +11,6 @@ import {
   ArrowLeft,
   User,
   Phone,
-  Video,
   Info,
   Paperclip,
   Smile,
@@ -374,22 +373,6 @@ export default function ChatPage() {
               <RefreshCw
                 className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`}
               />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="touch-target p-2"
-              title={t("actions.call")}
-            >
-              <Phone className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="touch-target p-2"
-              title={t("actions.video")}
-            >
-              <Video className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"

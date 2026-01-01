@@ -13,7 +13,6 @@ import {
   Clock,
   Calendar,
   AlertCircle,
-  Euro,
   User as UserIcon,
   Award,
   Clock as ClockIcon,
@@ -49,6 +48,7 @@ export default function TaskerOfferPage() {
     bookingId?: string;
     conversationId?: string;
   } | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
 
   const serviceId = params["service-id"] as string;
 
@@ -63,7 +63,15 @@ export default function TaskerOfferPage() {
         const result = await getTaskerServiceOffer(serviceId);
 
         if (result.success && result.data) {
+          console.log("[TaskerOfferPage] Service data loaded:", {
+            taskerId: result.data.tasker.id,
+            avatar_url: result.data.tasker.avatar_url,
+            first_name: result.data.tasker.first_name,
+            last_name: result.data.tasker.last_name,
+          });
           setServiceData(result.data);
+          // Reset avatar error when new data is loaded
+          setAvatarError(false);
 
           // Check interaction status if user is logged in
           if (user) {
@@ -100,11 +108,11 @@ export default function TaskerOfferPage() {
 
   const getPricingDisplay = (price: number, pricingType: string) => {
     if (pricingType === "hourly") {
-      return `€${price}/hr`;
+      return `MAD ${price}/hr`;
     } else if (pricingType === "per_item") {
-      return `€${price}/item`;
+      return `MAD ${price}/item`;
     } else {
-      return `€${price}`;
+      return `MAD ${price}`;
     }
   };
 
@@ -236,7 +244,6 @@ export default function TaskerOfferPage() {
                 <div className="absolute top-6 right-6">
                   <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-xl border border-white/20">
                     <div className="flex items-center gap-2">
-                      <Euro className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                       <span className="text-3xl font-bold text-slate-900 dark:text-white">
                         {getPricingDisplay(
                           serviceData.price,
@@ -275,9 +282,6 @@ export default function TaskerOfferPage() {
             ) : (
               <div className="relative h-80 md:h-96 w-full bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-24 h-24 mx-auto mb-4 bg-white/20 dark:bg-slate-500/20 rounded-full flex items-center justify-center">
-                    <Euro className="h-12 w-12 text-blue-600 dark:text-blue-400" />
-                  </div>
                   <h1 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-white mb-2">
                     {serviceData.title}
                   </h1>
@@ -367,18 +371,33 @@ export default function TaskerOfferPage() {
               <div className="flex flex-col lg:flex-row lg:items-start gap-8 mb-8">
                 {/* Profile Picture */}
                 <div className="relative group">
-                  <div className="relative h-32 w-32 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl">
-                    <Image
-                      src={
-                        serviceData.tasker.avatar_url ||
-                        "/placeholder-avatar.jpg"
-                      }
-                      alt={`${serviceData.tasker.first_name || "Tasker"} ${
-                        serviceData.tasker.last_name || ""
-                      }`}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+                  <div className="relative h-32 w-32 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">
+                    {serviceData.tasker.avatar_url && !avatarError ? (
+                      <Image
+                        src={serviceData.tasker.avatar_url}
+                        alt={`${serviceData.tasker.first_name || "Tasker"} ${
+                          serviceData.tasker.last_name || ""
+                        }`}
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        unoptimized
+                        onError={(e) => {
+                          console.error("[TaskerOfferPage] Avatar image error:", {
+                            src: serviceData.tasker.avatar_url,
+                            error: e,
+                          });
+                          setAvatarError(true);
+                        }}
+                        onLoad={() => {
+                          console.log("[TaskerOfferPage] Avatar image loaded successfully:", serviceData.tasker.avatar_url);
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <UserIcon className="h-16 w-16 text-white" />
+                      </div>
+                    )}
                   </div>
                   {serviceData.tasker.profile?.experience_level && (
                     <div className="absolute -bottom-2 -right-2">

@@ -351,14 +351,23 @@ export default function BookingsPage() {
       );
 
       if (result.success) {
-        // Update local state
-        setMyBookings((prev) =>
-          prev.map((booking) =>
-            booking.id === confirmationDialog.bookingId
-              ? { ...booking, status: newStatus }
-              : booking
-          )
-        );
+        // Reload bookings from server to get the latest data including timestamps
+        // This ensures we have all updated fields (accepted_at, confirmed_at, etc.)
+        try {
+          const updatedBookings = await getTaskerBookings(20, 0, false);
+          setMyBookings(updatedBookings.bookings);
+          setHasMore(updatedBookings.hasMore);
+        } catch (reloadError) {
+          console.error("Error reloading bookings:", reloadError);
+          // Fallback: update local state if reload fails
+          setMyBookings((prev) =>
+            prev.map((booking) =>
+              booking.id === confirmationDialog.bookingId
+                ? { ...booking, status: newStatus }
+                : booking
+            )
+          );
+        }
         toast.success("Booking status updated successfully");
       } else {
         console.error("Failed to update booking:", result.error);

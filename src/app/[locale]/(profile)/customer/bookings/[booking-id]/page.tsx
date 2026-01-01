@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { CancellationReasonDialog } from "@/components/booking/CancellationReasonDialog";
 import {
   ArrowLeft,
   Calendar,
@@ -17,7 +18,6 @@ import {
   Play,
   MessageSquare,
   FileText,
-  DollarSign,
   Clock3,
   CalendarDays,
   Info,
@@ -34,10 +34,14 @@ import { toast } from "sonner";
 import {
   getBookingById,
   cancelCustomerBooking,
+  confirmBookingCompletion,
   type BookingWithDetails,
 } from "@/actions/bookings";
+import { createConversationAction } from "@/actions/messages";
+import { checkReviewExists } from "@/actions/reviews";
 import { BookingStatus } from "@/types/supabase";
 import { useTranslations } from "next-intl";
+import ReviewForm from "@/components/reviews/ReviewForm";
 
 interface ConfirmationDialogState {
   isOpen: boolean;
@@ -65,6 +69,9 @@ export default function CustomerBookingDetailPage({
   const [booking, setBooking] = useState<BookingWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [reviewExists, setReviewExists] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const [confirmationDialog, setConfirmationDialog] =
     useState<ConfirmationDialogState>({
       isOpen: false,
@@ -74,6 +81,7 @@ export default function CustomerBookingDetailPage({
       confirmText: "",
       variant: "default",
     });
+  const [showCancellationReasonDialog, setShowCancellationReasonDialog] = useState(false);
   const router = useRouter();
   const t = useTranslations("bookingDetails");
 
@@ -88,6 +96,12 @@ export default function CustomerBookingDetailPage({
       }
 
       setBooking(bookingData);
+
+      // Check if review already exists
+      if (bookingData.customer_confirmed_at) {
+        const reviewCheck = await checkReviewExists(undefined, bookingData.id);
+        setReviewExists(reviewCheck.exists);
+      }
     } catch (error) {
       console.error("Error fetching booking:", error);
       const errorMessage =
@@ -230,25 +244,57 @@ export default function CustomerBookingDetailPage({
 
   const getTaskerEmail = useCallback(() => {
     if (!booking) return "N/A";
-    return "N/A"; // Tasker email not available in current schema
+    return booking.tasker_email || "N/A";
   }, [booking]);
 
   const getTaskerPhone = useCallback(() => {
     if (!booking) return "N/A";
-    return "N/A"; // Tasker phone not available in current schema
+    return booking.tasker_phone || "N/A";
+  }, [booking]);
+
+  // Check if contact info should be shown (booking accepted, in_progress, completed, or started)
+  const shouldShowContactInfo = useCallback(() => {
+    if (!booking) return false;
+    return (
+      booking.status === "accepted" ||
+      booking.status === "confirmed" ||
+      booking.status === "in_progress" ||
+      booking.status === "completed" ||
+      booking.started_at !== null
+    );
   }, [booking]);
 
   const handleCancelBooking = useCallback(async () => {
     if (!booking) return;
 
-    setConfirmationDialog({
-      isOpen: true,
-      action: "cancel",
-      title: t("confirmations.cancelCustomer.title"),
-      description: t("confirmations.cancelCustomer.description"),
-      confirmText: t("confirmations.cancelCustomer.confirmText"),
-      variant: "destructive",
-    });
+    // Show cancellation reason dialog first
+    setShowCancellationReasonDialog(true);
+  }, [booking]);
+
+  const handleConfirmCancellation = useCallback(async (reason: string) => {
+    if (!booking) return;
+
+    setIsUpdating(true);
+    setShowCancellationReasonDialog(false);
+
+    try {
+      const result = await cancelCustomerBooking(booking.id, reason);
+
+      if (result.success) {
+        setBooking((prev) =>
+          prev ? { ...prev, status: "cancelled" as BookingStatus } : null
+        );
+        toast.success(t("success.statusUpdated"));
+      } else {
+        console.error("Failed to cancel booking:", result.error);
+        toast.error(result.error || t("errors.updateFailed"));
+      }
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      toast.error(t("errors.unexpectedError"));
+    } finally {
+      setIsUpdating(false);
+    }
   }, [booking, t]);
 
   const handleConfirmAction = useCallback(async () => {
@@ -257,18 +303,10 @@ export default function CustomerBookingDetailPage({
     setIsUpdating(true);
 
     try {
-      if (confirmationDialog.action === "cancel") {
-        const result = await cancelCustomerBooking(booking.id);
-
-        if (result.success) {
-          setBooking((prev) =>
-            prev ? { ...prev, status: "cancelled" as BookingStatus } : null
-          );
-          toast.success(t("success.statusUpdated"));
-        } else {
-          console.error("Failed to cancel booking:", result.error);
-          toast.error(result.error || t("errors.updateFailed"));
-        }
+      // This function is kept for other confirmation actions, not for cancellation
+      // Cancellation now uses handleConfirmCancellation with the reason dialog
+      if (confirmationDialog.action !== "cancel") {
+        // Handle other actions here if needed
       }
     } catch (error) {
       console.error("Error updating booking:", error);
@@ -420,7 +458,6 @@ export default function CustomerBookingDetailPage({
               <div className="lg:text-right mt-4 sm:mt-0">
                 <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl border border-white/20 dark:border-slate-700/20">
                   <div className="flex items-center gap-2 sm:gap-3 justify-center lg:justify-end">
-                    <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                     <div className="text-center lg:text-right">
                       <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mobile-text-3xl">
                         {formatCurrency(booking.agreed_price, booking.currency)}
@@ -480,40 +517,42 @@ export default function CustomerBookingDetailPage({
                   </p>
                 </div>
 
-                {/* Contact Info - Mobile Optimized */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
-                          Email
-                        </p>
-                        <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
-                          {getTaskerEmail()}
-                        </p>
+                {/* Contact Info - Mobile Optimized - Only show if booking is accepted or started */}
+                {shouldShowContactInfo() && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                          <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
+                            Email
+                          </p>
+                          <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
+                            {getTaskerEmail()}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                        <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
-                          Phone
-                        </p>
-                        <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
-                          {getTaskerPhone()}
-                        </p>
+                    <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                          <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
+                            Phone
+                          </p>
+                          <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
+                            {getTaskerPhone()}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -547,9 +586,6 @@ export default function CustomerBookingDetailPage({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
                 <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                      <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
-                    </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                         {t("price")}
@@ -831,29 +867,35 @@ export default function CustomerBookingDetailPage({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <Button
                 variant="outline"
-                onClick={() => {
-                  // TODO: Implement messaging functionality
-                  toast.info(t("messagingComingSoon"));
+                onClick={async () => {
+                  if (!booking || !booking.tasker_id) {
+                    toast.error("Tasker information not available");
+                    return;
+                  }
+                  
+                  try {
+                    const result = await createConversationAction(
+                      booking.tasker_id,
+                      undefined, // jobId
+                      undefined, // serviceId
+                      booking.id, // bookingId
+                      `Hello! I'd like to discuss the booking for "${booking.service_title || 'this service'}".`
+                    );
+
+                    if (result.conversation) {
+                      router.push(`/customer/messages/${result.conversation.id}`);
+                    } else {
+                      toast.error(result.errorMessage || "Failed to start conversation");
+                    }
+                  } catch (error) {
+                    console.error("Error starting conversation:", error);
+                    toast.error("Failed to start conversation");
+                  }
                 }}
                 className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
               >
                 <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
                 <span className="truncate">{t("actions.messageTasker")}</span>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  const phoneNumber = getTaskerPhone();
-                  if (phoneNumber && phoneNumber !== "N/A") {
-                    window.open(`tel:${phoneNumber}`, "_self");
-                  } else {
-                    toast.error(t("phoneNotAvailable"));
-                  }
-                }}
-                className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
-              >
-                <Phone className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">{t("actions.callTasker")}</span>
               </Button>
             </div>
           </div>
@@ -983,6 +1025,136 @@ export default function CustomerBookingDetailPage({
         </div>
       </div>
 
+      {/* Booking Completion Confirmation Section */}
+      {booking.status === "completed" && 
+       booking.completed_at && 
+       !booking.customer_confirmed_at && (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-3xl shadow-2xl border-2 border-blue-200 dark:border-blue-700 overflow-hidden mt-8">
+          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 px-8 py-6 border-b border-blue-200 dark:border-blue-700">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-white" />
+              </div>
+              Booking Completed - Awaiting Your Confirmation
+            </h2>
+          </div>
+          <div className="p-8 space-y-4">
+            <p className="text-slate-700 dark:text-slate-300 text-lg">
+              The tasker has marked this booking as completed. Please review the work and confirm completion.
+            </p>
+            {booking.completed_at && (
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Completed on: {formatDate(booking.completed_at)}
+              </p>
+            )}
+            <Button
+              onClick={async () => {
+                if (!booking.id) return;
+                setIsConfirming(true);
+                try {
+                  const result = await confirmBookingCompletion(booking.id);
+                  if (result.success) {
+                    const updatedBooking = await getBookingById(bookingId);
+                    if (updatedBooking) {
+                      setBooking(updatedBooking);
+                    }
+                    toast.success("Booking confirmed successfully");
+                  } else {
+                    toast.error(result.error || "Failed to confirm booking completion");
+                  }
+                } catch (err) {
+                  console.error("Error confirming booking:", err);
+                  toast.error("Failed to confirm booking completion");
+                } finally {
+                  setIsConfirming(false);
+                }
+              }}
+              disabled={isConfirming}
+              className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
+            >
+              {isConfirming ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Confirming...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Confirm Booking Completion
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Confirmed Section */}
+      {booking.status === "completed" && 
+       booking.completed_at && 
+       booking.customer_confirmed_at && (
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-3xl shadow-2xl border-2 border-emerald-200 dark:border-emerald-700 overflow-hidden mt-8">
+          <div className="bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 px-8 py-6 border-b border-emerald-200 dark:border-emerald-700">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-white" />
+              </div>
+              Booking Confirmed
+            </h2>
+          </div>
+          <div className="p-8">
+            <p className="text-slate-700 dark:text-slate-300 text-lg mb-4">
+              You have confirmed that this booking has been completed successfully. Payment has been processed.
+            </p>
+            {booking.customer_confirmed_at && (
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                Confirmed on: {formatDate(booking.customer_confirmed_at)}
+              </p>
+            )}
+            {!reviewExists && !showReviewForm && (
+              <Button
+                onClick={() => setShowReviewForm(true)}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+              >
+                <Star className="h-5 w-5 mr-2" />
+                Leave a Review
+              </Button>
+            )}
+            {reviewExists && (
+              <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                ✓ You have already left a review for this booking
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Review Form Section */}
+      {showReviewForm && booking.customer_confirmed_at && (
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden mt-8">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 px-8 py-6 border-b border-slate-200 dark:border-slate-700">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Star className="h-5 w-5 text-white" />
+              </div>
+              Leave a Review
+            </h2>
+          </div>
+          <div className="p-8">
+            <ReviewForm
+              bookingId={booking.id}
+              onSuccess={() => {
+                setReviewExists(true);
+                setShowReviewForm(false);
+                // Refresh the page to show updated status
+                window.location.reload();
+              }}
+              onCancel={() => setShowReviewForm(false)}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={confirmationDialog.isOpen}
@@ -992,6 +1164,12 @@ export default function CustomerBookingDetailPage({
         description={confirmationDialog.description}
         confirmText={confirmationDialog.confirmText}
         variant={confirmationDialog.variant}
+        isLoading={isUpdating}
+      />
+      <CancellationReasonDialog
+        isOpen={showCancellationReasonDialog}
+        onClose={() => setShowCancellationReasonDialog(false)}
+        onConfirm={handleConfirmCancellation}
         isLoading={isUpdating}
       />
     </div>

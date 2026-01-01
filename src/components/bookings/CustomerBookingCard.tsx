@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { BookingWithDetails } from "@/actions/bookings";
 import { useRouter } from "next/navigation";
+import { createConversationAction } from "@/actions/messages";
+import { toast } from "sonner";
 
 interface CustomerBookingCardProps {
   booking: BookingWithDetails;
@@ -105,8 +107,39 @@ const getStatusColor = (status: string) => {
 export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
   ({ booking, onActionClick, isUpdating, actionButton }) => {
     const router = useRouter();
+    const [isOpeningMessage, setIsOpeningMessage] = useState(false);
     const taskerName = getTaskerName(booking);
     const location = getLocation(booking);
+
+    const handleMessageClick = async () => {
+      if (!booking.tasker_id) {
+        toast.error("Tasker information not available");
+        return;
+      }
+
+      try {
+        setIsOpeningMessage(true);
+        const result = await createConversationAction(
+          booking.tasker_id,
+          undefined, // jobId
+          undefined, // serviceId
+          booking.id, // bookingId
+          `Hello! I'd like to discuss the booking for "${booking.service_title || "service"}".` // initialMessage
+        );
+
+        if (result.conversation) {
+          router.push(`/customer/messages/${result.conversation.id}`);
+        } else {
+          toast.error(result.errorMessage || "Failed to open conversation");
+        }
+      } catch (error) {
+        console.error("Error opening conversation:", error);
+        toast.error("Failed to open conversation");
+      } finally {
+        setIsOpeningMessage(false);
+      }
+    };
+
 
     return (
       <Card className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow">
@@ -152,7 +185,9 @@ export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
               </div>
               {booking.customer_requirements && (
                 <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2">
-                  {booking.customer_requirements}
+                  {booking.customer_requirements.length > 100
+                    ? `${booking.customer_requirements.substring(0, 100)}...`
+                    : booking.customer_requirements}
                 </p>
               )}
             </div>
@@ -187,16 +222,11 @@ export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={handleMessageClick}
+                  disabled={isOpeningMessage}
                   className="flex-1 sm:flex-none touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
                 >
                   <MessageSquare className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1 sm:flex-none touch-target mobile-focus border-color-secondary text-color-secondary hover:bg-color-secondary/10"
-                >
-                  <Phone className="h-4 w-4" />
                 </Button>
               </div>
             </div>

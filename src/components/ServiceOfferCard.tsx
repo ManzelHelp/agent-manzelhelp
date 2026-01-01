@@ -1,9 +1,11 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { User, TaskerService } from "@/types/supabase";
 import { Card } from "./ui/card";
-import { MapPin, Star, Clock, Shield, ArrowRight } from "lucide-react";
+import { MapPin, Star, Clock, Shield, ArrowRight, User as UserIcon } from "lucide-react";
 import { useLocale } from "next-intl";
 
 interface ServiceOfferCardProps {
@@ -20,6 +22,7 @@ function ServiceOfferCard({
   totalReviews = 0,
 }: ServiceOfferCardProps) {
   const locale = useLocale();
+  const [avatarError, setAvatarError] = useState(false);
 
   return (
     <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-secondary)]/30 hover:-translate-y-2">
@@ -29,14 +32,22 @@ function ServiceOfferCard({
           <div className="flex items-center gap-4">
             <div className="relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
               <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] p-0.5">
-                <div className="h-full w-full rounded-full bg-[var(--color-surface)] p-0.5">
-                  <Image
-                    src={tasker.avatar_url || "/default-avatar.svg"}
-                    alt={`${tasker.first_name}'s profile`}
-                    className="rounded-full object-cover"
-                    fill
-                    sizes="(max-width: 640px) 48px, 64px"
-                  />
+                <div className="relative h-full w-full rounded-full bg-[var(--color-surface)] p-0.5 flex items-center justify-center">
+                  {tasker.avatar_url && !avatarError ? (
+                    <Image
+                      src={tasker.avatar_url}
+                      alt={`${tasker.first_name || "Tasker"}'s profile`}
+                      className="rounded-full object-cover"
+                      fill
+                      sizes="(max-width: 640px) 48px, 64px"
+                      unoptimized
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center">
+                      <UserIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -46,6 +46,8 @@ import {
   createTaskerService,
   getTaskerAddresses,
   getTaskerProfile,
+  getServiceCategories,
+  getServices,
   type CreateServiceData,
 } from "@/actions/services";
 import { useTranslations } from "next-intl";
@@ -148,6 +150,7 @@ export default function CreateOfferPage() {
 
   // Form states
   const [newExtra, setNewExtra] = useState({ name: "", price: 0 });
+  const [avatarError, setAvatarError] = useState(false);
 
   // Validation errors - only show when user tries to continue
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -158,41 +161,81 @@ export default function CreateOfferPage() {
     setLoading(true);
 
     try {
-      // Use local categories from categories.ts
-      const hierarchies = getAllCategoryHierarchies();
-      const localCategories = hierarchies.map(({ parent }) => ({
-        id: parent.id,
-        name_en: parent.name_en,
-        name_fr: parent.name_fr,
-        name_ar: parent.name_ar,
-        description_en: parent.description_en,
-        description_fr: parent.description_fr,
-        description_ar: parent.description_ar,
-        icon_url: undefined,
-        is_active: true,
-        sort_order: parent.id,
-      }));
-      setCategories(localCategories);
+      // Get categories from database to ensure they match with services
+      const categoriesResult = await getServiceCategories();
+      if (categoriesResult.success && categoriesResult.categories) {
+        const dbCategories = categoriesResult.categories.map((category) => ({
+          id: category.id,
+          name_en: category.name_en,
+          name_fr: category.name_fr,
+          name_ar: category.name_ar,
+          description_en: category.description_en || undefined,
+          description_fr: category.description_fr || undefined,
+          description_ar: category.description_ar || undefined,
+          icon_url: category.icon_url || undefined,
+          is_active: category.is_active,
+          sort_order: category.sort_order,
+        }));
+        setCategories(dbCategories);
+      } else {
+        // Fallback to local categories if database fetch fails
+        console.warn("Failed to load categories from database, using local categories:", categoriesResult.error);
+        const hierarchies = getAllCategoryHierarchies();
+        const localCategories = hierarchies.map(({ parent }) => ({
+          id: parent.id,
+          name_en: parent.name_en,
+          name_fr: parent.name_fr,
+          name_ar: parent.name_ar,
+          description_en: parent.description_en,
+          description_fr: parent.description_fr,
+          description_ar: parent.description_ar,
+          icon_url: undefined,
+          is_active: true,
+          sort_order: parent.id,
+        }));
+        setCategories(localCategories);
+      }
 
-      // Get all services from local categories
-      const allServices: Service[] = [];
-      hierarchies.forEach(({ parent, subcategories }) => {
-        subcategories.forEach((service) => {
-          allServices.push({
-            id: service.id,
-            category_id: parent.id,
-            name_en: service.name_en,
-            name_fr: service.name_fr,
-            name_ar: service.name_ar,
-            description_en: service.description_en,
-            description_fr: service.description_fr,
-            description_ar: service.description_ar,
-            is_active: true,
-            sort_order: service.id,
+      // Get all services from the database to ensure we use correct IDs
+      // This prevents foreign key constraint errors when creating services
+      const servicesResult = await getServices();
+      if (servicesResult.success && servicesResult.services) {
+        const dbServices = servicesResult.services.map((service) => ({
+          id: service.id,
+          category_id: service.category_id,
+          name_en: service.name_en,
+          name_fr: service.name_fr,
+          name_ar: service.name_ar,
+          description_en: service.description_en || undefined,
+          description_fr: service.description_fr || undefined,
+          description_ar: service.description_ar || undefined,
+          is_active: service.is_active,
+          sort_order: service.sort_order,
+        }));
+        setServices(dbServices);
+      } else {
+        // Fallback to local services if database fetch fails
+        console.warn("Failed to load services from database, using local services:", servicesResult.error);
+        const hierarchies = getAllCategoryHierarchies();
+        const allServices: Service[] = [];
+        hierarchies.forEach(({ parent, subcategories }) => {
+          subcategories.forEach((service) => {
+            allServices.push({
+              id: service.id,
+              category_id: parent.id,
+              name_en: service.name_en,
+              name_fr: service.name_fr,
+              name_ar: service.name_ar,
+              description_en: service.description_en,
+              description_fr: service.description_fr,
+              description_ar: service.description_ar,
+              is_active: true,
+              sort_order: service.id,
+            });
           });
         });
-      });
-      setServices(allServices);
+        setServices(allServices);
+      }
 
       // Fetch user addresses using server action
       const addressesResult = await getTaskerAddresses();
@@ -533,19 +576,21 @@ export default function CreateOfferPage() {
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden shadow-lg">
-                            {user?.avatar_url ? (
+                            {user?.avatar_url && !avatarError ? (
                               <Image
                                 src={user.avatar_url}
                                 alt="Profile"
                                 width={64}
                                 height={64}
                                 className="w-full h-full object-cover"
+                                unoptimized
+                                onError={() => setAvatarError(true)}
                               />
                             ) : (
                               <User className="h-8 w-8 text-white" />
                             )}
                           </div>
-                          {!user?.avatar_url && (
+                          {(!user?.avatar_url || avatarError) && (
                             <div className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-warning)] rounded-full flex items-center justify-center">
                               <AlertCircle className="h-3 w-3 text-white" />
                             </div>
@@ -558,7 +603,7 @@ export default function CreateOfferPage() {
                           <p className="text-sm text-[var(--color-text-secondary)]">
                             {user?.email}
                           </p>
-                          {!user?.avatar_url && (
+                          {(!user?.avatar_url || avatarError) && (
                             <p className="text-xs text-[var(--color-warning)] mt-1 flex items-center">
                               <Info className="h-3 w-3 inline mr-1" />
                               Add a profile photo to build trust with customers
@@ -1122,8 +1167,12 @@ export default function CreateOfferPage() {
                         </div>
                       )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="minimumBooking">
+                      <div className="space-y-3">
+                        <Label 
+                          htmlFor="minimumBooking"
+                          className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                        >
+                          <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
                           Minimum Booking (hours) - Optional
                         </Label>
                         <Input
@@ -1144,15 +1193,16 @@ export default function CreateOfferPage() {
                             }))
                           }
                           placeholder="e.g., 1.0 (optional)"
-                          className={
+                          className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
                             hasAttemptedValidation && errors.minimumBookingHours
-                              ? "border-destructive"
-                              : ""
-                          }
+                              ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                              : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                          }`}
                         />
                         {hasAttemptedValidation &&
                           errors.minimumBookingHours && (
-                            <p className="text-sm text-destructive">
+                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" />
                               {errors.minimumBookingHours}
                             </p>
                           )}

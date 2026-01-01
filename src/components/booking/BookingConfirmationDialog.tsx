@@ -164,6 +164,13 @@ export function BookingConfirmationDialog({
       newErrors.estimated_duration = t("errors.durationGreaterThanZero");
     }
 
+    // Validate customer_requirements must be at least 100 characters
+    if (!formData.customer_requirements.trim()) {
+      newErrors.customer_requirements = t("errors.messageRequired");
+    } else if (formData.customer_requirements.trim().length < 100) {
+      newErrors.customer_requirements = t("errors.messageTooShort", { min: 100 });
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -514,7 +521,7 @@ export function BookingConfirmationDialog({
           {/* Customer Requirements */}
           <div className="space-y-2">
             <Label htmlFor="customer_requirements">
-              {t("specialRequirements")}
+              {t("specialRequirements")} *
             </Label>
             <textarea
               id="customer_requirements"
@@ -526,8 +533,24 @@ export function BookingConfirmationDialog({
                 }))
               }
               placeholder={t("specialRequirementsPlaceholder")}
-              className="w-full min-h-[100px] p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className={`w-full min-h-[120px] p-3 border rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                errors.customer_requirements
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-slate-200 dark:border-slate-600"
+              }`}
             />
+            <div className="flex justify-between items-center">
+              <div>
+                {errors.customer_requirements && (
+                  <p className="text-sm text-red-500 font-medium">
+                    {errors.customer_requirements}
+                  </p>
+                )}
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {formData.customer_requirements.length}/100 min
+              </p>
+            </div>
           </div>
 
           {/* Payment Method */}
@@ -590,7 +613,7 @@ export function BookingConfirmationDialog({
             ) : (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                {t("confirmBooking")} (€{getTotalPrice().toFixed(2)})
+                {t("confirmBooking")} (MAD {getTotalPrice().toFixed(2)})
               </>
             )}
           </Button>

@@ -9,6 +9,7 @@ import {
   getJobApplications,
   acceptJobApplication,
   rejectJobApplication,
+  getJobById,
   JobApplicationWithDetails,
 } from "@/actions/jobs";
 import { getTaskerServices } from "@/actions/services";
@@ -20,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   User,
   Clock,
-  Euro,
+  DollarSign,
   MapPin,
   MessageSquare,
   Phone,
@@ -104,12 +105,14 @@ function ApplicationCard({
   onAccept,
   onReject,
   onViewProfile,
+  shouldShowContact = false,
 }: {
   application: JobApplicationWithDetails;
   t: ReturnType<typeof useTranslations>;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
   onViewProfile: (taskerId: string) => void;
+  shouldShowContact?: boolean;
 }) {
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -202,7 +205,7 @@ function ApplicationCard({
                   {application.tasker_first_name} {application.tasker_last_name}
                 </h3>
                 {application.tasker_verification_status === "verified" && (
-                  <Shield className="w-4 h-4 text-[var(--color-success)]" />
+                  <Shield className="w-4 h-4 text-[var(--color-success)] flex-shrink-0" />
                 )}
               </div>
               <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
@@ -218,7 +221,7 @@ function ApplicationCard({
           {/* Details Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div className="flex items-center gap-2 text-sm">
-              <Euro className="w-4 h-4 text-[var(--color-text-secondary)]" />
+              <DollarSign className="w-4 h-4 text-[var(--color-text-secondary)]" />
               <span className="text-[var(--color-text-secondary)]">
                 {t("applications.applicationCard.proposedPrice")}:
               </span>
@@ -279,62 +282,67 @@ function ApplicationCard({
             </div>
           )}
 
-          {/* Contact Info */}
-          <div className="mb-4 p-3 bg-[var(--color-bg)] rounded-lg">
-            <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-              {t("applications.applicationCard.contactInfo")}
-            </p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              {application.tasker_phone && (
-                <div className="flex items-center gap-1">
-                  <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
-                  <span className="text-[var(--color-text-primary)]">
-                    {application.tasker_phone}
-                  </span>
-                </div>
-              )}
-              {application.tasker_email && (
-                <div className="flex items-center gap-1">
-                  <Mail className="w-3 h-3 text-[var(--color-text-secondary)]" />
-                  <span className="text-[var(--color-text-primary)]">
-                    {application.tasker_email}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Actions */}
-          {application.status === "pending" && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => onAccept(application.id)}
-                className="bg-[var(--color-success)] text-white hover:bg-[var(--color-success)]/90 touch-target"
-                size="sm"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {t("applications.actions.accept")}
-              </Button>
-              <Button
-                onClick={() => onReject(application.id)}
-                variant="outline"
-                className="border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)]/10 touch-target"
-                size="sm"
-              >
-                <XCircle className="w-4 h-4 mr-2" />
-                {t("applications.actions.reject")}
-              </Button>
-              <Button
-                variant="outline"
-                className="border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)] touch-target"
-                size="sm"
-                onClick={() => onViewProfile(application.tasker_id)}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                {t("applications.actions.viewProfile")}
-              </Button>
+          {/* Contact Info - Only show if application is accepted or job has started */}
+          {shouldShowContact && (
+            <div className="mb-4 p-3 bg-[var(--color-bg)] rounded-lg">
+              <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                {t("applications.applicationCard.contactInfo")}
+              </p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                {application.tasker_phone && (
+                  <div className="flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
+                    <span className="text-[var(--color-text-primary)]">
+                      {application.tasker_phone}
+                    </span>
+                  </div>
+                )}
+                {application.tasker_email && (
+                  <div className="flex items-center gap-1">
+                    <Mail className="w-3 h-3 text-[var(--color-text-secondary)]" />
+                    <span className="text-[var(--color-text-primary)]">
+                      {application.tasker_email}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-2">
+            {application.status === "pending" && (
+              <>
+                <Button
+                  onClick={() => onAccept(application.id)}
+                  className="bg-[var(--color-success)] text-white hover:bg-[var(--color-success)]/90 touch-target"
+                  size="sm"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {t("applications.actions.accept")}
+                </Button>
+                <Button
+                  onClick={() => onReject(application.id)}
+                  variant="outline"
+                  className="border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)]/10 touch-target"
+                  size="sm"
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  {t("applications.actions.reject")}
+                </Button>
+              </>
+            )}
+            {/* View Profile button - Always visible for better UX */}
+            <Button
+              variant="outline"
+              className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 touch-target"
+              size="sm"
+              onClick={() => onViewProfile(application.tasker_id)}
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              {t("applications.actions.viewProfile")}
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
@@ -350,6 +358,7 @@ export default function ApplicationsPage() {
   const [applications, setApplications] = useState<JobApplicationWithDetails[]>(
     []
   );
+  const [jobData, setJobData] = useState<{ started_at: string | null; assigned_tasker_id: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -369,8 +378,17 @@ export default function ApplicationsPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getJobApplications(jobId);
-        setApplications(data);
+        const [applicationsData, job] = await Promise.all([
+          getJobApplications(jobId),
+          getJobById(jobId),
+        ]);
+        setApplications(applicationsData);
+        if (job) {
+          setJobData({
+            started_at: job.started_at,
+            assigned_tasker_id: job.assigned_tasker_id,
+          });
+        }
       } catch (err) {
         console.error("Error loading applications:", err);
         setError(
@@ -441,24 +459,50 @@ export default function ApplicationsPage() {
       }
 
       if (result.success) {
-        // Update the application in the local state
-        setApplications((prev) =>
-          prev.map((app) =>
-            app.id === confirmDialog.applicationId
-              ? {
-                  ...app,
-                  status:
-                    confirmDialog.type === "accept" ? "accepted" : "rejected",
-                }
-              : app
-          )
-        );
+        // Reload applications and job data from server to get the correct status
+        // This ensures we have the latest data, especially after acceptance
+        // which automatically rejects all other applications and assigns the tasker
+        try {
+          const [updatedApplications, updatedJob] = await Promise.all([
+            getJobApplications(jobId),
+            getJobById(jobId),
+          ]);
+          setApplications(updatedApplications);
+          if (updatedJob) {
+            setJobData({
+              started_at: updatedJob.started_at,
+              assigned_tasker_id: updatedJob.assigned_tasker_id,
+            });
+          }
+        } catch (reloadError) {
+          console.error("Error reloading applications:", reloadError);
+          // Fallback: update local state if reload fails
+          setApplications((prev) =>
+            prev.map((app) =>
+              app.id === confirmDialog.applicationId
+                ? {
+                    ...app,
+                    status:
+                      confirmDialog.type === "accept" ? "accepted" : "rejected",
+                  }
+                : app
+            )
+          );
+        }
 
         toast.success(
           confirmDialog.type === "accept"
             ? "Application accepted successfully"
             : "Application rejected successfully"
         );
+
+        // If application was accepted, redirect to job detail page after a short delay
+        // because the job now has an assigned tasker
+        if (confirmDialog.type === "accept") {
+          setTimeout(() => {
+            router.push(`/customer/my-jobs/${jobId}`);
+          }, 1500);
+        }
       } else {
         toast.error(result.error || "Action failed");
       }
@@ -579,16 +623,28 @@ export default function ApplicationsPage() {
         ) : (
           <div className="w-full max-w-4xl px-4 pb-8">
             <div className="grid grid-cols-1 gap-4">
-              {applications.map((application) => (
-              <ApplicationCard
-                key={application.id}
-                application={application}
-                t={t}
-                onAccept={handleAccept}
-                onReject={handleReject}
-                onViewProfile={handleViewProfile}
-              />
-              ))}
+              {applications.map((application) => {
+                // Show contact info if:
+                // 1. Application is accepted (primary condition), OR
+                // 2. Job has started (started_at is not null), OR
+                // 3. This tasker is assigned to the job
+                // Note: When an application is accepted, it automatically becomes the assigned tasker
+                const shouldShowContact = 
+                  application.status === "accepted" || 
+                  jobData?.started_at !== null || 
+                  (jobData?.assigned_tasker_id !== null && jobData.assigned_tasker_id === application.tasker_id);
+                return (
+                  <ApplicationCard
+                    key={application.id}
+                    application={application}
+                    t={t}
+                    onAccept={handleAccept}
+                    onReject={handleReject}
+                    onViewProfile={handleViewProfile}
+                    shouldShowContact={shouldShowContact}
+                  />
+                );
+              })}
             </div>
           </div>
         )}

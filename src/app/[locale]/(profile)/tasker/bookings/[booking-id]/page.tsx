@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
@@ -17,7 +17,6 @@ import {
   Play,
   MessageSquare,
   FileText,
-  DollarSign,
   Clock3,
   CalendarDays,
   Info,
@@ -32,6 +31,7 @@ import {
   updateBookingStatus,
   type BookingWithDetails,
 } from "@/actions/bookings";
+import { createConversationAction } from "@/actions/messages";
 import { BookingStatus } from "@/types/supabase";
 import { useTranslations } from "next-intl";
 
@@ -53,9 +53,10 @@ interface ConfirmationDialogState {
 export default function TaskerBookingDetailPage({
   params,
 }: {
-  params: { "booking-id": string };
+  params: Promise<{ "booking-id": string }>;
 }) {
-  const { "booking-id": bookingId } = params;
+  // Use the use() hook to handle async params in client component
+  const { "booking-id": bookingId } = use(params);
 
   const [booking, setBooking] = useState<BookingWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -231,6 +232,18 @@ export default function TaskerBookingDetailPage({
   const getCustomerPhone = useCallback(() => {
     if (!booking) return "N/A";
     return booking.customer_phone || "N/A";
+  }, [booking]);
+
+  // Check if contact info should be shown (booking accepted, in_progress, completed, or started)
+  const shouldShowContactInfo = useCallback(() => {
+    if (!booking) return false;
+    return (
+      booking.status === "accepted" ||
+      booking.status === "confirmed" ||
+      booking.status === "in_progress" ||
+      booking.status === "completed" ||
+      booking.started_at !== null
+    );
   }, [booking]);
 
   const handleStatusAction = useCallback(
@@ -439,9 +452,6 @@ export default function TaskerBookingDetailPage({
               {/* Service Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-2xl flex items-center justify-center">
-                    <DollarSign className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                  </div>
                   <div>
                     <h2 className="text-3xl font-bold text-slate-900 dark:text-white mobile-text-2xl">
                       {booking.service_title || t("service")}
@@ -474,7 +484,6 @@ export default function TaskerBookingDetailPage({
               <div className="lg:text-right">
                 <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 dark:border-slate-700/20">
                   <div className="flex items-center gap-3 justify-center lg:justify-end">
-                    <DollarSign className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
                     <div>
                       <p className="text-4xl font-bold text-slate-900 dark:text-white mobile-text-3xl">
                         {formatCurrency(booking.agreed_price, booking.currency)}
@@ -522,40 +531,42 @@ export default function TaskerBookingDetailPage({
                   </p>
                 </div>
 
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                          Email
-                        </p>
-                        <p className="text-slate-900 dark:text-white font-semibold">
-                          {getCustomerEmail()}
-                        </p>
+                {/* Contact Info - Only show if booking is accepted or started */}
+                {shouldShowContactInfo() && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                            Email
+                          </p>
+                          <p className="text-slate-900 dark:text-white font-semibold">
+                            {getCustomerEmail()}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                          Phone
-                        </p>
-                        <p className="text-slate-900 dark:text-white font-semibold">
-                          {getCustomerPhone()}
-                        </p>
+                    <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                            Phone
+                          </p>
+                          <p className="text-slate-900 dark:text-white font-semibold">
+                            {getCustomerPhone()}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -567,9 +578,6 @@ export default function TaskerBookingDetailPage({
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                  <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
                 {t("sections.serviceDetails")}
               </h2>
             </div>
@@ -589,9 +597,6 @@ export default function TaskerBookingDetailPage({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <DollarSign className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                    </div>
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
                         {t("price")}
@@ -881,29 +886,35 @@ export default function TaskerBookingDetailPage({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button
                 variant="outline"
-                onClick={() => {
-                  // TODO: Implement messaging functionality
-                  toast.info(t("messagingComingSoon"));
+                onClick={async () => {
+                  if (!booking || !booking.customer_id) {
+                    toast.error("Customer information not available");
+                    return;
+                  }
+                  
+                  try {
+                    const result = await createConversationAction(
+                      booking.customer_id,
+                      undefined, // jobId
+                      undefined, // serviceId
+                      booking.id, // bookingId
+                      `Hello! I'd like to discuss the booking for "${booking.service_title || 'this service'}".`
+                    );
+
+                    if (result.conversation) {
+                      router.push(`/tasker/messages/${result.conversation.id}`);
+                    } else {
+                      toast.error(result.errorMessage || "Failed to start conversation");
+                    }
+                  } catch (error) {
+                    console.error("Error starting conversation:", error);
+                    toast.error("Failed to start conversation");
+                  }
                 }}
                 className="h-14 text-lg font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <MessageSquare className="h-5 w-5 mr-3" />
                 {t("actions.messageCustomer")}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  const phoneNumber = getCustomerPhone();
-                  if (phoneNumber && phoneNumber !== "N/A") {
-                    window.open(`tel:${phoneNumber}`, "_self");
-                  } else {
-                    toast.error(t("phoneNotAvailable"));
-                  }
-                }}
-                className="h-14 text-lg font-semibold border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Phone className="h-5 w-5 mr-3" />
-                {t("actions.callCustomer")}
               </Button>
             </div>
           </div>

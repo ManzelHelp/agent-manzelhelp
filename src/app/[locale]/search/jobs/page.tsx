@@ -397,7 +397,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                           title: job.title,
                           description: job.description,
                           customer_budget: job.customer_budget || 0,
-                          currency: job.currency || "EUR",
+                          currency: job.currency || "MAD",
                           estimated_duration: job.estimated_duration || 0,
                           preferred_date: job.preferred_date,
                           is_flexible: job.is_flexible || false,

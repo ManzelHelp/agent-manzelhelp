@@ -103,19 +103,47 @@ export async function updateSession(
       error,
     } = await supabase.auth.getUser();
 
-    // Handle auth errors
+    // Handle auth errors - be more tolerant of temporary session issues
+    // Only redirect to login if it's a clear authentication failure, not a temporary error
     if (error) {
-      console.error("Auth error:", error);
-      // Ensure locale is valid before redirecting
-      const loginUrl = locale
-        ? new URL(`/${locale}/login`, request.url)
-        : new URL("/login", request.url);
-      return NextResponse.redirect(loginUrl);
+      // Check if it's a session-related error that might be temporary
+      const isSessionError = 
+        error.message?.includes("session") || 
+        error.message?.includes("JWT") ||
+        error.message?.includes("token") ||
+        error.message?.includes("expired");
+      
+      // For session errors, allow the request to continue (user might still be authenticated)
+      // The client-side will handle re-authentication if needed
+      if (isSessionError) {
+        console.warn("Temporary session error detected, allowing request to continue:", error.message);
+        // Don't redirect - let the request continue
+        // The client-side auth check will handle re-authentication if needed
+        return supabaseResponse;
+      }
+      
+      // For other auth errors, log but don't immediately redirect
+      // This prevents logout on temporary network issues
+      console.error("Auth error (non-session):", error);
+      // Only redirect if we're sure the user is not authenticated
+      // For now, allow the request to continue - client will handle auth state
+      return supabaseResponse;
     }
 
-    // Handle protected routes
+    // Handle protected routes - only redirect if we're CERTAIN user is not authenticated
     if (!user && isProtectedRoute) {
-      // Ensure locale is valid before redirecting
+      // Double-check by trying to get session from cookies
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // If session exists but getUser() failed, it's likely a temporary issue
+      // Allow the request to continue
+      if (session) {
+        console.warn("Session exists but getUser() failed, allowing request to continue");
+        return supabaseResponse;
+      }
+      
+      // Only redirect if we're absolutely sure there's no session
+      console.log("No user and no session found, redirecting to login");
       const loginUrl = locale
         ? new URL(`/${locale}/login`, request.url)
         : new URL("/login", request.url);
@@ -138,11 +166,18 @@ export async function updateSession(
 
         if (profileError || !userProfile) {
           console.error("Error fetching user role:", profileError);
-          // If we can't verify role, redirect to login for security
-          const loginUrl = locale
-            ? new URL(`/${locale}/login`, request.url)
-            : new URL("/login", request.url);
-          return NextResponse.redirect(loginUrl);
+          // If we can't verify role, don't immediately redirect
+          // This could be a temporary database issue
+          // Allow the request to continue - the client will handle role-based access
+          // Only redirect if it's a clear authorization issue (not a temporary error)
+          if (profileError?.code === "PGRST116" || profileError?.message?.includes("not found")) {
+            // User profile doesn't exist - this is a real issue, but don't logout
+            // Let the client handle this gracefully
+            console.warn("User profile not found, but allowing request to continue");
+            return supabaseResponse;
+          }
+          // For other errors, allow request to continue (might be temporary)
+          return supabaseResponse;
         }
 
         const userRole = userProfile.role;
@@ -169,11 +204,12 @@ export async function updateSession(
     return supabaseResponse;
   } catch (error) {
     console.error("Unexpected auth error:", error);
-    // Ensure locale is valid before redirecting
-    const loginUrl = locale
-      ? new URL(`/${locale}/login`, request.url)
-      : new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    // Don't immediately redirect on unexpected errors
+    // These could be temporary network issues, database problems, etc.
+    // Allow the request to continue - the client will handle auth state
+    // Only redirect if it's a critical security issue
+    console.warn("Allowing request to continue despite error - client will handle auth state");
+    return supabaseResponse;
   }
 }
 

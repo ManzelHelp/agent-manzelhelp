@@ -16,7 +16,7 @@ import {
   EyeOff,
   MapPin,
   Clock,
-  Euro,
+  DollarSign,
   Star,
   Calendar,
   TrendingUp,
@@ -97,11 +97,11 @@ function ServiceCard({
 }) {
   const getPricingDisplay = (service: ServiceWithDetails) => {
     if (service.pricing_type === "hourly") {
-      return `€${service.price}/hr`;
+      return `MAD ${service.price}/hr`;
     } else if (service.pricing_type === "per_item") {
-      return `€${service.price}/item`;
+      return `MAD ${service.price}/item`;
     } else {
-      return `€${service.price}`;
+      return `MAD ${service.price}`;
     }
   };
 
@@ -165,7 +165,7 @@ function ServiceCard({
         {/* Price Badge */}
         <div className="absolute bottom-4 right-4">
           <div className="flex items-center gap-1 px-4 py-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg">
-            <Euro className="h-4 w-4 text-[var(--color-secondary)]" />
+            <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
             <span className="font-bold text-[var(--color-secondary)] text-lg">
               {getPricingDisplay(service)}
             </span>
@@ -228,10 +228,20 @@ function ServiceCard({
         {/* Status and Actions */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Verification Status Badge - Shows admin verification status */}
             <span
               className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(
                 service.verification_status
               )}`}
+              title={
+                service.verification_status === "pending"
+                  ? "En attente de vérification par l'admin"
+                  : service.verification_status === "verified"
+                  ? "Service vérifié et approuvé par l'admin"
+                  : service.verification_status === "rejected"
+                  ? "Service rejeté par l'admin"
+                  : "Statut de vérification"
+              }
             >
               {getStatusLabel(service.verification_status)}
             </span>

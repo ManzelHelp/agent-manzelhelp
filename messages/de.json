@@ -5,8 +5,8 @@
   "common": {
     "notProvided": "Nicht angegeben",
     "saving": "Speichern...",
-    "saveChanges": "Änderungen Speichern",
-    "saveAddress": "Adresse Speichern",
+    "saveChanges": "Änderungen speichern",
+    "saveAddress": "Adresse speichern",
     "cancel": "Abbrechen",
     "close": "Schließen",
     "menu": "Menü",
@@ -22,7 +22,18 @@
     "required": "erforderlich",
     "fields": "Felder",
     "remaining": "verbleibend",
-    "unknown": "Unbekannt"
+    "unknown": "Unbekannt",
+    "timeAgo": {
+      "justNow": "Gerade jetzt",
+      "minutesAgo": "vor {count} Min",
+      "hoursAgo": "vor {count} Std",
+      "dayAgo": "vor 1 Tag",
+      "daysAgo": "vor {count} Tagen"
+    },
+    "promoted": "Beworben",
+    "flexible": "Flexibel",
+    "budget": "Budget",
+    "view": "Anzeigen"
   },
   "Header": {
     "services": "Dienstleistungen",
@@ -1117,7 +1128,14 @@
       "noDescription": "Keine Beschreibung verfügbar",
       "noDateSet": "Kein Datum festgelegt",
       "locationNotSpecified": "Standort nicht angegeben",
-      "unknownCategory": "Unbekannte Kategorie"
+      "unknownCategory": "Unbekannte Kategorie",
+      "clone": "Klonen",
+      "cloneConfirmTitle": "Job klonen",
+      "cloneConfirmDescription": "Sind Sie sicher, dass Sie diesen Job klonen möchten? Ein neuer Job wird mit denselben Details erstellt, die Sie bearbeiten können.",
+      "cloneConfirm": "Job klonen",
+      "cancel": "Abbrechen",
+      "cloneSuccess": "Job erfolgreich geklont!",
+      "cloneError": "Job konnte nicht geklont werden"
     },
     "status": {
       "open": "Offen",
@@ -1296,7 +1314,9 @@
         "selectStartTime": "Bitte wählen Sie eine Startzeit",
         "selectEndTime": "Bitte wählen Sie eine Endzeit",
         "priceGreaterThanZero": "Preis muss größer als 0 sein",
-        "durationGreaterThanZero": "Dauer muss größer als 0 sein"
+        "durationGreaterThanZero": "Dauer muss größer als 0 sein",
+        "messageRequired": "Nachricht ist erforderlich",
+        "messageTooShort": "Nachricht muss mindestens {min} Zeichen lang sein"
       },
       "toasts": {
         "failedToLoadAddresses": "Adressen konnten nicht geladen werden",
@@ -1476,6 +1496,28 @@
     "errors": {
       "updateFailed": "Buchungsstatus konnte nicht aktualisiert werden",
       "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
+    },
+    "cancellation": {
+      "title": "Buchung Stornieren",
+      "description": "Bitte teilen Sie uns mit, warum Sie diese Buchung stornieren",
+      "reasonLabel": "Grund für die Stornierung",
+      "customCommentLabel": "Bitte geben Sie Details an",
+      "customCommentPlaceholder": "Teilen Sie uns mit, warum Sie stornieren...",
+      "cancel": "Abbrechen",
+      "confirm": "Stornierung Bestätigen",
+      "confirming": "Wird bestätigt...",
+      "reasons": {
+        "changed_my_mind": "Ich habe meine Meinung geändert",
+        "found_another_tasker": "Ich habe einen anderen Helfer gefunden",
+        "no_longer_needed": "Ich benötige diesen Service nicht mehr",
+        "scheduling_conflict": "Terminkonflikt",
+        "price_too_high": "Der Preis ist zu hoch",
+        "other": "Anderer Grund"
+      },
+      "errors": {
+        "reasonRequired": "Bitte wählen Sie einen Grund für die Stornierung",
+        "customCommentRequired": "Bitte geben Sie einen benutzerdefinierten Kommentar an"
+      }
     },
     "confirmations": {
       "accept": {

@@ -18,7 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   User,
   Clock,
-  Euro,
   MapPin,
   MessageSquare,
   Phone,
@@ -213,7 +212,6 @@ function ApplicationCard({
           {/* Details Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div className="flex items-center gap-2 text-sm">
-              <Euro className="w-4 h-4 text-[var(--color-text-secondary)]" />
               <span className="text-[var(--color-text-secondary)]">
                 {t("applications.applicationCard.proposedPrice")}:
               </span>
@@ -274,30 +272,7 @@ function ApplicationCard({
             </div>
           )}
 
-          {/* Contact Info */}
-          <div className="mb-4 p-3 bg-[var(--color-bg)] rounded-lg">
-            <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-              {t("applications.applicationCard.contactInfo")}
-            </p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              {application.tasker_phone && (
-                <div className="flex items-center gap-1">
-                  <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
-                  <span className="text-[var(--color-text-primary)]">
-                    {application.tasker_phone}
-                  </span>
-                </div>
-              )}
-              {application.tasker_email && (
-                <div className="flex items-center gap-1">
-                  <Mail className="w-3 h-3 text-[var(--color-text-secondary)]" />
-                  <span className="text-[var(--color-text-primary)]">
-                    {application.tasker_email}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Contact Info - Hidden for taskers (they don't need to see other taskers' contact info) */}
 
           {/* Actions */}
           {application.status === "pending" && (

@@ -193,11 +193,24 @@ export async function getTaskerServices(
   const supabase = await createClient();
 
   try {
+    // Use SQL query with JOINs to get category and service names from database
     const { data, error } = await supabase
       .from("tasker_services")
       .select(
         `
         *,
+        service:services!tasker_services_service_id_fkey(
+          id,
+          name_en,
+          name_fr,
+          name_ar,
+          category:service_categories!services_category_id_fkey(
+            id,
+            name_en,
+            name_fr,
+            name_ar
+          )
+        ),
         booking_count:service_bookings(count)
       `
       )
@@ -209,17 +222,50 @@ export async function getTaskerServices(
       throw new Error(`Failed to fetch services: ${error.message}`);
     }
 
-    // Format the data and add category names from local categories
-    const services: ServiceWithDetails[] = (data || []).map((service) => {
-      const { categoryName, serviceName } = getCategoryAndServiceNames(
-        service.service_id
-      );
+    // Format the data and add category names from database
+    // Explicitly serialize all fields to ensure proper JSON serialization
+    const services: ServiceWithDetails[] = (data || []).map((service: any) => {
+      const serviceData = service.service;
+      const categoryData = serviceData?.category;
 
       return {
         ...service,
-        booking_count: service.booking_count?.[0]?.count || 0,
-        category_name_en: categoryName,
-        service_name_en: serviceName,
+        id: String(service.id),
+        tasker_id: String(service.tasker_id),
+        service_id: Number(service.service_id),
+        title: String(service.title || ""),
+        description: String(service.description || ""),
+        base_price: Number(service.base_price || 0),
+        hourly_rate: service.hourly_rate ? Number(service.hourly_rate) : null,
+        price: service.price ? Number(service.price) : (service.base_price ? Number(service.base_price) : 0),
+        minimum_duration: service.minimum_duration ? Number(service.minimum_duration) : null,
+        service_area: service.service_area ? (typeof service.service_area === 'object' ? service.service_area : (() => {
+          try {
+            return JSON.parse(String(service.service_area));
+          } catch (e) {
+            // If service_area is not valid JSON (e.g., plain text like "Sala AL Ja"), return as string wrapped in object
+            console.warn("service_area is not valid JSON, treating as plain text:", service.service_area);
+            return { text: String(service.service_area) };
+          }
+        })()) : null,
+        extra_fees: service.extra_fees ? Number(service.extra_fees) : null,
+        portfolio_images: service.portfolio_images ? (Array.isArray(service.portfolio_images) ? service.portfolio_images : (() => {
+          try {
+            return JSON.parse(String(service.portfolio_images));
+          } catch (e) {
+            console.warn("portfolio_images is not valid JSON:", service.portfolio_images);
+            return [];
+          }
+        })()) : null,
+        created_at: service.created_at ? new Date(service.created_at).toISOString() : new Date().toISOString(),
+        updated_at: service.updated_at ? new Date(service.updated_at).toISOString() : new Date().toISOString(),
+        booking_count: Number(service.booking_count?.[0]?.count || 0),
+        category_name_en: String(categoryData?.name_en || "Unknown Category"),
+        category_name_fr: categoryData?.name_fr ? String(categoryData.name_fr) : undefined,
+        category_name_ar: categoryData?.name_ar ? String(categoryData.name_ar) : undefined,
+        service_name_en: String(serviceData?.name_en || "Unknown Service"),
+        service_name_fr: serviceData?.name_fr ? String(serviceData.name_fr) : undefined,
+        service_name_ar: serviceData?.name_ar ? String(serviceData.name_ar) : undefined,
       };
     });
 
@@ -237,11 +283,24 @@ export async function getTaskerServiceById(
   const supabase = await createClient();
 
   try {
+    // Use SQL query with JOINs to get category and service names from database
     const { data, error } = await supabase
       .from("tasker_services")
       .select(
         `
         *,
+        service:services!tasker_services_service_id_fkey(
+          id,
+          name_en,
+          name_fr,
+          name_ar,
+          category:service_categories!services_category_id_fkey(
+            id,
+            name_en,
+            name_fr,
+            name_ar
+          )
+        ),
         booking_count:service_bookings(count)
       `
       )
@@ -257,15 +316,18 @@ export async function getTaskerServiceById(
       throw new Error(`Failed to fetch service: ${error.message}`);
     }
 
-    const { categoryName, serviceName } = getCategoryAndServiceNames(
-      data.service_id
-    );
+    const serviceData = (data as any).service;
+    const categoryData = serviceData?.category;
 
     return {
       ...data,
-      booking_count: data.booking_count?.[0]?.count || 0,
-      category_name_en: categoryName,
-      service_name_en: serviceName,
+      booking_count: (data as any).booking_count?.[0]?.count || 0,
+      category_name_en: categoryData?.name_en || "Unknown Category",
+      category_name_fr: categoryData?.name_fr || null,
+      category_name_ar: categoryData?.name_ar || null,
+      service_name_en: serviceData?.name_en || "Unknown Service",
+      service_name_fr: serviceData?.name_fr || null,
+      service_name_ar: serviceData?.name_ar || null,
     };
   } catch (error) {
     console.error("Error in getTaskerServiceById:", error);
@@ -341,10 +403,10 @@ export async function deleteTaskerService(
   const supabase = await createClient();
 
   try {
-    // Verify the service belongs to the tasker and has no active bookings
+    // Verify the service belongs to the tasker
     const { data: existingService, error: fetchError } = await supabase
       .from("tasker_services")
-      .select("tasker_id, has_active_booking")
+      .select("tasker_id")
       .eq("id", serviceId)
       .single();
 
@@ -356,47 +418,83 @@ export async function deleteTaskerService(
       return { success: false, error: "Unauthorized" };
     }
 
-    if (existingService.has_active_booking) {
-      return {
-        success: false,
-        error: "Cannot delete service with active bookings",
-      };
-    }
-
-    // Check for any pending bookings
-    const { data: pendingBookings, error: bookingError } = await supabase
+    // Check for any active bookings (pending, accepted, confirmed, in_progress)
+    const { data: activeBookings, error: bookingError } = await supabase
       .from("service_bookings")
       .select("id")
       .eq("tasker_service_id", serviceId)
       .in("status", ["pending", "accepted", "confirmed", "in_progress"]);
 
     if (bookingError) {
-      console.error("Error checking pending bookings:", bookingError);
-      return { success: false, error: "Failed to check for pending bookings" };
-    }
-
-    if (pendingBookings && pendingBookings.length > 0) {
+      console.error("Error checking active bookings:", bookingError);
+      // Don't block deletion if we can't check bookings, but log it
+      console.warn("Could not verify bookings, proceeding with deletion");
+    } else if (activeBookings && activeBookings.length > 0) {
       return {
         success: false,
-        error: "Cannot delete service with pending bookings",
+        error: "Cannot delete service with active bookings",
       };
     }
 
     // Delete the service
-    const { error } = await supabase
+    const { data: deletedData, error: deleteError } = await supabase
       .from("tasker_services")
       .delete()
-      .eq("id", serviceId);
+      .eq("id", serviceId)
+      .eq("tasker_id", taskerId) // Double check ownership in DELETE
+      .select(); // Select to verify deletion
 
-    if (error) {
-      console.error("Error deleting service:", error);
+    if (deleteError) {
+      console.error("Error deleting service:", {
+        message: deleteError.message,
+        code: deleteError.code,
+        details: deleteError.details,
+        hint: deleteError.hint,
+      });
+      
+      // Check if it's an RLS error
+      if (deleteError.code === "42501" || deleteError.message.includes("row-level security")) {
+        return {
+          success: false,
+          error: "Permission denied. Please ensure Row Level Security policy for DELETE exists on tasker_services table.",
+        };
+      }
+      
       return {
         success: false,
-        error: `Failed to delete service: ${error.message}`,
+        error: `Failed to delete service: ${deleteError.message}`,
       };
     }
 
+    // Check if any rows were actually deleted
+    if (!deletedData || deletedData.length === 0) {
+      // No rows deleted, likely RLS blocking or service doesn't exist
+      console.error("No rows deleted. Service may not exist or RLS is blocking deletion.");
+      
+      // Verify service still exists
+      const { data: verifyService, error: verifyError } = await supabase
+        .from("tasker_services")
+        .select("id")
+        .eq("id", serviceId)
+        .single();
+
+      if (!verifyError && verifyService) {
+        // Service still exists, deletion was blocked
+        return {
+          success: false,
+          error: "Failed to delete service. Row Level Security policy may be blocking deletion. Please run the fix_tasker_services_delete_rls.sql script.",
+        };
+      } else {
+        // Service doesn't exist (might have been deleted or never existed)
+        return {
+          success: false,
+          error: "Service not found or already deleted.",
+        };
+      }
+    }
+
     revalidatePath("/tasker/my-services");
+    revalidatePath(`/tasker/my-services/${serviceId}`);
 
     return { success: true };
   } catch (error) {
@@ -435,10 +533,70 @@ export async function getServiceDetails(
   const supabase = await createClient();
 
   try {
+    // Get authenticated user to verify ownership
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Fetch tasker service with all related data using JOINs
     const { data, error } = await supabase
-      .from("service_details_view")
-      .select("*")
-      .eq("tasker_service_id", serviceId)
+      .from("tasker_services")
+      .select(
+        `
+        *,
+        service:services!tasker_services_service_id_fkey(
+          id,
+          category_id,
+          category:service_categories!services_category_id_fkey(
+            id,
+            name_en,
+            name_fr,
+            name_ar
+          )
+        ),
+        tasker:users!tasker_services_tasker_id_fkey(
+          id,
+          first_name,
+          last_name,
+          avatar_url,
+          phone,
+          role,
+          verification_status,
+          created_at,
+          tasker_profile:tasker_profiles!tasker_profiles_id_fkey(
+            experience_level,
+            bio,
+            service_radius_km,
+            is_available,
+            operation_hours,
+            company_id,
+            company:companies!tasker_profiles_company_id_fkey(
+              company_name,
+              city,
+              verification_status
+            )
+          ),
+          user_stats:user_stats!user_stats_id_fkey(
+            tasker_rating,
+            total_reviews,
+            completed_jobs,
+            total_earnings,
+            response_time_hours,
+            cancellation_rate
+          )
+        ),
+        active_bookings:service_bookings!service_bookings_tasker_service_id_fkey(
+          id
+        )
+      `
+      )
+      .eq("id", serviceId)
+      .eq("tasker_id", user.id)
       .single();
 
     if (error) {
@@ -456,7 +614,63 @@ export async function getServiceDetails(
       return { success: false, error: "Service not found" };
     }
 
-    return { success: true, data };
+    // Transform the data to match ServiceDetailsData interface
+    const serviceData = data as any;
+    const service = serviceData.service;
+    const category = service?.category;
+    const tasker = serviceData.tasker;
+    const taskerProfile = tasker?.tasker_profile;
+    const company = taskerProfile?.company;
+    const stats = tasker?.user_stats;
+    const activeBookings = serviceData.active_bookings || [];
+
+    const formattedData: ServiceDetailsData = {
+      tasker_service_id: serviceData.id.toString(),
+      service_id: serviceData.service_id,
+      tasker_id: serviceData.tasker_id,
+      title: serviceData.title || "",
+      description: serviceData.description || "",
+      price: (serviceData.base_price || serviceData.price || 0).toString(),
+      pricing_type: serviceData.pricing_type || "fixed",
+      service_status: serviceData.service_status || "active",
+      verification_status: serviceData.verification_status || "pending",
+      has_active_booking: activeBookings.length > 0,
+      portfolio_images: serviceData.portfolio_images || null,
+      minimum_duration: serviceData.minimum_duration || 0,
+      service_area: serviceData.service_area || null,
+      extra_fees: serviceData.extra_fees || null,
+      created_at: serviceData.created_at || new Date().toISOString(),
+      updated_at: serviceData.updated_at || new Date().toISOString(),
+      tasker_first_name: tasker?.first_name || "",
+      tasker_last_name: tasker?.last_name || "",
+      tasker_avatar_url: tasker?.avatar_url || "",
+      tasker_phone: tasker?.phone || "",
+      tasker_created_at: tasker?.created_at || new Date().toISOString(),
+      tasker_role: tasker?.role || "tasker",
+      experience_level: taskerProfile?.experience_level || null,
+      tasker_bio: taskerProfile?.bio || "",
+      tasker_verification_status: tasker?.verification_status || "pending",
+      service_radius_km: taskerProfile?.service_radius_km || 0,
+      tasker_is_available: taskerProfile?.is_available ?? true,
+      operation_hours: taskerProfile?.operation_hours || null,
+      company_id: taskerProfile?.company_id || null,
+      tasker_rating: (stats?.tasker_rating || 0).toString(),
+      total_reviews: stats?.total_reviews || 0,
+      completed_jobs: stats?.completed_jobs || 0,
+      total_earnings: (stats?.total_earnings || 0).toString(),
+      response_time_hours: stats?.response_time_hours || 0,
+      cancellation_rate: (stats?.cancellation_rate || 0).toString(),
+      company_name: company?.company_name || null,
+      company_city: company?.city || null,
+      company_verification_status: company?.verification_status || null,
+      is_available_for_booking: taskerProfile?.is_available ?? true,
+      category_id: category?.id?.toString() || "",
+      category_name_en: category?.name_en || "Unknown Category",
+      category_name_fr: category?.name_fr || "",
+      category_name_ar: category?.name_ar || "",
+    };
+
+    return { success: true, data: formattedData };
   } catch (error) {
     console.error("Error in getServiceDetails:", error);
     return {
@@ -513,13 +727,13 @@ export async function getTaskerServiceOffer(
         .select(
           `
           *,
-          tasker:tasker_id (
+          tasker:users!tasker_services_tasker_id_fkey(
             id,
             first_name,
             last_name,
             avatar_url,
             created_at,
-            profile:tasker_profiles (
+            tasker_profile:tasker_profiles!tasker_profiles_id_fkey(
               bio,
               experience_level
             )
@@ -553,19 +767,80 @@ export async function getTaskerServiceOffer(
       console.warn("Failed to fetch user stats:", statsError);
     }
 
+    // Fetch tasker profile for review stats (stored values, not calculated)
+    const { data: taskerProfileData } = await supabase
+      .from("tasker_profiles")
+      .select("tasker_rating, total_reviews")
+      .eq("id", taskerServiceData.tasker_id)
+      .maybeSingle();
+
+    // Fetch real completed jobs count (bookings + jobs with customer_confirmed_at)
+    const [completedBookingsResult, completedJobsResult] = await Promise.all([
+      supabase
+        .from("service_bookings")
+        .select("id, customer_confirmed_at")
+        .eq("tasker_id", taskerServiceData.tasker_id)
+        .eq("status", "completed"),
+      supabase
+        .from("jobs")
+        .select("id, customer_confirmed_at")
+        .eq("assigned_tasker_id", taskerServiceData.tasker_id)
+        .eq("status", "completed"),
+    ]);
+
+    // Filter to only confirmed bookings/jobs (customer_confirmed_at IS NOT NULL)
+    const confirmedBookings = (completedBookingsResult.data || []).filter(
+      (b) => b.customer_confirmed_at !== null && b.customer_confirmed_at !== undefined
+    );
+    const confirmedJobs = (completedJobsResult.data || []).filter(
+      (j) => j.customer_confirmed_at !== null && j.customer_confirmed_at !== undefined
+    );
+    const realCompletedJobs = confirmedBookings.length + confirmedJobs.length;
+
+    // Use stored values from tasker_profiles (calculated when review is created)
+    const totalReviews = taskerProfileData?.total_reviews || 0;
+    const taskerRating = taskerProfileData?.tasker_rating || null;
+
+    // Transform tasker data to match interface
+    const taskerData = (taskerServiceData as any).tasker;
+    const taskerProfile = taskerData?.tasker_profile || null;
+
+    console.log("[getTaskerServiceOffer] Raw tasker data:", {
+      taskerData,
+      taskerProfile,
+      avatar_url: taskerData?.avatar_url,
+    });
+
     const result: TaskerServiceOffer = {
-      id: taskerServiceData.id,
-      title: taskerServiceData.title,
-      description: taskerServiceData.description,
-      price: taskerServiceData.price,
-      pricing_type: taskerServiceData.pricing_type,
-      minimum_duration: taskerServiceData.minimum_duration,
-      service_area: taskerServiceData.service_area,
-      portfolio_images: taskerServiceData.portfolio_images,
-      created_at: taskerServiceData.created_at,
-      tasker: taskerServiceData.tasker,
-      stats: statsData || null,
+      id: taskerServiceData.id.toString(),
+      title: taskerServiceData.title || "",
+      description: taskerServiceData.description || "",
+      price: taskerServiceData.price || taskerServiceData.base_price || 0,
+      pricing_type: taskerServiceData.pricing_type || "fixed",
+      minimum_duration: taskerServiceData.minimum_duration || null,
+      service_area: taskerServiceData.service_area || null,
+      portfolio_images: taskerServiceData.portfolio_images || null,
+      created_at: taskerServiceData.created_at || new Date().toISOString(),
+      tasker: {
+        id: taskerData?.id || taskerServiceData.tasker_id,
+        first_name: taskerData?.first_name || null,
+        last_name: taskerData?.last_name || null,
+        avatar_url: taskerData?.avatar_url || null,
+        created_at: taskerData?.created_at || new Date().toISOString(),
+        profile: taskerProfile ? {
+          bio: taskerProfile.bio || null,
+          experience_level: taskerProfile.experience_level || null,
+        } : null,
+      },
+      stats: {
+        tasker_rating: taskerRating, // Use real-time calculation from reviews table
+        completed_jobs: realCompletedJobs, // Use real count instead of user_stats
+        total_reviews: totalReviews, // Use real-time count from reviews table
+        response_time_hours: statsData?.response_time_hours || null,
+      },
     };
+
+    console.log("[getTaskerServiceOffer] Final result tasker avatar_url:", result.tasker.avatar_url);
 
     return { success: true, data: result };
   } catch (error) {
@@ -694,6 +969,20 @@ export async function createTaskerService(
     }
 
     // Create the service
+    // base_price is NOT NULL in the database, so we must provide it
+    // For fixed and per_item pricing, use base_price
+    // For hourly pricing, use hourly_rate as base_price (or set a default)
+    const basePrice = serviceData.pricing_type === "hourly" 
+      ? (serviceData.hourly_rate || 0) 
+      : (serviceData.base_price || 0);
+
+    // Convert minimum_booking_hours to integer for minimum_duration
+    // minimum_duration is INTEGER in database, so we need to round decimal values
+    // If user enters 0.5 hours, we round to 1 hour (or convert to minutes if needed)
+    const minimumDuration = serviceData.minimum_booking_hours 
+      ? Math.round(serviceData.minimum_booking_hours) 
+      : null;
+
     const { data, error } = await supabase
       .from("tasker_services")
       .insert({
@@ -703,8 +992,10 @@ export async function createTaskerService(
         service_id: serviceData.service_id,
         service_area: serviceData.service_area,
         pricing_type: serviceData.pricing_type,
+        base_price: basePrice, // Required field
+        hourly_rate: serviceData.hourly_rate || null,
         price: serviceData.base_price || serviceData.hourly_rate,
-        minimum_duration: serviceData.minimum_booking_hours,
+        minimum_duration: minimumDuration,
         extra_fees: serviceData.extras.length,
         service_status: "active",
         created_at: new Date().toISOString(),

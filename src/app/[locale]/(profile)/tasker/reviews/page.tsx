@@ -38,6 +38,11 @@ interface ReviewWithDetails extends Review {
         tasker_service?: TaskerService;
       })
     | null;
+  job?: {
+    id: string;
+    title: string;
+  } | null;
+  serviceTitle?: string | null;
 }
 
 type FilterType =
@@ -68,6 +73,7 @@ export default function ReviewsPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [avatarErrors, setAvatarErrors] = useState<Set<string>>(new Set());
 
   const fetchReviews = useCallback(async () => {
     if (!user) return;
@@ -441,17 +447,26 @@ export default function ReviewsPage() {
                     <div className="flex flex-col space-y-4 lg:flex-row lg:items-start lg:justify-between lg:space-y-0">
                       <div className="flex items-start space-x-4">
                         <div className="relative">
-                          {review.reviewer?.avatar_url ? (
+                          {review.reviewer?.avatar_url && !avatarErrors.has(review.id) ? (
                             <Image
                               src={review.reviewer.avatar_url}
                               alt={review.reviewer.first_name || "Client"}
                               width={48}
                               height={48}
+                              unoptimized
+                              onError={() => {
+                                console.error(`Failed to load avatar for review ${review.id}`);
+                                setAvatarErrors((prev) => new Set(prev).add(review.id));
+                              }}
                               className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700"
                             />
                           ) : (
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                              <User className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center ring-2 ring-slate-200 dark:ring-slate-700">
+                              <span className="text-white font-semibold text-sm">
+                                {review.reviewer?.first_name?.[0]?.toUpperCase() || 
+                                 review.reviewer?.last_name?.[0]?.toUpperCase() || 
+                                 "U"}
+                              </span>
                             </div>
                           )}
                           <div
@@ -491,9 +506,12 @@ export default function ReviewsPage() {
                             <Calendar className="w-4 h-4" />
                             {formatDate(review.created_at || "")}
                           </div>
-                          {review.service_booking?.tasker_service && (
+                          {(review.service_booking?.tasker_service || (review as any).job || (review as any).serviceTitle) && (
                             <div className="inline-flex items-center px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-xs text-slate-600 dark:text-slate-400">
-                              {review.service_booking.tasker_service.title}
+                              {(review as any).job?.title || 
+                               review.service_booking?.tasker_service?.title || 
+                               (review as any).serviceTitle || 
+                               "Service"}
                             </div>
                           )}
                         </div>

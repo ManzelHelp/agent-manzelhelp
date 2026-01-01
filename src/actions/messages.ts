@@ -789,6 +789,14 @@ export const createConversationAction = async (
       );
     }
 
+    // If bookingId is provided, check for booking-specific conversation
+    if (bookingId) {
+      existingConversationQuery = existingConversationQuery.eq(
+        "booking_id",
+        bookingId
+      );
+    }
+
     const { data: existingConversation, error: checkError } =
       await existingConversationQuery.single();
 

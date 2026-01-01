@@ -22,7 +22,18 @@
     "required": "required",
     "fields": "fields",
     "remaining": "remaining",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "timeAgo": {
+      "justNow": "Just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "dayAgo": "1 day ago",
+      "daysAgo": "{count} days ago"
+    },
+    "promoted": "Promoted",
+    "flexible": "Flexible",
+    "budget": "Budget",
+    "view": "View"
   },
   "Header": {
     "services": "Services",
@@ -1117,7 +1128,14 @@
       "noDescription": "No description available",
       "noDateSet": "No date set",
       "locationNotSpecified": "Location not specified",
-      "unknownCategory": "Unknown Category"
+      "unknownCategory": "Unknown Category",
+      "clone": "Clone",
+      "cloneConfirmTitle": "Clone Job",
+      "cloneConfirmDescription": "Are you sure you want to clone this job? A new job will be created with the same details that you can edit.",
+      "cloneConfirm": "Clone Job",
+      "cancel": "Cancel",
+      "cloneSuccess": "Job cloned successfully!",
+      "cloneError": "Failed to clone job"
     },
     "status": {
       "open": "Open",
@@ -1296,7 +1314,9 @@
         "selectStartTime": "Please select a start time",
         "selectEndTime": "Please select an end time",
         "priceGreaterThanZero": "Price must be greater than 0",
-        "durationGreaterThanZero": "Duration must be greater than 0"
+        "durationGreaterThanZero": "Duration must be greater than 0",
+        "messageRequired": "Message is required",
+        "messageTooShort": "Message must be at least {min} characters long"
       },
       "toasts": {
         "failedToLoadAddresses": "Failed to load addresses",
@@ -1476,6 +1496,28 @@
     "errors": {
       "updateFailed": "Failed to update booking status",
       "unexpectedError": "An unexpected error occurred"
+    },
+    "cancellation": {
+      "title": "Cancel Booking",
+      "description": "Please tell us why you're canceling this booking",
+      "reasonLabel": "Reason for cancellation",
+      "customCommentLabel": "Please provide details",
+      "customCommentPlaceholder": "Tell us why you're canceling...",
+      "cancel": "Cancel",
+      "confirm": "Confirm Cancellation",
+      "confirming": "Confirming...",
+      "reasons": {
+        "changed_my_mind": "I changed my mind",
+        "found_another_tasker": "I found another tasker",
+        "no_longer_needed": "I no longer need this service",
+        "scheduling_conflict": "Scheduling conflict",
+        "price_too_high": "Price is too high",
+        "other": "Other reason"
+      },
+      "errors": {
+        "reasonRequired": "Please select a reason for cancellation",
+        "customCommentRequired": "Please provide a custom comment"
+      }
     },
     "confirmations": {
       "accept": {

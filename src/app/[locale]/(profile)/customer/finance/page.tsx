@@ -13,7 +13,6 @@ import {
   DollarSign,
   Calendar,
   CreditCard,
-  Wallet,
   BarChart2,
   AlertCircle,
   CheckCircle,
@@ -27,10 +26,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   getCustomerFinanceSummary,
   getCustomerTransactionHistory,
-  getWalletBalance,
   type FinanceSummary,
   type Transaction,
-  type WalletBalance,
 } from "@/actions/finance";
 import { toast } from "sonner";
 
@@ -87,9 +84,6 @@ export default function CustomerFinancePage() {
     null
   );
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [walletBalance, setWalletBalance] = useState<WalletBalance | null>(
-    null
-  );
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<
     "week" | "month" | "year"
@@ -98,15 +92,13 @@ export default function CustomerFinancePage() {
   const fetchFinanceData = useCallback(async () => {
     try {
       setLoading(true);
-      const [summary, transactionHistory, balance] = await Promise.all([
+      const [summary, transactionHistory] = await Promise.all([
         getCustomerFinanceSummary(selectedPeriod),
         getCustomerTransactionHistory(20, 0),
-        getWalletBalance(),
       ]);
 
       setFinanceSummary(summary);
       setTransactions(transactionHistory);
-      setWalletBalance(balance);
     } catch (error) {
       console.error("Error fetching finance data:", error);
       toast.error(t("errors.loadFailed"));
@@ -115,10 +107,12 @@ export default function CustomerFinancePage() {
     }
   }, [selectedPeriod, t]);
 
-  // Fetch data on component mount
+  // Fetch data on component mount and when period changes
+  // Note: We depend on selectedPeriod directly, not fetchFinanceData, to avoid infinite loops
   useEffect(() => {
     fetchFinanceData();
-  }, [fetchFinanceData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPeriod]); // Re-fetch when period changes, but not on every render
 
   const formatCurrency = (amount: number, currency: string = "USD") => {
     return new Intl.NumberFormat("en-US", {
@@ -133,6 +127,76 @@ export default function CustomerFinancePage() {
       month: "short",
       day: "numeric",
     });
+  };
+
+  const handleExport = () => {
+    if (!transactions || transactions.length === 0) {
+      toast.error("Aucune transaction à exporter");
+      return;
+    }
+
+    try {
+      // Create CSV content with proper escaping for CSV format
+      const headers = [
+        "Date",
+        "Service",
+        "Montant",
+        "Devise",
+        "Méthode de paiement",
+        "Statut",
+        "Statut de réservation",
+      ];
+
+      const csvRows = [
+        headers.join(","),
+        ...transactions.map((t) => {
+          // Escape values that contain commas or quotes
+          const escapeCSV = (value: string | number | null | undefined) => {
+            if (value === null || value === undefined) return "";
+            const str = String(value);
+            if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+              return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+          };
+
+          return [
+            escapeCSV(formatDate(t.createdAt)),
+            escapeCSV(t.serviceTitle || "Service"),
+            escapeCSV(t.amount),
+            escapeCSV(t.currency),
+            escapeCSV(t.paymentMethod || "Inconnu"),
+            escapeCSV(t.paymentStatus),
+            escapeCSV(t.bookingStatus || ""),
+          ].join(",");
+        }),
+      ];
+
+      const csvContent = csvRows.join("\n");
+      // Add BOM for UTF-8 to ensure Excel opens it correctly
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `transactions-${new Date().toISOString().split("T")[0]}.csv`
+      );
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Transactions exportées avec succès");
+    } catch (error) {
+      console.error("Error exporting transactions:", error);
+      toast.error("Erreur lors de l'export des transactions");
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -271,29 +335,6 @@ export default function CustomerFinancePage() {
             </CardContent>
           </Card>
 
-          <Card className="hover-lift">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("stats.walletBalance")}
-              </CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">
-                {formatCurrency(
-                  walletBalance?.available || 0,
-                  walletBalance?.currency
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t("stats.pending")}{" "}
-                {formatCurrency(
-                  walletBalance?.pending || 0,
-                  walletBalance?.currency
-                )}
-              </p>
-            </CardContent>
-          </Card>
         </div>
       )}
 
@@ -308,7 +349,13 @@ export default function CustomerFinancePage() {
               {t("transactionHistory.subtitle")}
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={handleExport}
+            disabled={loading || transactions.length === 0}
+          >
             <Download className="h-4 w-4 mr-2" />
             {t("transactionHistory.export")}
           </Button>

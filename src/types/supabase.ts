@@ -166,6 +166,8 @@ export interface TaskerProfile {
   updated_at?: string;
   operation_hours?: OperationHoursObject | null;
   company_id?: string;
+  tasker_rating?: number;
+  total_reviews?: number;
 }
 
 export interface TaskerService {

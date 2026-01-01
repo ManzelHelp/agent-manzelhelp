@@ -37,16 +37,26 @@ export async function createClient() {
 /**
  * Creates a Supabase client with service role key (bypasses RLS)
  * Use this ONLY for server-side operations that need to bypass RLS,
- * such as creating users during email confirmation.
+ * such as updating wallet balance or creating users during email confirmation.
+ * 
+ * @returns Supabase client with service role, or null if service role key is not available
+ * @throws Error if Supabase URL is missing
  */
 export function createServiceRoleClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceRoleKey) {
+  if (!supabaseUrl) {
     throw new Error(
-      "Missing Supabase service role key. Please set SUPABASE_SERVICE_ROLE_KEY in your .env.local file."
+      "Missing Supabase URL. Please set NEXT_PUBLIC_SUPABASE_URL in your .env.local file."
     );
+  }
+
+  if (!serviceRoleKey) {
+    console.warn("⚠️ SUPABASE_SERVICE_ROLE_KEY is not set. Service role client will not be available.");
+    console.warn("⚠️ Wallet updates may fail if RLS policies don't allow regular users to update wallet_balance.");
+    console.warn("⚠️ To fix: Get your service role key from Supabase Dashboard > Settings > API > service_role key");
+    return null;
   }
 
   return createSupabaseClient(supabaseUrl, serviceRoleKey, {

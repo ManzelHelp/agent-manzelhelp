@@ -228,8 +228,10 @@ export function TaskerBookingCard({
                 <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                   {t("labels.requirements")}:
                 </p>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  {booking.customer_requirements}
+                <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3">
+                  {booking.customer_requirements.length > 150
+                    ? `${booking.customer_requirements.substring(0, 150)}...`
+                    : booking.customer_requirements}
                 </p>
               </div>
             </div>

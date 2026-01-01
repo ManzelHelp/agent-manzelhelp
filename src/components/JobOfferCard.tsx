@@ -10,12 +10,11 @@ import {
   Shield,
   ArrowRight,
   Calendar,
-  DollarSign,
   Users,
   MapPin,
   CheckCircle2,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface Job {
   id: string;
@@ -39,6 +38,7 @@ interface JobOfferCardProps {
 
 function JobOfferCard({ job, customer }: JobOfferCardProps) {
   const locale = useLocale();
+  const t = useTranslations("common");
   const [relativeTime, setRelativeTime] = useState<string>("");
   const [imageError, setImageError] = useState(false);
 
@@ -52,24 +52,18 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
       const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
       const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-      if (diffInMinutes < 1) return locale === "fr" ? "À l'instant" : "Just now";
+      if (diffInMinutes < 1) return t("timeAgo.justNow");
       if (diffInMinutes < 60)
-        return locale === "fr"
-          ? `Il y a ${diffInMinutes} min`
-          : `${diffInMinutes}m ago`;
+        return t("timeAgo.minutesAgo", { count: diffInMinutes });
       if (diffInHours < 24)
-        return locale === "fr"
-          ? `Il y a ${diffInHours}h`
-          : `${diffInHours}h ago`;
+        return t("timeAgo.hoursAgo", { count: diffInHours });
       if (diffInDays === 1)
-        return locale === "fr" ? "Il y a 1 jour" : "1 day ago";
-      return locale === "fr"
-        ? `Il y a ${diffInDays} jours`
-        : `${diffInDays} days ago`;
+        return t("timeAgo.dayAgo");
+      return t("timeAgo.daysAgo", { count: diffInDays });
     };
 
     setRelativeTime(formatRelativeTime(job.created_at));
-  }, [job.created_at, locale]);
+  }, [job.created_at, t]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -103,7 +97,7 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
         {job.is_promoted && (
           <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-semibold rounded-full shadow-md flex items-center gap-1">
             <CheckCircle2 size={11} />
-            <span>{locale === "fr" ? "Promu" : "Promoted"}</span>
+            <span>{t("promoted")}</span>
           </div>
         )}
 
@@ -155,7 +149,7 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
                 </div>
                 {job.is_flexible && (
                   <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-md">
-                    {locale === "fr" ? "Flexible" : "Flexible"}
+                    {t("flexible")}
                   </span>
                 )}
               </div>
@@ -203,13 +197,12 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
           <div className="flex items-center justify-between gap-3">
             {/* Budget */}
             <div className="flex items-center gap-2 min-w-0">
-              <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
               <div className="min-w-0">
                 <div className="text-lg font-bold text-slate-900 dark:text-white">
                   {formatCurrency(job.customer_budget, job.currency)}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {locale === "fr" ? "Budget" : "Budget"}
+                  {t("budget")}
                 </p>
               </div>
             </div>
@@ -219,7 +212,7 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
               href={`/${locale}/job-offer/${job.id}`}
               className="group/btn inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 text-sm font-semibold shadow-sm hover:shadow-md transform hover:scale-105 whitespace-nowrap flex-shrink-0"
             >
-              {locale === "fr" ? "Voir" : "View"}
+              {t("view")}
               <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
             </Link>
           </div>

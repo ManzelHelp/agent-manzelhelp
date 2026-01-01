@@ -14,7 +14,7 @@ import {
   EyeOff,
   MapPin,
   Clock,
-  Euro,
+  DollarSign,
   Calendar,
   AlertCircle,
   CheckCircle,
@@ -415,9 +415,8 @@ export default function JobDetailPage() {
                       <div className="flex flex-col items-end gap-2">
                         {data.customer_budget && (
                           <div className="flex items-center gap-2">
-                            <Euro className="h-5 w-5 text-[var(--color-secondary)]" />
                             <span className="text-2xl font-bold text-[var(--color-secondary)]">
-                              €{data.customer_budget}
+                              {data.currency || "MAD"} {data.customer_budget}
                             </span>
                           </div>
                         )}

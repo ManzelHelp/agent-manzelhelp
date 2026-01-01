@@ -12,7 +12,6 @@ import {
   Clock,
   Calendar,
   AlertCircle,
-  Euro,
   User as UserIcon,
   Award,
   Loader2,
@@ -295,16 +294,13 @@ export default function JobOfferPage() {
                 {/* Budget */}
                 <div className="group bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-green-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Euro className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
                     <div className="flex-1">
                       <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                         {t("budget")}
                       </h4>
                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                         {jobData.customer_budget
-                          ? `${jobData.currency || "€"} ${
+                          ? `${jobData.currency || "MAD"} ${
                               jobData.customer_budget
                             }`
                           : t("notSpecified")}

@@ -1200,32 +1200,6 @@ export default function PostJobPage() {
                               >
                                 MAD
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    scheduleBudget: {
-                                      ...prev.scheduleBudget,
-                                      currency: "EUR",
-                                    },
-                                  }))
-                                }
-                              >
-                                EUR
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    scheduleBudget: {
-                                      ...prev.scheduleBudget,
-                                      currency: "USD",
-                                    },
-                                  }))
-                                }
-                              >
-                                USD
-                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>

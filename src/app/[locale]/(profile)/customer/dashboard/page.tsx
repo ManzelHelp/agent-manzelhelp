@@ -66,7 +66,6 @@ export default function CustomerDashboardPage() {
     weeklySpent: 0,
     upcomingBookings: 0,
     recentBookings: 0,
-    walletBalance: 0,
   });
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -246,8 +245,14 @@ export default function CustomerDashboardPage() {
                 Here's an overview of your jobs and bookings
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Link href="/customer/my-jobs">
+            <div className="flex items-center gap-3 flex-wrap">
+              <Link href="/search/services">
+                <Button className="bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-light)] hover:to-[var(--color-secondary)] text-white shadow-lg hover:shadow-xl transition-all duration-300 mobile-button">
+                  <Users className="h-4 w-4 mr-2" />
+                  Browse Services
+                </Button>
+              </Link>
+              <Link href="/customer/post-job">
                 <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white shadow-lg hover:shadow-xl transition-all duration-300 mobile-button">
                   <Plus className="h-4 w-4 mr-2" />
                   Post Job
@@ -256,26 +261,6 @@ export default function CustomerDashboardPage() {
             </div>
           </div>
         </div>
-
-        {/* Wallet Balance Section */}
-        <Card className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] border-0 shadow-lg text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Wallet className="h-6 w-6" />
-              <h3 className="text-lg font-semibold">Wallet Balance</h3>
-            </div>
-            <div className="text-3xl font-bold mb-2">
-              {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin" />
-              ) : (
-                `${stats.walletBalance.toLocaleString()} MAD`
-              )}
-            </div>
-            <p className="text-sm opacity-90">
-              Available for payments and refunds
-            </p>
-          </CardContent>
-        </Card>
 
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -427,18 +412,24 @@ export default function CustomerDashboardPage() {
                 </Button>
               </Link>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Link href="/search/services" className="block">
-                  <Button
-                    className="w-full h-12 bg-[var(--color-surface)] hover:bg-[var(--color-accent)] text-[var(--color-text-primary)] border-[var(--color-border)] hover:border-[var(--color-secondary)] transition-all duration-200 mobile-button mobile-focus-ring"
-                    variant="outline"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <Users className="h-4 w-4 text-[var(--color-secondary)]" />
-                      <span className="text-xs font-medium">Find Services</span>
+              <Link href="/search/services" className="block">
+                <Button
+                  className="w-full justify-between h-14 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-light)] hover:to-[var(--color-secondary)] text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 mobile-button mobile-focus-ring"
+                  variant="default"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <Users className="h-5 w-5" />
                     </div>
-                  </Button>
-                </Link>
+                    <span className="text-base font-semibold">
+                      Browse Services
+                    </span>
+                  </div>
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </Link>
+
+              <div className="grid grid-cols-2 gap-3">
 
                 <Link href="/customer/bookings" className="block">
                   <Button

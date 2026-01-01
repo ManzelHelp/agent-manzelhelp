@@ -55,7 +55,8 @@ export const logOutAction = async () => {
   try {
     const { auth } = await createClient();
 
-    const { error } = await auth.signOut();
+    // Use scope: 'global' to destroy all sessions and remove all cookies
+    const { error } = await auth.signOut({ scope: 'global' });
     if (error) throw error;
 
     return {
@@ -339,13 +340,33 @@ export const getUserProfileAction = async () => {
     } = await supabase.auth.getUser();
     
     // Check if user is authenticated
+    // Handle missing session gracefully instead of throwing
     if (userError) {
+      // If it's an AuthSessionMissingError, return gracefully
+      if (userError.message?.includes("session") || userError.message?.includes("Auth session missing")) {
+        console.log("[getUserProfileAction] No active session - user not authenticated");
+        return {
+          success: false,
+          user: null,
+          errorMessage: "No active session. Please log in.",
+        };
+      }
+      // For other auth errors, log and return gracefully
       console.error("Auth error in getUserProfileAction:", userError);
-      throw new Error(`Authentication failed: ${userError.message}`);
+      return {
+        success: false,
+        user: null,
+        errorMessage: `Authentication failed: ${userError.message}`,
+      };
     }
     
     if (!user) {
-      throw new Error("User not authenticated - no user found in session");
+      console.log("[getUserProfileAction] No user found in session");
+      return {
+        success: false,
+        user: null,
+        errorMessage: "User not authenticated - no user found in session",
+      };
     }
 
     // Fetch user profile from the users table

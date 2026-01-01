@@ -9,7 +9,6 @@ import {
   EyeOff,
   MapPin,
   Clock,
-  Euro,
   Star,
   Calendar,
   Users,
@@ -17,6 +16,7 @@ import {
   AlertCircle,
   XCircle,
   ArrowRight,
+  Copy,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Suspense } from "react";
@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
 import ConfirmJobCompletionButton from "@/components/jobs/ConfirmJobCompletionButton";
+import JobCloneButton from "@/components/jobs/JobCloneButton";
 
 // Loading component for better UX
 function JobsLoadingSkeleton() {
@@ -189,9 +190,8 @@ async function JobCard({
           <div className="flex flex-col items-end gap-1">
             {job.customer_budget && (
               <div className="flex items-center gap-1">
-                <Euro className="h-4 w-4 text-[var(--color-secondary)]" />
                 <span className="font-bold text-[var(--color-secondary)] text-lg">
-                  €{job.customer_budget}
+                  {job.currency || "MAD"} {job.customer_budget}
                 </span>
               </div>
             )}
@@ -368,6 +368,9 @@ async function JobCard({
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
+            {job.status === "completed" && (
+              <JobCloneButton job={job} />
+            )}
             {!job.assigned_tasker_id && job.status === "active" && (
               <JobDeleteButton
                 jobId={job.id}

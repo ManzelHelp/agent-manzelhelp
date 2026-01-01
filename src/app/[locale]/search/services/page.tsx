@@ -109,10 +109,13 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const categories = getParentCategoriesForSearch();
 
   // Fetch services using the service_listing_view which has all the data we need
+  // Only show active and verified services
   let query = supabase
     .from("service_listing_view")
     .select("*")
-    .eq("service_status", "active");
+    .eq("service_status", "active")
+    .eq("verification_status", "verified")
+    .eq("is_available_for_booking", true);
 
   // Apply filters
   if (resolvedSearchParams.q && resolvedSearchParams.q.trim()) {

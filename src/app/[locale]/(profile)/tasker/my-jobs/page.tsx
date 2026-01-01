@@ -9,7 +9,6 @@ import {
   EyeOff,
   MapPin,
   Clock,
-  Euro,
   Star,
   Calendar,
   Users,
@@ -189,9 +188,8 @@ async function JobCard({
           <div className="flex flex-col items-end gap-1">
             {job.customer_budget && (
               <div className="flex items-center gap-1">
-                <Euro className="h-4 w-4 text-[var(--color-secondary)]" />
                 <span className="font-bold text-[var(--color-secondary)] text-lg">
-                  €{job.customer_budget}
+                  {job.currency || "MAD"} {job.customer_budget}
                 </span>
               </div>
             )}

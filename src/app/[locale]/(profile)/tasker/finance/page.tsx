@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -21,6 +22,7 @@ import {
   Filter,
   Download,
   Users,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -118,10 +120,11 @@ export default function TaskerFinancePage() {
     }
   }, [selectedPeriod]);
 
-  // Fetch data on component mount
+  // Fetch data on component mount only (no auto-refresh to avoid multiple calls)
   useEffect(() => {
     fetchFinanceData();
-  }, [fetchFinanceData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount, not when fetchFinanceData changes
 
   const formatCurrency = (amount: number, currency: string = "USD") => {
     return new Intl.NumberFormat("en-US", {
@@ -211,25 +214,37 @@ export default function TaskerFinancePage() {
         </p>
       </div>
 
-      {/* Period Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Chart Period</span>
+      {/* Period Selector and Refresh */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Chart Period</span>
+          </div>
+          <div className="flex gap-1 w-full sm:w-auto">
+            {(["day", "week", "month"] as const).map((period) => (
+              <Button
+                key={period}
+                variant={selectedPeriod === period ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleChartPeriodChange(period)}
+                className="flex-1 sm:flex-none text-xs sm:text-sm"
+              >
+                {period.charAt(0).toUpperCase() + period.slice(1)}
+              </Button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-1 w-full sm:w-auto">
-          {(["day", "week", "month"] as const).map((period) => (
-            <Button
-              key={period}
-              variant={selectedPeriod === period ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleChartPeriodChange(period)}
-              className="flex-1 sm:flex-none text-xs sm:text-sm"
-            >
-              {period.charAt(0).toUpperCase() + period.slice(1)}
-            </Button>
-          ))}
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fetchFinanceData()}
+          disabled={loading}
+          className="w-full sm:w-auto"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Earnings Overview */}
