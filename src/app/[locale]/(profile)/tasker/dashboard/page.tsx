@@ -102,6 +102,12 @@ export default function DashboardPage() {
         }
 
         // Continue with data processing if profile is complete
+        if (data.error) {
+          console.error("Error fetching dashboard data:", data.error);
+          setError(data.error);
+          toast.error(data.error);
+          return;
+        }
 
         if (data.stats) {
           setStats(data.stats);
@@ -123,7 +129,8 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Helper functions for notification display
   const getNotificationIcon = (type: string) => {
@@ -605,6 +612,7 @@ export default function DashboardPage() {
                   {notifications.slice(0, 3).map((notification) => (
                     <div
                       key={notification.id}
+                      onClick={() => router.push(`/tasker/notifications?notificationId=${notification.id}`)}
                       className={`p-3 rounded-xl border transition-all duration-200 hover:shadow-sm cursor-pointer ${
                         !notification.is_read
                           ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"

@@ -24,6 +24,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { getParentCategoriesForSearch } from "@/lib/categories";
+import Footer from "@/components/Footer";
 
 export async function generateMetadata({
   params,
@@ -580,6 +581,7 @@ export default async function HomePage({
           </Card>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

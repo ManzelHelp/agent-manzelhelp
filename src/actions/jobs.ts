@@ -73,36 +73,43 @@ export interface JobWithDetails {
 
 export async function getCustomerJobs(
   customerId: string,
-  limit: number = 20,
+  limit: number = 10,
   offset: number = 0,
   includeTotal: boolean = true
 ): Promise<{
   jobs: JobWithDetails[];
   total: number;
   hasMore: boolean;
+  error: string | null;
 }> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // Get total count only when needed
-  let total = 0;
-  if (includeTotal || offset === 0) {
-    const { count, error: countError } = await supabase
-      .from("jobs")
-      .select("*", { count: "exact", head: true })
-      .eq("customer_id", customerId);
+    // Get total count only when needed
+    let total = 0;
+    if (includeTotal || offset === 0) {
+      const { count, error: countError } = await supabase
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .eq("customer_id", customerId);
 
-    if (countError) {
-      console.error("Error fetching jobs count:", countError);
-      throw new Error(`Failed to fetch jobs count: ${countError.message}`);
+      if (countError) {
+        console.error("Error fetching jobs count:", countError);
+        return {
+          jobs: [],
+          total: 0,
+          hasMore: false,
+          error: `Failed to fetch jobs count: ${countError.message}`,
+        };
+      }
+      total = count || 0;
     }
-    total = count || 0;
-  }
 
-  // Get all jobs first (without ordering) to sort them by status priority
-  const { data: allJobs, error: fetchError } = await supabase
-    .from("jobs")
-    .select(
-      `
+    // Get all jobs first (without ordering) to sort them by status priority
+    const { data: allJobs, error: fetchError } = await supabase
+      .from("jobs")
+      .select(
+        `
       *,
       application_count:job_applications(count),
       address:addresses(
@@ -124,13 +131,18 @@ export async function getCustomerJobs(
         )
       )
     `
-    )
-    .eq("customer_id", customerId);
+      )
+      .eq("customer_id", customerId);
 
-  if (fetchError) {
-    console.error("Error fetching jobs:", fetchError);
-    throw new Error(`Failed to fetch jobs: ${fetchError.message}`);
-  }
+    if (fetchError) {
+      console.error("Error fetching jobs:", fetchError);
+      return {
+        jobs: [],
+        total: 0,
+        hasMore: false,
+        error: `Failed to fetch jobs: ${fetchError.message}`,
+      };
+    }
 
   // Sort jobs by status priority: active jobs first, then completed
   // Priority order: active > assigned > in_progress > under_review > completed > cancelled > others
@@ -196,11 +208,21 @@ export async function getCustomerJobs(
     };
   });
 
-  return {
-    jobs: formattedJobs,
-    total,
-    hasMore,
-  };
+    return {
+      jobs: formattedJobs,
+      total,
+      hasMore,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Unexpected error in getCustomerJobs:", error);
+    return {
+      jobs: [],
+      total: 0,
+      hasMore: false,
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
 }
 
 export async function getJobById(
@@ -2202,7 +2224,7 @@ export async function approveJobByAdmin(
 
 export async function getTaskerJobs(
   taskerId: string,
-  limit: number = 20,
+  limit: number = 10,
   offset: number = 0,
   includeTotal: boolean = true
 ): Promise<{

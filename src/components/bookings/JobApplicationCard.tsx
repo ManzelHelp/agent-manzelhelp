@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, DollarSign, User, MessageSquare } from "lucide-react";
 import { JobApplicationWithDetails } from "@/actions/bookings";
 import { useTranslations } from "next-intl";
+import { formatDateShort } from "@/lib/date-utils";
 
 interface JobApplicationCardProps {
   application: JobApplicationWithDetails;
@@ -67,12 +68,7 @@ export function JobApplicationCard({
   const [imageError, setImageError] = useState(false);
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t("labels.flexible");
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatDateShort(dateString);
   };
 
   const formatPrice = (price: number) => {
@@ -242,13 +238,7 @@ export function JobApplicationCard({
         <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {t("labels.appliedOn")}{" "}
-            {new Date(application.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {formatDateShort(application.created_at)}
           </p>
         </div>
       </div>

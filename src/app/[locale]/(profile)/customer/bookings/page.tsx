@@ -15,6 +15,8 @@ import {
 } from "@/actions/bookings";
 import { BookingStatus } from "@/types/supabase";
 import { Calendar, ArrowRight } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
+import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
 
 type TaskStatus =
   | "all"
@@ -112,6 +114,7 @@ const getTaskerName = (booking: BookingWithDetails) => {
 };
 
 export default function CustomerBookingsPage() {
+  const { user } = useUserStore();
   const [activeTab, setActiveTab] = useState<TaskStatus>("all");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
@@ -148,7 +151,7 @@ export default function CustomerBookingsPage() {
         // Clear any previous pagination errors
         setPaginationError(null);
 
-        const result = await getCustomerBookings(20, page * 20, !append);
+        const result = await getCustomerBookings(10, page * 10, !append);
 
         if (append) {
           // Append new bookings to existing ones
@@ -181,6 +184,27 @@ export default function CustomerBookingsPage() {
     },
     []
   );
+
+  // Use realtime hook for bookings updates
+  useBookingsRealtime({
+    userId: user?.id || null,
+    enabled: !!user?.id,
+    onBookingUpdate: (bookingId, updates) => {
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === bookingId ? { ...booking, ...updates } : booking
+        )
+      );
+    },
+    onNewBooking: (booking) => {
+      setBookings((prev) => {
+        if (prev.some((b) => b.id === booking.id)) {
+          return prev;
+        }
+        return [booking as BookingWithDetails, ...prev];
+      });
+    },
+  });
 
   // Initial data fetch
   useEffect(() => {

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LogOutButton from "./buttons/LogOutButton";
+import { NotificationIcon } from "./NotificationIcon";
 
 function Header() {
   const { user } = useUserStore();
@@ -209,6 +210,13 @@ function Header() {
             <DarkModeButton />
           </div>
 
+          {/* Notification Icon - Only for authenticated users */}
+          {user && (
+            <div className="hidden lg:block">
+              <NotificationIcon />
+            </div>
+          )}
+
           {/* Profile Dropdown - Always at the end for desktop */}
           {user && (
             <div className="hidden lg:block">
@@ -279,14 +287,17 @@ function Header() {
                   <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Link>
-                <Link
-                  href={`/${user.role}/notifications`}
-                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Bell className="h-4 w-4" />
-                  Notifications
-                </Link>
+                <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)]">
+                  <Link
+                    href={`/${user.role}/notifications`}
+                    className="flex items-center gap-2 hover:text-[var(--color-primary)] transition-colors duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Bell className="h-4 w-4" />
+                    Notifications
+                  </Link>
+                  <NotificationIcon asButton className="ml-auto" />
+                </div>
                 <Link
                   href={`/${user.role}/settings`}
                   className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"

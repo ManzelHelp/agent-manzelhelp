@@ -16,6 +16,7 @@ import {
 import { TaskerBookingWithDetails } from "@/actions/bookings";
 import { BookingStatus } from "@/types/supabase";
 import { useTranslations } from "next-intl";
+import { formatDateShort } from "@/lib/date-utils";
 
 interface TaskerBookingCardProps {
   booking: TaskerBookingWithDetails;
@@ -67,12 +68,7 @@ export function TaskerBookingCard({
   const t = useTranslations("taskerBookings");
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t("labels.flexible");
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatDateShort(dateString);
   };
 
   const formatTime = (timeString: string | null) => {
@@ -263,13 +259,7 @@ export function TaskerBookingCard({
         <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {t("labels.bookedOn")}{" "}
-            {new Date(booking.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {formatDateShort(booking.created_at)}
           </p>
         </div>
       </div>

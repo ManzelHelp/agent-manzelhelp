@@ -188,12 +188,35 @@ export interface ServiceWithDetails extends TaskerService {
 }
 
 export async function getTaskerServices(
-  taskerId: string
-): Promise<ServiceWithDetails[]> {
+  taskerId: string,
+  limit: number = 10,
+  offset: number = 0,
+  includeTotal: boolean = true
+): Promise<{
+  services: ServiceWithDetails[];
+  total: number;
+  hasMore: boolean;
+}> {
   const supabase = await createClient();
 
   try {
+    // Get total count only when needed
+    let total = 0;
+    if (includeTotal || offset === 0) {
+      const { count, error: countError } = await supabase
+        .from("tasker_services")
+        .select("*", { count: "exact", head: true })
+        .eq("tasker_id", taskerId);
+
+      if (countError) {
+        console.error("Error fetching services count:", countError);
+        throw new Error(`Failed to fetch services count: ${countError.message}`);
+      }
+      total = count || 0;
+    }
+
     // Use SQL query with JOINs to get category and service names from database
+    // Fetch one extra to determine if there are more
     const { data, error } = await supabase
       .from("tasker_services")
       .select(
@@ -215,7 +238,8 @@ export async function getTaskerServices(
       `
       )
       .eq("tasker_id", taskerId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit);
 
     if (error) {
       console.error("Error fetching tasker services:", error);

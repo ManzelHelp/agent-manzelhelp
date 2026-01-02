@@ -42,6 +42,7 @@ import { checkReviewExists } from "@/actions/reviews";
 import { BookingStatus } from "@/types/supabase";
 import { useTranslations } from "next-intl";
 import ReviewForm from "@/components/reviews/ReviewForm";
+import { formatDateShort } from "@/lib/date-utils";
 
 interface ConfirmationDialogState {
   isOpen: boolean;
@@ -219,12 +220,7 @@ export default function CustomerBookingDetailPage({
   }, []);
 
   const formatDate = useCallback((dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatDateShort(dateString);
   }, []);
 
   const formatTime = useCallback((timeString: string) => {

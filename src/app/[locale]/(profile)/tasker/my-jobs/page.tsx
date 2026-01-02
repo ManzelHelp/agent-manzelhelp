@@ -308,7 +308,7 @@ async function JobsList({ taskerId }: { taskerId: string }) {
   const t = await getTranslations("myJobs");
 
   try {
-    const { jobs } = await getTaskerJobs(taskerId);
+    const { jobs } = await getTaskerJobs(taskerId, 10, 0, true);
 
     return (
       <>

@@ -201,12 +201,7 @@ export default function TaskerBookingDetailPage({
   }, []);
 
   const formatDate = useCallback((dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatDateShort(dateString);
   }, []);
 
   const formatTime = useCallback((timeString: string) => {

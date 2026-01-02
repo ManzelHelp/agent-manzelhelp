@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -29,12 +29,16 @@ import {
   getConversationsAction,
   type ConversationWithDetails,
 } from "@/actions/messages";
+import { useUserStore } from "@/stores/userStore";
+import { useConversationsRealtime } from "@/hooks/useConversationsRealtime";
+import { formatDateShort } from "@/lib/date-utils";
 
 type MessageStatus = "all" | "unread" | "read";
 
 export default function MessagesPage() {
   const router = useRouter();
   const t = useTranslations("notifications.actions");
+  const { user } = useUserStore();
   const [messageFilter, setMessageFilter] = useState<MessageStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [conversations, setConversations] = useState<ConversationWithDetails[]>(
@@ -42,43 +46,81 @@ export default function MessagesPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [currentOffset, setCurrentOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch conversations from database
-  const fetchConversations = useCallback(async (isRefresh = false) => {
+  // Fetch conversations from database with pagination (10 per page)
+  const fetchConversations = useCallback(async (isRefresh = false, append = false) => {
     try {
-      if (isRefresh) {
+      if (append) {
+        setIsLoadingMore(true);
+      } else if (isRefresh) {
         setIsRefreshing(true);
       } else {
         setIsLoading(true);
       }
       setError(null);
-      const { conversations: fetchedConversations, errorMessage } =
-        await getConversationsAction();
+      
+      const offset = append ? currentOffset : 0;
+      const { conversations: fetchedConversations, errorMessage, hasMore: moreAvailable, total } =
+        await getConversationsAction(10, offset);
 
       if (errorMessage) {
         setError(errorMessage);
       } else {
-        setConversations(fetchedConversations);
+        if (append) {
+          setConversations((prev) => [...prev, ...fetchedConversations]);
+          setCurrentOffset((prev) => prev + fetchedConversations.length);
+        } else {
+          setConversations(fetchedConversations);
+          setCurrentOffset(fetchedConversations.length);
+        }
+        setHasMore(moreAvailable || false);
       }
     } catch (err) {
       console.error("Error fetching conversations:", err);
       setError("Failed to load messages");
     } finally {
-      if (isRefresh) {
+      if (append) {
+        setIsLoadingMore(false);
+      } else if (isRefresh) {
         setIsRefreshing(false);
       } else {
         setIsLoading(false);
       }
     }
-  }, []);
+  }, [currentOffset]);
+
+  // Load more conversations
+  const loadMoreConversations = useCallback(() => {
+    if (!isLoadingMore && hasMore && !isLoading) {
+      fetchConversations(false, true);
+    }
+  }, [isLoadingMore, hasMore, isLoading, fetchConversations]);
+
+  // Use realtime hook for conversations
+  useConversationsRealtime({
+    userId: user?.id || null,
+    enabled: !!user?.id,
+    onNewConversation: () => {
+      fetchConversations(true, false);
+    },
+    onConversationUpdate: () => {
+      fetchConversations(true, false);
+    },
+    onNewMessage: () => {
+      fetchConversations(true, false);
+    },
+  });
 
   useEffect(() => {
     fetchConversations();
     
     // Listen for messages marked as read event
     const handleMessagesMarkedAsRead = () => {
-      fetchConversations(true);
+      fetchConversations(true, false);
     };
     
     window.addEventListener('messagesMarkedAsRead', handleMessagesMarkedAsRead);
@@ -106,50 +148,50 @@ export default function MessagesPage() {
     if (diffInDays < 7)
       return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 
-    // HYDRATION-SAFE: Use explicit locale to prevent hydration mismatches
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    // Use short date format DD.MM.YYYY
+    return formatDateShort(timestamp);
   };
 
   // Filter conversations based on status and search query
-  const filteredConversations = conversations
-    .filter((conversation) => {
-      const hasUnread = (conversation.unread_count || 0) > 0;
-      if (messageFilter === "unread") return hasUnread;
-      if (messageFilter === "read") return !hasUnread;
-      return true;
-    })
-    .filter((conversation) => {
-      if (searchQuery === "") return true;
+  const allFilteredConversations = useMemo(() => {
+    return conversations
+      .filter((conversation) => {
+        const hasUnread = (conversation.unread_count || 0) > 0;
+        if (messageFilter === "unread") return hasUnread;
+        if (messageFilter === "read") return !hasUnread;
+        return true;
+      })
+      .filter((conversation) => {
+        if (searchQuery === "") return true;
 
-      const otherParticipant = conversation.other_participant;
-      const participantName = otherParticipant
-        ? `${otherParticipant.first_name || ""} ${
-            otherParticipant.last_name || ""
-          }`.trim()
-        : "";
+        const otherParticipant = conversation.other_participant;
+        const participantName = otherParticipant
+          ? `${otherParticipant.first_name || ""} ${
+              otherParticipant.last_name || ""
+            }`.trim()
+          : "";
 
-      const lastMessage = conversation.last_message?.content || "";
-      const serviceTitle =
-        conversation.service_title ||
-        conversation.job_title ||
-        conversation.booking_title ||
-        "";
+        const lastMessage = conversation.last_message?.content || "";
+        const serviceTitle =
+          conversation.service_title ||
+          conversation.job_title ||
+          conversation.booking_title ||
+          "";
 
-      return (
-        participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        serviceTitle.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    });
+        return (
+          participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          serviceTitle.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
+  }, [conversations, messageFilter, searchQuery]);
 
-  const unreadCount = conversations.reduce(
-    (total, conv) => total + (conv.unread_count || 0),
-    0
-  );
+  const unreadCount = useMemo(() => {
+    return conversations.reduce(
+      (total, conv) => total + (conv.unread_count || 0),
+      0
+    );
+  }, [conversations]);
 
   const FilterButton = ({
     status,
@@ -280,7 +322,7 @@ export default function MessagesPage() {
                     Try Again
                   </Button>
                 </div>
-              ) : filteredConversations.length === 0 ? (
+              ) : allFilteredConversations.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="flex justify-center mb-4">
                     <MessageCircle className="h-12 w-12 text-[var(--color-text-secondary)]" />
@@ -299,7 +341,7 @@ export default function MessagesPage() {
                   </p>
                 </div>
               ) : (
-                filteredConversations.map((conversation) => {
+                allFilteredConversations.map((conversation) => {
                   const otherParticipant = conversation.other_participant;
                   const participantName = otherParticipant
                     ? `${otherParticipant.first_name || ""} ${

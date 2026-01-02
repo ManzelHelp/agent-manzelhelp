@@ -900,6 +900,7 @@
       "refreshing": "Refreshing...",
       "retry": "Retry",
       "markAsRead": "Mark as read",
+      "loadMore": "Load More",
       "markAsUnread": "Mark as unread",
       "delete": "Delete",
       "viewDetails": "View details",
@@ -909,7 +910,10 @@
       "clearSelection": "Clear selection",
       "selected": "selected",
       "markRead": "Mark as read",
-      "markUnread": "Mark as unread"
+      "markUnread": "Mark as unread",
+      "loadMore": "Load More",
+      "loadOlder": "Load Older Messages",
+      "loading": "Loading..."
     },
     "badges": {
       "new": "New"
@@ -1113,6 +1117,10 @@
     "notSignedIn": "Not signed in",
     "pleaseLogin": "Please log in to view your jobs.",
     "goToLogin": "Go to Login",
+    "viewDetails": "View Details",
+    "edit": "Edit",
+    "loadMore": "Load More",
+    "loading": "Loading...",
     "jobCard": {
       "applications": "applications",
       "application": "application",
@@ -1584,6 +1592,10 @@
       "noTransactionsDescription": "Your transaction history will appear here once you start booking services.",
       "servicePayment": "Service Payment"
     },
+    "actions": {
+      "loadMore": "Load More",
+      "loading": "Loading..."
+    },
     "status": {
       "paid": "Paid",
       "pending": "Pending",
@@ -1617,7 +1629,9 @@
       "goBack": "Go back",
       "tryAgain": "Try again",
       "refresh": "Refresh",
-      "refreshing": "Refreshing..."
+      "refreshing": "Refreshing...",
+      "loadOlder": "Load Older Messages",
+      "loading": "Loading..."
     },
     "input": {
       "placeholder": "Type your message...",

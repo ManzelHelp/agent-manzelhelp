@@ -91,7 +91,7 @@ export async function fetchDashboardStats(
       userResult.reason.code !== "PGRST116"
     ) {
       console.error("Error fetching user data:", userResult.reason);
-      throw userResult.reason;
+      // Continue with null user instead of throwing
     }
 
     if (
@@ -99,7 +99,7 @@ export async function fetchDashboardStats(
       userStatsResult.reason.code !== "PGRST116"
     ) {
       console.error("Error fetching user stats:", userStatsResult.reason);
-      throw userStatsResult.reason;
+      // Continue with null userStats instead of throwing
     }
 
     // Get all bookings and jobs data in parallel
@@ -236,29 +236,34 @@ export async function fetchDashboardStats(
       return transactions.reduce((sum, t) => {
         const amount = typeof t.amount === 'string' ? parseFloat(t.amount) : (t.amount || 0);
         const fee = typeof t.platform_fee === 'string' ? parseFloat(t.platform_fee) : (t.platform_fee || 0);
-        return sum + (amount - fee);
+        const netAmount = (Number(amount) || 0) - (Number(fee) || 0);
+        return Number(sum) + (isNaN(netAmount) ? 0 : netAmount);
       }, 0);
     };
 
-    const totalEarnings =
+    const totalEarnings = Number(
       allTransactionsResult.status === "fulfilled"
         ? calculateNetEarnings(allTransactionsResult.value.data || [])
-        : (userStats?.total_earnings || 0);
+        : (userStats?.total_earnings || 0)
+    ) || 0;
 
-    const monthlyEarnings =
+    const monthlyEarnings = Number(
       monthlyTransactionsResult.status === "fulfilled"
         ? calculateNetEarnings(monthlyTransactionsResult.value.data || [])
-        : 0;
+        : 0
+    ) || 0;
 
-    const weeklyEarnings =
+    const weeklyEarnings = Number(
       weeklyTransactionsResult.status === "fulfilled"
         ? calculateNetEarnings(weeklyTransactionsResult.value.data || [])
-        : 0;
+        : 0
+    ) || 0;
 
     // Calculate completion rate
     const totalBookings = activeBookings.length + completedBookings.length;
-    const completionRate =
-      totalBookings > 0 ? (completedBookings.length / totalBookings) * 100 : 0;
+    const completionRate = totalBookings > 0 
+      ? (completedBookings.length / totalBookings) * 100 
+      : 0;
 
     // Calculate active services
     const activeServices =
@@ -269,28 +274,51 @@ export async function fetchDashboardStats(
     const totalCompletedJobs = completedBookings.length + completedJobs.length;
 
     // Use stored values from tasker_profiles (calculated when review is created)
-    const averageRating = taskerProfile?.tasker_rating || 0;
-    const totalReviews = taskerProfile?.total_reviews || 0;
+    const averageRating = taskerProfile?.tasker_rating ?? 0;
+    const totalReviews = taskerProfile?.total_reviews ?? 0;
+
+    // Helper function to safely convert to number (prevents NaN and undefined)
+    const safeNumber = (value: any): number => {
+      if (value === null || value === undefined) return 0;
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    };
 
     return {
-      activeJobs: activeBookings.length,
-      completedJobs: totalCompletedJobs, // Now calculated from bookings + jobs, not user_stats
-      totalEarnings, // Now calculated from transactions, not user_stats
-      monthlyEarnings,
-      weeklyEarnings,
-      averageRating, // Now calculated from reviews table, not user_stats
-      totalReviews, // Now calculated from reviews table, not user_stats
-      responseTime: userStats?.response_time_hours || 0,
-      completionRate: Math.round(completionRate),
-      totalServices: servicesData?.length || 0,
-      activeServices,
-      upcomingBookings: upcomingBookings.length,
-      recentBookings: recentBookings.length,
-      walletBalance: user?.wallet_balance || 0,
+      activeJobs: safeNumber(activeBookings.length),
+      completedJobs: safeNumber(totalCompletedJobs),
+      totalEarnings: safeNumber(totalEarnings),
+      monthlyEarnings: safeNumber(monthlyEarnings),
+      weeklyEarnings: safeNumber(weeklyEarnings),
+      averageRating: safeNumber(averageRating),
+      totalReviews: safeNumber(totalReviews),
+      responseTime: safeNumber(userStats?.response_time_hours),
+      completionRate: safeNumber(Math.round(completionRate || 0)),
+      totalServices: safeNumber(servicesData?.length),
+      activeServices: safeNumber(activeServices),
+      upcomingBookings: safeNumber(upcomingBookings.length),
+      recentBookings: safeNumber(recentBookings.length),
+      walletBalance: safeNumber(user?.wallet_balance),
     };
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
-    throw error;
+    // Return default values instead of throwing
+    return {
+      activeJobs: 0,
+      completedJobs: 0,
+      totalEarnings: 0,
+      monthlyEarnings: 0,
+      weeklyEarnings: 0,
+      averageRating: 0,
+      totalReviews: 0,
+      responseTime: 0,
+      completionRate: 0,
+      totalServices: 0,
+      activeServices: 0,
+      upcomingBookings: 0,
+      recentBookings: 0,
+      walletBalance: 0,
+    };
   }
 }
 
@@ -311,10 +339,25 @@ export async function fetchDashboardNotifications(
 
     if (error) {
       console.error("Error fetching notifications:", error);
-      throw error;
+      return [];
     }
 
-    return data || [];
+    // Ensure all notification fields are properly serialized
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
+
+    return data.map((notification) => ({
+      ...notification,
+      id: String(notification.id),
+      user_id: String(notification.user_id),
+      title: String(notification.title || ""),
+      message: String(notification.message || ""),
+      type: String(notification.type || ""),
+      is_read: Boolean(notification.is_read),
+      created_at: String(notification.created_at || ""),
+      metadata: notification.metadata ? JSON.parse(JSON.stringify(notification.metadata)) : null,
+    })) as Notification[];
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return [];
@@ -337,7 +380,7 @@ export async function fetchDashboardMessages(
 
     if (conversationsError) {
       console.error("Error fetching conversations:", conversationsError);
-      throw conversationsError;
+      return [];
     }
 
     if (!conversations || conversations.length === 0) {
@@ -361,7 +404,13 @@ export async function fetchDashboardMessages(
 
     if (messagesError) {
       console.error("Error fetching messages:", messagesError);
-      throw messagesError;
+      // Return empty array instead of throwing to prevent serialization errors
+      return [];
+    }
+    
+    // Ensure all messages are properly serializable
+    if (!messages || !Array.isArray(messages)) {
+      return [];
     }
 
     // Process messages to show the other person's name
@@ -380,14 +429,25 @@ export async function fetchDashboardMessages(
         };
       }) => {
         return {
-          ...message,
-          client:
+          id: String(message.id),
+          conversation_id: String(message.conversation_id),
+          sender_id: String(message.sender_id),
+          content: String(message.content || ""),
+          is_read: Boolean(message.is_read),
+          created_at: String(message.created_at),
+          sender: message.sender ? {
+            first_name: message.sender.first_name ? String(message.sender.first_name) : undefined,
+            last_name: message.sender.last_name ? String(message.sender.last_name) : undefined,
+            avatar_url: message.sender.avatar_url ? String(message.sender.avatar_url) : undefined,
+          } : undefined,
+          client: String(
             message.sender_id === userId
-              ? "You" // Message sent by current user
+              ? "You"
               : `${message.sender?.first_name || ""} ${
                   message.sender?.last_name || ""
-                }`.trim() || "Unknown",
-          unread: !message.is_read && message.sender_id !== userId,
+                }`.trim() || "Unknown"
+          ),
+          unread: Boolean(!message.is_read && message.sender_id !== userId),
         };
       }
     );
@@ -431,9 +491,7 @@ export async function fetchDashboardRecentActivity(
             )
           `
           )
-          .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`)
-          .order("messages(created_at)", { ascending: false })
-          .limit(10),
+          .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`),
 
         supabase
           .from("reviews")
@@ -473,13 +531,13 @@ export async function fetchDashboardRecentActivity(
       } else if (bookingsResult.value.data) {
         bookingsResult.value.data.forEach((booking) => {
           activities.push({
-            id: booking.id,
+            id: String(booking.id),
             type: "booking",
-            title: `New ${booking.status} booking`,
-            description: `Booking for ${booking.agreed_price || 0} MAD`,
-            timestamp: booking.created_at,
-            status: booking.status,
-            amount: booking.agreed_price,
+            title: String(`New ${booking.status} booking`),
+            description: String(`Booking for ${Number(booking.agreed_price) || 0} MAD`),
+            timestamp: String(booking.created_at),
+            status: String(booking.status || ""),
+            amount: Number(booking.agreed_price) || 0,
           });
         });
       }
@@ -503,20 +561,41 @@ export async function fetchDashboardRecentActivity(
           }>;
         }>;
 
+        // Collect all messages and sort by created_at
+        const allMessages: Array<{
+          id: string;
+          content: string;
+          created_at: string;
+          sender_id: string;
+          sender?: { first_name?: string; last_name?: string };
+        }> = [];
+        
         conversations.forEach((conversation) => {
           conversation.messages.forEach((message) => {
             if (message.sender_id !== userId) {
               // Only show messages from others
-              activities.push({
-                id: message.id,
-                type: "message",
-                title: `Message from ${message.sender?.first_name || "Customer"}`,
-                description:
-                  message.content.substring(0, 50) +
-                  (message.content.length > 50 ? "..." : ""),
-                timestamp: message.created_at,
-              });
+              allMessages.push(message);
             }
+          });
+        });
+
+        // Sort by created_at descending (most recent first)
+        allMessages.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+        // Take only the most recent messages and add to activities
+        allMessages.slice(0, 10).forEach((message) => {
+          activities.push({
+            id: String(message.id),
+            type: "message",
+            title: String(`Message from ${message.sender?.first_name || "Customer"}`),
+            description: String(
+              message.content.substring(0, 50) +
+              (message.content.length > 50 ? "..." : "")
+            ),
+            timestamp: String(message.created_at),
           });
         });
       }
@@ -539,16 +618,17 @@ export async function fetchDashboardRecentActivity(
 
         reviews.forEach((review) => {
           activities.push({
-            id: review.id,
+            id: String(review.id),
             type: "review",
-            title: `${review.overall_rating}⭐ review from ${
+            title: String(`${Number(review.overall_rating) || 0}⭐ review from ${
               review.reviewer?.first_name || "Customer"
-            }`,
-            description:
+            }`),
+            description: String(
               review.comment?.substring(0, 50) +
                 (review.comment && review.comment.length > 50 ? "..." : "") ||
-              "No comment",
-            timestamp: review.created_at,
+              "No comment"
+            ),
+            timestamp: String(review.created_at),
           });
         });
       }
@@ -576,15 +656,17 @@ export async function fetchDashboardRecentActivity(
             : application.job;
           
           activities.push({
-            id: application.id,
+            id: String(application.id),
             type: "booking", // Using booking type for consistency
-            title: `Application ${application.status} for job`,
-            description: jobData?.title 
-              ? `Applied to "${jobData.title.substring(0, 40)}${jobData.title.length > 40 ? '...' : ''}"`
-              : `Application for ${application.proposed_price || 0} MAD`,
-            timestamp: application.created_at,
-            status: application.status,
-            amount: application.proposed_price,
+            title: String(`Application ${application.status} for job`),
+            description: String(
+              jobData?.title 
+                ? `Applied to "${jobData.title.substring(0, 40)}${jobData.title.length > 40 ? '...' : ''}"`
+                : `Application for ${Number(application.proposed_price) || 0} MAD`
+            ),
+            timestamp: String(application.created_at),
+            status: String(application.status || ""),
+            amount: Number(application.proposed_price) || 0,
           });
         });
       }
@@ -828,20 +910,38 @@ export async function fetchCustomerDashboardStats(
       );
     }
 
+    // Helper function to safely convert to number (prevents NaN and undefined)
+    const safeNumber = (value: any): number => {
+      if (value === null || value === undefined) return 0;
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    };
+
     return {
-      activeBookings: activeBookings.length,
-      completedBookings: completedBookings.length,
-      activeJobs: activeJobs.length,
-      completedJobs: completedJobs.length,
-      totalSpent,
-      monthlySpent,
-      weeklySpent,
-      upcomingBookings: upcomingBookings.length,
-      recentBookings: recentBookings.length,
+      activeBookings: safeNumber(activeBookings.length),
+      completedBookings: safeNumber(completedBookings.length),
+      activeJobs: safeNumber(activeJobs.length),
+      completedJobs: safeNumber(completedJobs.length),
+      totalSpent: safeNumber(totalSpent),
+      monthlySpent: safeNumber(monthlySpent),
+      weeklySpent: safeNumber(weeklySpent),
+      upcomingBookings: safeNumber(upcomingBookings.length),
+      recentBookings: safeNumber(recentBookings.length),
     };
   } catch (error) {
     console.error("Error fetching customer dashboard stats:", error);
-    throw error;
+    // Return default values instead of throwing
+    return {
+      activeBookings: 0,
+      completedBookings: 0,
+      activeJobs: 0,
+      completedJobs: 0,
+      totalSpent: 0,
+      monthlySpent: 0,
+      weeklySpent: 0,
+      upcomingBookings: 0,
+      recentBookings: 0,
+    };
   }
 }
 
@@ -884,9 +984,7 @@ export async function fetchCustomerRecentActivity(
             )
           `
           )
-          .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`)
-          .order("messages(created_at)", { ascending: false })
-          .limit(3),
+          .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`),
       ]);
 
     const activities: RecentActivity[] = [];
@@ -895,13 +993,13 @@ export async function fetchCustomerRecentActivity(
     if (bookingsResult.status === "fulfilled" && bookingsResult.value.data) {
       bookingsResult.value.data.forEach((booking) => {
         activities.push({
-          id: booking.id,
+          id: String(booking.id),
           type: "booking",
-          title: `Booking ${booking.status}`,
-          description: `Service booking for ${booking.agreed_price} MAD`,
-          timestamp: booking.created_at,
-          status: booking.status,
-          amount: booking.agreed_price,
+          title: String(`Booking ${booking.status}`),
+          description: String(`Service booking for ${Number(booking.agreed_price) || 0} MAD`),
+          timestamp: String(booking.created_at),
+          status: String(booking.status || ""),
+          amount: Number(booking.agreed_price) || 0,
         });
       });
     }
@@ -910,13 +1008,13 @@ export async function fetchCustomerRecentActivity(
     if (jobsResult.status === "fulfilled" && jobsResult.value.data) {
       jobsResult.value.data.forEach((job) => {
         activities.push({
-          id: job.id,
+          id: String(job.id),
           type: "booking", // Using booking type for consistency
-          title: `Job ${job.status}`,
-          description: `Posted job with budget ${job.customer_budget} MAD`,
-          timestamp: job.created_at,
-          status: job.status,
-          amount: job.customer_budget,
+          title: String(`Job ${job.status}`),
+          description: String(`Posted job with budget ${Number(job.customer_budget) || 0} MAD`),
+          timestamp: String(job.created_at),
+          status: String(job.status || ""),
+          amount: Number(job.customer_budget) || 0,
         });
       });
     }
@@ -934,22 +1032,43 @@ export async function fetchCustomerRecentActivity(
         }>;
       }>;
 
+      // Collect all messages and sort by created_at
+      const allMessages: Array<{
+        id: string;
+        content: string;
+        created_at: string;
+        sender_id: string;
+        sender?: { first_name?: string; last_name?: string };
+      }> = [];
+      
       conversations.forEach((conversation) => {
         conversation.messages.forEach((message) => {
           if (message.sender_id !== userId) {
             // Only show messages from others
-            activities.push({
-              id: message.id,
-              type: "message",
-              title: `Message from ${message.sender?.first_name || "Tasker"}`,
-              description:
-                message.content.substring(0, 50) +
-                (message.content.length > 50 ? "..." : ""),
-              timestamp: message.created_at,
-            });
+            allMessages.push(message);
           }
         });
       });
+
+      // Sort by created_at descending (most recent first)
+      allMessages.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      // Take only the most recent messages and add to activities
+        allMessages.slice(0, 3).forEach((message) => {
+          activities.push({
+            id: String(message.id),
+            type: "message",
+            title: String(`Message from ${message.sender?.first_name || "Tasker"}`),
+            description: String(
+              message.content.substring(0, 50) +
+              (message.content.length > 50 ? "..." : "")
+            ),
+            timestamp: String(message.created_at),
+          });
+        });
     }
 
     // Sort by timestamp and take the most recent 3
@@ -969,18 +1088,24 @@ export async function fetchCustomerRecentActivity(
  * Fetch all customer dashboard data in parallel
  */
 export async function fetchAllCustomerDashboardData() {
-  const supabase = await createClient();
-
-  // Get the authenticated user once
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError || !user) {
-    throw new Error("User not authenticated");
-  }
-
   try {
+    const supabase = await createClient();
+
+    // Get the authenticated user once
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return {
+        stats: null,
+        notifications: [],
+        messages: [],
+        recentActivity: [],
+        error: "User not authenticated",
+      };
+    }
+
     const [stats, notifications, messages, recentActivity] =
       await Promise.allSettled([
         fetchCustomerDashboardStats(supabase, user.id),
@@ -989,17 +1114,59 @@ export async function fetchAllCustomerDashboardData() {
         fetchCustomerRecentActivity(supabase, user.id),
       ]);
 
+    // Ensure all data is properly serialized
+    const statsData = stats.status === "fulfilled" ? stats.value : null;
+    const notificationsData = notifications.status === "fulfilled" ? notifications.value : [];
+    const messagesData = messages.status === "fulfilled" ? messages.value : [];
+    const activityData = recentActivity.status === "fulfilled" ? recentActivity.value : [];
+
+    // Ensure statsData is fully serializable (for customer dashboard)
+    // Convert all values to ensure they're valid numbers (not NaN or undefined)
+    const serializeNumber = (value: any): number => {
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    };
+    
+    const serializedStats = statsData ? {
+      activeBookings: serializeNumber(statsData.activeBookings ?? 0),
+      completedBookings: serializeNumber(statsData.completedBookings ?? 0),
+      activeJobs: serializeNumber(statsData.activeJobs ?? 0),
+      completedJobs: serializeNumber(statsData.completedJobs ?? 0),
+      totalSpent: serializeNumber(statsData.totalSpent ?? 0),
+      monthlySpent: serializeNumber(statsData.monthlySpent ?? 0),
+      weeklySpent: serializeNumber(statsData.weeklySpent ?? 0),
+      upcomingBookings: serializeNumber(statsData.upcomingBookings ?? 0),
+      recentBookings: serializeNumber(statsData.recentBookings ?? 0),
+    } : null;
+
+    // Ensure all arrays are properly serialized
+    const serializedNotifications = Array.isArray(notificationsData) 
+      ? JSON.parse(JSON.stringify(notificationsData))
+      : [];
+    const serializedMessages = Array.isArray(messagesData)
+      ? JSON.parse(JSON.stringify(messagesData))
+      : [];
+    const serializedActivity = Array.isArray(activityData)
+      ? JSON.parse(JSON.stringify(activityData))
+      : [];
+
     return {
-      stats: stats.status === "fulfilled" ? stats.value : null,
-      notifications:
-        notifications.status === "fulfilled" ? notifications.value : [],
-      messages: messages.status === "fulfilled" ? messages.value : [],
-      recentActivity:
-        recentActivity.status === "fulfilled" ? recentActivity.value : [],
+      stats: serializedStats,
+      notifications: serializedNotifications,
+      messages: serializedMessages,
+      recentActivity: serializedActivity,
+      error: null,
     };
   } catch (error) {
     console.error("Error fetching customer dashboard data:", error);
-    throw error;
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+    return {
+      stats: null,
+      notifications: [],
+      messages: [],
+      recentActivity: [],
+      error: String(errorMessage),
+    };
   }
 }
 
@@ -1007,18 +1174,24 @@ export async function fetchAllCustomerDashboardData() {
  * Fetch all dashboard data in parallel (for taskers)
  */
 export async function fetchAllDashboardData() {
-  const supabase = await createClient();
-
-  // Get the authenticated user once
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError || !user) {
-    throw new Error("User not authenticated");
-  }
-
   try {
+    const supabase = await createClient();
+
+    // Get the authenticated user once
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return {
+        stats: null,
+        notifications: [],
+        messages: [],
+        recentActivity: [],
+        error: "User not authenticated",
+      };
+    }
+
     const [stats, notifications, messages, recentActivity] =
       await Promise.allSettled([
         fetchDashboardStats(supabase, user.id),
@@ -1027,16 +1200,63 @@ export async function fetchAllDashboardData() {
         fetchDashboardRecentActivity(supabase, user.id),
       ]);
 
+    // Ensure all data is properly serialized
+    const statsData = stats.status === "fulfilled" ? stats.value : null;
+    const notificationsData = notifications.status === "fulfilled" ? notifications.value : [];
+    const messagesData = messages.status === "fulfilled" ? messages.value : [];
+    const activityData = recentActivity.status === "fulfilled" ? recentActivity.value : [];
+
+    // Ensure statsData is fully serializable (for tasker dashboard)
+    // Convert all values to ensure they're valid numbers (not NaN or undefined)
+    const serializeNumber = (value: any): number => {
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    };
+    
+    const serializedStats = statsData ? {
+      activeJobs: serializeNumber(statsData.activeJobs ?? 0),
+      completedJobs: serializeNumber(statsData.completedJobs ?? 0),
+      totalEarnings: serializeNumber(statsData.totalEarnings ?? 0),
+      monthlyEarnings: serializeNumber(statsData.monthlyEarnings ?? 0),
+      weeklyEarnings: serializeNumber(statsData.weeklyEarnings ?? 0),
+      averageRating: serializeNumber(statsData.averageRating ?? 0),
+      totalReviews: serializeNumber(statsData.totalReviews ?? 0),
+      responseTime: serializeNumber(statsData.responseTime ?? 0),
+      completionRate: serializeNumber(statsData.completionRate ?? 0),
+      totalServices: serializeNumber(statsData.totalServices ?? 0),
+      activeServices: serializeNumber(statsData.activeServices ?? 0),
+      upcomingBookings: serializeNumber(statsData.upcomingBookings ?? 0),
+      recentBookings: serializeNumber(statsData.recentBookings ?? 0),
+      walletBalance: serializeNumber(statsData.walletBalance ?? 0),
+    } : null;
+
+    // Ensure all arrays are properly serialized
+    const serializedNotifications = Array.isArray(notificationsData) 
+      ? JSON.parse(JSON.stringify(notificationsData))
+      : [];
+    const serializedMessages = Array.isArray(messagesData)
+      ? JSON.parse(JSON.stringify(messagesData))
+      : [];
+    const serializedActivity = Array.isArray(activityData)
+      ? JSON.parse(JSON.stringify(activityData))
+      : [];
+
     return {
-      stats: stats.status === "fulfilled" ? stats.value : null,
-      notifications:
-        notifications.status === "fulfilled" ? notifications.value : [],
-      messages: messages.status === "fulfilled" ? messages.value : [],
-      recentActivity:
-        recentActivity.status === "fulfilled" ? recentActivity.value : [],
+      stats: serializedStats,
+      notifications: serializedNotifications,
+      messages: serializedMessages,
+      recentActivity: serializedActivity,
+      error: null,
     };
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
-    throw error;
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+    return {
+      stats: null,
+      notifications: [],
+      messages: [],
+      recentActivity: [],
+      error: String(errorMessage),
+    };
   }
 }

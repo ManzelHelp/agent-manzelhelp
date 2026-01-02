@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 // UI Components
@@ -55,6 +56,8 @@ import {
  * - Modern UI with animations and interactions
  */
 export default function CustomerDashboardPage() {
+  const router = useRouter();
+  
   // State management for dashboard data
   const [stats, setStats] = useState<CustomerDashboardStats>({
     activeBookings: 0,
@@ -90,6 +93,13 @@ export default function CustomerDashboardPage() {
 
       try {
         const data = await fetchAllCustomerDashboardData();
+
+        if (data.error) {
+          console.error("Error fetching dashboard data:", data.error);
+          setError(data.error);
+          toast.error(data.error);
+          return;
+        }
 
         if (data.stats) {
           setStats(data.stats);
@@ -579,6 +589,7 @@ export default function CustomerDashboardPage() {
                   {notifications.slice(0, 3).map((notification) => (
                     <div
                       key={notification.id}
+                      onClick={() => router.push(`/customer/notifications?notificationId=${notification.id}`)}
                       className={`p-3 rounded-xl border transition-all duration-200 hover:shadow-sm cursor-pointer ${
                         !notification.is_read
                           ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"

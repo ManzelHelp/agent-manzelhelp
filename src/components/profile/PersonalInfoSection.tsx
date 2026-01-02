@@ -375,7 +375,7 @@ export default function PersonalInfoSection({
       email: user?.email || "",
       phone: user?.phone || "Not provided",
       dateOfBirth: user?.date_of_birth
-        ? new Date(user.date_of_birth).toLocaleDateString()
+        ? formatDateShort(user.date_of_birth)
         : "Not provided",
       avatarUrl: avatarUrl || undefined,
       emailVerified: user?.email_verified || false,

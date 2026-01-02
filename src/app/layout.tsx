@@ -5,7 +5,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // In Next.js App Router, the root layout should only return children
-  // The html and body tags are handled by the locale layout
-  return <>{children}</>;
+  // Next.js requires html and body tags in the root layout
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      </head>
+      <body className="smooth-scroll">{children}</body>
+    </html>
+  );
 }

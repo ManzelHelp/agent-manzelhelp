@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/providers/theme-provider";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { LogoutListener } from "@/components/auth/LogoutListener";
 
@@ -45,33 +44,18 @@ export default async function LocaleLayout({
   const stableNow = new Date();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      </head>
-      <body className="smooth-scroll">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NextIntlClientProvider
-            messages={messages}
-            locale={locale}
-            timeZone={getTimezoneForLocale(locale)}
-            now={stableNow}
-          >
-            <LogoutListener />
-            <Header />
-            {children}
-            <Footer />
-            <Toaster />
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <NextIntlClientProvider
+        messages={messages}
+        locale={locale}
+        timeZone={getTimezoneForLocale(locale)}
+        now={stableNow}
+      >
+        <LogoutListener />
+        <Header />
+        {children}
+        <Toaster />
+      </NextIntlClientProvider>
+    </ThemeProvider>
   );
 }

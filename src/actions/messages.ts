@@ -41,10 +41,15 @@ export interface ConversationWithDetails extends Conversation {
   booking_title?: string;
 }
 
-// Get all conversations for a user with details
-export const getConversationsAction = async (): Promise<{
+// Get conversations for a user with details (paginated, 10 per page)
+export const getConversationsAction = async (
+  limit: number = 10,
+  offset: number = 0
+): Promise<{
   conversations: ConversationWithDetails[];
   errorMessage: string | null;
+  hasMore?: boolean;
+  total?: number;
 }> => {
   try {
     const supabase = await createClient();
@@ -59,7 +64,13 @@ export const getConversationsAction = async (): Promise<{
       throw new Error("User not authenticated");
     }
 
-    // Get conversations where user is a participant
+    // Get total count
+    const { count: totalCount } = await supabase
+      .from("conversations")
+      .select("*", { count: "exact", head: true })
+      .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`);
+
+    // Get conversations where user is a participant (paginated)
     const { data: conversations, error: conversationsError } = await supabase
       .from("conversations")
       .select(
@@ -78,14 +89,20 @@ export const getConversationsAction = async (): Promise<{
       `
       )
       .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
-      .order("last_message_at", { ascending: false });
+      .order("last_message_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (conversationsError) {
       throw conversationsError;
     }
 
     if (!conversations || conversations.length === 0) {
-      return { conversations: [], errorMessage: null };
+      return { 
+        conversations: [], 
+        errorMessage: null,
+        hasMore: false,
+        total: 0,
+      };
     }
 
     // Get the last message and unread count for each conversation
@@ -172,20 +189,37 @@ export const getConversationsAction = async (): Promise<{
       }
     );
 
-    return { conversations: processedConversations, errorMessage: null };
+    const total = Number(totalCount) || 0;
+    const hasMore = (offset + limit) < total;
+
+    return { 
+      conversations: processedConversations, 
+      errorMessage: null,
+      hasMore,
+      total,
+    };
   } catch (error) {
     console.error("Error fetching conversations:", error);
-    return { conversations: [], ...handleError(error) };
+    return { 
+      conversations: [], 
+      hasMore: false,
+      total: 0,
+      ...handleError(error) 
+    };
   }
 };
 
-// Get messages for a specific conversation
+// Get messages for a specific conversation (paginated, 10 per page)
 export const getMessagesAction = async (
-  conversationId: string
+  conversationId: string,
+  limit: number = 10,
+  offset: number = 0
 ): Promise<{
   messages: MessageWithDetails[];
   conversation: ConversationWithDetails | null;
   errorMessage: string | null;
+  hasMore?: boolean;
+  total?: number;
 }> => {
   try {
     const supabase = await createClient();
@@ -242,7 +276,13 @@ export const getMessagesAction = async (
       throw new Error("Unauthorized access to conversation");
     }
 
-    // Get messages for the conversation
+    // Get total count of messages
+    const { count: totalCount } = await supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("conversation_id", conversationId);
+
+    // Get messages for the conversation (paginated, most recent first, then reverse for display)
     const { data: messages, error: messagesError } = await supabase
       .from("messages")
       .select(
@@ -256,7 +296,8 @@ export const getMessagesAction = async (
       `
       )
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (messagesError) {
       console.error("Error fetching messages:", {
@@ -296,29 +337,43 @@ export const getMessagesAction = async (
 
     // Explicitly serialize messages to avoid non-serializable objects
     // Convert all types to ensure JSON serialization
-    const serializedMessages: MessageWithDetails[] = (messages || []).map((msg: any) => ({
-      id: String(msg.id),
-      conversation_id: String(msg.conversation_id),
-      sender_id: String(msg.sender_id),
-      content: String(msg.content),
-      attachment_url: msg.attachment_url ? String(msg.attachment_url) : undefined,
-      is_read: Boolean(msg.is_read),
-      created_at: msg.created_at ? new Date(msg.created_at).toISOString() : new Date().toISOString(),
-      sender: msg.sender ? {
-        first_name: msg.sender.first_name ? String(msg.sender.first_name) : undefined,
-        last_name: msg.sender.last_name ? String(msg.sender.last_name) : undefined,
-        avatar_url: msg.sender.avatar_url ? String(msg.sender.avatar_url) : undefined,
-      } : undefined,
-    }));
+    // Reverse order for display (oldest first)
+    const serializedMessages: MessageWithDetails[] = (messages || [])
+      .reverse()
+      .map((msg: any) => ({
+        id: String(msg.id),
+        conversation_id: String(msg.conversation_id),
+        sender_id: String(msg.sender_id),
+        content: String(msg.content),
+        attachment_url: msg.attachment_url ? String(msg.attachment_url) : undefined,
+        is_read: Boolean(msg.is_read),
+        created_at: msg.created_at ? new Date(msg.created_at).toISOString() : new Date().toISOString(),
+        sender: msg.sender ? {
+          first_name: msg.sender.first_name ? String(msg.sender.first_name) : undefined,
+          last_name: msg.sender.last_name ? String(msg.sender.last_name) : undefined,
+          avatar_url: msg.sender.avatar_url ? String(msg.sender.avatar_url) : undefined,
+        } : undefined,
+      }));
+
+    const total = Number(totalCount) || 0;
+    const hasMore = (offset + limit) < total;
 
     return {
       messages: serializedMessages,
       conversation: processedConversation,
       errorMessage: null,
+      hasMore,
+      total,
     };
   } catch (error) {
     console.error("Error fetching messages:", error);
-    return { messages: [], conversation: null, ...handleError(error) };
+    return { 
+      messages: [], 
+      conversation: null, 
+      hasMore: false,
+      total: 0,
+      ...handleError(error) 
+    };
   }
 };
 

@@ -23,6 +23,7 @@ import {
   Download,
   Users,
   RefreshCw,
+  ArrowDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import {
   type ChartData,
 } from "@/actions/finance";
 import { toast } from "sonner";
+import { formatDateShort } from "@/lib/date-utils";
 
 // Loading skeleton components
 function FinanceStatsSkeleton() {
@@ -93,36 +95,61 @@ export default function TaskerFinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [currentOffset, setCurrentOffset] = useState(0);
   const [selectedPeriod, setSelectedPeriod] = useState<
     "day" | "week" | "month"
   >("week");
 
-  const fetchFinanceData = useCallback(async () => {
+  const fetchFinanceData = useCallback(async (append = false) => {
     try {
-      setLoading(true);
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setLoading(true);
+        setCurrentOffset(0);
+      }
+      
+      const offset = append ? currentOffset : 0;
       const [earnings, performance, transactionHistory, chart] =
         await Promise.all([
           getEarningsData(),
           getPerformanceMetrics(),
-          getTransactionHistory(20, 0),
+          getTransactionHistory(10, offset),
           getChartData(selectedPeriod),
         ]);
 
       setEarningsData(earnings);
       setPerformanceMetrics(performance);
-      setTransactions(transactionHistory);
+      
+      if (append) {
+        setTransactions((prev) => [...prev, ...transactionHistory.transactions]);
+        setCurrentOffset((prev) => prev + transactionHistory.transactions.length);
+      } else {
+        setTransactions(transactionHistory.transactions);
+        setCurrentOffset(transactionHistory.transactions.length);
+      }
+      setHasMore(transactionHistory.hasMore);
       setChartData(chart);
     } catch (error) {
       console.error("Error fetching finance data:", error);
       toast.error("Failed to load finance data. Please try again.");
     } finally {
       setLoading(false);
+      setIsLoadingMore(false);
     }
-  }, [selectedPeriod]);
+  }, [selectedPeriod, currentOffset]);
+
+  const loadMoreTransactions = useCallback(() => {
+    if (!isLoadingMore && hasMore && !loading) {
+      fetchFinanceData(true);
+    }
+  }, [isLoadingMore, hasMore, loading, fetchFinanceData]);
 
   // Fetch data on component mount only (no auto-refresh to avoid multiple calls)
   useEffect(() => {
-    fetchFinanceData();
+    fetchFinanceData(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount, not when fetchFinanceData changes
 
@@ -133,12 +160,9 @@ export default function TaskerFinancePage() {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "N/A";
+    return formatDateShort(dateString);
   };
 
   const formatPercentage = (value: number) => {
@@ -541,6 +565,30 @@ export default function TaskerFinancePage() {
                     </div>
                   </div>
                 ))}
+                
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="flex justify-center py-4">
+                    <Button
+                      onClick={loadMoreTransactions}
+                      disabled={isLoadingMore}
+                      variant="outline"
+                      className="mobile-button"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          <ArrowDown className="h-4 w-4 mr-2" />
+                          Load More
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

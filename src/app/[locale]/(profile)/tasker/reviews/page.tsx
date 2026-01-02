@@ -24,6 +24,7 @@ import {
 import { useUserStore } from "@/stores/userStore";
 import { getTaskerReviewsWithStats, replyToReview } from "@/actions/reviews";
 import { toast } from "sonner";
+import { formatDateShort } from "@/lib/date-utils";
 import type {
   Review,
   User as UserType,
@@ -182,11 +183,7 @@ export default function ReviewsPage() {
   );
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatDateShort(dateString);
   };
 
   const getRatingColor = (rating: number) => {

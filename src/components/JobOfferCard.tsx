@@ -15,6 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { formatDateShort } from "@/lib/date-utils";
 
 interface Job {
   id: string;
@@ -66,12 +67,7 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
   }, [job.created_at, t]);
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(locale, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    return formatDateShort(dateString);
   };
 
   const formatCurrency = (amount: number, currency: string) => {

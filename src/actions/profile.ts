@@ -59,8 +59,10 @@ export async function getCompleteProfileData(userId: string): Promise<{
 
     if (taskerError && taskerError.code !== "PGRST116") {
       console.error("Error fetching tasker profile:", taskerError);
+      // Serialize user object
+      const serializedUser = user ? JSON.parse(JSON.stringify(user)) : null;
       return {
-        user,
+        user: serializedUser,
         taskerProfile: null,
         addresses: [],
         error: "Failed to fetch tasker profile",
@@ -69,18 +71,26 @@ export async function getCompleteProfileData(userId: string): Promise<{
 
     if (addressesError) {
       console.error("Error fetching addresses:", addressesError);
+      // Serialize user and taskerProfile objects
+      const serializedUser = user ? JSON.parse(JSON.stringify(user)) : null;
+      const serializedTaskerProfile = taskerProfile ? JSON.parse(JSON.stringify(taskerProfile)) : null;
       return {
-        user,
-        taskerProfile,
+        user: serializedUser,
+        taskerProfile: serializedTaskerProfile,
         addresses: [],
         error: "Failed to fetch addresses",
       };
     }
 
+    // Serialize all objects to ensure they're fully serializable
+    const serializedUser = user ? JSON.parse(JSON.stringify(user)) : null;
+    const serializedTaskerProfile = taskerProfile ? JSON.parse(JSON.stringify(taskerProfile)) : null;
+    const serializedAddresses = addresses ? JSON.parse(JSON.stringify(addresses)) : [];
+
     return {
-      user,
-      taskerProfile,
-      addresses: addresses || [],
+      user: serializedUser,
+      taskerProfile: serializedTaskerProfile,
+      addresses: serializedAddresses,
     };
   } catch (error) {
     console.error("Error in getCompleteProfileData:", error);
@@ -88,7 +98,7 @@ export async function getCompleteProfileData(userId: string): Promise<{
       user: null,
       taskerProfile: null,
       addresses: [],
-      error: "An unexpected error occurred",
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
 }
@@ -850,13 +860,27 @@ export async function getProfileCompletion(userId: string): Promise<{
     // Calculate completion percentage
     const totalRequiredFields = 7; // Total number of required fields
     const completedFields = totalRequiredFields - missingFields.length;
-    const completionPercentage = Math.round(
-      (completedFields / totalRequiredFields) * 100
+    // Ensure all return values are serializable
+    const safeNumber = (value: any): number => {
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    };
+
+    const completionPercentage = safeNumber(
+      Math.round((completedFields / totalRequiredFields) * 100)
     );
+
+    // Serialize missingFields to ensure all values are strings/numbers/booleans
+    const serializedMissingFields = missingFields.map((field) => ({
+      id: String(field.id ?? ""),
+      label: String(field.label ?? ""),
+      section: String(field.section ?? ""),
+      required: Boolean(field.required),
+    }));
 
     return {
       completionPercentage,
-      missingFields,
+      missingFields: serializedMissingFields,
     };
   } catch (error) {
     console.error("Error in getProfileCompletion:", error);
@@ -917,23 +941,30 @@ export async function getCustomerProfileData(): Promise<{
 
     if (addressesError) {
       console.error("Error fetching addresses:", addressesError);
+      // Serialize user object
+      const serializedUser = user ? JSON.parse(JSON.stringify(user)) : null;
       return {
-        user,
+        user: serializedUser,
         addresses: [],
         error: "Failed to fetch addresses",
       };
     }
 
+    // Serialize user and addresses to ensure they're fully serializable
+    // This handles Date objects, undefined values, and other non-serializable data
+    const serializedUser = user ? JSON.parse(JSON.stringify(user)) : null;
+    const serializedAddresses = addresses ? JSON.parse(JSON.stringify(addresses)) : [];
+
     return {
-      user,
-      addresses: addresses || [],
+      user: serializedUser,
+      addresses: serializedAddresses,
     };
   } catch (error) {
     console.error("Error in getCustomerProfileData:", error);
     return {
       user: null,
       addresses: [],
-      error: "An unexpected error occurred",
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
 }
@@ -996,17 +1027,31 @@ export async function getCustomerProfileCompletion(): Promise<{
       });
     }
 
+    // Ensure all return values are serializable
+    const safeNumber = (value: any): number => {
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    };
+
     // Calculate completion percentage (only required fields)
     const totalRequiredFields = 3; // full_name, phone, address
     const completedFields =
       totalRequiredFields - missingFields.filter((f) => f.required).length;
-    const completionPercentage = Math.round(
-      (completedFields / totalRequiredFields) * 100
+    const completionPercentage = safeNumber(
+      Math.round((completedFields / totalRequiredFields) * 100)
     );
+
+    // Serialize missingFields to ensure all values are strings/numbers/booleans
+    const serializedMissingFields = missingFields.map((field) => ({
+      id: String(field.id ?? ""),
+      label: String(field.label ?? ""),
+      section: String(field.section ?? ""),
+      required: Boolean(field.required),
+    }));
 
     return {
       completionPercentage,
-      missingFields,
+      missingFields: serializedMissingFields,
     };
   } catch (error) {
     console.error("Error in getCustomerProfileCompletion:", error);
@@ -1254,6 +1299,43 @@ export async function getUserAddresses(): Promise<{
     return { success: true, addresses: addresses || [] };
   } catch (error) {
     console.error("Error in getUserAddresses:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// Update notification preferences
+export async function updateNotificationPreferences(
+  preferences: Record<string, boolean>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // For now, we'll store preferences in localStorage on client side
+    // and potentially add a JSONB column to users table in the future
+    // This function exists to provide the API interface for future database storage
+    
+    // TODO: Add notification_preferences JSONB column to users table
+    // Then update this function to save to database:
+    // const { error } = await supabase
+    //   .from("users")
+    //   .update({
+    //     notification_preferences: preferences,
+    //     updated_at: new Date().toISOString(),
+    //   })
+    //   .eq("id", user.id);
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating notification preferences:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }

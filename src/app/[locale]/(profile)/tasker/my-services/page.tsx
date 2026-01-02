@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -281,21 +281,55 @@ function ServiceCard({
 function ServicesList({ taskerId }: { taskerId: string }) {
   const [services, setServices] = useState<ServiceWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const ITEMS_PER_PAGE = 10;
 
-  useEffect(() => {
-    const fetchServices = async () => {
+  const fetchServices = useCallback(
+    async (page: number = 0, append: boolean = false) => {
       try {
-        const servicesData = await getTaskerServices(taskerId);
-        setServices(servicesData);
+        if (append) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+        }
+
+        const result = await getTaskerServices(
+          taskerId,
+          ITEMS_PER_PAGE,
+          page * ITEMS_PER_PAGE,
+          !append
+        );
+
+        if (append) {
+          setServices((prev) => [...prev, ...result.services]);
+        } else {
+          setServices(result.services);
+        }
+
+        setCurrentPage(page);
+        setHasMore(result.hasMore);
+        setTotal(result.total);
       } catch (error) {
         console.error("Error fetching services:", error);
+        toast.error("Failed to load services");
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
-    };
+    },
+    [taskerId]
+  );
 
-    fetchServices();
-  }, [taskerId]);
+  useEffect(() => {
+    fetchServices(0);
+  }, [fetchServices]);
+
+  const handleLoadMore = () => {
+    fetchServices(currentPage + 1, true);
+  };
 
   if (loading) {
     return <ServicesLoadingSkeleton />;
@@ -427,15 +461,35 @@ function ServicesList({ taskerId }: { taskerId: string }) {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {services.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                taskerId={taskerId}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {services.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  taskerId={taskerId}
+                />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="px-6 py-2 bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] transition-all"
+                >
+                  {loadingMore ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Loading...
+                    </span>
+                  ) : (
+                    "Load More"
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </>
     );

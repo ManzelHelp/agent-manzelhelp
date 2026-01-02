@@ -17,14 +17,73 @@ export interface NotificationSort {
 
 /**
  * Fetch notifications for a user with optional filtering and sorting
+ * Default limit is 10 notifications per page for optimization
  */
 export async function getNotifications(
   userId: string,
   filters?: NotificationFilters,
-  sort?: NotificationSort
-): Promise<{ data: Notification[] | null; error: string | null }> {
+  sort?: NotificationSort,
+  limit: number = 10,
+  offset: number = 0,
+  includeTotal?: boolean
+): Promise<{
+  data: Notification[] | null;
+  error: string | null;
+  total?: number;
+  totalRead?: number;
+  totalUnread?: number;
+  hasMore?: boolean;
+}> {
   try {
     const supabase = await createClient();
+
+    // Get total counts (all, read, unread) from database when needed
+    // Optimized: Use a single query with conditional aggregation instead of 3 separate queries
+    let total: number | undefined = undefined;
+    let totalRead: number | undefined = undefined;
+    let totalUnread: number | undefined = undefined;
+    
+    if (includeTotal || offset === 0) {
+      // Build base query for counts
+      let baseCountQuery = supabase
+        .from("notifications")
+        .select("id, is_read", { count: "exact", head: false })
+        .eq("user_id", userId);
+
+      if (filters?.type) {
+        baseCountQuery = baseCountQuery.eq("type", filters.type);
+      }
+
+      if (filters?.search) {
+        const searchTerm = filters.search.toLowerCase();
+        baseCountQuery = baseCountQuery.or(
+          `title.ilike.%${searchTerm}%,message.ilike.%${searchTerm}%,type.ilike.%${searchTerm}%`
+        );
+      }
+
+      // Get all notifications for counting (with minimal fields)
+      const { data: countData, error: countError, count } = await baseCountQuery;
+
+      if (countError) {
+        console.error("Error fetching notifications count:", countError);
+      } else {
+        total = Number(count) || 0;
+        // Calculate read and unread counts from the data
+        if (countData) {
+          totalRead = countData.filter((n) => n.is_read === true).length;
+          totalUnread = countData.filter((n) => n.is_read === false).length;
+        } else {
+          // Fallback: if countData is null but count exists, use separate queries
+          const { count: readCount } = await supabase
+            .from("notifications")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", userId)
+            .eq("is_read", true);
+          totalRead = Number(readCount) || 0;
+          totalUnread = total - totalRead;
+        }
+      }
+    }
 
     let query = supabase
       .from("notifications")
@@ -55,6 +114,10 @@ export async function getNotifications(
       query = query.order("created_at", { ascending: false });
     }
 
+    // Apply pagination (always applied with default limit=10)
+    // range is inclusive, so we need offset to offset+limit-1
+    query = query.range(offset, offset + limit - 1);
+
     const { data, error } = await query;
 
     if (error) {
@@ -68,16 +131,54 @@ export async function getNotifications(
       return { data: null, error: "Failed to fetch notifications" };
     }
 
+    // Calculate hasMore: true if there are more items to fetch from the database
+    // This means: if we got a full page (data.length >= limit), there might be more
+    // If total is available, use it to be more precise
+    let hasMore = false;
+    if (data && data.length >= limit) {
+      if (total !== undefined && total !== null && total > 0) {
+        // If we have total count, check if there are more items
+        const itemsFetched = (offset || 0) + data.length;
+        hasMore = itemsFetched < total;
+      } else {
+        // If total is not available (e.g., during "Load More"), assume there might be more
+        // if we got a full page
+        hasMore = true;
+      }
+    }
+
     console.log("Notifications fetched successfully:", {
       userId,
       count: data?.length || 0,
       unreadCount: data?.filter((n) => !n.is_read).length || 0,
+      total,
+      totalRead,
+      totalUnread,
+      limit,
+      offset,
+      hasMore,
+      displayedCount: data?.length || 0,
+      remainingInDB: total !== undefined ? total - ((offset || 0) + (data?.length || 0)) : "N/A",
     });
 
-    return { data: data || [], error: null };
+    return { 
+      data: data || [], 
+      error: null,
+      total: total !== undefined ? Number(total) : undefined,
+      totalRead: totalRead !== undefined ? Number(totalRead) : undefined,
+      totalUnread: totalUnread !== undefined ? Number(totalUnread) : undefined,
+      hasMore: Boolean(hasMore) || false,
+    };
   } catch (error) {
     console.error("Unexpected error in getNotifications:", error);
-    return { data: null, error: "An unexpected error occurred" };
+    return { 
+      data: null, 
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
+      total: 0,
+      totalRead: 0,
+      totalUnread: 0,
+      hasMore: false,
+    };
   }
 }
 
@@ -217,7 +318,7 @@ export async function markAllNotificationsAsRead(
     revalidatePath("/tasker/notifications");
     revalidatePath("/customer/notifications");
 
-    return { success: true, error: null, count: count || 0 };
+    return { success: true, error: null, count: Number(count) || 0 };
   } catch (error) {
     console.error("Unexpected error in markAllNotificationsAsRead:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -272,7 +373,7 @@ export async function bulkUpdateNotifications(
     revalidatePath("/tasker/notifications");
     revalidatePath("/customer/notifications");
 
-    return { success: true, error: null, count };
+    return { success: true, error: null, count: Number(count) || 0 };
   } catch (error) {
     console.error("Unexpected error in bulkUpdateNotifications:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -316,9 +417,9 @@ export async function getNotificationStats(userId: string): Promise<{
 
     return {
       data: {
-        total: total || 0,
-        unread: unread || 0,
-        read,
+        total: Number(total) || 0,
+        unread: Number(unread) || 0,
+        read: Number(read) || 0,
       },
       error: null,
     };

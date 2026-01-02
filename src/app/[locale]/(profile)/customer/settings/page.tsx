@@ -10,7 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Shield, Bell, Palette, Mail, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { updateNotificationPreferences } from "@/actions/profile";
 
 export default function SettingsPage() {
   const t = useTranslations("profile");
@@ -24,9 +26,52 @@ export default function SettingsPage() {
     sms: false,
     marketing: false,
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleToggle = (key: NotificationKey) => {
-    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
+  // Load saved preferences on mount
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        // Load from localStorage first (for immediate UI update)
+        const saved = localStorage.getItem("notification_preferences");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setNotifications((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch (error) {
+        console.error("Error loading notification preferences:", error);
+      }
+    };
+    loadPreferences();
+  }, []);
+
+  const handleToggle = async (key: NotificationKey) => {
+    const newValue = !notifications[key];
+    const updated = { ...notifications, [key]: newValue };
+    setNotifications(updated);
+    
+    // Save to localStorage immediately
+    localStorage.setItem("notification_preferences", JSON.stringify(updated));
+    
+    // Save to database
+    setLoading(true);
+    try {
+      const result = await updateNotificationPreferences(updated);
+      if (!result.success) {
+        toast.error(result.error || "Failed to save preferences");
+        // Revert on error
+        setNotifications((prev) => ({ ...prev, [key]: !newValue }));
+      } else {
+        toast.success("Preferences saved successfully");
+      }
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+      toast.error("Failed to save preferences");
+      // Revert on error
+      setNotifications((prev) => ({ ...prev, [key]: !newValue }));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sections = [
@@ -188,7 +233,8 @@ export default function SettingsPage() {
                         </p>
                       </div>
                       <button
-                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                        disabled={loading}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed ${
                           notifications[notification.key]
                             ? "bg-primary"
                             : "bg-muted"

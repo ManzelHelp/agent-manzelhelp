@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { formatDateShort } from "@/lib/date-utils";
 import { useUserStore } from "@/stores/userStore";
 import type { Notification, NotificationType } from "@/types/supabase";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ import {
   markAllNotificationsAsRead,
   bulkUpdateNotifications,
 } from "@/actions/notifications";
+import { useNotificationRealtime } from "@/hooks/useNotificationRealtime";
 import {
   NotificationListSkeleton,
   NotificationStatsSkeleton,
@@ -46,6 +48,7 @@ import {
   Search,
   SortAsc,
   SortDesc,
+  ArrowDown,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -145,6 +148,46 @@ const getNotificationTypeLabel = (type: NotificationType) => {
   return labelMap[type] || "Notification";
 };
 
+function NotificationScrollHandler({ notificationId, notifications, user, markAsRead, router }: {
+  notificationId: string | null;
+  notifications: Notification[];
+  user: { id: string } | null;
+  markAsRead: (id: string) => Promise<void>;
+  router: ReturnType<typeof useRouter>;
+}) {
+  const hasScrolled = React.useRef(false);
+  
+  useEffect(() => {
+    if (notificationId && notifications.length > 0 && !hasScrolled.current) {
+      hasScrolled.current = true;
+      
+      // Wait for DOM to be ready
+      setTimeout(() => {
+        const element = document.getElementById(`notification-${notificationId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Highlight the notification
+          element.classList.add("ring-2", "ring-blue-500", "ring-offset-2");
+          setTimeout(() => {
+            element.classList.remove("ring-2", "ring-blue-500", "ring-offset-2");
+          }, 3000);
+          // Mark as read only once
+          if (user?.id) {
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification && !notification.is_read) {
+              markAsRead(notificationId).catch(console.error);
+            }
+          }
+          // Remove notificationId from URL
+          router.replace("/customer/notifications");
+        }
+      }, 500);
+    }
+  }, [notificationId, notifications.length, user?.id, router, markAsRead]);
+  
+  return null;
+}
+
 export default function CustomerNotificationsPage() {
   const { user } = useUserStore();
   const t = useTranslations("notifications");
@@ -153,6 +196,10 @@ export default function CustomerNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [currentOffset, setCurrentOffset] = useState(0);
+  const currentOffsetRef = useRef(0);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [searchQuery, setSearchQuery] = useState("");
@@ -162,13 +209,18 @@ export default function CustomerNotificationsPage() {
     Set<string>
   >(new Set());
   const [bulkActionMode, setBulkActionMode] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [totalRead, setTotalRead] = useState(0);
+  const [totalUnread, setTotalUnread] = useState(0);
 
-  // Fetch notifications using server action
+  // Fetch notifications with pagination (10 per page)
   const fetchNotifications = useCallback(
-    async (isRefresh = false) => {
+    async (isRefresh = false, append = false) => {
       if (!user?.id) return;
 
-      if (isRefresh) {
+      if (append) {
+        setIsLoadingMore(true);
+      } else if (isRefresh) {
         setRefreshing(true);
       } else {
         setLoading(true);
@@ -176,6 +228,8 @@ export default function CustomerNotificationsPage() {
       setError(null);
 
       try {
+        // Use a ref to get the current offset when appending
+        const offset = append ? currentOffsetRef.current : 0;
         const result = await getNotifications(
           user.id,
           {
@@ -184,39 +238,155 @@ export default function CustomerNotificationsPage() {
           {
             field: "created_at",
             ascending: sortBy === "oldest",
-          }
+          },
+          10, // limit: 10 notifications per page
+          offset,
+          !append || offset === 0 // includeTotal only on first load or refresh
         );
 
         if (result.error) {
           console.error("Error fetching notifications:", result.error);
           setError(t("errors.fetchFailed"));
-          toast.error(t("errors.fetchFailed"));
+          if (!append) {
+            toast.error(t("errors.fetchFailed"));
+          }
         } else {
-          setNotifications(result.data || []);
-          setUnreadCount(result.data?.filter((n) => !n.is_read).length || 0);
+          if (append) {
+            // Append new notifications to existing ones
+            setNotifications((prev) => {
+              const newData = result.data || [];
+              // Avoid duplicates
+              const existingIds = new Set(prev.map(n => n.id));
+              const uniqueNew = newData.filter(n => !existingIds.has(n.id));
+              return [...prev, ...uniqueNew];
+            });
+            const newOffset = currentOffsetRef.current + (result.data || []).length;
+            setCurrentOffset(newOffset);
+            currentOffsetRef.current = newOffset;
+          } else {
+            // Replace notifications on initial load or refresh
+            setNotifications(result.data || []);
+            const newOffset = (result.data || []).length;
+            setCurrentOffset(newOffset);
+            currentOffsetRef.current = newOffset;
+          }
+          
+          // Update counts from database (true values) - only if provided
+          // Don't update if undefined (e.g., during "Load More" when includeTotal is false)
+          if (result.total !== undefined && result.total !== null) {
+            setTotal(result.total);
+          }
+          if (result.totalRead !== undefined && result.totalRead !== null) {
+            setTotalRead(result.totalRead);
+          }
+          if (result.totalUnread !== undefined && result.totalUnread !== null) {
+            setTotalUnread(result.totalUnread);
+            setUnreadCount(result.totalUnread);
+          }
+          
+          // Update pagination state - always update hasMore
+          setHasMore(result.hasMore ?? false);
         }
       } catch (err) {
         console.error("Unexpected error:", err);
         setError(t("errors.fetchFailed"));
-        toast.error(t("errors.fetchFailed"));
+        if (!append) {
+          toast.error(t("errors.fetchFailed"));
+        }
       } finally {
         setLoading(false);
         setRefreshing(false);
+        setIsLoadingMore(false);
       }
     },
     [user?.id, t, filter, sortBy]
   );
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+  // Load more notifications
+  const loadMoreNotifications = useCallback(() => {
+    if (!isLoadingMore && hasMore && !loading && user?.id) {
+      // Use current offset directly
+      fetchNotifications(false, true);
+    }
+  }, [isLoadingMore, hasMore, loading, fetchNotifications, user?.id]);
 
-  // Refresh notifications when filter or sort changes
+  // Initial fetch
   useEffect(() => {
     if (user?.id) {
-      fetchNotifications(true);
+      fetchNotifications(false, false);
     }
-  }, [filter, sortBy, user?.id, fetchNotifications]);
+  }, [user?.id]);
+
+  // Refresh notifications when filter or sort changes (reset pagination)
+  useEffect(() => {
+    if (user?.id) {
+      setCurrentOffset(0);
+      currentOffsetRef.current = 0;
+      setHasMore(false);
+      fetchNotifications(false, false);
+    }
+  }, [filter, sortBy]);
+
+  // Use realtime hook to update notifications in real-time
+  // Memoize callbacks to prevent reconnection loops
+  const handleNewNotification = useCallback((notification: Notification) => {
+    // Add new notification to the top of the list
+    setNotifications((prev) => {
+      // Avoid duplicates
+      if (prev.some((n) => n.id === notification.id)) {
+        return prev;
+      }
+      return [notification, ...prev];
+    });
+    // Update counts
+    if (!notification.is_read) {
+      setUnreadCount((prev) => prev + 1);
+      setTotalUnread((prev) => prev + 1);
+    }
+    setTotal((prev) => prev + 1);
+  }, []);
+
+  const handleNotificationUpdate = useCallback((notification: Notification) => {
+    // Update existing notification and counts
+    setNotifications((prev) => {
+      const oldNotification = prev.find((n) => n.id === notification.id);
+      const updated = prev.map((n) => (n.id === notification.id ? notification : n));
+      
+      // Update counts if read status changed
+      if (oldNotification && oldNotification.is_read !== notification.is_read) {
+        if (notification.is_read) {
+          setUnreadCount((prevCount) => Math.max(0, prevCount - 1));
+          setTotalUnread((prevCount) => Math.max(0, prevCount - 1));
+          setTotalRead((prevCount) => prevCount + 1);
+        } else {
+          setUnreadCount((prevCount) => prevCount + 1);
+          setTotalUnread((prevCount) => prevCount + 1);
+          setTotalRead((prevCount) => Math.max(0, prevCount - 1));
+        }
+      }
+      return updated;
+    });
+  }, []);
+
+  useNotificationRealtime({
+    userId: user?.id || null,
+    enabled: !!user?.id,
+    onNewNotification: handleNewNotification,
+    onNotificationUpdate: handleNotificationUpdate,
+  });
+
+  // Removed automatic scroll loading - user must click "Load More" button
+
+  // Get notificationId from URL using window.location (client-side only)
+  const [notificationId, setNotificationId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("notificationId");
+      setNotificationId(id);
+    }
+  }, []);
 
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
@@ -407,33 +577,28 @@ export default function CustomerNotificationsPage() {
     return filtered;
   }, [notifications, filter, searchQuery, sortBy]);
 
+  // Display all filtered notifications (no lazy loading)
+  const displayedNotifications = filteredNotifications;
+
   // Group notifications by date with memoization
   const groupedNotifications = useMemo(() => {
-    return filteredNotifications.reduce<{
+    return displayedNotifications.reduce<{
       [date: string]: Notification[];
     }>((groups, notification) => {
-      // HYDRATION-SAFE: Use explicit locale to prevent hydration mismatches
-      const date = new Date(notification.created_at!).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
+      // Use short date format DD.MM.YYYY
+      const date = formatDateShort(notification.created_at!);
       if (!groups[date]) {
         groups[date] = [];
       }
       groups[date].push(notification);
       return groups;
     }, {});
-  }, [filteredNotifications]);
+  }, [displayedNotifications]);
 
-  // Get notification statistics
+  // Get notification statistics from database (true values)
   const notificationStats = useMemo(() => {
-    const total = notifications.length;
-    const unread = notifications.filter((n) => !n.is_read).length;
-    const read = total - unread;
-
-    return { total, unread, read };
-  }, [notifications]);
+    return { total, unread: totalUnread, read: totalRead };
+  }, [total, totalUnread, totalRead]);
 
   // Format relative time
   const getRelativeTime = (dateString: string) => {
@@ -807,6 +972,7 @@ export default function CustomerNotificationsPage() {
                     {notifications.map((notification, index) => (
                       <Card
                         key={notification.id}
+                        id={`notification-${notification.id}`}
                         className={`group notification-card mobile-focus-ring transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${
                           !notification.is_read
                             ? "bg-gradient-to-r from-primary/5 to-primary/10 border-primary/30 shadow-md"
@@ -987,9 +1153,41 @@ export default function CustomerNotificationsPage() {
                 </div>
               )
             )}
+            
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="flex justify-center py-6">
+                <Button
+                  onClick={loadMoreNotifications}
+                  disabled={isLoadingMore}
+                  variant="outline"
+                  className="mobile-button"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      {t("actions.loading")}
+                    </>
+                  ) : (
+                    <>
+                      <ArrowDown className="h-4 w-4 mr-2" />
+                      {t("actions.loadMore")}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
+
       </div>
+      <NotificationScrollHandler
+        notificationId={notificationId}
+        notifications={notifications}
+        user={user}
+        markAsRead={markAsRead}
+        router={router}
+      />
     </div>
   );
 }

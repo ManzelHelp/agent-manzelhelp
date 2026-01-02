@@ -366,9 +366,13 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
 }
 
 export async function getTransactionHistory(
-  limit: number = 20,
+  limit: number = 10,
   offset: number = 0
-): Promise<Transaction[]> {
+): Promise<{
+  transactions: Transaction[];
+  hasMore: boolean;
+  total?: number;
+}> {
   if (limit < 1 || limit > 100) {
     throw new Error("Limit must be between 1 and 100");
   }
@@ -388,6 +392,12 @@ export async function getTransactionHistory(
   }
 
   try {
+    // Get total count for pagination
+    const { count: totalCount } = await supabase
+      .from("transactions")
+      .select("*", { count: "exact", head: true })
+      .eq("payee_id", user.id);
+
     // Fetch transactions and bookings/jobs separately to avoid serialization issues
     const [transactionsResult, bookingsResult] = await Promise.all([
       // Get transactions (tasker is payee) - include both booking_id and job_id
@@ -470,7 +480,7 @@ export async function getTransactionHistory(
       }
 
       // Map transactions to return format
-      return transactions.map((transaction: any) => {
+      const mappedTransactions = transactions.map((transaction: any) => {
         const amount = typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : (transaction.amount || 0);
         const fee = typeof transaction.platform_fee === 'string' ? parseFloat(transaction.platform_fee) : (transaction.platform_fee || 0);
         
@@ -506,10 +516,25 @@ export async function getTransactionHistory(
           currency: "MAD",
         };
       });
+
+      const total = Number(totalCount) || 0;
+      const hasMore = (offset + limit) < total;
+
+      return {
+        transactions: mappedTransactions,
+        hasMore,
+        total,
+      };
     }
 
     // If no transactions, return empty array
-    return [];
+    const total = Number(totalCount) || 0;
+    const hasMore = (offset + limit) < total;
+    return {
+      transactions: [],
+      hasMore,
+      total,
+    };
   } catch (error) {
     console.error("Error fetching transaction history:", error);
     return [];
@@ -627,42 +652,82 @@ export async function getChartData(
 
 // Enhanced customer finance functions
 export async function getCustomerFinanceSummary(
-  period: "week" | "month" | "year" = "month"
+  period: "week" | "month" | "year" = "month",
+  month?: number,
+  year?: number
 ): Promise<FinanceSummary> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    throw new Error("User not authenticated");
-  }
-
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      console.error("Authentication error in getCustomerFinanceSummary:", error);
+      return {
+        totalSpent: 0,
+        totalEarned: 0,
+        pendingPayments: 0,
+        completedJobs: 0,
+        averageJobValue: 0,
+        currency: "MAD",
+        period,
+      };
+    }
     const now = new Date();
     let startDate: Date;
+    let endDate: Date | undefined;
 
     switch (period) {
       case "week":
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         break;
-      case "month":
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      case "month": {
+        const selectedMonth = month !== undefined ? month - 1 : now.getMonth(); // month is 1-12, Date uses 0-11
+        const selectedYear = year !== undefined ? year : now.getFullYear();
+        startDate = new Date(selectedYear, selectedMonth, 1);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(selectedYear, selectedMonth + 1, 0); // Last day of the month
+        endDate.setHours(23, 59, 59, 999);
+        
+        console.log("[getCustomerFinanceSummary] Month filter:", {
+          selectedMonth: month,
+          selectedYear,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        });
         break;
-      case "year":
-        startDate = new Date(now.getFullYear(), 0, 1);
+      }
+      case "year": {
+        const selectedYear = year !== undefined ? year : now.getFullYear();
+        startDate = new Date(selectedYear, 0, 1);
+        endDate = new Date(selectedYear, 11, 31, 23, 59, 59, 999); // Last day of the year
         break;
+      }
     }
 
     const [spentResult, pendingResult, bookingsResult, jobsResult] = await Promise.all([
       // Total spent (as payer) - handle empty transactions table
-      supabase
-        .from("transactions")
-        .select("amount, currency")
-        .eq("payer_id", user.id)
-        .eq("payment_status", "paid")
-        .gte("created_at", startDate.toISOString()),
+      // For month/year, filter by the selected period
+      (() => {
+        // For transactions, use processed_at if available (for paid transactions), otherwise created_at
+        // But we need to filter in JS since we can't easily do OR in Supabase query
+        let query = supabase
+          .from("transactions")
+          .select("amount, currency, created_at, processed_at")
+          .eq("payer_id", user.id)
+          .eq("payment_status", "paid");
+        
+        // Filter by created_at first (will filter more in JS)
+        query = query.gte("created_at", startDate.toISOString());
+        if (endDate) {
+          // Also get transactions that might be processed in the period even if created earlier
+          // We'll filter properly in JavaScript
+        }
+        
+        return query;
+      })(),
 
       // Pending payments - handle empty transactions table
       supabase
@@ -688,23 +753,121 @@ export async function getCustomerFinanceSummary(
     ]);
 
     // Calculate total spent from transactions (if any exist)
-    let totalSpent = (spentResult.data || []).reduce(
+    // Use processed_at if available (for paid transactions), otherwise created_at
+    const filteredTransactions = (spentResult.data || []).filter((t) => {
+      // Use processed_at if available, otherwise created_at
+      const dateToUse = t.processed_at || t.created_at;
+      if (!dateToUse) return false;
+      
+      const txDate = new Date(dateToUse);
+      if (isNaN(txDate.getTime())) return false;
+      
+      // Normalize dates to start of day for comparison
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = endDate ? new Date(endDate) : null;
+      if (end) end.setHours(23, 59, 59, 999);
+      
+      const compareDate = new Date(txDate);
+      compareDate.setHours(0, 0, 0, 0);
+      
+      if (compareDate < start) return false;
+      if (end && compareDate > end) return false;
+      return true;
+    });
+    
+    let totalSpent = filteredTransactions.reduce(
       (sum, t) => sum + parseFloat(String(t.amount || "0")),
       0
     );
     
     // Filter bookings and jobs by date and customer_confirmed_at
+    // Normalize dates for consistent comparison
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = endDate ? new Date(endDate) : null;
+    if (end) end.setHours(23, 59, 59, 999);
+    
+    console.log("[getCustomerFinanceSummary] Filtering data:", {
+      period,
+      month,
+      year,
+      startDate: start.toISOString(),
+      endDate: end?.toISOString(),
+      totalBookings: bookingsResult.data?.length || 0,
+      totalJobs: jobsResult.data?.length || 0,
+      totalTransactions: spentResult.data?.length || 0,
+      sampleBooking: bookingsResult.data?.[0] ? {
+        completed_at: bookingsResult.data[0].completed_at,
+        customer_confirmed_at: bookingsResult.data[0].customer_confirmed_at,
+        agreed_price: bookingsResult.data[0].agreed_price,
+      } : null,
+      sampleJob: jobsResult.data?.[0] ? {
+        completed_at: jobsResult.data[0].completed_at,
+        customer_confirmed_at: jobsResult.data[0].customer_confirmed_at,
+        final_price: jobsResult.data[0].final_price,
+      } : null,
+      sampleTransaction: spentResult.data?.[0] ? {
+        amount: spentResult.data[0].amount,
+        created_at: spentResult.data[0].created_at,
+        processed_at: spentResult.data[0].processed_at,
+      } : null,
+    });
+    
+    // Filter bookings: use customer_confirmed_at if available, otherwise completed_at, otherwise skip
     const confirmedBookings = (bookingsResult.data || []).filter(
-      (b) => b.customer_confirmed_at !== null && 
-             b.customer_confirmed_at !== undefined &&
-             new Date(b.completed_at) >= startDate
+      (b) => {
+        // Try customer_confirmed_at first, then completed_at as fallback
+        const dateToUse = b.customer_confirmed_at || b.completed_at;
+        if (!dateToUse) return false;
+        
+        const confirmedDate = new Date(dateToUse);
+        if (isNaN(confirmedDate.getTime())) return false; // Invalid date
+        
+        const compareDate = new Date(confirmedDate);
+        compareDate.setHours(0, 0, 0, 0);
+        
+        if (compareDate < start) return false;
+        if (end && compareDate > end) return false;
+        return true;
+      }
     );
     
+    // Filter jobs: use customer_confirmed_at if available, otherwise completed_at, otherwise skip
     const confirmedJobs = (jobsResult.data || []).filter(
-      (j) => j.customer_confirmed_at !== null && 
-             j.customer_confirmed_at !== undefined &&
-             new Date(j.completed_at) >= startDate
+      (j) => {
+        // Try customer_confirmed_at first, then completed_at as fallback
+        const dateToUse = j.customer_confirmed_at || j.completed_at;
+        if (!dateToUse) return false;
+        
+        const confirmedDate = new Date(dateToUse);
+        if (isNaN(confirmedDate.getTime())) return false; // Invalid date
+        
+        const compareDate = new Date(confirmedDate);
+        compareDate.setHours(0, 0, 0, 0);
+        
+        if (compareDate < start) return false;
+        if (end && compareDate > end) return false;
+        return true;
+      }
     );
+    
+    console.log("[getCustomerFinanceSummary] Filtered results:", {
+      confirmedBookings: confirmedBookings.length,
+      confirmedJobs: confirmedJobs.length,
+      filteredTransactions: filteredTransactions.length,
+      totalSpentBeforeFallback: totalSpent,
+      sampleConfirmedBooking: confirmedBookings[0] ? {
+        agreed_price: confirmedBookings[0].agreed_price,
+        customer_confirmed_at: confirmedBookings[0].customer_confirmed_at,
+        completed_at: confirmedBookings[0].completed_at,
+      } : null,
+      sampleConfirmedJob: confirmedJobs[0] ? {
+        final_price: confirmedJobs[0].final_price,
+        customer_confirmed_at: confirmedJobs[0].customer_confirmed_at,
+        completed_at: confirmedJobs[0].completed_at,
+      } : null,
+    });
     
     // Fallback: If no transactions but confirmed bookings/jobs exist, use their total
     if (totalSpent === 0 && (confirmedBookings.length > 0 || confirmedJobs.length > 0)) {
@@ -740,16 +903,17 @@ export async function getCustomerFinanceSummary(
     const currency = confirmedBookings[0]?.currency || confirmedJobs[0]?.currency || "MAD";
 
     return {
-      totalSpent,
+      totalSpent: Number(totalSpent) || 0,
       totalEarned: 0, // Customers don't earn, they spend
-      pendingPayments,
-      completedJobs,
-      averageJobValue,
-      currency,
+      pendingPayments: Number(pendingPayments) || 0,
+      completedJobs: Number(completedJobs) || 0,
+      averageJobValue: Number(averageJobValue) || 0,
+      currency: String(currency || "MAD"),
       period,
     };
   } catch (error) {
     console.error("Error fetching customer finance summary:", error);
+    // Return a safe default object to prevent serialization issues
     return {
       totalSpent: 0,
       totalEarned: 0,
@@ -763,28 +927,41 @@ export async function getCustomerFinanceSummary(
 }
 
 export async function getCustomerTransactionHistory(
-  limit: number = 20,
+  limit: number = 10,
   offset: number = 0
-): Promise<Transaction[]> {
-  if (limit < 1 || limit > 100) {
-    throw new Error("Limit must be between 1 and 100");
-  }
-
-  if (offset < 0) {
-    throw new Error("Offset must be non-negative");
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    throw new Error("User not authenticated");
-  }
-
+): Promise<{
+  transactions: Transaction[];
+  hasMore: boolean;
+  total?: number;
+}> {
   try {
+    if (limit < 1 || limit > 100) {
+      console.error("Invalid limit in getCustomerTransactionHistory:", limit);
+      return { transactions: [], hasMore: false, total: 0 };
+    }
+
+    if (offset < 0) {
+      console.error("Invalid offset in getCustomerTransactionHistory:", offset);
+      return { transactions: [], hasMore: false, total: 0 };
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      console.error("Authentication error in getCustomerTransactionHistory:", error);
+      return { transactions: [], hasMore: false, total: 0 };
+    }
+
+    // Get total count for pagination
+    const { count: totalCount } = await supabase
+      .from("transactions")
+      .select("*", { count: "exact", head: true })
+      .eq("payer_id", user.id);
+
     // Fetch transactions and bookings separately to avoid serialization issues
     const [transactionsResult, bookingsResult] = await Promise.all([
       // Get transactions (customer is payer) - include both booking_id and job_id
@@ -917,7 +1094,7 @@ export async function getCustomerTransactionHistory(
 
 
       // Map transactions to Transaction format with explicit serialization
-      return transactions.map((transaction) => {
+      const mappedTransactions = transactions.map((transaction) => {
         // Check if transaction is for a job or booking
         let title = "Service";
         let status: string | null = null;
@@ -962,22 +1139,35 @@ export async function getCustomerTransactionHistory(
           paymentMethod = "cash"; // Default to cash for jobs/bookings
         }
         
+        // Ensure all values are properly serialized
+        const amount = parseFloat(String(transaction.amount || "0")) || 0;
+        const platformFee = parseFloat(String(transaction.platform_fee || "0")) || 0;
+        
         return {
-          id: String(transaction.id),
-          amount: parseFloat(String(transaction.amount || "0")),
-          netAmount: parseFloat(String(transaction.amount || "0")) - parseFloat(String(transaction.platform_fee || "0")),
-          platformFee: parseFloat(String(transaction.platform_fee || "0")),
-          transactionType: String(transaction.transaction_type) as TransactionType,
-          paymentStatus: String(transaction.payment_status) as PaymentStatus,
-          paymentMethod: String(paymentMethod),
+          id: String(transaction.id || ""),
+          amount: Number(amount),
+          netAmount: Number(amount - platformFee),
+          platformFee: Number(platformFee),
+          transactionType: String(transaction.transaction_type || "job_payment") as TransactionType,
+          paymentStatus: String(transaction.payment_status || "pending") as PaymentStatus,
+          paymentMethod: String(paymentMethod || "cash"),
           createdAt: transaction.created_at ? new Date(transaction.created_at).toISOString() : new Date().toISOString(),
-          processedAt: transaction.processed_at ? new Date(transaction.processed_at).toISOString() : (transaction.created_at ? new Date(transaction.created_at).toISOString() : new Date().toISOString()),
+          processedAt: transaction.processed_at ? new Date(transaction.processed_at).toISOString() : (transaction.created_at ? new Date(transaction.created_at).toISOString() : null),
           bookingId: transaction.booking_id ? String(transaction.booking_id) : null,
-          serviceTitle: title, // Use job title or service title
-          bookingStatus: status as BookingStatus | null,
+          serviceTitle: String(title || "Service"),
+          bookingStatus: (status ? String(status) : null) as BookingStatus | null,
           currency: "MAD", // Default, could be made dynamic
         };
       });
+
+      const total = Number(totalCount) || 0;
+      const hasMore = (offset + limit) < total;
+
+      return {
+        transactions: mappedTransactions,
+        hasMore,
+        total,
+      };
     }
 
     // If no transactions, get bookings and convert to transaction format
@@ -1000,24 +1190,37 @@ export async function getCustomerTransactionHistory(
     }
 
     // Convert booking data to transaction format with explicit serialization
-    return bookings.map((booking) => ({
-      id: String(booking.id),
-      amount: parseFloat(String(booking.agreed_price || "0")),
-      netAmount: parseFloat(String(booking.agreed_price || "0")),
-      platformFee: 0,
-      transactionType: "job_payment" as TransactionType, // Use job_payment as booking and job are the same
-      paymentStatus: booking.status === "completed" ? ("paid" as PaymentStatus) : ("pending" as PaymentStatus),
-      paymentMethod: String(booking.payment_method || "unknown"),
-      createdAt: booking.created_at ? new Date(booking.created_at).toISOString() : new Date().toISOString(),
-      processedAt: booking.completed_at ? new Date(booking.completed_at).toISOString() : null,
-      bookingId: String(booking.id),
-      serviceTitle: serviceTitleMap[booking.tasker_service_id] || "Service",
-      bookingStatus: booking.status as BookingStatus,
-      currency: String(booking.currency || "MAD"),
-    }));
+    const mappedBookings = bookings.map((booking) => {
+      const amount = parseFloat(String(booking.agreed_price || "0")) || 0;
+      return {
+        id: String(booking.id || ""),
+        amount: Number(amount),
+        netAmount: Number(amount),
+        platformFee: 0,
+        transactionType: "job_payment" as TransactionType, // Use job_payment as booking and job are the same
+        paymentStatus: booking.status === "completed" ? ("paid" as PaymentStatus) : ("pending" as PaymentStatus),
+        paymentMethod: String(booking.payment_method || "cash"),
+        createdAt: booking.created_at ? new Date(booking.created_at).toISOString() : new Date().toISOString(),
+        processedAt: booking.completed_at ? new Date(booking.completed_at).toISOString() : null,
+        bookingId: String(booking.id || ""),
+        serviceTitle: String(serviceTitleMap[booking.tasker_service_id] || "Service"),
+        bookingStatus: String(booking.status || "") as BookingStatus,
+        currency: String(booking.currency || "MAD"),
+      };
+    });
+
+    const total = Number(totalCount) || 0;
+    const hasMore = (offset + limit) < total;
+
+    return {
+      transactions: mappedBookings,
+      hasMore,
+      total,
+    };
   } catch (error) {
     console.error("Error fetching customer transaction history:", error);
-    return [];
+    // Return empty object instead of throwing to prevent server action errors
+    return { transactions: [], hasMore: false, total: 0 };
   }
 }
 

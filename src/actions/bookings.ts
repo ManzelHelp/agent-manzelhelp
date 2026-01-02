@@ -51,7 +51,7 @@ export interface BookingWithDetails {
 }
 
 export async function getTaskerBookings(
-  limit: number = 20,
+  limit: number = 10,
   offset: number = 0,
   includeTotal: boolean = true
 ): Promise<{
@@ -315,7 +315,7 @@ export async function getBookingById(
 }
 
 export async function getCustomerBookings(
-  limit: number = 20,
+  limit: number = 10,
   offset: number = 0,
   includeTotal: boolean = true
 ): Promise<{
@@ -1530,7 +1530,7 @@ export interface TaskerBookingWithDetails {
 
 // Get tasker's job applications
 export async function getTaskerJobApplications(
-  limit: number = 20,
+  limit: number = 10,
   offset: number = 0,
   includeTotal: boolean = true
 ): Promise<{

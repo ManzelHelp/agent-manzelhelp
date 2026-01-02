@@ -37,13 +37,11 @@ const formatCurrency = (amount: number, currency: string) => {
   }).format(amount);
 };
 
+import { formatDateShort } from "@/lib/date-utils";
+
 const formatDate = (dateString: string | null) => {
   if (!dateString) return "Date not set";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatDateShort(dateString);
 };
 
 const formatTime = (timeString: string | null) => {

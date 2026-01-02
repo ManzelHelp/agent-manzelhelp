@@ -22,8 +22,7 @@ import { format } from "date-fns";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import JobDeleteButton from "@/components/jobs/JobDeleteButton";
-import ConfirmJobCompletionButton from "@/components/jobs/ConfirmJobCompletionButton";
+import JobsListClient from "./JobsListClient";
 import JobCloneButton from "@/components/jobs/JobCloneButton";
 
 // Loading component for better UX
@@ -390,7 +389,7 @@ async function JobsList({ customerId }: { customerId: string }) {
   const t = await getTranslations("myJobs");
 
   try {
-    const { jobs } = await getCustomerJobs(customerId);
+    const { jobs } = await getCustomerJobs(customerId, 10, 0, true);
 
     return (
       <>
@@ -508,9 +507,7 @@ export default async function MyJobsPage() {
 
       {/* Jobs Section with Suspense for better loading */}
       <section className="w-full max-w-2xl px-4 pb-8 flex-1 flex flex-col">
-        <Suspense fallback={<JobsLoadingSkeleton />}>
-          <JobsList customerId={user.id} />
-        </Suspense>
+        <JobsListClient customerId={user.id} />
       </section>
     </main>
   );

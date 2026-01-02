@@ -29,12 +29,15 @@ import {
   getConversationsAction,
   type ConversationWithDetails,
 } from "@/actions/messages";
+import { useUserStore } from "@/stores/userStore";
+import { useConversationsRealtime } from "@/hooks/useConversationsRealtime";
 
 type MessageStatus = "all" | "unread" | "read";
 
 export default function MessagesPage() {
   const router = useRouter();
   const t = useTranslations("notifications.actions");
+  const { user } = useUserStore();
   const [messageFilter, setMessageFilter] = useState<MessageStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [conversations, setConversations] = useState<ConversationWithDetails[]>(
@@ -42,43 +45,81 @@ export default function MessagesPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [currentOffset, setCurrentOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch conversations from database
-  const fetchConversations = useCallback(async (isRefresh = false) => {
+  // Fetch conversations from database with pagination (10 per page)
+  const fetchConversations = useCallback(async (isRefresh = false, append = false) => {
     try {
-      if (isRefresh) {
+      if (append) {
+        setIsLoadingMore(true);
+      } else if (isRefresh) {
         setIsRefreshing(true);
       } else {
         setIsLoading(true);
       }
       setError(null);
-      const { conversations: fetchedConversations, errorMessage } =
-        await getConversationsAction();
+      
+      const offset = append ? currentOffset : 0;
+      const { conversations: fetchedConversations, errorMessage, hasMore: moreAvailable, total } =
+        await getConversationsAction(10, offset);
 
       if (errorMessage) {
         setError(errorMessage);
       } else {
-        setConversations(fetchedConversations);
+        if (append) {
+          setConversations((prev) => [...prev, ...fetchedConversations]);
+          setCurrentOffset((prev) => prev + fetchedConversations.length);
+        } else {
+          setConversations(fetchedConversations);
+          setCurrentOffset(fetchedConversations.length);
+        }
+        setHasMore(moreAvailable || false);
       }
     } catch (err) {
       console.error("Error fetching conversations:", err);
       setError("Failed to load messages");
     } finally {
-      if (isRefresh) {
+      if (append) {
+        setIsLoadingMore(false);
+      } else if (isRefresh) {
         setIsRefreshing(false);
       } else {
         setIsLoading(false);
       }
     }
-  }, []);
+  }, [currentOffset]);
+
+  // Load more conversations
+  const loadMoreConversations = useCallback(() => {
+    if (!isLoadingMore && hasMore && !isLoading) {
+      fetchConversations(false, true);
+    }
+  }, [isLoadingMore, hasMore, isLoading, fetchConversations]);
+
+  // Use realtime hook for conversations
+  useConversationsRealtime({
+    userId: user?.id || null,
+    enabled: !!user?.id,
+    onNewConversation: () => {
+      fetchConversations(true, false);
+    },
+    onConversationUpdate: () => {
+      fetchConversations(true, false);
+    },
+    onNewMessage: () => {
+      fetchConversations(true, false);
+    },
+  });
 
   useEffect(() => {
     fetchConversations();
     
     // Listen for messages marked as read event
     const handleMessagesMarkedAsRead = () => {
-      fetchConversations(true);
+      fetchConversations(true, false);
     };
     
     window.addEventListener('messagesMarkedAsRead', handleMessagesMarkedAsRead);
@@ -106,12 +147,8 @@ export default function MessagesPage() {
     if (diffInDays < 7)
       return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 
-    // HYDRATION-SAFE: Use explicit locale to prevent hydration mismatches
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    // Use short date format DD.MM.YYYY
+    return formatDateShort(timestamp);
   };
 
   // Filter conversations based on status and search query

@@ -19,10 +19,13 @@ import {
   Clock,
   Filter,
   Download,
+  RefreshCw,
+  ArrowDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
 import {
   getCustomerFinanceSummary,
   getCustomerTransactionHistory,
@@ -30,6 +33,7 @@ import {
   type Transaction,
 } from "@/actions/finance";
 import { toast } from "sonner";
+import { formatDateShort } from "@/lib/date-utils";
 
 // Loading skeleton components
 function FinanceStatsSkeleton() {
@@ -85,34 +89,64 @@ export default function CustomerFinancePage() {
   );
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [currentOffset, setCurrentOffset] = useState(0);
   const [selectedPeriod, setSelectedPeriod] = useState<
     "week" | "month" | "year"
   >("month");
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
-  const fetchFinanceData = useCallback(async () => {
+  const fetchFinanceData = useCallback(async (append = false) => {
     try {
-      setLoading(true);
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setLoading(true);
+        setCurrentOffset(0);
+      }
+      
+      const offset = append ? currentOffset : 0;
       const [summary, transactionHistory] = await Promise.all([
-        getCustomerFinanceSummary(selectedPeriod),
-        getCustomerTransactionHistory(20, 0),
+        getCustomerFinanceSummary(
+          selectedPeriod,
+          selectedPeriod === "month" || selectedPeriod === "year" ? selectedMonth : undefined,
+          selectedPeriod === "year" ? selectedYear : undefined
+        ),
+        getCustomerTransactionHistory(10, offset),
       ]);
 
       setFinanceSummary(summary);
-      setTransactions(transactionHistory);
+      
+      if (append) {
+        setTransactions((prev) => [...prev, ...transactionHistory.transactions]);
+        setCurrentOffset((prev) => prev + transactionHistory.transactions.length);
+      } else {
+        setTransactions(transactionHistory.transactions);
+        setCurrentOffset(transactionHistory.transactions.length);
+      }
+      setHasMore(transactionHistory.hasMore);
     } catch (error) {
       console.error("Error fetching finance data:", error);
       toast.error(t("errors.loadFailed"));
     } finally {
       setLoading(false);
+      setIsLoadingMore(false);
     }
-  }, [selectedPeriod, t]);
+  }, [selectedPeriod, selectedMonth, selectedYear, currentOffset, t]);
 
-  // Fetch data on component mount and when period changes
-  // Note: We depend on selectedPeriod directly, not fetchFinanceData, to avoid infinite loops
+  const loadMoreTransactions = useCallback(() => {
+    if (!isLoadingMore && hasMore && !loading) {
+      fetchFinanceData(true);
+    }
+  }, [isLoadingMore, hasMore, loading, fetchFinanceData]);
+
+  // Fetch data on component mount and when period/month/year changes
   useEffect(() => {
-    fetchFinanceData();
+    fetchFinanceData(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPeriod]); // Re-fetch when period changes, but not on every render
+  }, [selectedPeriod, selectedMonth, selectedYear]); // Re-fetch when period/month/year changes
 
   const formatCurrency = (amount: number, currency: string = "USD") => {
     return new Intl.NumberFormat("en-US", {
@@ -121,12 +155,9 @@ export default function CustomerFinancePage() {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "N/A";
+    return formatDateShort(dateString);
   };
 
   const handleExport = () => {
@@ -245,24 +276,73 @@ export default function CustomerFinancePage() {
       </div>
 
       {/* Period Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">{t("period")}</span>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{t("period")}</span>
+          </div>
+          <div className="flex gap-1 w-full sm:w-auto">
+            {(["week", "month", "year"] as const).map((period) => (
+              <Button
+                key={period}
+                variant={selectedPeriod === period ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedPeriod(period)}
+                className="flex-1 sm:flex-none text-xs sm:text-sm"
+              >
+                {t(period)}
+              </Button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-1 w-full sm:w-auto">
-          {(["week", "month", "year"] as const).map((period) => (
-            <Button
-              key={period}
-              variant={selectedPeriod === period ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedPeriod(period)}
-              className="flex-1 sm:flex-none text-xs sm:text-sm"
-            >
-              {t(period)}
-            </Button>
-          ))}
-        </div>
+
+        {/* Month and Year Selectors for month/year periods */}
+        {(selectedPeriod === "month" || selectedPeriod === "year") && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            {selectedPeriod === "month" && (
+              <div className="flex items-center gap-2">
+                <Label htmlFor="month-select" className="text-sm font-medium">
+                  {t("month") || "Month"}
+                </Label>
+                <select
+                  id="month-select"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                    <option key={month} value={month}>
+                      {new Date(2000, month - 1, 1).toLocaleString("en-US", {
+                        month: "long",
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="year-select" className="text-sm font-medium">
+                {t("year") || "Year"}
+              </Label>
+              <select
+                id="year-select"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {Array.from(
+                  { length: 10 },
+                  (_, i) => new Date().getFullYear() - i
+                ).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Quick Stats */}
@@ -413,6 +493,30 @@ export default function CustomerFinancePage() {
                   </div>
                 </div>
               ))}
+              
+              {/* Load More Button */}
+              {hasMore && (
+                <div className="flex justify-center py-4">
+                  <Button
+                    onClick={loadMoreTransactions}
+                    disabled={isLoadingMore}
+                    variant="outline"
+                    className="mobile-button"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        {t("actions.loading") || "Loading..."}
+                      </>
+                    ) : (
+                      <>
+                        <ArrowDown className="h-4 w-4 mr-2" />
+                        {t("actions.loadMore") || "Load More"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

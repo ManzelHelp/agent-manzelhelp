@@ -909,7 +909,10 @@
       "clearSelection": "Auswahl löschen",
       "selected": "ausgewählt",
       "markRead": "Als gelesen markieren",
-      "markUnread": "Als ungelesen markieren"
+      "markUnread": "Als ungelesen markieren",
+      "loadMore": "Mehr laden",
+      "loadOlder": "Ältere Nachrichten laden",
+      "loading": "Lädt..."
     },
     "badges": {
       "new": "Neu"
@@ -1113,6 +1116,10 @@
     "notSignedIn": "Nicht angemeldet",
     "pleaseLogin": "Bitte melden Sie sich an, um Ihre Jobs anzuzeigen.",
     "goToLogin": "Zur Anmeldung",
+    "viewDetails": "Details anzeigen",
+    "edit": "Bearbeiten",
+    "loadMore": "Mehr laden",
+    "loading": "Lädt...",
     "jobCard": {
       "applications": "Bewerbungen",
       "application": "Bewerbung",
@@ -1575,6 +1582,10 @@
       "average": "Durchschnitt:",
       "awaitingPayment": "Warten auf Zahlung",
       "pending": "Ausstehend:"
+    },
+    "actions": {
+      "loadMore": "Mehr laden",
+      "loading": "Lädt..."
     },
     "transactionHistory": {
       "title": "Transaktionsverlauf",

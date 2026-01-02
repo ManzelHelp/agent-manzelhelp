@@ -23,6 +23,9 @@ import {
 } from "@/actions/bookings";
 import { BookingStatus } from "@/types/supabase";
 import { Calendar, ArrowRight } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
+import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
+import { useJobApplicationsRealtime } from "@/hooks/useJobApplicationsRealtime";
 
 // Removed unused TaskStatus type
 
@@ -111,6 +114,7 @@ const getCustomerName = (booking: BookingWithDetails) => {
 };
 
 export default function BookingsPage() {
+  const { user } = useUserStore();
   const [activeTab, setActiveTab] = useState<TaskerBookingTab>("my-bookings");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
 
@@ -160,7 +164,7 @@ export default function BookingsPage() {
         };
         switch (activeTab) {
           case "my-bookings":
-            result = await getTaskerBookings(20, page * 20, !append);
+            result = await getTaskerBookings(10, page * 10, !append);
             if (append) {
               setMyBookings((prev) => [
                 ...prev,
@@ -182,7 +186,7 @@ export default function BookingsPage() {
             }
             break;
           case "my-applications":
-            result = await getTaskerJobApplications(20, page * 20, !append);
+            result = await getTaskerJobApplications(10, page * 10, !append);
             if (append) {
               setMyApplications((prev) => [
                 ...prev,
@@ -229,6 +233,47 @@ export default function BookingsPage() {
     },
     [activeTab]
   );
+
+  // Use realtime hooks for bookings and applications
+  useBookingsRealtime({
+    userId: user?.id || null,
+    enabled: !!user?.id && activeTab === "my-bookings",
+    onBookingUpdate: (bookingId, updates) => {
+      setMyBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === bookingId ? { ...booking, ...updates } : booking
+        )
+      );
+    },
+    onNewBooking: (booking) => {
+      setMyBookings((prev) => {
+        if (prev.some((b) => b.id === booking.id)) {
+          return prev;
+        }
+        return [booking as BookingWithDetails, ...prev];
+      });
+    },
+  });
+
+  useJobApplicationsRealtime({
+    taskerId: user?.id || null,
+    enabled: !!user?.id && activeTab === "my-applications",
+    onNewApplication: (application) => {
+      setMyApplications((prev) => {
+        if (prev.some((a) => a.id === application.id)) {
+          return prev;
+        }
+        return [application as JobApplicationWithDetails, ...prev];
+      });
+    },
+    onApplicationUpdate: (applicationId, updates) => {
+      setMyApplications((prev) =>
+        prev.map((app) =>
+          app.id === applicationId ? { ...app, ...updates } : app
+        )
+      );
+    },
+  });
 
   // Initial data fetch
   useEffect(() => {
@@ -354,7 +399,7 @@ export default function BookingsPage() {
         // Reload bookings from server to get the latest data including timestamps
         // This ensures we have all updated fields (accepted_at, confirmed_at, etc.)
         try {
-          const updatedBookings = await getTaskerBookings(20, 0, false);
+          const updatedBookings = await getTaskerBookings(10, 0, false);
           setMyBookings(updatedBookings.bookings);
           setHasMore(updatedBookings.hasMore);
         } catch (reloadError) {
