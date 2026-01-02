@@ -238,7 +238,15 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
   }
 
   try {
-    const [reviewsResult, bookingsResult, jobsResult] = await Promise.all([
+    const [taskerProfileResult, reviewsResult, bookingsResult, jobsResult] = await Promise.all([
+      // Get cached review stats from tasker_profiles (automatically updated by triggers)
+      supabase
+        .from("tasker_profiles")
+        .select("tasker_rating, total_reviews")
+        .eq("id", user.id)
+        .maybeSingle(),
+
+      // Fetch reviews only for positiveReviews calculation (we still need the data for that)
       supabase
         .from("reviews")
         .select("overall_rating")
@@ -268,6 +276,7 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
       console.error("❌ Error fetching jobs:", jobsResult.error);
     }
 
+    const taskerProfile = taskerProfileResult.data;
     const reviews = reviewsResult.data || [];
     const allBookingsData = bookingsResult.data || [];
     const allJobsData = jobsResult.data || [];
@@ -296,11 +305,11 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
       sampleConfirmedJob: confirmedJobs[0]?.id,
       firstJobCustomerConfirmed: allJobsData[0]?.customer_confirmed_at,
     });
-    const totalReviews = reviews.length;
-    const averageRating =
-      totalReviews > 0
-        ? reviews.reduce((sum, r) => sum + r.overall_rating, 0) / totalReviews
-        : 0;
+
+    // Use cached values from tasker_profiles (automatically updated by triggers)
+    const totalReviews = taskerProfile?.total_reviews ?? 0;
+    const averageRating = taskerProfile?.tasker_rating ?? 0;
+    // Still need to calculate positiveReviews from reviews data (not cached)
     const positiveReviews = reviews.filter((r) => r.overall_rating >= 4).length;
 
     // For response time calculation, we need all bookings/jobs (not just completed)
@@ -344,7 +353,7 @@ export async function getPerformanceMetrics(): Promise<PerformanceMetrics> {
     return {
       completedJobs,
       totalReviews,
-      averageRating: Math.round(averageRating * 10) / 10,
+      averageRating: Number(averageRating.toFixed(1)), // Use cached value from tasker_profiles
       responseTime: Math.round(averageResponseTime / (1000 * 60 * 60)), // Convert to hours
       positiveReviews,
       completionRate:
@@ -537,7 +546,11 @@ export async function getTransactionHistory(
     };
   } catch (error) {
     console.error("Error fetching transaction history:", error);
-    return [];
+    return {
+      transactions: [],
+      hasMore: false,
+      total: 0,
+    };
   }
 }
 

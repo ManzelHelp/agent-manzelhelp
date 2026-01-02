@@ -64,8 +64,10 @@ import { useRouter } from "@/i18n/navigation";
 const getNotificationIcon = (type: NotificationType) => {
   const iconMap: Record<NotificationType, React.ReactNode> = {
     job_created: <Briefcase className="h-4 w-4" />,
+    job_approved: <CheckCircle2 className="h-4 w-4" />,
     application_received: <User className="h-4 w-4" />,
     application_accepted: <CheckCircle2 className="h-4 w-4" />,
+    job_started: <Briefcase className="h-4 w-4" />,
     job_completed: <CheckCircle className="h-4 w-4" />,
     payment_received: <CreditCard className="h-4 w-4" />,
     message_received: <MessageSquare className="h-4 w-4" />,
@@ -88,10 +90,14 @@ const getNotificationColor = (type: NotificationType) => {
   const colorMap: Record<NotificationType, string> = {
     job_created:
       "text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/20 dark:border-blue-800",
+    job_approved:
+      "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/20 dark:border-emerald-800",
     application_received:
       "text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/20 dark:border-green-800",
     application_accepted:
       "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/20 dark:border-emerald-800",
+    job_started:
+      "text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/20 dark:border-blue-800",
     job_completed:
       "text-purple-600 bg-purple-50 border-purple-200 dark:text-purple-400 dark:bg-purple-950/20 dark:border-purple-800",
     payment_received:
@@ -129,8 +135,10 @@ const getNotificationColor = (type: NotificationType) => {
 const getNotificationTypeLabel = (type: NotificationType) => {
   const labelMap: Record<NotificationType, string> = {
     job_created: "New Job",
+    job_approved: "Job Approved",
     application_received: "Application",
     application_accepted: "Accepted",
+    job_started: "Job Started",
     job_completed: "Completed",
     payment_received: "Payment",
     message_received: "Message",

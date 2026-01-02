@@ -372,15 +372,17 @@ export async function getTaskerReviewsWithStats(taskerId: string) {
       };
     });
 
-    // Fetch tasker profile stats (stored values, not calculated)
+    // Fetch tasker profile stats (stored values, automatically updated by triggers)
     const { data: taskerProfile } = await supabase
       .from("tasker_profiles")
       .select("tasker_rating, total_reviews")
       .eq("id", taskerId)
       .maybeSingle();
 
-    // Use stored values from tasker_profiles, with fallback to calculation if not available
-    const totalReviews = taskerProfile?.total_reviews || reviews.length;
+    // Use stored values from tasker_profiles (updated automatically by triggers when reviews are created/updated/deleted)
+    // No fallback calculation needed - triggers guarantee these values are always up-to-date
+    const totalReviews = taskerProfile?.total_reviews ?? 0;
+    const avgRating = taskerProfile?.tasker_rating ?? 0;
 
     if (totalReviews === 0) {
       return {
@@ -397,17 +399,7 @@ export async function getTaskerReviewsWithStats(taskerId: string) {
       };
     }
 
-    // Use stored rating if available, otherwise calculate from reviews
-    const avgRating = taskerProfile?.tasker_rating || (
-      totalReviews > 0
-        ? Number(
-            (
-              reviews.reduce((acc, review) => acc + review.overall_rating, 0) /
-              totalReviews
-            ).toFixed(1)
-          )
-        : 0
-    );
+    // Calculate responseRate and fiveStarCount from the reviews we already fetched (needed for display anyway)
     const responseRate = Math.round(
       (reviews.filter((r) => r.reply_comment).length / totalReviews) * 100
     );
@@ -447,21 +439,34 @@ export async function getReviewStats(taskerId: string) {
 
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Get stored stats from tasker_profiles (optimized)
+    const { data: taskerProfile, error: profileError } = await supabase
+      .from("tasker_profiles")
+      .select("tasker_rating, total_reviews")
+      .eq("id", taskerId)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("Error fetching tasker profile stats:", profileError);
+      return { data: null, error: profileError.message };
+    }
+
+    const avgRating = taskerProfile?.tasker_rating || 0;
+    const totalReviews = taskerProfile?.total_reviews || 0;
+
+    // Only fetch reviews for responseRate and fiveStarCount (less frequent stats)
+    const { data: reviewsData, error: reviewsError } = await supabase
       .from("reviews")
       .select("overall_rating, reply_comment")
       .eq("reviewee_id", taskerId);
 
-    if (error) {
-      console.error("Error fetching review stats:", error);
-      return { data: null, error: error.message };
-    }
-
-    if (!data || data.length === 0) {
+    if (reviewsError) {
+      console.error("Error fetching reviews for stats:", reviewsError);
+      // Return stored stats even if we can't get responseRate/fiveStarCount
       return {
         data: {
-          avgRating: 0,
-          totalReviews: 0,
+          avgRating,
+          totalReviews,
           responseRate: 0,
           fiveStarCount: 0,
         },
@@ -469,21 +474,15 @@ export async function getReviewStats(taskerId: string) {
       };
     }
 
-    const totalReviews = data.length;
-    const avgRating = Number(
-      (
-        data.reduce((acc, review) => acc + review.overall_rating, 0) /
-        totalReviews
-      ).toFixed(1)
-    );
-    const responseRate = Math.round(
-      (data.filter((r) => r.reply_comment).length / totalReviews) * 100
-    );
-    const fiveStarCount = data.filter((r) => r.overall_rating === 5).length;
+    const reviews = reviewsData || [];
+    const responseRate = totalReviews > 0
+      ? Math.round((reviews.filter((r) => r.reply_comment).length / totalReviews) * 100)
+      : 0;
+    const fiveStarCount = reviews.filter((r) => r.overall_rating === 5).length;
 
     return {
       data: {
-        avgRating,
+        avgRating: Number(avgRating.toFixed(1)),
         totalReviews,
         responseRate,
         fiveStarCount,
@@ -695,48 +694,9 @@ export async function createReview(data: {
       return { success: false, error: reviewError?.message || "Failed to create review" };
     }
 
-    // Update tasker statistics (tasker_rating and total_reviews)
-    // Calculate new average rating
-    const { data: allReviews, error: statsError } = await supabase
-      .from("reviews")
-      .select("overall_rating")
-      .eq("reviewee_id", revieweeId);
-
-    if (!statsError && allReviews) {
-      const totalReviews = allReviews.length;
-      const avgRating = Number(
-        (
-          allReviews.reduce((sum, r) => sum + r.overall_rating, 0) / totalReviews
-        ).toFixed(2)
-      );
-
-      // Use service role client to update tasker profile stats (bypasses RLS)
-      try {
-        const serviceSupabase = createServiceRoleClient();
-        if (!serviceSupabase) {
-          console.warn("Service role client not available, skipping tasker stats update");
-        } else {
-          const { error: updateError } = await serviceSupabase
-            .from("tasker_profiles")
-            .upsert({
-              id: revieweeId,
-              tasker_rating: avgRating,
-              total_reviews: totalReviews,
-              updated_at: new Date().toISOString(),
-            }, {
-              onConflict: 'id'
-            });
-
-          if (updateError) {
-            console.error("Error updating tasker stats:", updateError);
-            // Don't fail the review creation if stats update fails
-          }
-        }
-      } catch (serviceRoleError) {
-        console.error("Error using service role client for stats update:", serviceRoleError);
-        // Don't fail the review creation if stats update fails
-      }
-    }
+    // Note: tasker_rating and total_reviews are automatically updated by database trigger
+    // (see add_tasker_review_stats_with_trigger.sql)
+    // No need to update them manually here - the trigger handles it efficiently
 
     // Send notification to tasker
     try {
