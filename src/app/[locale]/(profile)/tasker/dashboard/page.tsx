@@ -219,7 +219,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] to-[var(--color-surface)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="flex items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
           <span className="text-lg text-[var(--color-text-primary)]">
@@ -232,7 +232,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] to-[var(--color-surface)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
@@ -251,7 +251,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] to-[var(--color-surface)]">
+    <div className="min-h-screen bg-[var(--color-bg)]">
       <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
         {/* Modern Header Section */}
         <div className="space-y-6">
@@ -298,27 +298,27 @@ export default function DashboardPage() {
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Active Jobs */}
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-800">
+              <CardTitle className="text-sm font-semibold text-blue-800 dark:text-blue-200">
                 Active Jobs
               </CardTitle>
-              <div className="p-3 bg-blue-500 rounded-xl group-hover:bg-blue-600 transition-colors duration-200">
+              <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl group-hover:bg-blue-600 dark:group-hover:bg-blue-700 transition-colors duration-200">
                 <Briefcase className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-blue-900 mb-1">
+                  <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">
                     {stats.activeJobs}
                   </div>
-                  <p className="text-sm text-blue-700">Currently in progress</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Currently in progress</p>
                   <div className="flex items-center gap-1 mt-2">
                     {getTrendIcon(stats.activeJobs, 0)}
-                    <span className="text-xs text-blue-600">Active now</span>
+                    <span className="text-xs text-blue-600 dark:text-blue-400">Active now</span>
                   </div>
                 </>
               )}
@@ -326,27 +326,27 @@ export default function DashboardPage() {
           </Card>
 
           {/* Total Earnings */}
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-green-800">
+              <CardTitle className="text-sm font-semibold text-green-800 dark:text-green-200">
                 Total Earnings
               </CardTitle>
-              <div className="p-3 bg-green-500 rounded-xl group-hover:bg-green-600 transition-colors duration-200">
+              <div className="p-3 bg-green-500 dark:bg-green-600 rounded-xl group-hover:bg-green-600 dark:group-hover:bg-green-700 transition-colors duration-200">
                 <DollarSign className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-green-600 dark:text-green-400" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-green-900 mb-1">
+                  <div className="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">
                     {stats.totalEarnings.toLocaleString()} MAD
                   </div>
-                  <p className="text-sm text-green-700">All time earnings</p>
+                  <p className="text-sm text-green-700 dark:text-green-300">All time earnings</p>
                   <div className="flex items-center gap-1 mt-2">
-                    <Sparkles className="h-3 w-3 text-green-600" />
-                    <span className="text-xs text-green-600">
+                    <Sparkles className="h-3 w-3 text-green-600 dark:text-green-400" />
+                    <span className="text-xs text-green-600 dark:text-green-400">
                       Lifetime total
                     </span>
                   </div>
@@ -356,31 +356,31 @@ export default function DashboardPage() {
           </Card>
 
           {/* Rating */}
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 border-yellow-200 dark:border-yellow-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-yellow-800">
+              <CardTitle className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
                 Rating
               </CardTitle>
-              <div className="p-3 bg-yellow-500 rounded-xl group-hover:bg-yellow-600 transition-colors duration-200">
+              <div className="p-3 bg-yellow-500 dark:bg-yellow-600 rounded-xl group-hover:bg-yellow-600 dark:group-hover:bg-yellow-700 transition-colors duration-200">
                 <Star className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-yellow-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-yellow-600 dark:text-yellow-400" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-yellow-900 mb-1">
+                  <div className="text-3xl font-bold text-yellow-900 dark:text-yellow-100 mb-1">
                     {stats.averageRating > 0
                       ? stats.averageRating.toFixed(1)
                       : "N/A"}
                   </div>
-                  <p className="text-sm text-yellow-700">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
                     {stats.totalReviews} reviews
                   </p>
                   <div className="flex items-center gap-1 mt-2">
-                    <Award className="h-3 w-3 text-yellow-600" />
-                    <span className="text-xs text-yellow-600">
+                    <Award className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+                    <span className="text-xs text-yellow-600 dark:text-yellow-400">
                       Customer rating
                     </span>
                   </div>
@@ -390,27 +390,27 @@ export default function DashboardPage() {
           </Card>
 
           {/* Completion Rate */}
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-purple-800">
+              <CardTitle className="text-sm font-semibold text-purple-800 dark:text-purple-200">
                 Success Rate
               </CardTitle>
-              <div className="p-3 bg-purple-500 rounded-xl group-hover:bg-purple-600 transition-colors duration-200">
+              <div className="p-3 bg-purple-500 dark:bg-purple-600 rounded-xl group-hover:bg-purple-600 dark:group-hover:bg-purple-700 transition-colors duration-200">
                 <Target className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-purple-600 dark:text-purple-400" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-purple-900 mb-1">
+                  <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">
                     {stats.completionRate}%
                   </div>
-                  <p className="text-sm text-purple-700">Job completion rate</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">Job completion rate</p>
                   <div className="flex items-center gap-1 mt-2">
-                    <CheckCircle className="h-3 w-3 text-purple-600" />
-                    <span className="text-xs text-purple-600">Excellent</span>
+                    <CheckCircle className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs text-purple-600 dark:text-purple-400">Excellent</span>
                   </div>
                 </>
               )}
@@ -615,8 +615,8 @@ export default function DashboardPage() {
                       onClick={() => router.push(`/tasker/notifications?notificationId=${notification.id}`)}
                       className={`p-3 rounded-xl border transition-all duration-200 hover:shadow-sm cursor-pointer ${
                         !notification.is_read
-                          ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"
-                          : "bg-[var(--color-accent)] border-[var(--color-border)]"
+                          ? "bg-gradient-to-r from-[var(--color-info-light)] to-[var(--color-info-light)] border-[var(--color-info)]/30 shadow-sm"
+                          : "bg-[var(--color-surface)] border-[var(--color-border)]"
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -633,7 +633,7 @@ export default function DashboardPage() {
                               {notification.title}
                             </h3>
                             {!notification.is_read && (
-                              <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                              <span className="w-2 h-2 bg-[var(--color-info)] rounded-full animate-pulse"></span>
                             )}
                           </div>
                           <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
@@ -708,8 +708,8 @@ export default function DashboardPage() {
                     key={message.id}
                     className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md cursor-pointer group ${
                       message.unread
-                        ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"
-                        : "bg-[var(--color-accent)] border-[var(--color-border)] hover:border-[var(--color-secondary)]"
+                        ? "bg-gradient-to-r from-[var(--color-info-light)] to-[var(--color-info-light)] border-[var(--color-info)]/30 shadow-sm"
+                        : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-secondary)]"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -722,7 +722,7 @@ export default function DashboardPage() {
                             {message.client}
                           </h3>
                           {message.unread && (
-                            <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                            <span className="w-2 h-2 bg-[var(--color-info)] rounded-full animate-pulse"></span>
                           )}
                         </div>
                         <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">

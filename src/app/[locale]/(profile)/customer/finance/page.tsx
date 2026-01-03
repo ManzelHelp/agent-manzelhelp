@@ -34,6 +34,7 @@ import {
 } from "@/actions/finance";
 import { toast } from "sonner";
 import { formatDateShort } from "@/lib/date-utils";
+import { BackButton } from "@/components/ui/BackButton";
 
 // Loading skeleton components
 function FinanceStatsSkeleton() {
@@ -265,6 +266,10 @@ export default function CustomerFinancePage() {
 
   return (
     <div className="container mx-auto px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in-up">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4 mb-4">
+        <BackButton />
+      </div>
       {/* Header */}
       <div className="text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text">

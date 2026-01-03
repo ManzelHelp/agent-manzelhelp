@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/BackButton";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -19,7 +20,6 @@ import {
   CheckCircle,
   XCircle,
   Star,
-  ArrowLeft,
   Users,
   User,
   UserCheck,
@@ -394,14 +394,7 @@ export default function JobDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="p-2 h-10 w-10 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <BackButton className="p-2 h-10 w-10 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]" />
             <div>
               <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
                 Job Details

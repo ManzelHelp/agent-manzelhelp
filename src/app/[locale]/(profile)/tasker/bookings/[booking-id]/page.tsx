@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback, useMemo, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { BackButton } from "@/components/ui/BackButton";
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   MapPin,
@@ -34,6 +34,7 @@ import {
 import { createConversationAction } from "@/actions/messages";
 import { BookingStatus } from "@/types/supabase";
 import { useTranslations } from "next-intl";
+import { formatDateShort } from "@/lib/date-utils";
 
 interface ConfirmationDialogState {
   isOpen: boolean;
@@ -408,14 +409,7 @@ export default function TaskerBookingDetailPage({
       <div className="sticky top-0 z-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm">
         <div className="container mx-auto px-4 py-4 max-w-6xl">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 touch-target mobile-focus transition-all duration-200"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <BackButton className="p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700" />
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white mobile-text-xl">
                 {t("title")}

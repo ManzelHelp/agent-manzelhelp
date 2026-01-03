@@ -46,6 +46,8 @@ import { createJob, type CreateJobData } from "@/actions/jobs";
 import { getUserAddresses } from "@/actions/profile";
 import { getServices, getServiceCategories } from "@/actions/services";
 import type { ServiceCategory, Service, Address } from "@/types/supabase";
+import { BackButton } from "@/components/ui/BackButton";
+import { ContactSupportDialog } from "@/components/ContactSupportDialog";
 
 // Form data interfaces
 interface JobDetailsData {
@@ -121,6 +123,7 @@ const STEPS = [
 
 export default function PostJobPage() {
   const router = useRouter();
+  const [showContactDialog, setShowContactDialog] = useState(false);
   const t = useTranslations("postJob");
   const { user } = useUserStore();
   const [currentStep, setCurrentStep] = useState(1);
@@ -202,6 +205,7 @@ export default function PostJobPage() {
       } else {
         // Fallback to local services if database fetch fails
         console.warn("Failed to load services from database, using local services:", servicesResult.error);
+        const hierarchies = getAllCategoryHierarchies();
         const allServices: Service[] = [];
         hierarchies.forEach(({ parent, subcategories }) => {
           subcategories.forEach((service) => {
@@ -402,6 +406,10 @@ export default function PostJobPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)]">
+      {/* Back Button */}
+      <div className="absolute top-4 left-4 z-10">
+        <BackButton className="bg-transparent hover:bg-transparent" />
+      </div>
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b border-[var(--color-border)]">
         <div className="container mx-auto max-w-6xl px-4 py-6">
@@ -1484,6 +1492,7 @@ export default function PostJobPage() {
                     variant="outline"
                     size="sm"
                     className="w-full border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-white"
+                    onClick={() => setShowContactDialog(true)}
                   >
                     Contact Support
                   </Button>
@@ -1493,6 +1502,10 @@ export default function PostJobPage() {
           </div>
         </div>
       </div>
+      <ContactSupportDialog
+        isOpen={showContactDialog}
+        onClose={() => setShowContactDialog(false)}
+      />
     </div>
   );
 }

@@ -21,6 +21,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/BackButton";
 import {
   BellDot,
   CheckCircle,
@@ -29,7 +30,6 @@ import {
   MailOpen,
   Trash2,
   X,
-  ArrowLeft,
   RefreshCw,
   AlertCircle,
   MoreVertical,
@@ -658,14 +658,7 @@ export default function NotificationsPage() {
         <div className="space-y-6">
           {/* Back Button and Title Row with enhanced styling */}
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="mobile-button p-3 rounded-full hover:bg-accent/50 transition-all duration-200 hover:scale-105"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <BackButton className="mobile-button p-3 rounded-full hover:bg-accent/50 transition-all duration-200 hover:scale-105" />
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 rounded-xl bg-primary/10">

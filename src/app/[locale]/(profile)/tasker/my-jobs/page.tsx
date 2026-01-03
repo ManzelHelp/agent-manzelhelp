@@ -23,6 +23,7 @@ import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
+import { BackButton } from "@/components/ui/BackButton";
 
 // Loading component for better UX
 function JobsLoadingSkeleton() {
@@ -389,6 +390,10 @@ export default async function MyJobsPage() {
     <main className="w-full min-h-[100dvh] bg-[var(--color-bg)] flex flex-col items-center px-0 sm:px-4 py-0">
       {/* Header Section */}
       <section className="w-full max-w-2xl px-4 pt-6 pb-2">
+        {/* Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-4 sm:p-6 border border-[var(--color-border)] mb-4">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-2">
             {t("taskerPageTitle")}

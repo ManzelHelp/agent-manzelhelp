@@ -51,7 +51,12 @@
     "messages": "Messages",
     "reviews": "Avis",
     "myServices": "Mes Services",
-    "myJobs": "Mes Emplois"
+    "myJobs": "Mes Emplois",
+    "browseServices": "Parcourir les Services",
+    "profile": "Profil",
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "notifications": "Notifications"
   },
   "homepage": {
     "title": "Bienvenue sur ManzelHelp",
@@ -99,6 +104,44 @@
     "placeholder": {
       "comingSoon": "Bientôt disponible",
       "featureDescription": "Cette fonctionnalité est actuellement en développement"
+    },
+    "customer": {
+      "welcomeBack": "Bon retour ! 👋",
+      "overview": "Voici un aperçu de vos emplois et réservations",
+      "browseServices": "Parcourir les Services",
+      "postJob": "Publier un Emploi",
+      "activeBookings": "Réservations Actives",
+      "totalSpent": "Total Dépensé",
+      "activeJobs": "Emplois Actifs",
+      "completedJobs": "Emplois Terminés",
+      "quickActions": "Actions Rapides",
+      "recentActivity": "Activité Récente",
+      "recentMessages": "Messages Récents",
+      "currentlyInProgress": "En cours",
+      "allTimeSpending": "Dépenses totales",
+      "lifetimeTotal": "Total à vie",
+      "postedJobs": "Emplois publiés",
+      "inProgress": "En cours",
+      "jobsCompleted": "Emplois terminés",
+      "greatWork": "Excellent travail !",
+      "manageJobs": "Gérez vos emplois et réservations efficacement",
+      "postNewJob": "Publier un Nouvel Emploi",
+      "bookings": "Réservations",
+      "finance": "Finance",
+      "messages": "Messages",
+      "addresses": "Adresses",
+      "latestUpdates": "Dernières mises à jour de vos services",
+      "noRecentActivity": "Aucune activité récente",
+      "stayUpdated": "Restez informé des alertes importantes",
+      "noNotifications": "Aucune notification pour le moment",
+      "recentNotifications": "Notifications",
+      "latestConversations": "Dernières conversations avec les taskers",
+      "viewAll": "Voir tout",
+      "noMessages": "Aucun message pour le moment",
+      "startConversations": "Commencez des conversations avec vos taskers",
+      "loadingDashboard": "Chargement du tableau de bord...",
+      "somethingWentWrong": "Quelque chose s'est mal passé",
+      "tryAgain": "Réessayer"
     }
   },
   "profile": {
@@ -1476,7 +1519,9 @@
       "messageCustomer": "Contacter le Client",
       "messageTasker": "Contacter l'Assistant",
       "callCustomer": "Appeler le Client",
-      "callTasker": "Appeler l'Assistant"
+      "callTasker": "Appeler l'Assistant",
+      "copyBookingId": "Copier l'ID de Réservation",
+      "share": "Partager"
     },
     "timeline": {
       "bookingCreated": "Réservation Créée",
@@ -1498,7 +1543,9 @@
     "pleaseWait": "Veuillez patienter pendant que nous récupérons les détails de votre réservation...",
     "bookingNotFound": "La réservation que vous recherchez n'existe pas ou vous n'avez pas l'autorisation de la voir.",
     "success": {
-      "statusUpdated": "Statut de la réservation mis à jour avec succès"
+      "statusUpdated": "Statut de la réservation mis à jour avec succès",
+      "copiedToClipboard": "ID de réservation copié dans le presse-papiers",
+      "linkCopied": "Lien copié dans le presse-papiers"
     },
     "errors": {
       "updateFailed": "Échec de la mise à jour du statut de la réservation",
@@ -1836,6 +1883,81 @@
       "toasts": {
         "applicationSubmittedSuccess": "Candidature soumise avec succès !",
         "failedToSubmitApplication": "Échec de la soumission de la candidature"
+      }
+    }
+  },
+  "contact": {
+    "form": {
+      "fields": {
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "subject": "Sujet",
+        "subjectPlaceholder": "Sélectionner un sujet",
+        "message": "Message",
+        "messagePlaceholder": "Dites-nous comment nous pouvons vous aider..."
+      },
+      "subjects": {
+        "general": "Demande générale",
+        "support": "Support technique",
+        "billing": "Question de facturation",
+        "feedback": "Commentaires",
+        "partnership": "Partenariat"
+      },
+      "submit": "Envoyer le message",
+      "submitting": "Envoi en cours...",
+      "success": {
+        "title": "Message envoyé avec succès",
+        "description": "Nous vous répondrons dès que possible."
+      },
+      "errors": {
+        "firstNameRequired": "Le prénom est requis",
+        "lastNameRequired": "Le nom est requis",
+        "emailRequired": "L'email est requis",
+        "emailInvalid": "Veuillez entrer une adresse email valide",
+        "subjectRequired": "Le sujet est requis",
+        "messageRequired": "Le message est requis",
+        "messageTooShort": "Le message doit contenir au moins 10 caractères",
+        "messageTooLong": "Le message ne peut pas dépasser 5000 caractères",
+        "submitFailed": "Erreur lors de l'envoi du message"
+      }
+    }
+  },
+  "admin": {
+    "contactMessages": {
+      "title": "Messages de Contact",
+      "description": "Gérez les messages de contact des utilisateurs",
+      "loading": "Chargement des messages...",
+      "noMessages": "Aucun message trouvé",
+      "statusUpdated": "Statut mis à jour avec succès",
+      "filters": {
+        "status": "Statut",
+        "all": "Tous",
+        "new": "Nouveaux",
+        "read": "Lus",
+        "replied": "Répondu",
+        "archived": "Archivés"
+      },
+      "status": {
+        "new": "Nouveau",
+        "read": "Lu",
+        "replied": "Répondu",
+        "archived": "Archivé"
+      },
+      "actions": {
+        "view": "Voir",
+        "markRead": "Marquer comme lu",
+        "markReplied": "Marquer comme répondu",
+        "archive": "Archiver"
+      },
+      "detail": {
+        "subject": "Sujet",
+        "message": "Message",
+        "adminNotes": "Notes administrateur"
+      },
+      "errors": {
+        "loadFailed": "Erreur lors du chargement des messages",
+        "updateFailed": "Erreur lors de la mise à jour"
       }
     }
   }

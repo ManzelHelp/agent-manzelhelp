@@ -189,7 +189,7 @@ export default async function HomePage({
   return (
     <main className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
       {/* Hero Section - Modern Design */}
-      <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] text-white py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] dark:from-[var(--color-primary-dark)] dark:via-[var(--color-primary)] dark:to-[var(--color-primary-dark)]/80 text-white py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 overflow-hidden">
         {/* Enhanced Background Pattern */}
         <div className="absolute inset-0">
           {/* Animated gradient orbs */}
@@ -396,13 +396,13 @@ export default async function HomePage({
 
           {/* Enhanced Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
-            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
+            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)]/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)]"></div>
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Shield className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)]">
+                <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-primary-light)]">
                   Verified Professionals
                 </h3>
                 <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed">
@@ -412,13 +412,13 @@ export default async function HomePage({
               </div>
             </Card>
 
-            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
+            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)]/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)]"></div>
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-secondary-light)] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Clock className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)]">
+                <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-primary-light)]">
                   Quick & Reliable
                 </h3>
                 <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed">
@@ -428,13 +428,13 @@ export default async function HomePage({
               </div>
             </Card>
 
-            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden md:col-span-2 lg:col-span-1">
+            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)]/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden md:col-span-2 lg:col-span-1">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-light)]"></div>
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-light)] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                  <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-[var(--color-primary)]" />
+                  <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-white dark:text-[var(--color-primary)]" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)]">
+                <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-primary-light)]">
                   Quality Guaranteed
                 </h3>
                 <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed">

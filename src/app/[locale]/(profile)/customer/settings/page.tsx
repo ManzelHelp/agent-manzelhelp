@@ -13,10 +13,35 @@ import { Shield, Bell, Palette, Mail, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { updateNotificationPreferences } from "@/actions/profile";
+import { useUserStore } from "@/stores/userStore";
+import { getUserProfileAction } from "@/actions/auth";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function SettingsPage() {
   const t = useTranslations("profile");
   const [activeSection, setActiveSection] = useState("security");
+  const { user, setUser } = useUserStore();
+  const [loading, setLoading] = useState(false);
+  
+  // Load user profile if not in store
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) {
+        try {
+          setLoading(true);
+          const result = await getUserProfileAction();
+          if (result.success && result.user) {
+            setUser(result.user);
+          }
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    loadUserProfile();
+  }, [user, setUser]);
   type NotificationKey = "email" | "push" | "sms" | "marketing";
   const [notifications, setNotifications] = useState<
     Record<NotificationKey, boolean>
@@ -26,8 +51,6 @@ export default function SettingsPage() {
     sms: false,
     marketing: false,
   });
-  const [loading, setLoading] = useState(false);
-
   // Load saved preferences on mount
   useEffect(() => {
     const loadPreferences = async () => {
@@ -82,6 +105,10 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4 mb-4">
+        <BackButton />
+      </div>
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Navigation */}
         <aside className="lg:w-1/4">
@@ -126,7 +153,7 @@ export default function SettingsPage() {
                             {t("security.emailPassword")}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            user@email.com
+                            {user?.email || "user@email.com"}
                           </p>
                         </div>
                       </div>

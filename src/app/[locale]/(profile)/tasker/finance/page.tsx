@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BackButton } from "@/components/ui/BackButton";
 import {
   getEarningsData,
   getPerformanceMetrics,
@@ -228,6 +229,10 @@ export default function TaskerFinancePage() {
 
   return (
     <div className="container mx-auto px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in-up">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4 mb-4">
+        <BackButton />
+      </div>
       {/* Header */}
       <div className="text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text">

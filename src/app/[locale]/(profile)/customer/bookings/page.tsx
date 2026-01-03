@@ -17,6 +17,7 @@ import { BookingStatus } from "@/types/supabase";
 import { Calendar, ArrowRight } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
+import { BackButton } from "@/components/ui/BackButton";
 
 type TaskStatus =
   | "all"
@@ -337,8 +338,12 @@ export default function CustomerBookingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+    <div className="min-h-screen bg-[var(--color-bg)]">
       <div className="container mx-auto px-4 py-6 max-w-6xl space-y-8">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
         {/* Navigation Tabs */}
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
           <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">

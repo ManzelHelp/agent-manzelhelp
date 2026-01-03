@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { LogoutListener } from "@/components/auth/LogoutListener";
+import { SessionSync } from "@/components/auth/SessionSync";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -51,6 +52,7 @@ export default async function LocaleLayout({
         timeZone={getTimezoneForLocale(locale)}
         now={stableNow}
       >
+        <SessionSync />
         <LogoutListener />
         <Header />
         {children}

@@ -170,6 +170,17 @@ function Header() {
                 >
                   <Link href={`/${user.role}/my-jobs`}>{t("myJobs")}</Link>
                 </Button>
+                {/* Browse Services Button - Only for customers */}
+                {user.role === "customer" && (
+                  <Button
+                    asChild
+                    variant="default"
+                    size="sm"
+                    className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <Link href="/search/services">{t("browseServices")}</Link>
+                  </Button>
+                )}
                 {/* My Services Button - Only for taskers */}
                 {user.role === "tasker" && (
                   <Button
@@ -277,7 +288,7 @@ function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <UserIcon className="h-4 w-4" />
-                  Profile
+                  {t("profile")}
                 </Link>
                 <Link
                   href={`/${user.role}/dashboard`}
@@ -285,7 +296,7 @@ function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
+                  {t("dashboard")}
                 </Link>
                 <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)]">
                   <Link
@@ -294,7 +305,7 @@ function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Bell className="h-4 w-4" />
-                    Notifications
+                    {t("notifications")}
                   </Link>
                   <NotificationIcon asButton className="ml-auto" />
                 </div>
@@ -304,7 +315,7 @@ function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Settings className="h-4 w-4" />
-                  Settings
+                  {t("settings")}
                 </Link>
               </div>
             </div>
@@ -409,6 +420,17 @@ function Header() {
                 >
                   <Link href={`/${user.role}/my-jobs`}>{t("myJobs")}</Link>
                 </Button>
+                {/* Browse Services Button - Only for customers */}
+                {user.role === "customer" && (
+                  <Button
+                    asChild
+                    variant="default"
+                    className="w-full justify-center font-medium mb-3 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link href="/search/services">{t("browseServices")}</Link>
+                  </Button>
+                )}
                 {/* My Services Button - Only for taskers */}
                 {user.role === "tasker" && (
                   <Button

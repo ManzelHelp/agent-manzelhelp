@@ -17,27 +17,29 @@ function LogOutButton() {
   const handleLogOut = async () => {
     setLoading(true);
 
-    const { errorMessage } = await logOutAction();
-    if (!errorMessage) {
-      // Clear localStorage AFTER setting user to null
-      // This ensures the storage event fires for other tabs
-      if (typeof window !== "undefined") {
-        const oldValue = localStorage.getItem("user-storage");
-        setUser(null);
-        // Small delay to ensure state update happens first
-        setTimeout(() => {
-          localStorage.removeItem("user-storage");
-        }, 100);
-      } else {
-        setUser(null);
-      }
-      toast("Logged out successfully");
-      router.push("/");
+    // Clear store and localStorage IMMEDIATELY before logout action
+    // This ensures UI updates immediately
+    if (typeof window !== "undefined") {
+      setUser(null);
+      localStorage.removeItem("user-storage");
     } else {
-      toast.error(errorMessage);
+      setUser(null);
     }
 
-    setLoading(false);
+    const { errorMessage } = await logOutAction();
+    if (!errorMessage) {
+      toast("Logged out successfully");
+      // Force a full page reload to ensure all cookies are cleared and state is reset
+      // Using window.location.href ensures complete page reload and cookie cleanup
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      } else {
+        router.replace("/");
+      }
+    } else {
+      toast.error(errorMessage);
+      setLoading(false);
+    }
   };
 
   return (

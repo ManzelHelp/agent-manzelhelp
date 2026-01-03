@@ -28,9 +28,11 @@ import {
 import {
   getConversationsAction,
   type ConversationWithDetails,
+  type MessageWithDetails,
 } from "@/actions/messages";
 import { useUserStore } from "@/stores/userStore";
 import { useConversationsRealtime } from "@/hooks/useConversationsRealtime";
+import { BackButton } from "@/components/ui/BackButton";
 
 type MessageStatus = "all" | "unread" | "read";
 
@@ -151,6 +153,17 @@ export default function MessagesPage() {
     return formatDateShort(timestamp);
   };
 
+  // Group conversations by participant (user)
+  type GroupedConversation = {
+    participantId: string;
+    participantName: string;
+    participantAvatar?: string;
+    conversations: ConversationWithDetails[];
+    totalUnread: number;
+    lastMessageAt?: string;
+    lastMessage?: MessageWithDetails;
+  };
+
   // Filter conversations based on status and search query
   const filteredConversations = conversations
     .filter((conversation) => {
@@ -182,6 +195,56 @@ export default function MessagesPage() {
         serviceTitle.toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
+
+  // Group conversations by participant
+  const groupedByParticipant = filteredConversations.reduce((acc, conversation) => {
+    const otherParticipant = conversation.other_participant;
+    const participantId = otherParticipant 
+      ? (conversation.participant1_id === user?.id 
+          ? conversation.participant2_id 
+          : conversation.participant1_id)
+      : "unknown";
+    
+    const participantName = otherParticipant
+      ? `${otherParticipant.first_name || ""} ${
+          otherParticipant.last_name || ""
+        }`.trim() || "Unknown"
+      : "Unknown";
+
+    if (!acc[participantId]) {
+      acc[participantId] = {
+        participantId,
+        participantName,
+        participantAvatar: otherParticipant?.avatar_url,
+        conversations: [],
+        totalUnread: 0,
+        lastMessageAt: undefined,
+        lastMessage: undefined,
+      };
+    }
+
+    acc[participantId].conversations.push(conversation);
+    acc[participantId].totalUnread += conversation.unread_count || 0;
+    
+    // Keep track of the most recent message
+    const conversationLastMessageAt = conversation.last_message?.created_at || conversation.last_message_at;
+    if (conversationLastMessageAt) {
+      if (!acc[participantId].lastMessageAt || 
+          new Date(conversationLastMessageAt) > new Date(acc[participantId].lastMessageAt)) {
+        acc[participantId].lastMessageAt = conversationLastMessageAt;
+        acc[participantId].lastMessage = conversation.last_message;
+      }
+    }
+
+    return acc;
+  }, {} as Record<string, GroupedConversation>);
+
+  // Convert to array and sort by last message time
+  const groupedConversations = Object.values(groupedByParticipant).sort((a, b) => {
+    const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+    const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+    return timeB - timeA;
+  });
 
   const unreadCount = conversations.reduce(
     (total, conv) => total + (conv.unread_count || 0),
@@ -228,6 +291,10 @@ export default function MessagesPage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       <div className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
         {/* Header */}
         <div className="mobile-spacing">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)] mobile-leading">
@@ -336,36 +403,34 @@ export default function MessagesPage() {
                   </p>
                 </div>
               ) : (
-                filteredConversations.map((conversation) => {
-                  const otherParticipant = conversation.other_participant;
-                  const participantName = otherParticipant
-                    ? `${otherParticipant.first_name || ""} ${
-                        otherParticipant.last_name || ""
-                      }`.trim() || "Unknown"
-                    : "Unknown";
-
-                  const hasUnread = (conversation.unread_count || 0) > 0;
-                  const lastMessage = conversation.last_message;
-                  const serviceTitle =
-                    conversation.service_title ||
-                    conversation.job_title ||
-                    conversation.booking_title;
+                groupedConversations.map((group) => {
+                  const hasUnread = group.totalUnread > 0;
+                  const mostRecentConversation = group.conversations.sort((a, b) => {
+                    const timeA = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
+                    const timeB = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
+                    return timeB - timeA;
+                  })[0];
 
                   return (
                     <div
-                      key={conversation.id}
-                      className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
+                      key={group.participantId}
+                      className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md cursor-pointer ${
                         hasUnread
                           ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]/20"
                           : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-primary)]/30"
                       }`}
+                      onClick={() =>
+                        router.push(
+                          `/customer/messages/${mostRecentConversation.id}`
+                        )
+                      }
                     >
                       <div className="flex items-start gap-4">
                         <div className="h-12 w-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0 border-2 border-[var(--color-primary)]/20">
-                          {otherParticipant?.avatar_url ? (
+                          {group.participantAvatar ? (
                             <Image
-                              src={otherParticipant.avatar_url}
-                              alt={participantName}
+                              src={group.participantAvatar}
+                              alt={group.participantName}
                               width={48}
                               height={48}
                               className="h-12 w-12 rounded-full object-cover"
@@ -383,56 +448,35 @@ export default function MessagesPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <h3 className="font-semibold truncate text-[var(--color-text-primary)] mobile-text-base">
-                                  {participantName}
+                                  {group.participantName}
                                 </h3>
                                 {hasUnread && (
                                   <span className="w-3 h-3 bg-[var(--color-primary)] rounded-full flex-shrink-0 animate-pulse"></span>
                                 )}
-                                {conversation.unread_count &&
-                                  conversation.unread_count > 1 && (
-                                    <span className="text-xs bg-[var(--color-primary)] text-white rounded-full px-2 py-0.5 font-semibold">
-                                      {conversation.unread_count}
-                                    </span>
-                                  )}
+                                {group.totalUnread > 1 && (
+                                  <span className="text-xs bg-[var(--color-primary)] text-white rounded-full px-2 py-0.5 font-semibold">
+                                    {group.totalUnread}
+                                  </span>
+                                )}
                               </div>
-                              {serviceTitle && (
+                              {group.conversations.length > 1 && (
                                 <p className="text-xs text-[var(--color-text-secondary)] mb-2">
-                                  Re: {serviceTitle}
+                                  {group.conversations.length} conversation{group.conversations.length > 1 ? "s" : ""}
                                 </p>
                               )}
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <p className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap flex items-center">
                                 <Clock className="inline-block h-3 w-3 mr-1" />
-                                {formatTime(
-                                  lastMessage?.created_at ||
-                                    conversation.last_message_at
-                                )}
+                                {formatTime(group.lastMessageAt)}
                               </p>
                             </div>
                           </div>
-                          {lastMessage && (
+                          {group.lastMessage && (
                             <p className="text-sm mt-2 line-clamp-2 text-[var(--color-text-secondary)] mobile-leading">
-                              {lastMessage.content}
+                              {group.lastMessage.content}
                             </p>
                           )}
-                          <div className="flex justify-end mt-4">
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                router.push(
-                                  `/customer/messages/${conversation.id}`
-                                )
-                              }
-                              className={`touch-target transition-all duration-200 ${
-                                hasUnread
-                                  ? "bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
-                                  : "bg-[var(--color-surface)] text-[var(--color-primary)] border border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
-                              }`}
-                            >
-                              {hasUnread ? "Reply" : "View"}
-                            </Button>
-                          </div>
                         </div>
                       </div>
                     </div>

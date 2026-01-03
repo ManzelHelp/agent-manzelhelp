@@ -27,6 +27,7 @@ import {
 import { format } from "date-fns";
 import ServiceDeleteButton from "@/components/services/ServiceDeleteButton";
 import { User } from "@/types/supabase";
+import { BackButton } from "@/components/ui/BackButton";
 
 // Enhanced loading component with modern design
 function ServicesLoadingSkeleton() {
@@ -108,15 +109,15 @@ function ServiceCard({
   const getStatusColor = (status?: string) => {
     switch (status) {
       case "verified":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        return "bg-[var(--color-success-light)] text-[var(--color-success)] border border-[var(--color-success)]/30";
       case "pending":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "bg-[var(--color-warning-light)] text-[var(--color-warning)] border border-[var(--color-warning)]/30";
       case "rejected":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+        return "bg-[var(--color-error-light)] text-[var(--color-error)] border border-[var(--color-error)]/30";
       case "under_review":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        return "bg-[var(--color-info-light)] text-[var(--color-info)] border border-[var(--color-info)]/30";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)]";
     }
   };
 
@@ -142,12 +143,12 @@ function ServiceCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent"></div>
         <div className="absolute top-4 right-4 flex items-center gap-2">
           {service.service_status === "active" ? (
-            <div className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+            <div className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-success-light)] text-[var(--color-success)] rounded-full text-xs font-medium border border-[var(--color-success)]/30">
               <Eye className="h-3 w-3" />
               <span>Active</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+            <div className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-surface)] text-[var(--color-text-secondary)] rounded-full text-xs font-medium border border-[var(--color-border)]">
               <EyeOff className="h-3 w-3" />
               <span>Paused</span>
             </div>
@@ -156,7 +157,7 @@ function ServiceCard({
 
         {/* Category Badge */}
         <div className="absolute top-4 left-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-[var(--color-text-primary)] shadow-sm">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-surface)] backdrop-blur-sm rounded-full text-xs font-medium text-[var(--color-text-primary)] shadow-sm border border-[var(--color-border)]">
             <Star className="h-3 w-3 text-[var(--color-secondary)]" />
             <span>{service.category_name_en || "Service"}</span>
           </div>
@@ -164,7 +165,7 @@ function ServiceCard({
 
         {/* Price Badge */}
         <div className="absolute bottom-4 right-4">
-          <div className="flex items-center gap-1 px-4 py-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg">
+          <div className="flex items-center gap-1 px-4 py-2 bg-[var(--color-surface)] backdrop-blur-sm rounded-xl shadow-lg border border-[var(--color-border)]">
             <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
             <span className="font-bold text-[var(--color-secondary)] text-lg">
               {getPricingDisplay(service)}
@@ -335,21 +336,28 @@ function ServicesList({ taskerId }: { taskerId: string }) {
     return <ServicesLoadingSkeleton />;
   }
 
+  // Ensure services is an array before using filter/reduce
+  const servicesArray = services || [];
+
   try {
     // Calculate stats
-    const activeServices = services.filter(
+    const activeServices = servicesArray.filter(
       (s) => s.service_status === "active"
     ).length;
-    const totalBookings = services.reduce((sum, s) => sum + s.booking_count, 0);
-    //  const promotedServices = services.filter((s) => s.is_promoted).length;
-    const verifiedServices = services.filter(
+    const totalBookings = servicesArray.reduce((sum, s) => sum + (s.booking_count || 0), 0);
+    //  const promotedServices = servicesArray.filter((s) => s.is_promoted).length;
+    const verifiedServices = servicesArray.filter(
       (s) => s.verification_status === "verified"
     ).length;
 
     return (
       <>
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
         {/* Stats Cards - Only show when there are services */}
-        {services.length > 0 && (
+        {servicesArray.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="bg-gradient-to-br from-[var(--color-secondary)]/10 to-[var(--color-secondary)]/5 rounded-2xl p-4 border border-[var(--color-border)]">
               <div className="flex items-center gap-3">
@@ -358,7 +366,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                    {services.length}
+                    {servicesArray.length}
                   </p>
                   <p className="text-xs text-[var(--color-text-secondary)]">
                     Total Services
@@ -367,10 +375,10 @@ function ServicesList({ taskerId }: { taskerId: string }) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-2xl p-4 border border-[var(--color-border)]">
+            <div className="bg-gradient-to-br from-[var(--color-success)]/10 to-[var(--color-success)]/5 rounded-2xl p-4 border border-[var(--color-border)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-xl">
-                  <Eye className="h-5 w-5 text-green-600" />
+                <div className="p-2 bg-[var(--color-success)]/20 rounded-xl">
+                  <Eye className="h-5 w-5 text-[var(--color-success)]" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-[var(--color-text-primary)]">
@@ -383,10 +391,10 @@ function ServicesList({ taskerId }: { taskerId: string }) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-2xl p-4 border border-[var(--color-border)]">
+            <div className="bg-gradient-to-br from-[var(--color-info)]/10 to-[var(--color-info)]/5 rounded-2xl p-4 border border-[var(--color-border)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-xl">
-                  <Users className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-[var(--color-info)]/20 rounded-xl">
+                  <Users className="h-5 w-5 text-[var(--color-info)]" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-[var(--color-text-primary)]">
@@ -399,10 +407,10 @@ function ServicesList({ taskerId }: { taskerId: string }) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-2xl p-4 border border-[var(--color-border)]">
+            <div className="bg-gradient-to-br from-[var(--color-secondary)]/10 to-[var(--color-secondary)]/5 rounded-2xl p-4 border border-[var(--color-border)]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-xl">
-                  <Award className="h-5 w-5 text-purple-600" />
+                <div className="p-2 bg-[var(--color-secondary)]/20 rounded-xl">
+                  <Award className="h-5 w-5 text-[var(--color-secondary)]" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-[var(--color-text-primary)]">
@@ -437,7 +445,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
           </Link>
         </div>
 
-        {services.length === 0 ? (
+        {servicesArray.length === 0 ? (
           <div className="flex flex-col items-center justify-center flex-1 py-20 bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-accent)]/5 rounded-3xl border-2 border-dashed border-[var(--color-border)]">
             <div className="text-center max-w-md mx-auto px-6">
               <div className="w-24 h-24 bg-gradient-to-br from-[var(--color-secondary)]/20 to-[var(--color-secondary)]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
@@ -463,7 +471,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {services.map((service) => (
+              {servicesArray.map((service) => (
                 <ServiceCard
                   key={service.id}
                   service={service}

@@ -51,6 +51,8 @@ import {
   type CreateServiceData,
 } from "@/actions/services";
 import { useTranslations } from "next-intl";
+import { ContactSupportDialog } from "@/components/ContactSupportDialog";
+import { BackButton } from "@/components/ui/BackButton";
 import type {
   ServiceCategory,
   Service,
@@ -107,6 +109,7 @@ export default function CreateOfferPage() {
   const router = useRouter();
   const { user } = useUserStore();
   const t = useTranslations("postService");
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   const STEPS = [
     {
@@ -449,7 +452,7 @@ export default function CreateOfferPage() {
 
   if (loading && categories.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-[var(--color-border)] border-t-[var(--color-secondary)] rounded-full animate-spin mx-auto mb-6"></div>
@@ -471,10 +474,14 @@ export default function CreateOfferPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)]">
+    <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Header Section */}
-      <div className="bg-white shadow-sm border-b border-[var(--color-border)]">
+      <div className="bg-[var(--color-surface)] shadow-sm border-b border-[var(--color-border)]">
         <div className="container mx-auto max-w-6xl px-4 py-6">
+          {/* Back Button */}
+          <div className="flex items-center gap-4 mb-4">
+            <BackButton />
+          </div>
           <div className="text-center">
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
               {t("title")}
@@ -499,7 +506,7 @@ export default function CreateOfferPage() {
                       className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
                         currentStep >= step.id
                           ? `bg-gradient-to-r ${step.color} text-white scale-110`
-                          : "bg-white border-2 border-[var(--color-border)] text-[var(--color-text-secondary)]"
+                          : "bg-[var(--color-surface)] border-2 border-[var(--color-border)] text-[var(--color-text-secondary)]"
                       }`}
                     >
                       {currentStep > step.id ? (
@@ -551,11 +558,11 @@ export default function CreateOfferPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Form */}
           <div className="lg:col-span-2">
-            <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden animate-fade-in-up">
+            <Card className="bg-[var(--color-surface)] shadow-xl rounded-2xl border border-[var(--color-border)] overflow-hidden animate-fade-in-up">
               {/* Step 1: Service Details */}
               {currentStep === 1 && (
                 <>
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-[var(--color-border)]">
+                  <CardHeader className="bg-[var(--color-info-light)] border-b border-[var(--color-border)]">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                         <Sparkles className="h-5 w-5 text-white" />
@@ -572,7 +579,7 @@ export default function CreateOfferPage() {
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
                     {/* User Profile Section */}
-                    <div className="bg-gradient-to-r from-[var(--color-accent-light)] to-blue-50 rounded-xl p-4 border border-[var(--color-border)]">
+                    <div className="bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden shadow-lg">
@@ -873,7 +880,7 @@ export default function CreateOfferPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
-                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-accent-light)]">
+                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-surface)]">
                           <MapPin className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
                           <p className="text-sm text-[var(--color-text-secondary)] mb-3">
                             No addresses found. Please add an address in your
@@ -914,7 +921,7 @@ export default function CreateOfferPage() {
                               .map((slot) => (
                                 <div
                                   key={slot.day}
-                                  className="flex items-center space-x-2 p-3 rounded-xl border-2 border-[var(--color-border)] bg-gradient-to-r from-[var(--color-accent-light)] to-white hover:border-[var(--color-primary)] transition-all duration-200"
+                                  className="flex items-center space-x-2 p-3 rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-primary)] transition-all duration-200"
                                 >
                                   <div className="flex-1">
                                     <div className="font-semibold capitalize text-sm text-[var(--color-text-primary)]">
@@ -927,7 +934,7 @@ export default function CreateOfferPage() {
                                 </div>
                               ))}
                           </div>
-                          <div className="flex items-center gap-3 p-3 bg-[var(--color-accent-light)] rounded-xl">
+                          <div className="flex items-center gap-3 p-3 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)]">
                             <Button
                               variant="outline"
                               size="sm"
@@ -948,7 +955,7 @@ export default function CreateOfferPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-accent-light)]">
+                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-surface)]">
                           <Clock className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
                           <p className="text-sm text-[var(--color-text-secondary)] mb-3">
                             No availability set. Please add your working hours
@@ -977,7 +984,7 @@ export default function CreateOfferPage() {
               {/* Step 2: Pricing & Policies */}
               {currentStep === 2 && (
                 <>
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-[var(--color-border)]">
+                  <CardHeader className="bg-[var(--color-success-light)] border-b border-[var(--color-border)]">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
                         <DollarSign className="h-5 w-5 text-white" />
@@ -1005,7 +1012,7 @@ export default function CreateOfferPage() {
                             key={type}
                             className={`flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${
                               formData.pricing.pricingType === type
-                                ? "border-[var(--color-secondary)] bg-gradient-to-r from-green-50 to-emerald-50"
+                                ? "border-[var(--color-secondary)] bg-[var(--color-success-light)]"
                                 : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
                             }`}
                           >
@@ -1519,12 +1526,12 @@ export default function CreateOfferPage() {
               )}
 
               {/* Navigation Footer */}
-              <CardFooter className="flex flex-row gap-4 w-full p-6 bg-gradient-to-r from-[var(--color-accent-light)] to-white border-t border-[var(--color-border)]">
+              <CardFooter className="flex flex-row gap-4 w-full p-6 bg-[var(--color-surface)] border-t border-[var(--color-border)]">
                 <Button
                   variant="outline"
                   onClick={goToPreviousStep}
                   disabled={currentStep === 1 || loading}
-                  className="flex-1 sm:flex-none bg-white text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                  className="flex-1 sm:flex-none bg-[var(--color-surface)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -1561,7 +1568,7 @@ export default function CreateOfferPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6 animate-fade-in-up animate-delay-200">
               {/* Tips Card */}
-              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg rounded-2xl">
+              <Card className="bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-[var(--color-secondary)]" />
@@ -1597,7 +1604,7 @@ export default function CreateOfferPage() {
               </Card>
 
               {/* Support Card */}
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg rounded-2xl">
+              <Card className="bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
                     <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
@@ -1613,6 +1620,7 @@ export default function CreateOfferPage() {
                     variant="outline"
                     size="sm"
                     className="w-full border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-white"
+                    onClick={() => setShowContactDialog(true)}
                   >
                     Contact Support
                   </Button>
@@ -1622,6 +1630,10 @@ export default function CreateOfferPage() {
           </div>
         </div>
       </div>
+      <ContactSupportDialog
+        isOpen={showContactDialog}
+        onClose={() => setShowContactDialog(false)}
+      />
     </div>
   );
 }

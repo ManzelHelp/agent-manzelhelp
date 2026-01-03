@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import {
   User as UserIcon,
   Settings,
   LogOut,
   LayoutDashboard,
   Bell,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -19,9 +21,13 @@ import {
 import { Link } from "@/i18n/navigation";
 import LogOutButton from "./LogOutButton";
 import { useUserStore } from "@/stores/userStore";
+import { useTranslations } from "next-intl";
+import { ContactSupportDialog } from "../ContactSupportDialog";
 
 function ProfileDropDown() {
   const { user } = useUserStore();
+  const t = useTranslations("Header");
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   return (
     <DropdownMenu>
@@ -40,7 +46,7 @@ function ProfileDropDown() {
         <DropdownMenuItem asChild>
           <Link href={`/${user?.role}/profile`} className="flex items-center">
             <Settings className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>{t("profile")}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -49,7 +55,7 @@ function ProfileDropDown() {
             className="flex items-center"
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
+            <span>{t("dashboard")}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -58,7 +64,7 @@ function ProfileDropDown() {
             className="flex items-center"
           >
             <Bell className="mr-2 h-4 w-4" />
-            <span>Notifications</span>
+            <span>{t("notifications")}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -67,8 +73,16 @@ function ProfileDropDown() {
             className="flex items-center"
           >
             <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+            <span>{t("settings")}</span>
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => setShowContactDialog(true)}
+          className="flex items-center cursor-pointer"
+        >
+          <HelpCircle className="mr-2 h-4 w-4" />
+          <span>Contact Support</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
@@ -78,6 +92,10 @@ function ProfileDropDown() {
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <ContactSupportDialog
+        isOpen={showContactDialog}
+        onClose={() => setShowContactDialog(false)}
+      />
     </DropdownMenu>
   );
 }

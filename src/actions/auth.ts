@@ -53,11 +53,23 @@ export const loginAction = async (email: string, password: string) => {
 
 export const logOutAction = async () => {
   try {
-    const { auth } = await createClient();
+    const supabase = await createClient();
+    const { auth } = supabase;
 
     // Use scope: 'global' to destroy all sessions and remove all cookies
+    // This ensures logout from all devices and clears all session cookies
     const { error } = await auth.signOut({ scope: 'global' });
     if (error) throw error;
+
+    // Verify that the session is actually destroyed
+    // This ensures cookies are properly cleared
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      console.warn("Session still exists after signOut, attempting to clear cookies manually");
+      // If session still exists, try to clear it again
+      // This can happen if cookies weren't properly cleared
+      await auth.signOut({ scope: 'global' });
+    }
 
     return {
       success: true,
@@ -472,9 +484,12 @@ export const getUserProfileAction = async () => {
         },
       ]);
 
+      // Explicitly serialize the profile to avoid non-serializable objects
+      const serializedProfile = newProfile ? JSON.parse(JSON.stringify(newProfile)) : null;
+      
       return {
         success: true,
-        user: newProfile,
+        user: serializedProfile,
         errorMessage: null,
       };
     }
@@ -488,9 +503,13 @@ export const getUserProfileAction = async () => {
       throw new Error("User profile not found in database");
     }
 
+    // Explicitly serialize the profile to avoid non-serializable objects
+    // This prevents "An unexpected response was received from the server" errors
+    const serializedProfile = profile ? JSON.parse(JSON.stringify(profile)) : null;
+
     return {
       success: true,
-      user: profile,
+      user: serializedProfile,
       errorMessage: null,
     };
   } catch (error) {

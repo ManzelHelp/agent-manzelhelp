@@ -6,9 +6,9 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BackButton } from "@/components/ui/BackButton";
 import {
   Send,
-  ArrowLeft,
   ArrowDown,
   User,
   Phone,
@@ -324,14 +324,7 @@ export default function ChatPage() {
             {error || t("errors.conversationNotFound")}
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              onClick={() => router.back()}
-              variant="outline"
-              className="touch-target"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t("actions.goBack")}
-            </Button>
+            <BackButton variant="outline" />
             <Button
               onClick={() => fetchMessages(true)}
               className="touch-target"
@@ -360,14 +353,7 @@ export default function ChatPage() {
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="touch-target p-2"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <BackButton />
 
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center border-2 border-[var(--color-primary)]/20">
@@ -488,7 +474,7 @@ export default function ChatPage() {
 
                     return (
                       <div
-                        key={message.id}
+                        key={`${date}-${message.id}-${index}`}
                         className={`flex gap-3 mb-4 ${
                           isOwn ? "justify-end" : "justify-start"
                         }`}

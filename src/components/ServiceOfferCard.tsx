@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { User, TaskerService } from "@/types/supabase";
 import { Card } from "./ui/card";
+import { Button } from "./ui/button";
 import { MapPin, Star, Clock, Shield, ArrowRight, User as UserIcon } from "lucide-react";
-import { useLocale } from "next-intl";
+import { ServiceDetailDrawer } from "./drawers/ServiceDetailDrawer";
 
 interface ServiceOfferCardProps {
   service: TaskerService;
@@ -21,8 +21,8 @@ function ServiceOfferCard({
   rating = 0,
   totalReviews = 0,
 }: ServiceOfferCardProps) {
-  const locale = useLocale();
   const [avatarError, setAvatarError] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-secondary)]/30 hover:-translate-y-2">
@@ -154,16 +154,23 @@ function ServiceOfferCard({
                 </span>
               )}
             </div>
-            <Link
-              href={`/${locale}/service-offer/${service.id}`}
+            <Button
+              onClick={() => setDrawerOpen(true)}
               className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white rounded-xl hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               View Details
               <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
-            </Link>
+            </Button>
           </div>
         </div>
       </div>
+      {service.id && (
+        <ServiceDetailDrawer
+          serviceId={String(service.id)}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
+      )}
     </Card>
   );
 }

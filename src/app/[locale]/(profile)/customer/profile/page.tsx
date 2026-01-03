@@ -44,6 +44,7 @@ import {
   uploadProfileImage,
   updateUserAvatar,
 } from "@/actions/profile";
+import { BackButton } from "@/components/ui/BackButton";
 
 type ProfileSection = "personal" | "addresses" | "payment";
 
@@ -482,6 +483,10 @@ export default function CustomerProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-surface)] to-[var(--color-bg)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
         {/* Enhanced Header Section with Progress */}
         <div className="space-y-6">
           <div className="text-center sm:text-left">

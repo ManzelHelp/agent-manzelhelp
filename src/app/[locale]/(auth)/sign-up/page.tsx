@@ -7,7 +7,7 @@ import { getTranslations } from "next-intl/server";
 async function SignUpPage() {
   const t = await getTranslations("auth");
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] dark:from-[var(--color-primary-dark)] dark:via-[var(--color-primary)] dark:to-[var(--color-primary-light)] flex flex-col">
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
@@ -39,7 +39,7 @@ async function SignUpPage() {
       >
         <div className="w-full max-w-md mx-auto">
           {/* Card - More compact on mobile */}
-          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl sm:shadow-2xl">
+          <Card className="bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm border-0 shadow-xl sm:shadow-2xl">
             <CardHeader className="text-center pb-4 sm:pb-6 pt-6 sm:pt-8">
               <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[var(--color-secondary)] rounded-full mb-3 sm:mb-4">
                 <UserPlus className="h-6 w-6 sm:h-8 sm:w-8 text-white" />

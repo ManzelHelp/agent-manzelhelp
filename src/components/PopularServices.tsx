@@ -88,7 +88,7 @@ function PopularServices({ categories, locale }: PopularServicesProps) {
                 className="group transform transition-all duration-500 hover:scale-105"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <Card className="group h-full p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
+                <Card className="group h-full p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)]/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
                   {/* Gradient top border */}
                   <div
                     className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${gradientClass}`}

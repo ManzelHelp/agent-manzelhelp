@@ -51,7 +51,12 @@
     "messages": "Nachrichten",
     "reviews": "Bewertungen",
     "myServices": "Meine Dienste",
-    "myJobs": "Meine Jobs"
+    "myJobs": "Meine Jobs",
+    "browseServices": "Dienstleistungen durchsuchen",
+    "profile": "Profil",
+    "dashboard": "Dashboard",
+    "settings": "Einstellungen",
+    "notifications": "Benachrichtigungen"
   },
   "homepage": {
     "title": "Willkommen bei ManzelHelp",
@@ -99,6 +104,44 @@
     "placeholder": {
       "comingSoon": "Bald Verfügbar",
       "featureDescription": "Diese Funktion befindet sich derzeit in der Entwicklung"
+    },
+    "customer": {
+      "welcomeBack": "Willkommen zurück! 👋",
+      "overview": "Hier ist eine Übersicht über Ihre Jobs und Buchungen",
+      "browseServices": "Dienstleistungen durchsuchen",
+      "postJob": "Job veröffentlichen",
+      "activeBookings": "Aktive Buchungen",
+      "totalSpent": "Gesamt ausgegeben",
+      "activeJobs": "Aktive Jobs",
+      "completedJobs": "Abgeschlossene Jobs",
+      "quickActions": "Schnellaktionen",
+      "recentActivity": "Neueste Aktivitäten",
+      "recentMessages": "Neueste Nachrichten",
+      "currentlyInProgress": "Derzeit in Bearbeitung",
+      "allTimeSpending": "Gesamtausgaben",
+      "lifetimeTotal": "Gesamtsumme",
+      "postedJobs": "Veröffentlichte Jobs",
+      "inProgress": "In Bearbeitung",
+      "jobsCompleted": "Abgeschlossene Jobs",
+      "greatWork": "Großartige Arbeit!",
+      "manageJobs": "Verwalten Sie Ihre Jobs und Buchungen effizient",
+      "postNewJob": "Neuen Job veröffentlichen",
+      "bookings": "Buchungen",
+      "finance": "Finanzen",
+      "messages": "Nachrichten",
+      "addresses": "Adressen",
+      "latestUpdates": "Neueste Updates von Ihren Diensten",
+      "noRecentActivity": "Keine neuesten Aktivitäten",
+      "stayUpdated": "Bleiben Sie mit wichtigen Benachrichtigungen auf dem Laufenden",
+      "noNotifications": "Noch keine Benachrichtigungen",
+      "recentNotifications": "Benachrichtigungen",
+      "latestConversations": "Neueste Unterhaltungen mit Taskern",
+      "viewAll": "Alle anzeigen",
+      "noMessages": "Noch keine Nachrichten",
+      "startConversations": "Beginnen Sie Unterhaltungen mit Ihren Taskern",
+      "loadingDashboard": "Dashboard wird geladen...",
+      "somethingWentWrong": "Etwas ist schief gelaufen",
+      "tryAgain": "Erneut versuchen"
     }
   },
   "profile": {
@@ -1476,7 +1519,9 @@
       "messageCustomer": "Kunde kontaktieren",
       "messageTasker": "Tasker kontaktieren",
       "callCustomer": "Kunde anrufen",
-      "callTasker": "Tasker anrufen"
+      "callTasker": "Tasker anrufen",
+      "copyBookingId": "Buchungs-ID kopieren",
+      "share": "Teilen"
     },
     "timeline": {
       "bookingCreated": "Buchung erstellt",
@@ -1498,7 +1543,9 @@
     "pleaseWait": "Bitte warten Sie, während wir Ihre Buchungsdetails abrufen...",
     "bookingNotFound": "Die Buchung, nach der Sie suchen, existiert nicht oder Sie haben keine Berechtigung, sie anzuzeigen.",
     "success": {
-      "statusUpdated": "Buchungsstatus erfolgreich aktualisiert"
+      "statusUpdated": "Buchungsstatus erfolgreich aktualisiert",
+      "copiedToClipboard": "Buchungs-ID in die Zwischenablage kopiert",
+      "linkCopied": "Link in die Zwischenablage kopiert"
     },
     "errors": {
       "updateFailed": "Buchungsstatus konnte nicht aktualisiert werden",
@@ -1834,6 +1881,81 @@
       "toasts": {
         "applicationSubmittedSuccess": "Bewerbung erfolgreich eingereicht!",
         "failedToSubmitApplication": "Fehler beim Einreichen der Bewerbung"
+      }
+    }
+  },
+  "contact": {
+    "form": {
+      "fields": {
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "email": "E-Mail",
+        "subject": "Betreff",
+        "subjectPlaceholder": "Betreff auswählen",
+        "message": "Nachricht",
+        "messagePlaceholder": "Teilen Sie uns mit, wie wir Ihnen helfen können..."
+      },
+      "subjects": {
+        "general": "Allgemeine Anfrage",
+        "support": "Technischer Support",
+        "billing": "Rechnungsfrage",
+        "feedback": "Feedback",
+        "partnership": "Partnerschaft"
+      },
+      "submit": "Nachricht senden",
+      "submitting": "Wird gesendet...",
+      "success": {
+        "title": "Nachricht erfolgreich gesendet",
+        "description": "Wir werden uns so schnell wie möglich bei Ihnen melden."
+      },
+      "errors": {
+        "firstNameRequired": "Vorname ist erforderlich",
+        "lastNameRequired": "Nachname ist erforderlich",
+        "emailRequired": "E-Mail ist erforderlich",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+        "subjectRequired": "Betreff ist erforderlich",
+        "messageRequired": "Nachricht ist erforderlich",
+        "messageTooShort": "Nachricht muss mindestens 10 Zeichen enthalten",
+        "messageTooLong": "Nachricht darf 5000 Zeichen nicht überschreiten",
+        "submitFailed": "Fehler beim Senden der Nachricht"
+      }
+    }
+  },
+  "admin": {
+    "contactMessages": {
+      "title": "Kontaktnachrichten",
+      "description": "Verwalten Sie Kontaktnachrichten von Benutzern",
+      "loading": "Nachrichten werden geladen...",
+      "noMessages": "Keine Nachrichten gefunden",
+      "statusUpdated": "Status erfolgreich aktualisiert",
+      "filters": {
+        "status": "Status",
+        "all": "Alle",
+        "new": "Neu",
+        "read": "Gelesen",
+        "replied": "Beantwortet",
+        "archived": "Archiviert"
+      },
+      "status": {
+        "new": "Neu",
+        "read": "Gelesen",
+        "replied": "Beantwortet",
+        "archived": "Archiviert"
+      },
+      "actions": {
+        "view": "Ansehen",
+        "markRead": "Als gelesen markieren",
+        "markReplied": "Als beantwortet markieren",
+        "archive": "Archivieren"
+      },
+      "detail": {
+        "subject": "Betreff",
+        "message": "Nachricht",
+        "adminNotes": "Admin-Notizen"
+      },
+      "errors": {
+        "loadFailed": "Fehler beim Laden der Nachrichten",
+        "updateFailed": "Fehler beim Aktualisieren"
       }
     }
   }

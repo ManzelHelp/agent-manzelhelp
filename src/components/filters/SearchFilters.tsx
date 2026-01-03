@@ -235,8 +235,8 @@ export default function SearchFilters({
                           key={i}
                           className={`w-4 h-4 ${
                             i < rating
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
+                              ? "text-[var(--color-warning)] fill-current"
+                              : "text-[var(--color-text-secondary)]/30"
                           }`}
                         />
                       ))}

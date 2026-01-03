@@ -51,7 +51,12 @@
     "messages": "Messages",
     "reviews": "Reviews",
     "myServices": "My Services",
-    "myJobs": "My Jobs"
+    "myJobs": "My Jobs",
+    "browseServices": "Browse Services",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "notifications": "Notifications"
   },
   "homepage": {
     "title": "Welcome to ManzelHelp",
@@ -99,6 +104,44 @@
     "placeholder": {
       "comingSoon": "Coming Soon",
       "featureDescription": "This feature is currently under development"
+    },
+    "customer": {
+      "welcomeBack": "Welcome back! 👋",
+      "overview": "Here's an overview of your jobs and bookings",
+      "browseServices": "Browse Services",
+      "postJob": "Post Job",
+      "activeBookings": "Active Bookings",
+      "totalSpent": "Total Spent",
+      "activeJobs": "Active Jobs",
+      "completedJobs": "Completed Jobs",
+      "quickActions": "Quick Actions",
+      "recentActivity": "Recent Activity",
+      "recentMessages": "Recent Messages",
+      "currentlyInProgress": "Currently in progress",
+      "allTimeSpending": "All time spending",
+      "lifetimeTotal": "Lifetime total",
+      "postedJobs": "Posted jobs",
+      "inProgress": "In progress",
+      "jobsCompleted": "Jobs completed",
+      "greatWork": "Great work!",
+      "manageJobs": "Manage your jobs and bookings efficiently",
+      "postNewJob": "Post New Job",
+      "bookings": "Bookings",
+      "finance": "Finance",
+      "messages": "Messages",
+      "addresses": "Addresses",
+      "latestUpdates": "Latest updates from your services",
+      "noRecentActivity": "No recent activity",
+      "stayUpdated": "Stay updated with important alerts",
+      "noNotifications": "No notifications yet",
+      "recentNotifications": "Notifications",
+      "latestConversations": "Latest conversations with taskers",
+      "viewAll": "View All",
+      "noMessages": "No messages yet",
+      "startConversations": "Start conversations with your taskers",
+      "loadingDashboard": "Loading dashboard...",
+      "somethingWentWrong": "Something went wrong",
+      "tryAgain": "Try Again"
     }
   },
   "profile": {
@@ -1477,7 +1520,9 @@
       "messageCustomer": "Message Customer",
       "messageTasker": "Message Tasker",
       "callCustomer": "Call Customer",
-      "callTasker": "Call Tasker"
+      "callTasker": "Call Tasker",
+      "copyBookingId": "Copy Booking ID",
+      "share": "Share"
     },
     "timeline": {
       "bookingCreated": "Booking Created",
@@ -1499,7 +1544,9 @@
     "pleaseWait": "Please wait while we fetch your booking details...",
     "bookingNotFound": "The booking you're looking for doesn't exist or you don't have permission to view it.",
     "success": {
-      "statusUpdated": "Booking status updated successfully"
+      "statusUpdated": "Booking status updated successfully",
+      "copiedToClipboard": "Booking ID copied to clipboard",
+      "linkCopied": "Link copied to clipboard"
     },
     "errors": {
       "updateFailed": "Failed to update booking status",
@@ -1611,6 +1658,9 @@
   "chat": {
     "title": "Chat",
     "subtitle": "Communicate with your service provider",
+    "common": {
+      "unknown": "Unknown"
+    },
     "loading": {
       "title": "Loading conversation",
       "description": "Please wait while we load your messages"
@@ -1837,6 +1887,81 @@
       "toasts": {
         "applicationSubmittedSuccess": "Application submitted successfully!",
         "failedToSubmitApplication": "Failed to submit application"
+      }
+    }
+  },
+  "contact": {
+    "form": {
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "subject": "Subject",
+        "subjectPlaceholder": "Select a subject",
+        "message": "Message",
+        "messagePlaceholder": "Tell us how we can help you..."
+      },
+      "subjects": {
+        "general": "General Inquiry",
+        "support": "Technical Support",
+        "billing": "Billing Question",
+        "feedback": "Feedback",
+        "partnership": "Partnership"
+      },
+      "submit": "Send Message",
+      "submitting": "Sending...",
+      "success": {
+        "title": "Message sent successfully",
+        "description": "We will get back to you as soon as possible."
+      },
+      "errors": {
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "subjectRequired": "Subject is required",
+        "messageRequired": "Message is required",
+        "messageTooShort": "Message must be at least 10 characters",
+        "messageTooLong": "Message cannot exceed 5000 characters",
+        "submitFailed": "Error sending message"
+      }
+    }
+  },
+  "admin": {
+    "contactMessages": {
+      "title": "Contact Messages",
+      "description": "Manage user contact messages",
+      "loading": "Loading messages...",
+      "noMessages": "No messages found",
+      "statusUpdated": "Status updated successfully",
+      "filters": {
+        "status": "Status",
+        "all": "All",
+        "new": "New",
+        "read": "Read",
+        "replied": "Replied",
+        "archived": "Archived"
+      },
+      "status": {
+        "new": "New",
+        "read": "Read",
+        "replied": "Replied",
+        "archived": "Archived"
+      },
+      "actions": {
+        "view": "View",
+        "markRead": "Mark as Read",
+        "markReplied": "Mark as Replied",
+        "archive": "Archive"
+      },
+      "detail": {
+        "subject": "Subject",
+        "message": "Message",
+        "adminNotes": "Admin Notes"
+      },
+      "errors": {
+        "loadFailed": "Error loading messages",
+        "updateFailed": "Error updating"
       }
     }
   }

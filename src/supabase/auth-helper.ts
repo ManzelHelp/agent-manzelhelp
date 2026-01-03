@@ -80,7 +80,17 @@ export async function updateSession(
     },
   });
 
-  // Performance optimization: only call getUser for auth-sensitive routes
+  // CRITICAL: Always refresh the session for all routes to keep cookies up to date
+  // This ensures session tokens are refreshed automatically
+  // The getSession() call will update cookies if the session is valid
+  try {
+    await supabase.auth.getSession();
+  } catch (error) {
+    // Silently handle session refresh errors - cookies will be updated by Supabase client
+    // This is normal if there's no active session
+  }
+
+  // If no options provided, just return with refreshed session (no auth check)
   if (!options) {
     return supabaseResponse;
   }
@@ -92,6 +102,7 @@ export async function updateSession(
     pathname.startsWith(route)
   );
 
+  // For non-protected routes, we've already refreshed the session, so just return
   if (!isProtectedRoute) {
     return supabaseResponse;
   }

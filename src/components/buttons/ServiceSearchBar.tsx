@@ -57,7 +57,7 @@ export default function ServiceSearchBar({
 
         {/* Popular Searches Suggestion */}
         {!searchQuery && !isFocused && (
-          <div className="absolute top-full left-0 right-0 mt-2 p-3 sm:p-4 bg-white/90 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg z-10">
+          <div className="absolute top-full left-0 right-0 mt-2 p-3 sm:p-4 bg-[var(--color-surface)] dark:bg-[var(--color-surface)] backdrop-blur-sm rounded-xl border border-[var(--color-border)] shadow-lg z-10">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-[var(--color-secondary)]" />
               <span className="text-sm font-medium text-[var(--color-text-primary)]">

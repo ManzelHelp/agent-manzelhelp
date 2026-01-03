@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { User } from "@/types/supabase";
 import { Card } from "./ui/card";
+import { Button } from "./ui/button";
 import {
   Clock,
   Shield,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDateShort } from "@/lib/date-utils";
+import { JobDetailDrawer } from "./drawers/JobDetailDrawer";
 
 interface Job {
   id: string;
@@ -42,6 +43,7 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
   const t = useTranslations("common");
   const [relativeTime, setRelativeTime] = useState<string>("");
   const [imageError, setImageError] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Format relative time on client side only to avoid hydration mismatch
   useEffect(() => {
@@ -204,16 +206,23 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
             </div>
 
             {/* CTA Button */}
-            <Link
-              href={`/${locale}/job-offer/${job.id}`}
+            <Button
+              onClick={() => setDrawerOpen(true)}
               className="group/btn inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 text-sm font-semibold shadow-sm hover:shadow-md transform hover:scale-105 whitespace-nowrap flex-shrink-0"
             >
               {t("view")}
               <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-            </Link>
+            </Button>
           </div>
         </div>
       </div>
+      {job.id && (
+        <JobDetailDrawer
+          jobId={String(job.id)}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
+      )}
     </Card>
   );
 }

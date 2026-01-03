@@ -426,52 +426,55 @@ export async function getCustomerBookings(
 
     // Return only serializable fields (no spread of complex Supabase objects)
     // This prevents "An unexpected response was received from the server" errors
+    // Explicitly serialize all fields to ensure proper JSON serialization
     return {
-      id: booking.id,
-      customer_id: booking.customer_id,
-      tasker_id: booking.tasker_id,
-      tasker_service_id: booking.tasker_service_id,
-      booking_type: booking.booking_type,
-      scheduled_date: booking.scheduled_date,
-      scheduled_time_start: booking.scheduled_time_start,
-      scheduled_time_end: booking.scheduled_time_end,
-      estimated_duration: booking.estimated_duration,
-      address_id: booking.address_id,
-      service_address: booking.service_address,
+      id: String(booking.id),
+      customer_id: String(booking.customer_id),
+      tasker_id: String(booking.tasker_id),
+      tasker_service_id: String(booking.tasker_service_id),
+      booking_type: booking.booking_type as "instant" | "scheduled" | "recurring",
+      scheduled_date: booking.scheduled_date ? new Date(booking.scheduled_date).toISOString() : null,
+      scheduled_time_start: booking.scheduled_time_start ? String(booking.scheduled_time_start) : null,
+      scheduled_time_end: booking.scheduled_time_end ? String(booking.scheduled_time_end) : null,
+      estimated_duration: booking.estimated_duration ? Number(booking.estimated_duration) : null,
+      address_id: String(booking.address_id),
+      service_address: booking.service_address ? String(booking.service_address) : null,
       agreed_price: typeof booking.agreed_price === 'string' 
         ? parseFloat(booking.agreed_price) 
-        : (booking.agreed_price || 0),
-      currency: booking.currency || 'MAD',
-      status: booking.status,
-      accepted_at: booking.accepted_at,
-      confirmed_at: booking.confirmed_at,
-      started_at: booking.started_at,
-      completed_at: booking.completed_at,
-      customer_confirmed_at: booking.customer_confirmed_at,
-      cancelled_at: booking.cancelled_at,
-      cancelled_by: booking.cancelled_by,
-      cancellation_reason: booking.cancellation_reason,
-      customer_requirements: booking.customer_requirements,
-      created_at: booking.created_at,
-      updated_at: booking.updated_at,
-      payment_method: booking.payment_method,
+        : Number(booking.agreed_price || 0),
+      currency: String(booking.currency || 'MAD'),
+      status: booking.status as BookingStatus,
+      accepted_at: booking.accepted_at ? new Date(booking.accepted_at).toISOString() : null,
+      confirmed_at: booking.confirmed_at ? new Date(booking.confirmed_at).toISOString() : null,
+      started_at: booking.started_at ? new Date(booking.started_at).toISOString() : null,
+      completed_at: booking.completed_at ? new Date(booking.completed_at).toISOString() : null,
+      customer_confirmed_at: booking.customer_confirmed_at ? new Date(booking.customer_confirmed_at).toISOString() : null,
+      cancelled_at: booking.cancelled_at ? new Date(booking.cancelled_at).toISOString() : null,
+      cancelled_by: booking.cancelled_by ? String(booking.cancelled_by) : null,
+      cancellation_reason: booking.cancellation_reason ? String(booking.cancellation_reason) : null,
+      customer_requirements: booking.customer_requirements ? String(booking.customer_requirements) : null,
+      created_at: booking.created_at ? new Date(booking.created_at).toISOString() : new Date().toISOString(),
+      updated_at: booking.updated_at ? new Date(booking.updated_at).toISOString() : new Date().toISOString(),
+      payment_method: booking.payment_method as "cash" | "online" | "wallet" | "pending",
       cancellation_fee: typeof booking.cancellation_fee === 'string'
         ? parseFloat(booking.cancellation_fee)
-        : (booking.cancellation_fee || 0),
+        : Number(booking.cancellation_fee || 0),
       // Extracted relation data (ensure all values are serializable)
-      customer_first_name: customer?.first_name || null,
-      customer_last_name: customer?.last_name || null,
-      customer_avatar: customer?.avatar_url || null,
-      customer_email: customer?.email || null,
-      customer_phone: customer?.phone || null,
-      tasker_first_name: tasker?.first_name || null,
-      tasker_last_name: tasker?.last_name || null,
-      tasker_avatar: tasker?.avatar_url || null,
-      service_title: taskerService?.title || null,
+      customer_first_name: customer?.first_name ? String(customer.first_name) : null,
+      customer_last_name: customer?.last_name ? String(customer.last_name) : null,
+      customer_avatar: customer?.avatar_url ? String(customer.avatar_url) : null,
+      customer_email: customer?.email ? String(customer.email) : null,
+      customer_phone: customer?.phone ? String(customer.phone) : null,
+      tasker_first_name: tasker?.first_name ? String(tasker.first_name) : null,
+      tasker_last_name: tasker?.last_name ? String(tasker.last_name) : null,
+      tasker_avatar: tasker?.avatar_url ? String(tasker.avatar_url) : null,
+      tasker_email: tasker?.email ? String(tasker.email) : null,
+      tasker_phone: tasker?.phone ? String(tasker.phone) : null,
+      service_title: taskerService?.title ? String(taskerService.title) : null,
       category_name: null,
-      street_address: address?.street_address || null,
-      city: address?.city || null,
-      region: address?.region || null,
+      street_address: address?.street_address ? String(address.street_address) : null,
+      city: address?.city ? String(address.city) : null,
+      region: address?.region ? String(address.region) : null,
     };
   });
 
@@ -1001,8 +1004,9 @@ export async function confirmBookingCompletion(
                 user_id: taskerId,
                 amount: -platformFee, // Negative because it's a deduction
                 type: "fee_deduction",
-                related_job_id: null, // Bookings are tracked via booking_id in notes
-                notes: `Platform fee (10%) deducted for booking payment. Booking ID: ${bookingId}, Transaction ID: ${transaction?.id || 'N/A'}`,
+                related_job_id: null, // Bookings use related_booking_id instead
+                related_booking_id: bookingId, // Link to the booking
+                notes: `Platform fee (10%) deducted for booking payment. Transaction ID: ${transaction?.id || 'N/A'}`,
               })
               .select()
               .single();

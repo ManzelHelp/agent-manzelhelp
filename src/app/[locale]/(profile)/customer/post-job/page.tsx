@@ -45,6 +45,8 @@ import { createJob, type CreateJobData } from "@/actions/jobs";
 import { getUserAddresses } from "@/actions/profile";
 import { getServices, getServiceCategories } from "@/actions/services";
 import type { ServiceCategory, Service, Address } from "@/types/supabase";
+import { ContactSupportDialog } from "@/components/ContactSupportDialog";
+import { BackButton } from "@/components/ui/BackButton";
 
 // Form data interfaces
 interface JobDetailsData {
@@ -122,6 +124,7 @@ export default function PostJobPage() {
   const router = useRouter();
   const t = useTranslations("postJob");
   const { user } = useUserStore();
+  const [showContactDialog, setShowContactDialog] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -383,7 +386,7 @@ export default function PostJobPage() {
 
   if (loading && categories.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-[var(--color-border)] border-t-[var(--color-secondary)] rounded-full animate-spin mx-auto mb-6"></div>
@@ -407,9 +410,9 @@ export default function PostJobPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)]">
+    <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Header Section */}
-      <div className="bg-white shadow-sm border-b border-[var(--color-border)]">
+      <div className="bg-[var(--color-surface)] shadow-sm border-b border-[var(--color-border)]">
         <div className="container mx-auto max-w-6xl px-4 py-6">
           <div className="text-center">
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
@@ -424,6 +427,10 @@ export default function PostJobPage() {
 
       <div className="container mx-auto max-w-6xl px-4 py-8">
         {/* Modern Progress Steps */}
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8">
             {STEPS.map((step, index) => (
@@ -503,11 +510,11 @@ export default function PostJobPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Form */}
           <div className="lg:col-span-2">
-            <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden animate-fade-in-up">
+            <Card className="bg-[var(--color-surface)] shadow-xl rounded-2xl border border-[var(--color-border)] overflow-hidden animate-fade-in-up">
               {/* Step 1: Job Details */}
               {currentStep === 1 && (
                 <>
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-[var(--color-border)]">
+                  <CardHeader className="bg-[var(--color-info-light)] border-b border-[var(--color-border)]">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                         <Sparkles className="h-5 w-5 text-white" />
@@ -524,7 +531,7 @@ export default function PostJobPage() {
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
                     {/* User Profile Section */}
-                    <div className="bg-gradient-to-r from-[var(--color-accent-light)] to-blue-50 rounded-xl p-4 border border-[var(--color-border)]">
+                    <div className="bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden shadow-lg">
@@ -887,7 +894,7 @@ export default function PostJobPage() {
               {/* Step 2: Schedule & Budget */}
               {currentStep === 2 && (
                 <>
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-[var(--color-border)]">
+                  <CardHeader className="bg-[var(--color-success-light)] border-b border-[var(--color-border)]">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
                         <DollarSign className="h-5 w-5 text-white" />
@@ -1202,7 +1209,7 @@ export default function PostJobPage() {
               {/* Step 3: Review & Post */}
               {currentStep === 3 && (
                 <>
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-[var(--color-border)]">
+                  <CardHeader className="bg-[var(--color-purple-light)] border-b border-[var(--color-border)]">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
                         <Shield className="h-5 w-5 text-white" />
@@ -1224,7 +1231,7 @@ export default function PostJobPage() {
                         <Star className="h-5 w-5 text-[var(--color-secondary)]" />
                         {t("review.jobOverview")}
                       </h3>
-                      <div className="bg-gradient-to-r from-[var(--color-accent-light)] to-blue-50 rounded-xl p-4 border border-[var(--color-border)]">
+                      <div className="bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
                         <h4 className="font-bold text-lg text-[var(--color-text-primary)] mb-2">
                           {formData.jobDetails.title}
                         </h4>
@@ -1267,7 +1274,7 @@ export default function PostJobPage() {
                         {t("review.scheduleBudget")}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white border border-[var(--color-border)] rounded-xl p-4">
+                        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
                           <h4 className="font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-[var(--color-secondary)]" />
                             Schedule
@@ -1300,7 +1307,7 @@ export default function PostJobPage() {
                             {formData.scheduleBudget.estimatedDuration} hours
                           </p>
                         </div>
-                        <div className="bg-white border border-[var(--color-border)] rounded-xl p-4">
+                        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
                           <h4 className="font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
                             Budget
@@ -1323,7 +1330,7 @@ export default function PostJobPage() {
                         <MapPin className="h-5 w-5 text-[var(--color-secondary)]" />
                         Location
                       </h3>
-                      <div className="bg-white border border-[var(--color-border)] rounded-xl p-4">
+                      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
                         {addresses.find(
                           (a) => a.id === formData.jobDetails.selectedAddressId
                         ) && (
@@ -1371,12 +1378,12 @@ export default function PostJobPage() {
               )}
 
               {/* Navigation Footer */}
-              <CardFooter className="flex flex-row gap-4 w-full p-6 bg-gradient-to-r from-[var(--color-accent-light)] to-white border-t border-[var(--color-border)]">
+              <CardFooter className="flex flex-row gap-4 w-full p-6 bg-[var(--color-surface)] border-t border-[var(--color-border)]">
                 <Button
                   variant="outline"
                   onClick={goToPreviousStep}
                   disabled={currentStep === 1 || loading}
-                  className="flex-1 sm:flex-none bg-white text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                  className="flex-1 sm:flex-none bg-[var(--color-surface)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -1413,7 +1420,7 @@ export default function PostJobPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6 animate-fade-in-up animate-delay-200">
               {/* Tips Card */}
-              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg rounded-2xl">
+              <Card className="bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-[var(--color-secondary)]" />
@@ -1457,7 +1464,7 @@ export default function PostJobPage() {
               </Card>
 
               {/* Support Card */}
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg rounded-2xl">
+              <Card className="bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
                     <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
@@ -1473,6 +1480,7 @@ export default function PostJobPage() {
                     variant="outline"
                     size="sm"
                     className="w-full border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-white"
+                    onClick={() => setShowContactDialog(true)}
                   >
                     Contact Support
                   </Button>
@@ -1482,6 +1490,10 @@ export default function PostJobPage() {
           </div>
         </div>
       </div>
+      <ContactSupportDialog
+        isOpen={showContactDialog}
+        onClose={() => setShowContactDialog(false)}
+      />
     </div>
   );
 }

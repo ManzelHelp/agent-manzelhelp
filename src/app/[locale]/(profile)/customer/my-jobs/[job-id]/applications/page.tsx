@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BackButton } from "@/components/ui/BackButton";
 import {
   User,
   Clock,
@@ -31,7 +32,6 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  ArrowLeft,
   Crown,
   Shield,
   Eye,
@@ -535,12 +535,10 @@ export default function ApplicationsPage() {
       <div className="min-h-screen bg-[var(--color-bg)]">
         <div className="max-w-4xl mx-auto pt-6">
           <div className="px-4 mb-6">
-            <Button
+            <BackButton
               variant="outline"
-              onClick={() => router.back()}
               className="mb-4 border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)]"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+            />
               Back
             </Button>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">
@@ -561,12 +559,10 @@ export default function ApplicationsPage() {
       <div className="min-h-screen bg-[var(--color-bg)]">
         <div className="max-w-4xl mx-auto pt-6">
           <div className="px-4 mb-6">
-            <Button
+            <BackButton
               variant="outline"
-              onClick={() => router.back()}
               className="mb-4 border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)]"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+            />
               Back
             </Button>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">

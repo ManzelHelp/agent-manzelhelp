@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CancellationReasonDialog } from "@/components/booking/CancellationReasonDialog";
+import { BackButton } from "@/components/ui/BackButton";
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   MapPin,
@@ -43,6 +43,12 @@ import { BookingStatus } from "@/types/supabase";
 import { useTranslations } from "next-intl";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import { formatDateShort } from "@/lib/date-utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ConfirmationDialogState {
   isOpen: boolean;
@@ -125,7 +131,7 @@ export default function CustomerBookingDetailPage({
           return {
             label: t("status.pending"),
             color:
-              "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+              "bg-[var(--color-warning-light)] text-[var(--color-warning-dark)]",
             icon: AlertCircle,
             description: t("statusDescriptions.pending"),
           };
@@ -133,7 +139,7 @@ export default function CustomerBookingDetailPage({
           return {
             label: t("status.accepted"),
             color:
-              "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300",
+              "bg-[var(--color-info-light)] text-[var(--color-info-dark)]",
             icon: CheckCircle,
             description: t("statusDescriptions.accepted"),
           };
@@ -141,7 +147,7 @@ export default function CustomerBookingDetailPage({
           return {
             label: t("status.confirmed"),
             color:
-              "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300",
+              "bg-[var(--color-success-light)] text-[var(--color-success-dark)]",
             icon: CheckCircle,
             description: t("statusDescriptions.confirmed"),
           };
@@ -149,7 +155,7 @@ export default function CustomerBookingDetailPage({
           return {
             label: t("status.in_progress"),
             color:
-              "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300",
+              "bg-[var(--color-info-light)] text-[var(--color-info-dark)]",
             icon: Play,
             description: t("statusDescriptions.in_progress"),
           };
@@ -157,7 +163,7 @@ export default function CustomerBookingDetailPage({
           return {
             label: t("status.completed"),
             color:
-              "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300",
+              "bg-[var(--color-success-light)] text-[var(--color-success-dark)]",
             icon: CheckCircle,
             description: t("statusDescriptions.completed"),
           };
@@ -165,7 +171,7 @@ export default function CustomerBookingDetailPage({
           return {
             label: t("status.cancelled"),
             color:
-              "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
+              "bg-[var(--color-error)]/20 text-[var(--color-error)]",
             icon: X,
             description: t("statusDescriptions.cancelled"),
           };
@@ -356,16 +362,16 @@ export default function CustomerBookingDetailPage({
             <X className="h-10 w-10 text-red-600 dark:text-red-400" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">
               {t("notFound")}
             </h3>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-[var(--color-text-secondary)]">
               {t("bookingNotFound")}
             </p>
           </div>
           <Button
             onClick={() => router.push("/customer/bookings")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105"
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105"
           >
             {t("backToBookings")}
           </Button>
@@ -375,19 +381,12 @@ export default function CustomerBookingDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+    <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Modern Header - Mobile Optimized */}
       <div className="sticky top-0 z-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 max-w-6xl">
           <div className="flex items-center gap-3 sm:gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 sm:p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 touch-target mobile-focus transition-all duration-200 min-h-[44px] min-w-[44px]"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <BackButton className="p-2 sm:p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 min-h-[44px] min-w-[44px]" />
             <div className="flex-1 min-w-0">
               <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white mobile-text-xl truncate">
                 {t("title")}
@@ -396,22 +395,65 @@ export default function CustomerBookingDetailPage({
                 {booking.service_title || t("service")}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 sm:p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 touch-target mobile-focus transition-all duration-200 min-h-[44px] min-w-[44px]"
-            >
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 sm:p-3 rounded-xl hover:bg-[var(--color-accent)] touch-target mobile-focus transition-all duration-200 min-h-[44px] min-w-[44px]"
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => {
+                    // Copy booking ID to clipboard
+                    if (booking) {
+                      navigator.clipboard.writeText(booking.id);
+                      toast.success(t("success.copiedToClipboard"));
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  {t("actions.copyBookingId")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    // Share booking
+                    if (booking && navigator.share) {
+                      navigator.share({
+                        title: booking.service_title || t("service"),
+                        text: `${t("title")} - ${booking.service_title || t("service")}`,
+                        url: window.location.href,
+                      }).catch(() => {
+                        // Fallback to copy
+                        navigator.clipboard.writeText(window.location.href);
+                        toast.success(t("success.linkCopied"));
+                      });
+                    } else {
+                      // Fallback to copy
+                      navigator.clipboard.writeText(window.location.href);
+                        toast.success(t("success.linkCopied"));
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  {t("actions.share")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-6xl space-y-6 sm:space-y-8">
         {/* Hero Section with Status - Mobile Optimized */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
           {/* Background Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-slate-700 dark:via-slate-800 dark:to-slate-600"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-success-light)] via-[var(--color-surface)] to-[var(--color-success-light)] opacity-30"></div>
 
           {/* Content */}
           <div className="relative p-4 sm:p-6 md:p-8 lg:p-12">
@@ -419,14 +461,14 @@ export default function CustomerBookingDetailPage({
               {/* Service Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <Award className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-success-light)] rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <Award className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-success)]" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mobile-text-xl truncate">
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--color-text-primary)] mobile-text-xl truncate">
                       {booking.service_title || t("service")}
                     </h2>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg mobile-text-base truncate">
+                    <p className="text-[var(--color-text-secondary)] text-sm sm:text-base lg:text-lg mobile-text-base truncate">
                       {booking.category_name
                         ? `${booking.category_name} service`
                         : "Professional service"}

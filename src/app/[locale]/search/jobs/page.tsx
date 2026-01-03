@@ -9,6 +9,7 @@ import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getParentCategoriesForSearch } from "@/lib/categories";
+import { BackButton } from "@/components/ui/BackButton";
 
 interface SearchPageProps {
   searchParams: {
@@ -268,6 +269,10 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
       {/* Enhanced Search Header with Glass Morphism */}
       <div className="relative bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] py-8 sm:py-12 lg:py-16">
         <div className="absolute inset-0 bg-black/10"></div>
+        {/* Back Button */}
+        <div className="absolute top-4 left-4 z-20">
+          <BackButton className="bg-white/20 hover:bg-white/30 text-white border-white/30" />
+        </div>
         <div className="relative container mx-auto px-4">
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-3 sm:mb-4 animate-fade-in-up">

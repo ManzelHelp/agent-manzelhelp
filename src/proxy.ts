@@ -59,6 +59,7 @@ const ASSET_EXTENSIONS = [
 const PROTECTED_ROUTES = [
   "/customer/",
   "/tasker/",
+  "/admin/",
   "/confirm-success",
   "/finish-signUp",
 ];
@@ -133,19 +134,15 @@ export async function proxy(request: NextRequest) {
   }
 
   // Check if this route requires authentication
-  // Only protected routes need Supabase session validation
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
     cleanPathname.startsWith(route)
   );
 
-  // Public routes don't need auth checks - return i18n response immediately
-  if (!isProtectedRoute) {
-    return intlResponse || NextResponse.next();
-  }
-
-  // Protected routes: Validate Supabase session before allowing access
-  // This ensures only authenticated users can access protected areas
-  // updateSession is async, so we await it
+  // CRITICAL: Always call updateSession for ALL routes (except assets) to refresh session cookies
+  // This ensures session tokens are kept up to date automatically
+  // updateSession will:
+  // 1. Always refresh the session (update cookies) for all routes
+  // 2. Only perform auth verification for protected routes
   try {
     return await updateSession(request, intlResponse, {
       locale,
@@ -153,10 +150,15 @@ export async function proxy(request: NextRequest) {
       protectedRoutes: PROTECTED_ROUTES,
     });
   } catch (error) {
-    // Error handling: Log error and redirect to login
-    // This prevents crashes and provides a smooth user experience
+    // Error handling: Log error
+    // For protected routes, redirect to login
+    // For public routes, allow access but log the error
     console.error("Auth proxy error:", error);
-    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    if (isProtectedRoute) {
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    }
+    // For public routes, return the i18n response even if session refresh failed
+    return intlResponse || NextResponse.next();
   }
 }
 

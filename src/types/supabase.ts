@@ -66,6 +66,7 @@ export type BookingStatus =
   | "refunded";
 export type BookingType = "instant" | "scheduled" | "recurring";
 export type BookingPaymentMethod = "cash" | "online" | "wallet" | "pending";
+export type ContactMessageStatus = "new" | "read" | "replied" | "archived";
 export type ServiceVerificationStatus =
   | "unverified"
   | "under_review"
@@ -315,6 +316,19 @@ export interface Notification {
   action_url?: string;
 }
 
+export interface ContactMessage {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status?: ContactMessageStatus;
+  admin_notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface PromotionPackage {
   id: number;
   name_en: string;
@@ -512,6 +526,7 @@ export interface WalletTransaction {
   amount: number;
   type: string;
   related_job_id?: string;
+  related_booking_id?: string;
   notes?: string;
   created_at?: string;
 }
@@ -700,4 +715,5 @@ export interface Database {
   user_monthly_usage: UserMonthlyUsage;
   wallet_transactions: WalletTransaction;
   faq: FAQ;
+  contact_messages: ContactMessage;
 }

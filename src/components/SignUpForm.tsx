@@ -144,7 +144,7 @@ function SignUpForm() {
             <select
               id="userRole"
               name="userRole"
-              className="w-full h-11 sm:h-12 pl-10 pr-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] disabled:opacity-50 text-base transition-all duration-200 bg-white"
+              className="w-full h-11 sm:h-12 pl-10 pr-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] disabled:opacity-50 text-base transition-all duration-200 bg-[var(--color-surface)] text-[var(--color-text-primary)]"
               disabled={isPending}
               required
               defaultValue=""

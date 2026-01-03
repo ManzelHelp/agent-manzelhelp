@@ -204,7 +204,7 @@ export async function getTaskerServices(
     let total = 0;
     if (includeTotal || offset === 0) {
       const { count, error: countError } = await supabase
-        .from("tasker_services")
+        .from("service_listing_view")
         .select("*", { count: "exact", head: true })
         .eq("tasker_id", taskerId);
 
@@ -215,28 +215,11 @@ export async function getTaskerServices(
       total = count || 0;
     }
 
-    // Use SQL query with JOINs to get category and service names from database
+    // Use the service_listing_view which contains all necessary data
     // Fetch one extra to determine if there are more
     const { data, error } = await supabase
-      .from("tasker_services")
-      .select(
-        `
-        *,
-        service:services!tasker_services_service_id_fkey(
-          id,
-          name_en,
-          name_fr,
-          name_ar,
-          category:service_categories!services_category_id_fkey(
-            id,
-            name_en,
-            name_fr,
-            name_ar
-          )
-        ),
-        booking_count:service_bookings(count)
-      `
-      )
+      .from("service_listing_view")
+      .select("*")
       .eq("tasker_id", taskerId)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit);
@@ -246,22 +229,37 @@ export async function getTaskerServices(
       throw new Error(`Failed to fetch services: ${error.message}`);
     }
 
-    // Format the data and add category names from database
+    // Get booking counts for each service
+    const serviceIds = (data || []).map((s: any) => s.tasker_service_id);
+    const bookingCounts: Record<string, number> = {};
+    
+    if (serviceIds.length > 0) {
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from("service_bookings")
+        .select("tasker_service_id")
+        .in("tasker_service_id", serviceIds);
+
+      if (!bookingsError && bookingsData) {
+        bookingsData.forEach((booking: any) => {
+          const serviceId = String(booking.tasker_service_id);
+          bookingCounts[serviceId] = (bookingCounts[serviceId] || 0) + 1;
+        });
+      }
+    }
+
+    // Format the data from the view
     // Explicitly serialize all fields to ensure proper JSON serialization
     const services: ServiceWithDetails[] = (data || []).map((service: any) => {
-      const serviceData = service.service;
-      const categoryData = serviceData?.category;
-
       return {
-        ...service,
-        id: String(service.id),
+        id: String(service.tasker_service_id),
         tasker_id: String(service.tasker_id),
         service_id: Number(service.service_id),
         title: String(service.title || ""),
         description: String(service.description || ""),
-        base_price: Number(service.base_price || 0),
-        hourly_rate: service.hourly_rate ? Number(service.hourly_rate) : null,
-        price: service.price ? Number(service.price) : (service.base_price ? Number(service.base_price) : 0),
+        base_price: Number(service.price || 0),
+        hourly_rate: service.pricing_type === "hourly" ? Number(service.price || 0) : null,
+        price: Number(service.price || 0),
+        pricing_type: service.pricing_type || "fixed",
         minimum_duration: service.minimum_duration ? Number(service.minimum_duration) : null,
         service_area: service.service_area ? (typeof service.service_area === 'object' ? service.service_area : (() => {
           try {
@@ -281,19 +279,31 @@ export async function getTaskerServices(
             return [];
           }
         })()) : null,
+        service_status: service.service_status || "active",
+        verification_status: service.verification_status || "pending",
+        has_active_booking: Boolean(service.has_active_booking),
+        is_available: service.is_available_for_booking || false,
+        is_promoted: false, // Not in view, default to false
         created_at: service.created_at ? new Date(service.created_at).toISOString() : new Date().toISOString(),
         updated_at: service.updated_at ? new Date(service.updated_at).toISOString() : new Date().toISOString(),
-        booking_count: Number(service.booking_count?.[0]?.count || 0),
-        category_name_en: String(categoryData?.name_en || "Unknown Category"),
-        category_name_fr: categoryData?.name_fr ? String(categoryData.name_fr) : undefined,
-        category_name_ar: categoryData?.name_ar ? String(categoryData.name_ar) : undefined,
-        service_name_en: String(serviceData?.name_en || "Unknown Service"),
-        service_name_fr: serviceData?.name_fr ? String(serviceData.name_fr) : undefined,
-        service_name_ar: serviceData?.name_ar ? String(serviceData.name_ar) : undefined,
+        booking_count: bookingCounts[String(service.tasker_service_id)] || 0,
+        category_name_en: String(service.category_name_en || "Unknown Category"),
+        category_name_fr: service.category_name_fr ? String(service.category_name_fr) : undefined,
+        category_name_ar: service.category_name_ar ? String(service.category_name_ar) : undefined,
+        service_name_en: String(service.service_name_en || "Unknown Service"),
+        service_name_fr: service.service_name_fr ? String(service.service_name_fr) : undefined,
+        service_name_ar: service.service_name_ar ? String(service.service_name_ar) : undefined,
       };
     });
 
-    return services;
+    // Determine if there are more services
+    const hasMore = (offset + services.length) < total;
+
+    return {
+      services,
+      total,
+      hasMore,
+    };
   } catch (error) {
     console.error("Error in getTaskerServices:", error);
     throw error;

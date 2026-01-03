@@ -17,9 +17,11 @@ import {
   User,
   AlertTriangle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import { useUserStore } from "@/stores/userStore";
+import { getUserProfileAction } from "@/actions/auth";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("security");
@@ -34,7 +36,28 @@ export default function SettingsPage() {
     jobAlerts: true,
   });
 
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
+  const [loading, setLoading] = useState(false);
+  
+  // Load user profile if not in store
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) {
+        try {
+          setLoading(true);
+          const result = await getUserProfileAction();
+          if (result.success && result.user) {
+            setUser(result.user);
+          }
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    loadUserProfile();
+  }, [user, setUser]);
 
   const handleToggle = (key: NotificationKey) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -58,6 +81,10 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-color-bg to-color-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-3 mb-4">

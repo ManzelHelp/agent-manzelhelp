@@ -44,6 +44,7 @@ import {
   type RecentActivity,
   type ProcessedMessage,
 } from "@/actions/dashboard";
+import { useTranslations } from "next-intl";
 
 /**
  * Modern Customer Dashboard Component
@@ -57,6 +58,8 @@ import {
  */
 export default function CustomerDashboardPage() {
   const router = useRouter();
+  const t = useTranslations("dashboard.customer");
+  const tCommon = useTranslations("common");
   
   // State management for dashboard data
   const [stats, setStats] = useState<CustomerDashboardStats>({
@@ -126,95 +129,95 @@ export default function CustomerDashboardPage() {
   // Helper functions for notification display
   const getNotificationIcon = (type: string) => {
     const iconMap = {
-      payment_received: <DollarSign className="h-4 w-4 text-green-600" />,
-      payment_confirmed: <DollarSign className="h-4 w-4 text-green-600" />,
-      booking_confirmed: <Calendar className="h-4 w-4 text-blue-600" />,
-      booking_created: <Calendar className="h-4 w-4 text-blue-600" />,
-      booking_accepted: <Calendar className="h-4 w-4 text-blue-600" />,
-      message_received: <MessageSquare className="h-4 w-4 text-purple-600" />,
-      job_completed: <CheckCircle className="h-4 w-4 text-green-600" />,
+      payment_received: <DollarSign className="h-4 w-4 text-[var(--color-success)]" />,
+      payment_confirmed: <DollarSign className="h-4 w-4 text-[var(--color-success)]" />,
+      booking_confirmed: <Calendar className="h-4 w-4 text-[var(--color-info)]" />,
+      booking_created: <Calendar className="h-4 w-4 text-[var(--color-info)]" />,
+      booking_accepted: <Calendar className="h-4 w-4 text-[var(--color-info)]" />,
+      message_received: <MessageSquare className="h-4 w-4 text-[var(--color-purple)]" />,
+      job_completed: <CheckCircle className="h-4 w-4 text-[var(--color-success)]" />,
     };
     return (
       iconMap[type as keyof typeof iconMap] || (
-        <Bell className="h-4 w-4 text-gray-600" />
+        <Bell className="h-4 w-4 text-[var(--color-gray-dark)]" />
       )
     );
   };
 
   const getNotificationBgColor = (type: string) => {
     const colorMap = {
-      payment_received: "bg-green-100 group-hover:bg-green-200",
-      payment_confirmed: "bg-green-100 group-hover:bg-green-200",
-      booking_confirmed: "bg-blue-100 group-hover:bg-blue-200",
-      booking_created: "bg-blue-100 group-hover:bg-blue-200",
-      booking_accepted: "bg-blue-100 group-hover:bg-blue-200",
-      message_received: "bg-purple-100 group-hover:bg-purple-200",
-      job_completed: "bg-green-100 group-hover:bg-green-200",
+      payment_received: "bg-[var(--color-success-light)] group-hover:bg-[var(--color-success-dark)]",
+      payment_confirmed: "bg-[var(--color-success-light)] group-hover:bg-[var(--color-success-dark)]",
+      booking_confirmed: "bg-[var(--color-info-light)] group-hover:bg-[var(--color-info-dark)]",
+      booking_created: "bg-[var(--color-info-light)] group-hover:bg-[var(--color-info-dark)]",
+      booking_accepted: "bg-[var(--color-info-light)] group-hover:bg-[var(--color-info-dark)]",
+      message_received: "bg-[var(--color-purple-light)] group-hover:bg-[var(--color-purple-dark)]",
+      job_completed: "bg-[var(--color-success-light)] group-hover:bg-[var(--color-success-dark)]",
     };
     return (
       colorMap[type as keyof typeof colorMap] ||
-      "bg-gray-100 group-hover:bg-gray-200"
+      "bg-[var(--color-gray-light)] group-hover:bg-[var(--color-gray-dark)]"
     );
   };
 
   const formatTimeAgo = (dateString: string | undefined) => {
-    if (!dateString) return "Unknown time";
+    if (!dateString) return "";
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    if (diffInHours < 48) return "1 day ago";
-    return `${Math.floor(diffInHours / 24)} days ago`;
+    if (diffInHours < 1) return tCommon("timeAgo.justNow");
+    if (diffInHours < 24) return tCommon("timeAgo.hoursAgo", { count: diffInHours });
+    if (diffInHours < 48) return tCommon("timeAgo.dayAgo");
+    return tCommon("timeAgo.daysAgo", { count: Math.floor(diffInHours / 24) });
   };
 
   // Helper functions for activity display
   const getActivityIcon = (type: string) => {
     const iconMap = {
-      booking: <Calendar className="h-4 w-4 text-blue-600" />,
-      message: <MessageSquare className="h-4 w-4 text-purple-600" />,
-      review: <Star className="h-4 w-4 text-yellow-600" />,
-      payment: <DollarSign className="h-4 w-4 text-green-600" />,
+      booking: <Calendar className="h-4 w-4 text-[var(--color-info)]" />,
+      message: <MessageSquare className="h-4 w-4 text-[var(--color-purple)]" />,
+      review: <Star className="h-4 w-4 text-[var(--color-warning)]" />,
+      payment: <DollarSign className="h-4 w-4 text-[var(--color-success)]" />,
     };
     return (
       iconMap[type as keyof typeof iconMap] || (
-        <Activity className="h-4 w-4 text-gray-600" />
+        <Activity className="h-4 w-4 text-[var(--color-gray-dark)]" />
       )
     );
   };
 
   const getActivityBgColor = (type: string) => {
     const colorMap = {
-      booking: "bg-blue-100 group-hover:bg-blue-200",
-      message: "bg-purple-100 group-hover:bg-purple-200",
-      review: "bg-yellow-100 group-hover:bg-yellow-200",
-      payment: "bg-green-100 group-hover:bg-green-200",
+      booking: "bg-[var(--color-info-light)] group-hover:bg-[var(--color-info-dark)]",
+      message: "bg-[var(--color-purple-light)] group-hover:bg-[var(--color-purple-dark)]",
+      review: "bg-[var(--color-warning-light)] group-hover:bg-[var(--color-warning-dark)]",
+      payment: "bg-[var(--color-success-light)] group-hover:bg-[var(--color-success-dark)]",
     };
     return (
       colorMap[type as keyof typeof colorMap] ||
-      "bg-gray-100 group-hover:bg-gray-200"
+      "bg-[var(--color-gray-light)] group-hover:bg-[var(--color-gray-dark)]"
     );
   };
 
   const getTrendIcon = (current: number, previous: number) => {
     if (current > previous) {
-      return <ArrowUpRight className="h-4 w-4 text-green-600" />;
+      return <ArrowUpRight className="h-4 w-4 text-[var(--color-success)]" />;
     } else if (current < previous) {
-      return <ArrowDownRight className="h-4 w-4 text-red-600" />;
+      return <ArrowDownRight className="h-4 w-4 text-[var(--color-error)]" />;
     }
-    return <Activity className="h-4 w-4 text-gray-600" />;
+    return <Activity className="h-4 w-4 text-[var(--color-gray-dark)]" />;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] to-[var(--color-surface)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="flex items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
           <span className="text-lg text-[var(--color-text-primary)]">
-            Loading dashboard...
+            {t("loadingDashboard")}
           </span>
         </div>
       </div>
@@ -223,18 +226,18 @@ export default function CustomerDashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] to-[var(--color-surface)] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center space-y-4">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <AlertCircle className="h-12 w-12 text-[var(--color-error)] mx-auto" />
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
-            Something went wrong
+            {t("somethingWentWrong")}
           </h2>
           <p className="text-[var(--color-text-secondary)] max-w-md">{error}</p>
           <Button
             onClick={() => window.location.reload()}
             className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
           >
-            Try Again
+            {t("tryAgain")}
           </Button>
         </div>
       </div>
@@ -249,23 +252,17 @@ export default function CustomerDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--color-text-primary)] mobile-text-optimized">
-                Welcome back! 👋
+                {t("welcomeBack")}
               </h1>
               <p className="text-base sm:text-lg text-[var(--color-text-secondary)] mobile-leading">
-                Here's an overview of your jobs and bookings
+                {t("overview")}
               </p>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
-              <Link href="/search/services">
-                <Button className="bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-light)] hover:to-[var(--color-secondary)] text-white shadow-lg hover:shadow-xl transition-all duration-300 mobile-button">
-                  <Users className="h-4 w-4 mr-2" />
-                  Browse Services
-                </Button>
-              </Link>
               <Link href="/customer/post-job">
                 <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white shadow-lg hover:shadow-xl transition-all duration-300 mobile-button">
                   <Plus className="h-4 w-4 mr-2" />
-                  Post Job
+                  {t("postJob")}
                 </Button>
               </Link>
             </div>
@@ -275,27 +272,27 @@ export default function CustomerDashboardPage() {
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Active Bookings */}
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-[var(--color-info-light)] to-[var(--color-info-light)] border-[var(--color-info)]/30 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-blue-800">
-                Active Bookings
+              <CardTitle className="text-sm font-semibold text-[var(--color-text-primary)]">
+                {t("activeBookings")}
               </CardTitle>
-              <div className="p-3 bg-blue-500 rounded-xl group-hover:bg-blue-600 transition-colors duration-200">
+              <div className="p-3 bg-[var(--color-info)] rounded-xl group-hover:bg-[var(--color-info-dark)] transition-colors duration-200">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-info)]" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-blue-900 mb-1">
+                  <div className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">
                     {stats.activeBookings}
                   </div>
-                  <p className="text-sm text-blue-700">Currently in progress</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">{t("currentlyInProgress")}</p>
                   <div className="flex items-center gap-1 mt-2">
                     {getTrendIcon(stats.activeBookings, 0)}
-                    <span className="text-xs text-blue-600">Active now</span>
+                    <span className="text-xs text-[var(--color-info)]">{t("inProgress")}</span>
                   </div>
                 </>
               )}
@@ -303,28 +300,28 @@ export default function CustomerDashboardPage() {
           </Card>
 
           {/* Total Spent */}
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-[var(--color-success-light)] to-[var(--color-success-light)] border-[var(--color-success)]/30 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-green-800">
-                Total Spent
+              <CardTitle className="text-sm font-semibold text-[var(--color-text-primary)]">
+                {t("totalSpent")}
               </CardTitle>
-              <div className="p-3 bg-green-500 rounded-xl group-hover:bg-green-600 transition-colors duration-200">
+              <div className="p-3 bg-[var(--color-success)] rounded-xl group-hover:bg-[var(--color-success-dark)] transition-colors duration-200">
                 <DollarSign className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-success)]" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-green-900 mb-1">
+                  <div className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">
                     {stats.totalSpent.toLocaleString()} MAD
                   </div>
-                  <p className="text-sm text-green-700">All time spending</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">{t("allTimeSpending")}</p>
                   <div className="flex items-center gap-1 mt-2">
-                    <Sparkles className="h-3 w-3 text-green-600" />
-                    <span className="text-xs text-green-600">
-                      Lifetime total
+                    <Sparkles className="h-3 w-3 text-[var(--color-success)]" />
+                    <span className="text-xs text-[var(--color-success)]">
+                      {t("lifetimeTotal")}
                     </span>
                   </div>
                 </>
@@ -333,27 +330,27 @@ export default function CustomerDashboardPage() {
           </Card>
 
           {/* Active Jobs */}
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-[var(--color-purple-light)] to-[var(--color-purple-light)] border-[var(--color-purple)]/30 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-purple-800">
-                Active Jobs
+              <CardTitle className="text-sm font-semibold text-[var(--color-text-primary)]">
+                {t("activeJobs")}
               </CardTitle>
-              <div className="p-3 bg-purple-500 rounded-xl group-hover:bg-purple-600 transition-colors duration-200">
+              <div className="p-3 bg-[var(--color-purple)] rounded-xl group-hover:bg-[var(--color-purple-dark)] transition-colors duration-200">
                 <Briefcase className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-purple)]" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-purple-900 mb-1">
+                  <div className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">
                     {stats.activeJobs}
                   </div>
-                  <p className="text-sm text-purple-700">Posted jobs</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">{t("postedJobs")}</p>
                   <div className="flex items-center gap-1 mt-2">
-                    <Target className="h-3 w-3 text-purple-600" />
-                    <span className="text-xs text-purple-600">In progress</span>
+                    <Target className="h-3 w-3 text-[var(--color-purple)]" />
+                    <span className="text-xs text-[var(--color-purple)]">{t("inProgress")}</span>
                   </div>
                 </>
               )}
@@ -361,27 +358,27 @@ export default function CustomerDashboardPage() {
           </Card>
 
           {/* Completed Jobs */}
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-[var(--color-warning-light)] to-[var(--color-warning-light)] border-[var(--color-warning)]/30 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-yellow-800">
-                Completed Jobs
+              <CardTitle className="text-sm font-semibold text-[var(--color-text-primary)]">
+                {t("completedJobs")}
               </CardTitle>
-              <div className="p-3 bg-yellow-500 rounded-xl group-hover:bg-yellow-600 transition-colors duration-200">
+              <div className="p-3 bg-[var(--color-warning)] rounded-xl group-hover:bg-[var(--color-warning-dark)] transition-colors duration-200">
                 <CheckCircle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               {statsLoading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-yellow-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-warning)]" />
               ) : (
                 <>
-                  <div className="text-3xl font-bold text-yellow-900 mb-1">
+                  <div className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">
                     {stats.completedJobs}
                   </div>
-                  <p className="text-sm text-yellow-700">Jobs completed</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">{t("jobsCompleted")}</p>
                   <div className="flex items-center gap-1 mt-2">
-                    <Award className="h-3 w-3 text-yellow-600" />
-                    <span className="text-xs text-yellow-600">Great work!</span>
+                    <Award className="h-3 w-3 text-[var(--color-warning)]" />
+                    <span className="text-xs text-[var(--color-warning)]">{t("greatWork")}</span>
                   </div>
                 </>
               )}
@@ -398,10 +395,10 @@ export default function CustomerDashboardPage() {
                 <div className="p-2 bg-[var(--color-primary)] rounded-lg">
                   <Zap className="h-5 w-5 text-white" />
                 </div>
-                Quick Actions
+                {t("quickActions")}
               </CardTitle>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Manage your jobs and bookings efficiently
+                {t("manageJobs")}
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -415,7 +412,7 @@ export default function CustomerDashboardPage() {
                       <Plus className="h-5 w-5" />
                     </div>
                     <span className="text-base font-semibold">
-                      Post New Job
+                      {t("postNewJob")}
                     </span>
                   </div>
                   <ChevronRight className="h-5 w-5" />
@@ -432,7 +429,7 @@ export default function CustomerDashboardPage() {
                       <Users className="h-5 w-5" />
                     </div>
                     <span className="text-base font-semibold">
-                      Browse Services
+                      {t("browseServices")}
                     </span>
                   </div>
                   <ChevronRight className="h-5 w-5" />
@@ -448,7 +445,7 @@ export default function CustomerDashboardPage() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <Eye className="h-4 w-4 text-[var(--color-secondary)]" />
-                      <span className="text-xs font-medium">Bookings</span>
+                      <span className="text-xs font-medium">{t("bookings")}</span>
                     </div>
                   </Button>
                 </Link>
@@ -459,8 +456,8 @@ export default function CustomerDashboardPage() {
                     variant="outline"
                   >
                     <div className="flex flex-col items-center gap-1">
-                      <CreditCard className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-medium">Finance</span>
+                      <CreditCard className="h-4 w-4 text-[var(--color-success)]" />
+                      <span className="text-xs font-medium">{t("finance")}</span>
                     </div>
                   </Button>
                 </Link>
@@ -471,11 +468,11 @@ export default function CustomerDashboardPage() {
                     variant="outline"
                   >
                     <div className="flex flex-col items-center gap-1">
-                      <MessageSquare className="h-4 w-4 text-blue-600" />
-                      <span className="text-xs font-medium">Messages</span>
+                      <MessageSquare className="h-4 w-4 text-[var(--color-info)]" />
+                      <span className="text-xs font-medium">{t("messages")}</span>
                     </div>
                     {messages.filter((m) => m.unread).length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-1 bg-[var(--color-error)] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                         {messages.filter((m) => m.unread).length}
                       </span>
                     )}
@@ -488,8 +485,8 @@ export default function CustomerDashboardPage() {
                     variant="outline"
                   >
                     <div className="flex flex-col items-center gap-1">
-                      <Home className="h-4 w-4 text-yellow-600" />
-                      <span className="text-xs font-medium">Addresses</span>
+                      <Home className="h-4 w-4 text-[var(--color-warning)]" />
+                      <span className="text-xs font-medium">{t("addresses")}</span>
                     </div>
                   </Button>
                 </Link>
@@ -504,10 +501,10 @@ export default function CustomerDashboardPage() {
                 <div className="p-2 bg-[var(--color-secondary)] rounded-lg">
                   <Activity className="h-5 w-5 text-white" />
                 </div>
-                Recent Activity
+                {t("recentActivity")}
               </CardTitle>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Latest updates from your services
+                {t("latestUpdates")}
               </p>
             </CardHeader>
             <CardContent>
@@ -518,7 +515,7 @@ export default function CustomerDashboardPage() {
               ) : recentActivity.length === 0 ? (
                 <div className="text-center py-8 text-[var(--color-text-secondary)]">
                   <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No recent activity</p>
+                  <p>{t("noRecentActivity")}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -541,7 +538,7 @@ export default function CustomerDashboardPage() {
                               {activity.title}
                             </h3>
                             {activity.amount && (
-                              <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                              <span className="text-xs font-medium text-[var(--color-success)] bg-[var(--color-success-light)] px-2 py-1 rounded-full">
                                 {activity.amount} MAD
                               </span>
                             )}
@@ -565,13 +562,13 @@ export default function CustomerDashboardPage() {
           <Card className="bg-[var(--color-surface)] border-[var(--color-border)] shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
-                <div className="p-2 bg-orange-500 rounded-lg">
+                <div className="p-2 bg-[var(--color-warning)] rounded-lg">
                   <Bell className="h-5 w-5 text-white" />
                 </div>
-                Notifications
+                {t("recentNotifications")}
               </CardTitle>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Stay updated with important alerts
+                {t("stayUpdated")}
               </p>
             </CardHeader>
             <CardContent>
@@ -582,7 +579,7 @@ export default function CustomerDashboardPage() {
               ) : notifications.length === 0 ? (
                 <div className="text-center py-8 text-[var(--color-text-secondary)]">
                   <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No notifications yet</p>
+                  <p>{t("noNotifications")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -592,8 +589,8 @@ export default function CustomerDashboardPage() {
                       onClick={() => router.push(`/customer/notifications?notificationId=${notification.id}`)}
                       className={`p-3 rounded-xl border transition-all duration-200 hover:shadow-sm cursor-pointer ${
                         !notification.is_read
-                          ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"
-                          : "bg-[var(--color-accent)] border-[var(--color-border)]"
+                          ? "bg-gradient-to-r from-[var(--color-info-light)] to-[var(--color-info-light)] border-[var(--color-info)]/30 shadow-sm"
+                          : "bg-[var(--color-surface)] border-[var(--color-border)]"
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -610,7 +607,7 @@ export default function CustomerDashboardPage() {
                               {notification.title}
                             </h3>
                             {!notification.is_read && (
-                              <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                              <span className="w-2 h-2 bg-[var(--color-info)] rounded-full animate-pulse"></span>
                             )}
                           </div>
                           <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
@@ -629,7 +626,7 @@ export default function CustomerDashboardPage() {
                         variant="ghost"
                         className="w-full h-12 text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] hover:bg-[var(--color-secondary)]/10 transition-all duration-200 mobile-button"
                       >
-                        View All Notifications
+                        {t("viewAll")}
                       </Button>
                     </Link>
                   )}
@@ -645,13 +642,13 @@ export default function CustomerDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
-                  <div className="p-2 bg-blue-500 rounded-lg">
+                  <div className="p-2 bg-[var(--color-info)] rounded-lg">
                     <MessageSquare className="h-5 w-5 text-white" />
                   </div>
-                  Recent Messages
+                  {t("recentMessages")}
                 </CardTitle>
                 <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                  Latest conversations with taskers
+                  {t("latestConversations")}
                 </p>
               </div>
               <Link href="/customer/messages">
@@ -660,7 +657,7 @@ export default function CustomerDashboardPage() {
                   size="sm"
                   className="text-[var(--color-primary)] border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all duration-200"
                 >
-                  View All
+                  {t("viewAll")}
                 </Button>
               </Link>
             </div>
@@ -673,9 +670,9 @@ export default function CustomerDashboardPage() {
             ) : messages.length === 0 ? (
               <div className="text-center py-8 text-[var(--color-text-secondary)]">
                 <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No messages yet</p>
+                <p>{t("noMessages")}</p>
                 <p className="text-xs mt-1">
-                  Start conversations with your taskers
+                  {t("startConversations")}
                 </p>
               </div>
             ) : (
@@ -685,8 +682,8 @@ export default function CustomerDashboardPage() {
                     key={message.id}
                     className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md cursor-pointer group ${
                       message.unread
-                        ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm"
-                        : "bg-[var(--color-accent)] border-[var(--color-border)] hover:border-[var(--color-secondary)]"
+                        ? "bg-gradient-to-r from-[var(--color-info-light)] to-[var(--color-info-light)] border-[var(--color-info)]/30 shadow-sm"
+                        : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-secondary)]"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -699,7 +696,7 @@ export default function CustomerDashboardPage() {
                             {message.client}
                           </h3>
                           {message.unread && (
-                            <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                            <span className="w-2 h-2 bg-[var(--color-info)] rounded-full animate-pulse"></span>
                           )}
                         </div>
                         <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
