@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SQL files in docs/sql (diagnostic and fix scripts)
+docs/sql/*.sql
+
+# Markdown guides in docs/guides (temporary documentation)
+docs/guides/*.md
+
+# Specific documentation files to ignore
+docs/PLAN_CORRECTION.md
+docs/SETUP_GUIDE.md
+docs/QUICK_REFERENCE.md
+docs/backup_migration_ENUM_2025-12-23.json

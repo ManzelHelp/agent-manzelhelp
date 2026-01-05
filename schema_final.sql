@@ -1039,6 +1039,7 @@ CREATE TABLE IF NOT EXISTS public.wallet_transactions (
     amount numeric(10,2) NOT NULL,
     type text NOT NULL, -- 'deposit', 'withdrawal', 'payment', 'refund', etc.
     related_job_id uuid REFERENCES public.jobs(id) ON DELETE SET NULL,
+    related_booking_id uuid REFERENCES public.service_bookings(id) ON DELETE SET NULL,
     notes text,
     created_at timestamp with time zone DEFAULT now()
 );
@@ -1046,6 +1047,7 @@ CREATE TABLE IF NOT EXISTS public.wallet_transactions (
 CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_id ON public.wallet_transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_wallet_transactions_created_at ON public.wallet_transactions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_wallet_transactions_type ON public.wallet_transactions(type);
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_booking_id ON public.wallet_transactions(related_booking_id);
 
 -- 10. FAQ TABLE
 CREATE TABLE IF NOT EXISTS public.faq (
