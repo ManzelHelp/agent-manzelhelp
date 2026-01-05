@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import {
   Search,
   MessageCircle,
-  Phone,
   Mail,
   BookOpen,
   Users,
@@ -104,24 +103,19 @@ const FAQ_CATEGORIES = [
 const CONTACT_OPTIONS = [
   {
     icon: <MessageCircle className="w-6 h-6" />,
-    title: "Live Chat",
-    description: "Get instant help from our support team",
-    action: "Start Chat",
-    available: "Available 24/7",
+    title: "Chat Live WhatsApp",
+    description: "Contactez-nous directement via WhatsApp",
+    action: "Ouvrir WhatsApp",
+    available: "Disponible 24/7",
+    href: "https://wa.me/212607505722",
   },
   {
     icon: <Mail className="w-6 h-6" />,
     title: "Email Support",
-    description: "Send us a detailed message",
-    action: "Send Email",
-    available: "Response within 24 hours",
-  },
-  {
-    icon: <Phone className="w-6 h-6" />,
-    title: "Phone Support",
-    description: "Speak directly with our team",
-    action: "Call Now",
-    available: "Mon-Fri 9AM-6PM",
+    description: "Envoyez-nous un message détaillé",
+    action: "Envoyer un Email",
+    available: "Réponse sous 24 heures",
+    href: "mailto:Info@manzelhelp.com",
   },
 ];
 
@@ -167,7 +161,7 @@ export default async function HelpPage({
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             {CONTACT_OPTIONS.map((option, index) => (
               <Card
                 key={index}
@@ -185,8 +179,10 @@ export default async function HelpPage({
                 <p className="text-sm text-[var(--color-text-secondary)] mb-4">
                   {option.available}
                 </p>
-                <Button variant="outline" className="w-full">
-                  {option.action}
+                <Button variant="outline" className="w-full" asChild>
+                  <a href={option.href} target="_blank" rel="noopener noreferrer">
+                    {option.action}
+                  </a>
                 </Button>
               </Card>
             ))}
