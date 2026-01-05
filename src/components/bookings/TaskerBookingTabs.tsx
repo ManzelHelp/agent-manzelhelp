@@ -58,7 +58,10 @@ export function TaskerBookingTabs({
 }: TaskerBookingTabsProps) {
   const t = useTranslations("taskerBookingTabs");
   const tabConfig = getTabConfig(t);
-  const tabs = Object.entries(tabConfig) as [
+  // Filter out "booked-taskers" tab from display (code kept for future use)
+  const tabs = Object.entries(tabConfig).filter(
+    ([tab]) => tab !== "booked-taskers"
+  ) as [
     TaskerBookingTab,
     (typeof tabConfig)[TaskerBookingTab]
   ][];

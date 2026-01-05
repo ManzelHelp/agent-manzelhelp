@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { BookingCard } from "@/components/bookings/BookingCard";
@@ -116,8 +116,16 @@ const getCustomerName = (booking: BookingWithDetails) => {
 
 export default function BookingsPage() {
   const { user } = useUserStore();
+  // Note: "booked-taskers" tab is hidden from UI but code is kept for future use
   const [activeTab, setActiveTab] = useState<TaskerBookingTab>("my-bookings");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
+  
+  // Prevent "booked-taskers" from being active (hidden feature)
+  useEffect(() => {
+    if (activeTab === "booked-taskers") {
+      setActiveTab("my-bookings");
+    }
+  }, [activeTab]);
 
   // State for different data types
   const [myBookings, setMyBookings] = useState<BookingWithDetails[]>([]);
@@ -128,12 +136,25 @@ export default function BookingsPage() {
     JobApplicationWithDetails[]
   >([]);
 
+  // State for total counts (loaded separately for all tabs)
+  const [totalCounts, setTotalCounts] = useState({
+    myBookings: 0,
+    bookedTaskers: 0,
+    myApplications: 0,
+  });
+
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSwitchingTab, setIsSwitchingTab] = useState(false); // For tab switching indicator
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [paginationError, setPaginationError] = useState<string | null>(null);
+  
+  // Track which tabs have been loaded to avoid showing skeleton on tab switch
+  // Using ref to avoid dependency issues in callbacks
+  const loadedTabsRef = useRef<Set<TaskerBookingTab>>(new Set());
+  const [loadedTabs, setLoadedTabs] = useState<Set<TaskerBookingTab>>(new Set());
   const [confirmationDialog, setConfirmationDialog] =
     useState<ConfirmationDialogState>({
       isOpen: false,
@@ -147,12 +168,22 @@ export default function BookingsPage() {
 
   // Fetch data based on active tab
   const fetchData = useCallback(
-    async (page: number = 0, append: boolean = false) => {
+    async (page: number = 0, append: boolean = false, isTabSwitch: boolean = false, tabOverride?: TaskerBookingTab) => {
+      // Use tabOverride if provided, otherwise use activeTab
+      const targetTab = tabOverride || activeTab;
+      
       try {
         if (append) {
           setIsLoadingMore(true);
         } else {
-          setIsLoading(true);
+          // Only show full loading skeleton on initial load or if tab hasn't been loaded before
+          const tabAlreadyLoaded = loadedTabsRef.current.has(targetTab);
+          if (!isTabSwitch || !tabAlreadyLoaded) {
+            setIsLoading(true);
+          } else {
+            // For tab switches with existing data, show a subtle loading indicator
+            setIsSwitchingTab(true);
+          }
         }
 
         // Clear any previous pagination errors
@@ -163,7 +194,7 @@ export default function BookingsPage() {
           applications?: JobApplicationWithDetails[];
           hasMore: boolean;
         };
-        switch (activeTab) {
+        switch (targetTab) {
           case "my-bookings":
             result = await getTaskerBookings(10, page * 10, !append);
             if (append) {
@@ -203,6 +234,12 @@ export default function BookingsPage() {
 
         setCurrentPage(page);
         setHasMore(result.hasMore);
+        
+        // Mark this tab as loaded (using ref to avoid dependency issues)
+        if (!append) {
+          loadedTabsRef.current.add(targetTab);
+          setLoadedTabs(new Set(loadedTabsRef.current));
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
         const errorMessage =
@@ -215,7 +252,7 @@ export default function BookingsPage() {
         if (!append) {
           toast.error(errorMessage);
           // Clear the appropriate state
-          switch (activeTab) {
+          switch (targetTab) {
             case "my-bookings":
               setMyBookings([]);
               break;
@@ -230,9 +267,10 @@ export default function BookingsPage() {
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
+        setIsSwitchingTab(false);
       }
     },
-    [activeTab]
+    [activeTab] // Removed loadedTabs from dependencies to prevent infinite loop
   );
 
   // Use realtime hooks for bookings and applications
@@ -276,10 +314,42 @@ export default function BookingsPage() {
     },
   });
 
-  // Initial data fetch
+  // Load total counts for all tabs on initial mount
+  const loadTotalCounts = useCallback(async () => {
+    try {
+      const [bookingsResult, applicationsResult, bookedTaskersResult] = await Promise.all([
+        getTaskerBookings(1, 0, true), // Only get total, limit to 1
+        getTaskerJobApplications(1, 0, true), // Only get total, limit to 1
+        getTaskerAsCustomerBookings(1, 0, true), // Only get total, limit to 1
+      ]);
+
+      setTotalCounts({
+        myBookings: bookingsResult.total,
+        myApplications: applicationsResult.total,
+        bookedTaskers: bookedTaskersResult.total,
+      });
+    } catch (error) {
+      console.error("Error loading total counts:", error);
+      // Don't show error toast, just log it - counts will update when tabs are clicked
+    }
+  }, []);
+
+  // Load total counts on initial mount
   useEffect(() => {
-    fetchData(0);
-  }, [fetchData]);
+    if (user?.id) {
+      loadTotalCounts();
+    }
+  }, [user?.id, loadTotalCounts]);
+
+  // Initial data fetch for active tab
+  const hasInitialized = useRef(false);
+  useEffect(() => {
+    if (user?.id && !hasInitialized.current && !loadedTabsRef.current.has(activeTab)) {
+      hasInitialized.current = true;
+      fetchData(0, false, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Only depend on user.id to avoid loops
 
   // Get current data based on active tab
   const currentData = useMemo(() => {
@@ -295,14 +365,14 @@ export default function BookingsPage() {
     }
   }, [activeTab, myBookings, bookedTaskers, myApplications]);
 
-  // Memoized booking counts for better performance
+  // Memoized booking counts - use totalCounts when available, fallback to loaded data length
   const bookingCounts = useMemo(() => {
     return {
-      myBookings: myBookings.length,
-      bookedTaskers: bookedTaskers.length,
-      myApplications: myApplications.length,
+      myBookings: totalCounts.myBookings > 0 ? totalCounts.myBookings : myBookings.length,
+      bookedTaskers: totalCounts.bookedTaskers > 0 ? totalCounts.bookedTaskers : bookedTaskers.length,
+      myApplications: totalCounts.myApplications > 0 ? totalCounts.myApplications : myApplications.length,
     };
-  }, [myBookings, bookedTaskers, myApplications]);
+  }, [totalCounts, myBookings, bookedTaskers, myApplications]);
 
   const handleActionClick = useCallback(
     (
@@ -433,17 +503,48 @@ export default function BookingsPage() {
   }, []);
 
   const handleTabChange = useCallback(
-    (tab: TaskerBookingTab) => {
+    async (tab: TaskerBookingTab) => {
+      // Prevent switching to "booked-taskers" (hidden feature, code kept for future use)
+      if (tab === "booked-taskers") {
+        console.log("[BookingsPage] booked-taskers tab is hidden, redirecting to my-bookings");
+        tab = "my-bookings";
+      }
+      
+      // If switching to the same tab, do nothing
+      if (tab === activeTab) {
+        return;
+      }
+      
+      // Update active tab first
       setActiveTab(tab);
       setIsNavExpanded(false);
       // Reset pagination when changing tabs
       setCurrentPage(0);
       setHasMore(true);
       setPaginationError(null);
-      // Fetch data for the new tab
-      fetchData(0);
+      
+      // Fetch data for the new tab immediately (pass tab explicitly to ensure correct data is loaded)
+      await fetchData(0, false, true, tab);
+      
+      // Update total count for the active tab after fetching
+      try {
+        if (tab === "my-bookings") {
+          const result = await getTaskerBookings(1, 0, true);
+          setTotalCounts((prev) => ({ ...prev, myBookings: result.total }));
+        } else if (tab === "my-applications") {
+          const result = await getTaskerJobApplications(1, 0, true);
+          setTotalCounts((prev) => ({ ...prev, myApplications: result.total }));
+        } else if (tab === "booked-taskers") {
+          // Keep this code for future use, even though tab is hidden
+          const result = await getTaskerAsCustomerBookings(1, 0, true);
+          setTotalCounts((prev) => ({ ...prev, bookedTaskers: result.total }));
+        }
+      } catch (error) {
+        console.error("Error updating total count:", error);
+        // Don't show error, just log it
+      }
     },
-    [fetchData]
+    [fetchData, activeTab]
   );
 
   const handleNavToggle = useCallback(() => {
@@ -461,7 +562,17 @@ export default function BookingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
-      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-8 relative">
+        {/* Subtle loading indicator for tab switching */}
+        {isSwitchingTab && (
+          <div className="absolute top-0 left-0 right-0 z-10 flex justify-center animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-b-lg shadow-lg flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-sm font-medium">Loading...</span>
+            </div>
+          </div>
+        )}
+        
         {/* Header with Back Button */}
         <div className="flex items-center gap-4 mb-4">
           <BackButton />
@@ -492,7 +603,7 @@ export default function BookingsPage() {
         </div>
 
         {/* Content Cards */}
-        <div className="space-y-6">
+        <div className={`space-y-6 ${isSwitchingTab ? "opacity-75" : "opacity-100"} transition-opacity duration-200`}>
           {currentData.map((item, index) => {
             if (activeTab === "my-bookings") {
               const booking = item as BookingWithDetails;

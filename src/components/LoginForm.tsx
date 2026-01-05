@@ -55,7 +55,6 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
         if (profileResult.success && profileResult.user) {
           // Update the Zustand store with the complete user profile
           setUser(profileResult.user);
-          toast.success(t("pages.login.loginSuccessful"));
           
           // Determine the role to use for redirection
           const userRole = profileResult.user.role || "customer";
@@ -63,12 +62,11 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
           
           console.log("[LoginForm] Redirecting to:", redirectPath, "Role:", userRole);
           
-          // Small delay to ensure state is updated before redirect
-          setTimeout(() => {
-            // Redirect to the appropriate dashboard based on user role
-            // useRouter from next-intl automatically handles locale
-            router.replace(redirectPath);
-          }, 100);
+          // Show success message and redirect immediately
+          toast.success(t("pages.login.loginSuccessful"));
+          
+          // Redirect immediately using router.push for better reliability
+          router.push(redirectPath);
         } else {
           // If profile fetch fails, show error but keep the auth user
           // This allows the user to still access the app, though with limited data
