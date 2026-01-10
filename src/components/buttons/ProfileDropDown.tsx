@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Bell,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -19,15 +20,48 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
-import LogOutButton from "./LogOutButton";
 import { useUserStore } from "@/stores/userStore";
 import { useTranslations } from "next-intl";
 import { ContactSupportDialog } from "../ContactSupportDialog";
+import { useRouter } from "@/i18n/navigation";
+import { logOutAction } from "@/actions/auth";
+import { toast } from "sonner";
 
 function ProfileDropDown() {
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
   const t = useTranslations("Header");
+  const tAuth = useTranslations("auth");
+  const router = useRouter();
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogOut = async () => {
+    setIsLoggingOut(true);
+
+    // Clear store and localStorage IMMEDIATELY before logout action
+    // This ensures UI updates immediately
+    if (typeof window !== "undefined") {
+      setUser(null);
+      localStorage.removeItem("user-storage");
+    } else {
+      setUser(null);
+    }
+
+    const { errorMessage } = await logOutAction();
+    if (!errorMessage) {
+      toast(tAuth("logoutSuccess"));
+      // Force a full page reload to ensure all cookies are cleared and state is reset
+      // Using window.location.href ensures complete page reload and cookie cleanup
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      } else {
+        router.replace("/");
+      }
+    } else {
+      toast.error(errorMessage);
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -42,7 +76,7 @@ function ProfileDropDown() {
         <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuLabel>{user?.role}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user?.role ? t(user.role as "tasker" | "customer") : ""}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <Link href={`/${user?.role}/profile`} className="flex items-center">
             <Settings className="mr-2 h-4 w-4" />
@@ -82,14 +116,20 @@ function ProfileDropDown() {
           className="flex items-center cursor-pointer"
         >
           <HelpCircle className="mr-2 h-4 w-4" />
-          <span>Contact Support</span>
+          <span>{t("contactSupport")}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <div className="flex items-center">
-            <LogOut className="mr-2 h-4 w-4" />
-            <LogOutButton />
-          </div>
+        <DropdownMenuItem
+          onClick={handleLogOut}
+          disabled={isLoggingOut}
+          className="flex items-center cursor-pointer w-full"
+        >
+          {isLoggingOut ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin flex-shrink-0" />
+          ) : (
+            <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
+          )}
+          <span className="flex-1 text-left">{tAuth("logout")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
       <ContactSupportDialog

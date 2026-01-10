@@ -24,11 +24,11 @@ import {
   Award,
   Sparkles,
 } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateShort } from "@/lib/date-utils";
 import ServiceDeleteButton from "@/components/services/ServiceDeleteButton";
 import { User } from "@/types/supabase";
 import { BackButton } from "@/components/ui/BackButton";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 // Enhanced loading component with modern design
 function ServicesLoadingSkeleton() {
@@ -98,6 +98,7 @@ function ServiceCard({
   taskerId: string;
 }) {
   const t = useTranslations("services");
+  const locale = useLocale();
   const getPricingDisplay = (service: ServiceWithDetails) => {
     if (service.pricing_type === "hourly") {
       return `MAD ${service.price}/hr`;
@@ -209,7 +210,7 @@ function ServiceCard({
               <Calendar className="h-3 w-3" />
               <span>
                 {service.created_at
-                  ? format(new Date(service.created_at), "MMM d, yyyy")
+                  ? formatDateShort(service.created_at, locale)
                   : t("unknownDate", { default: "Unknown date" })}
               </span>
             </div>

@@ -42,6 +42,7 @@ export function RefundRequestsHistoryDrawer({
   onClose,
 }: RefundRequestsHistoryDrawerProps) {
   const t = useTranslations("finance.walletRefund");
+  const locale = useLocale();
   const [requests, setRequests] = useState<WalletRefundRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);

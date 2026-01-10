@@ -184,7 +184,7 @@ export default function BioExperienceSection({
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                  {t("edit")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">

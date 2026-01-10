@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -11,10 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 
 const languages = [
-  { code: "en", label: "English", short: "EN" },
-  { code: "de", label: "Deutsch", short: "DE" },
-  { code: "fr", label: "Français", short: "FR" },
-  { code: "ar", label: "العربية", short: "AR" },
+  { code: "en", short: "EN" },
+  { code: "de", short: "DE" },
+  { code: "fr", short: "FR" },
+  { code: "ar", short: "AR" },
 ];
 
 export default function LanguageDropDown({
@@ -25,6 +25,7 @@ export default function LanguageDropDown({
   const router = useRouter();
   const pathname = usePathname();
   const currentLocale = useLocale();
+  const t = useTranslations("common.languages");
 
   const handleChange = (locale: string) => {
     if (locale !== currentLocale) {
@@ -55,7 +56,7 @@ export default function LanguageDropDown({
             onClick={() => handleChange(lang.code)}
             className={lang.code === currentLocale ? "font-bold" : ""}
           >
-            {lang.label}
+            {t(lang.code as "en" | "de" | "fr" | "ar")}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

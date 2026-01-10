@@ -203,6 +203,21 @@ export default function TaskerServiceDetailPage() {
     }
   };
 
+  const getStatusLabel = (status?: string) => {
+    switch (status) {
+      case "verified":
+        return t("verified", { default: "Verified" });
+      case "pending":
+        return t("pending", { default: "Pending" });
+      case "rejected":
+        return t("rejected", { default: "Rejected" });
+      case "under_review":
+        return t("underReview", { default: "Under Review" });
+      default:
+        return t("pending", { default: "Pending" });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)]">
@@ -339,8 +354,8 @@ export default function TaskerServiceDetailPage() {
                 </div>
                 <Badge className={getStatusColor(data.verification_status)}>
                   {getStatusIcon(data.verification_status)}
-                  <span className="ml-1 capitalize">
-                    {data.verification_status || "pending"}
+                  <span className="ml-1">
+                    {getStatusLabel(data.verification_status)}
                   </span>
                 </Badge>
               </div>

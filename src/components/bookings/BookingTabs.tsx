@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type TaskStatus =
   | "all"
@@ -44,7 +45,8 @@ const getStatusIcon = (status: TaskStatus) => {
   return <Icon className="h-4 w-4" />;
 };
 
-const getStatusLabel = (status: TaskStatus) => {
+// This function will be replaced with useTranslations inside components
+const getStatusLabelDefault = (status: TaskStatus) => {
   const labels = {
     all: "All Bookings",
     pending: "Pending Requests",
@@ -75,43 +77,68 @@ const TabButton = React.memo<{
   count: number;
   isActive: boolean;
   onClick: () => void;
-}>(({ status, count, isActive, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus shadow-sm
-    ${
-      isActive
-        ? "bg-color-primary text-color-surface shadow-md scale-105 z-10 ring-2 ring-color-primary-dark !border-none"
-        : "bg-transparent text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light !border-none"
+}>(({ status, count, isActive, onClick }) => {
+  const t = useTranslations("taskerBookings");
+  
+  const getStatusLabel = (status: TaskStatus) => {
+    switch (status) {
+      case "all":
+        return t("allBookings", { default: "All Bookings" });
+      case "pending":
+        return t("pendingRequests", { default: "Pending Requests" });
+      case "accepted":
+        return t("status.accepted", { default: "Accepted" });
+      case "confirmed":
+        return t("status.confirmed", { default: "Confirmed" });
+      case "in_progress":
+        return t("status.in_progress", { default: "In Progress" });
+      case "completed":
+        return t("status.completed", { default: "Completed" });
+      case "cancelled":
+        return t("status.cancelled", { default: "Cancelled" });
+      default:
+        return getStatusLabelDefault(status);
     }
-  `}
-    style={{ minWidth: 0 }}
-    aria-current={isActive ? "page" : undefined}
-  >
-    <div
-      className={`${isActive ? "text-color-surface" : getStatusColor(status)}`}
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus shadow-sm
+      ${
+        isActive
+          ? "bg-color-primary text-color-surface shadow-md scale-105 z-10 ring-2 ring-color-primary-dark !border-none"
+          : "bg-transparent text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light !border-none"
+      }
+    `}
+      style={{ minWidth: 0 }}
+      aria-current={isActive ? "page" : undefined}
     >
-      {getStatusIcon(status)}
-    </div>
-    <span className="text-sm font-medium hidden sm:inline mobile-text-base">
-      {getStatusLabel(status)}
-    </span>
-    <span className="text-xs font-medium sm:hidden mobile-text-sm">
-      {status}
-    </span>
-    {count > 0 && (
-      <span
-        className={`text-xs rounded-full px-2 py-0.5 font-medium ${
-          isActive
-            ? "bg-color-surface/20 text-color-surface"
-            : "bg-color-accent text-color-text-secondary"
-        }`}
+      <div
+        className={`${isActive ? "text-color-surface" : getStatusColor(status)}`}
       >
-        {count}
+        {getStatusIcon(status)}
+      </div>
+      <span className="text-sm font-medium hidden sm:inline mobile-text-base">
+        {getStatusLabel(status)}
       </span>
-    )}
-  </button>
-));
+      <span className="text-xs font-medium sm:hidden mobile-text-sm">
+        {status}
+      </span>
+      {count > 0 && (
+        <span
+          className={`text-xs rounded-full px-2 py-0.5 font-medium ${
+            isActive
+              ? "bg-color-surface/20 text-color-surface"
+              : "bg-color-accent text-color-text-secondary"
+          }`}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+});
 
 TabButton.displayName = "TabButton";
 
@@ -130,75 +157,100 @@ const MobileNavDropdown = React.memo<{
     onToggle,
     bookingCounts,
     filteredBookingsLength,
-  }) => (
-    <div className="sm:hidden">
-      <button
-        onClick={onToggle}
-        className="flex items-center justify-between w-full p-3 bg-color-accent-light border border-color-border rounded-lg text-color-text-primary hover:bg-color-accent transition-all touch-target mobile-focus"
-      >
-        <div className="flex items-center gap-2">
-          <div className={`${getStatusColor(activeTab)}`}>
-            {getStatusIcon(activeTab)}
+  }) => {
+    const t = useTranslations("taskerBookings");
+
+    const getStatusLabel = (status: TaskStatus) => {
+      switch (status) {
+        case "all":
+          return t("title", { default: "All Bookings" });
+        case "pending":
+          return t("status.pending", { default: "Pending Requests" });
+        case "accepted":
+          return t("status.accepted", { default: "Accepted" });
+        case "confirmed":
+          return t("status.confirmed", { default: "Confirmed" });
+        case "in_progress":
+          return t("status.in_progress", { default: "In Progress" });
+        case "completed":
+          return t("status.completed", { default: "Completed" });
+        case "cancelled":
+          return t("status.cancelled", { default: "Cancelled" });
+        default:
+          return getStatusLabelDefault(status);
+      }
+    };
+
+    return (
+      <div className="sm:hidden">
+        <button
+          onClick={onToggle}
+          className="flex items-center justify-between w-full p-3 bg-color-accent-light border border-color-border rounded-lg text-color-text-primary hover:bg-color-accent transition-all touch-target mobile-focus"
+        >
+          <div className="flex items-center gap-2">
+            <div className={`${getStatusColor(activeTab)}`}>
+              {getStatusIcon(activeTab)}
+            </div>
+            <span className="font-medium mobile-text-base">
+              {getStatusLabel(activeTab)}
+            </span>
+            <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium">
+              {filteredBookingsLength}
+            </span>
           </div>
-          <span className="font-medium mobile-text-base">
-            {getStatusLabel(activeTab)}
-          </span>
-          <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium">
-            {filteredBookingsLength}
-          </span>
-        </div>
-        {isExpanded ? (
-          <ChevronUp className="h-4 w-4" />
-        ) : (
-          <ChevronDown className="h-4 w-4" />
-        )}
-      </button>
-      {isExpanded && (
-        <div className="mt-2 p-2 bg-color-surface border border-color-border rounded-lg shadow-sm space-y-1">
-          {(
-            [
-              "all",
-              "pending",
-              "accepted",
-              "confirmed",
-              "in_progress",
-              "completed",
-              "cancelled",
-            ] as TaskStatus[]
-          ).map((status) => (
-            <button
-              key={status}
-              onClick={() => {
-                onTabChange(status);
-                onToggle();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus ${
-                activeTab === status
-                  ? "bg-color-primary text-color-surface"
-                  : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light"
-              }`}
-            >
-              <div
-                className={`${
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </button>
+        {isExpanded && (
+          <div className="mt-2 p-2 bg-color-surface border border-color-border rounded-lg shadow-sm space-y-1">
+            {(
+              [
+                "all",
+                "pending",
+                "accepted",
+                "confirmed",
+                "in_progress",
+                "completed",
+                "cancelled",
+              ] as TaskStatus[]
+            ).map((status) => (
+              <button
+                key={status}
+                onClick={() => {
+                  onTabChange(status);
+                  onToggle();
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all touch-target mobile-focus ${
                   activeTab === status
-                    ? "text-color-surface"
-                    : getStatusColor(status)
+                    ? "bg-color-primary text-color-surface"
+                    : "text-color-text-secondary hover:text-color-text-primary hover:bg-color-accent-light"
                 }`}
               >
-                {getStatusIcon(status)}
-              </div>
-              <span className="text-sm font-medium mobile-text-base">
-                {getStatusLabel(status)}
-              </span>
-              <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium ml-auto">
-                {bookingCounts[status]}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+                <div
+                  className={`${
+                    activeTab === status
+                      ? "text-color-surface"
+                      : getStatusColor(status)
+                  }`}
+                >
+                  {getStatusIcon(status)}
+                </div>
+                <span className="text-sm font-medium mobile-text-base">
+                  {getStatusLabel(status)}
+                </span>
+                <span className="text-xs bg-color-accent text-color-text-secondary px-2 py-0.5 rounded-full font-medium ml-auto">
+                  {bookingCounts[status]}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 );
 
 MobileNavDropdown.displayName = "MobileNavDropdown";

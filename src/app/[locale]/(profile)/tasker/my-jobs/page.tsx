@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { getUserProfileAction } from "@/actions/auth";
 import { getTaskerJobs, JobWithDetails } from "@/actions/jobs";
 import {
@@ -18,7 +18,7 @@ import {
   XCircle,
   ArrowRight,
 } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateShort, formatTimeShort } from "@/lib/date-utils";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,7 @@ async function JobCard({
   taskerId: string;
 }) {
   const t = await getTranslations("myJobs");
+  const locale = await getLocale();
   const getStatusColor = (status?: string | null) => {
     switch (status) {
       case "active":
@@ -130,7 +131,7 @@ async function JobCard({
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), "MMM d, yyyy");
+      return formatDateShort(dateString, locale);
     } catch {
       return "Invalid date";
     }
@@ -139,7 +140,7 @@ async function JobCard({
   const formatTime = (timeString: string | null) => {
     if (!timeString) return "";
     try {
-      return format(new Date(`2000-01-01T${timeString}`), "h:mm a");
+      return formatTimeShort(timeString, locale);
     } catch {
       return timeString;
     }

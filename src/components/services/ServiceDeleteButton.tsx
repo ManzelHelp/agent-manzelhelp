@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 interface ServiceDeleteButtonProps {
   serviceId: string;
@@ -23,6 +24,7 @@ export default function ServiceDeleteButton({
   serviceId,
   taskerId,
 }: ServiceDeleteButtonProps) {
+  const t = useTranslations("services.deleteServiceConfirmation");
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
@@ -32,15 +34,15 @@ export default function ServiceDeleteButton({
       const result = await deleteTaskerService(serviceId, taskerId);
 
       if (result.success) {
-        toast.success("Service deleted successfully");
+        toast.success(t("success", { default: "Service deleted successfully" }));
         setShowConfirmDialog(false);
         // The page will revalidate automatically due to revalidatePath in the action
       } else {
-        toast.error(result.error || "Failed to delete service");
+        toast.error(result.error || t("failed", { default: "Failed to delete service" }));
       }
     } catch (error) {
       console.error("Error deleting service:", error);
-      toast.error("An unexpected error occurred");
+      toast.error(t("unexpectedError", { default: "An unexpected error occurred" }));
     } finally {
       setIsDeleting(false);
     }
@@ -51,7 +53,7 @@ export default function ServiceDeleteButton({
       <button
         onClick={() => setShowConfirmDialog(true)}
         className="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px] flex items-center justify-center"
-        title="Delete service"
+        title={t("title", { default: "Delete service" })}
         disabled={isDeleting}
       >
         <Trash2 className="h-4 w-4" />
@@ -60,11 +62,9 @@ export default function ServiceDeleteButton({
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Service</DialogTitle>
+            <DialogTitle>{t("title", { default: "Delete Service" })}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this service? This action cannot
-              be undone. If there are any active bookings for this service, it
-              cannot be deleted.
+              {t("description", { default: "Are you sure you want to delete this service? This action cannot be undone. If there are any active bookings for this service, it cannot be deleted." })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -74,7 +74,7 @@ export default function ServiceDeleteButton({
               disabled={isDeleting}
               className="w-full sm:w-auto"
             >
-              Cancel
+              {t("cancel", { default: "Cancel" })}
             </Button>
             <Button
               variant="destructive"
@@ -82,7 +82,7 @@ export default function ServiceDeleteButton({
               disabled={isDeleting}
               className="w-full sm:w-auto"
             >
-              {isDeleting ? "Deleting..." : "Delete Service"}
+              {isDeleting ? t("deleting", { default: "Deleting..." }) : t("confirm", { default: "Delete Service" })}
             </Button>
           </DialogFooter>
         </DialogContent>

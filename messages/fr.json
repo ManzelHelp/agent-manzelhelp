@@ -44,7 +44,13 @@
     "promoted": "Promu",
     "flexible": "Flexible",
     "budget": "Budget",
-    "view": "Voir"
+    "view": "Voir",
+    "languages": {
+      "en": "Anglais",
+      "de": "Allemand",
+      "fr": "Français",
+      "ar": "Arabe"
+    }
   },
   "Header": {
     "services": "Services",
@@ -67,7 +73,10 @@
     "profile": "Profil",
     "dashboard": "Tableau de bord",
     "settings": "Paramètres",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "tasker": "Assistant",
+    "customer": "Client",
+    "contactSupport": "Contacter le Support"
   },
   "homepage": {
     "title": "Bienvenue sur ManzelHelp",
@@ -104,6 +113,13 @@
     "successRate": "Taux de Réussite",
     "reviews": "Avis",
     "addNewService": "Ajouter un Nouveau Service",
+    "currentlyInProgress": "Actuellement en cours",
+    "activeNow": "Actif maintenant",
+    "allTimeEarnings": "Gains de tous les temps",
+    "lifetimeTotal": "Total à vie",
+    "jobCompletionRate": "Taux de complétion des emplois",
+    "excellent": "Excellent",
+    "loading": "Chargement du tableau de bord...",
     "noActiveJobs": "Aucun emploi actif",
     "noJobsDescription": "Commencez à postuler aux emplois pour commencer",
     "noEarnings": "Aucun gain pour le moment",
@@ -133,7 +149,12 @@
     "appliedTo": "Postulé à \"{jobTitle}\"",
     "refundRequestUnderReview": "Demande de Remboursement en Révision",
     "refundRequestApproved": "Demande de Remboursement Approuvée",
-    "refundRequestMessage": "Votre demande de remboursement {referenceCode} pour {amount} MAD {status}. {actionMessage}"
+    "refundRequestMessage": "Votre demande de remboursement {referenceCode} pour {amount} MAD {status}. {actionMessage}",
+    "customer": {
+      "loadingDashboard": "Chargement du tableau de bord...",
+      "somethingWentWrong": "Quelque chose s'est mal passé",
+      "tryAgain": "Réessayer"
+    }
   },
   "profile": {
     "title": "Profil",
@@ -383,7 +404,87 @@
     "managePaymentMethods": "Gérez vos méthodes de paiement et vos informations de facturation",
     "homeLocation": "Emplacement Domicile",
     "workLocation": "Emplacement Travail",
-    "otherLocation": "Autre Emplacement"
+    "otherLocation": "Autre Emplacement",
+    "profilePhoto": "Photo de Profil",
+    "clickCameraToChange": "Cliquez sur l'icône de la caméra pour changer",
+    "addProfilePhoto": "Ajouter une photo de profil",
+    "photoRequirements": "📸 Exigences Photo :",
+    "photoFormats": "Formats : JPEG, PNG ou WebP",
+    "photoMaxSize": "Taille max : {size} Mo",
+    "photoMinDimensions": "Dimensions min : {width}x{height} px",
+    "photoMaxDimensions": "Dimensions max : {width}x{height} px",
+    "photoAutoResized": "Redimensionné et compressé automatiquement pour des performances optimales",
+    "verificationStatus": "Statut de Vérification",
+    "email": "E-mail",
+    "verified": "Vérifié",
+    "verify": "Vérifier",
+    "identityVerification": "Vérification d'Identité",
+    "uploadClearPhotos": "Téléchargez des photos claires de votre pièce d'identité (recto et verso) pour vérification",
+    "documentRequirements": "Exigences du Document :",
+    "documentClearPhotos": "Photos claires de haute qualité ou fichiers PDF",
+    "documentMaxSize": "Taille max : 5 Mo par document",
+    "documentFormats": "Formats : JPEG, PNG, WebP ou PDF",
+    "documentReadable": "Tous les textes doivent être clairement lisibles",
+    "documentReviewTime": "Les documents seront examinés dans les 24-48 heures",
+    "documentsUploaded": "Documents Téléchargés",
+    "yourBasicProfileInformation": "Vos informations de profil de base",
+    "edit": "Modifier",
+    "editPersonalInformation": "Modifier les Informations Personnelles",
+    "updatePersonalInformation": "Mettez à jour vos informations personnelles et votre photo de profil",
+    "experienceLevels": {
+      "beginner": "Débutant (0-1 ans)",
+      "intermediate": "Intermédiaire (1-3 ans)",
+      "expert": "Expert (3+ ans)"
+    },
+    "tellCustomersAbout": "Parlez aux clients de votre expérience et de vos compétences",
+    "missing": "{count} manquant",
+    "editBioExperience": "Modifier Bio & Expérience",
+    "updateBioExperience": "Mettez à jour votre biographie, niveau d'expérience et zone de service",
+    "bio": "Biographie",
+    "bioPlaceholder": "Décrivez vos compétences, votre expérience et ce qui vous rend excellent dans ce que vous faites...",
+    "noBioAddedYet": "Aucune biographie ajoutée pour le moment",
+    "experienceLevel": "Niveau d'Expérience",
+    "notSpecified": "Non spécifié",
+    "serviceArea": "Zone de Service",
+    "serviceRadius": "Rayon de {radius} km",
+    "serviceAreaRadius": "Rayon de la Zone de Service (km)",
+    "serviceRadiusPlaceholder": "Entrez le rayon en kilomètres (1-200)",
+    "serviceAreaGuidelines": {
+      "title": "Directives de Zone de Service :",
+      "local": "Local : rayon de 5-20 km - Idéal pour les services rapides et visites fréquentes",
+      "citywide": "À l'échelle de la ville : rayon de 20-50 km - Couvre toute votre ville et les zones proches",
+      "regional": "Régional : rayon de 50-100 km - Couverture étendue pour des zones de service plus grandes",
+      "extended": "Étendu : rayon de 100+ km - Couverture maximale pour services spécialisés"
+    },
+    "bioTips": {
+      "title": "💡 Conseils pour une excellente biographie :",
+      "mentionExperience": "Mentionnez vos années d'expérience et spécialisations",
+      "highlightUnique": "Mettez en avant ce qui vous rend unique et fiable",
+      "beSpecific": "Soyez spécifique sur les services que vous excellez",
+      "keepProfessional": "Restez professionnel mais amical",
+      "aimForSentences": "Visez 3-5 phrases qui transmettent votre expertise"
+    },
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi",
+    "saturday": "Samedi",
+    "sunday": "Dimanche",
+    "notAvailable": "Non disponible",
+    "unavailable": "Indisponible",
+    "available": "Disponible",
+    "manageYourLocations": "Gérez vos emplacements",
+    "addLocation": "Ajouter un Emplacement",
+    "default": "Par défaut",
+    "home": "Domicile",
+    "managePaymentMethods": "Gérez vos méthodes de paiement et vos informations de facturation",
+    "addMethod": "Ajouter une Méthode",
+    "noPaymentMethods": "Aucune méthode de paiement",
+    "addPaymentMethodsDescription": "Ajoutez des méthodes de paiement pour recevoir des paiements pour vos services",
+    "addFirstPaymentMethod": "Ajouter la Première Méthode de Paiement",
+    "editAvailability": "Modifier la Disponibilité",
+    "setWorkingHoursDescription": "Définissez vos heures de travail pour chaque jour de la semaine"
   },
   "Footer": {
     "about": "À propos",
@@ -587,9 +688,10 @@
       "timezone": "Fuseau horaire",
       "currency": "Devise",
       "languages": {
-        "en": "English",
-        "de": "Deutsch",
-        "fr": "Français"
+        "en": "Anglais",
+        "de": "Allemand",
+        "fr": "Français",
+        "ar": "Arabe"
       },
       "timezones": {
         "GMT": "GMT (Greenwich Mean Time)",
@@ -634,6 +736,7 @@
   "auth": {
     "login": "Se connecter",
     "logout": "Se déconnecter",
+    "logoutSuccess": "Déconnexion réussie",
     "signup": "S'inscrire",
     "email": "E-mail",
     "password": "Mot de passe",
@@ -1469,6 +1572,7 @@
     "serviceNotFound": "Service non trouvé",
     "failedToLoad": "Échec du chargement de l'offre de service. Veuillez réessayer plus tard.",
     "goToDashboard": "Aller au Tableau de Bord",
+    "listedOn": "Répertorié le",
     "bookingDialog": {
       "title": "Confirmer la Réservation",
       "description": "Examinez les détails de votre réservation et confirmez votre demande de service",

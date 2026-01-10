@@ -227,7 +227,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
           <span className="text-lg text-[var(--color-text-primary)]">
-            Loading dashboard...
+            {t("loading")}
           </span>
         </div>
       </div>
@@ -319,10 +319,10 @@ export default function DashboardPage() {
                   <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">
                     {stats.activeJobs}
                   </div>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">Currently in progress</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">{t("currentlyInProgress")}</p>
                   <div className="flex items-center gap-1 mt-2">
                     {getTrendIcon(stats.activeJobs, 0)}
-                    <span className="text-xs text-blue-600 dark:text-blue-400">Active now</span>
+                    <span className="text-xs text-blue-600 dark:text-blue-400">{t("activeNow")}</span>
                   </div>
                 </>
               )}
@@ -347,11 +347,11 @@ export default function DashboardPage() {
                   <div className="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">
                     {stats.totalEarnings.toLocaleString()} MAD
                   </div>
-                  <p className="text-sm text-green-700 dark:text-green-300">All time earnings</p>
+                  <p className="text-sm text-green-700 dark:text-green-300">{t("allTimeEarnings")}</p>
                   <div className="flex items-center gap-1 mt-2">
                     <Sparkles className="h-3 w-3 text-green-600 dark:text-green-400" />
                     <span className="text-xs text-green-600 dark:text-green-400">
-                      Lifetime total
+                      {t("lifetimeTotal")}
                     </span>
                   </div>
                 </>
@@ -363,7 +363,7 @@ export default function DashboardPage() {
           <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 border-yellow-200 dark:border-yellow-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
-                Rating
+                {t("rating")}
               </CardTitle>
               <div className="p-3 bg-yellow-500 dark:bg-yellow-600 rounded-xl group-hover:bg-yellow-600 dark:group-hover:bg-yellow-700 transition-colors duration-200">
                 <Star className="h-5 w-5 text-white" />
@@ -411,10 +411,10 @@ export default function DashboardPage() {
                   <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">
                     {stats.completionRate}%
                   </div>
-                  <p className="text-sm text-purple-700 dark:text-purple-300">Job completion rate</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">{t("jobCompletionRate")}</p>
                   <div className="flex items-center gap-1 mt-2">
                     <CheckCircle className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs text-purple-600 dark:text-purple-400">Excellent</span>
+                    <span className="text-xs text-purple-600 dark:text-purple-400">{t("excellent")}</span>
                   </div>
                 </>
               )}

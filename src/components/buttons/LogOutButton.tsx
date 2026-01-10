@@ -7,10 +7,12 @@ import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { logOutAction } from "@/actions/auth";
 import { useUserStore } from "@/stores/userStore";
+import { useTranslations } from "next-intl";
 
 function LogOutButton() {
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
+  const t = useTranslations("auth");
 
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +30,7 @@ function LogOutButton() {
 
     const { errorMessage } = await logOutAction();
     if (!errorMessage) {
-      toast("Logged out successfully");
+      toast(t("logoutSuccess"));
       // Force a full page reload to ensure all cookies are cleared and state is reset
       // Using window.location.href ensures complete page reload and cookie cleanup
       if (typeof window !== "undefined") {
@@ -49,7 +51,7 @@ function LogOutButton() {
       disabled={loading}
       className="w-24"
     >
-      {loading ? <Loader2 className="animate-spin" /> : "Log Out"}
+      {loading ? <Loader2 className="animate-spin" /> : t("logout")}
     </Button>
   );
 }

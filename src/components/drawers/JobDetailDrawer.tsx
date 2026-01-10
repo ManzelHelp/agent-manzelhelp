@@ -9,7 +9,6 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
@@ -244,7 +243,7 @@ export function JobDetailDrawer({
                           {getStatusText(jobData.status || undefined)}
                         </Badge>
                       </div>
-                      <DrawerDescription className="flex items-center gap-4 text-base">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           {t("postedOn")}{" "}
@@ -254,7 +253,7 @@ export function JobDetailDrawer({
                           <Users className="h-4 w-4" />
                           {jobData.application_count} {t("applications")}
                         </div>
-                      </DrawerDescription>
+                      </div>
                     </div>
                     <DrawerClose asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">

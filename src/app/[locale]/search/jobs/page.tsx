@@ -101,6 +101,11 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
+  // Get current user if logged in to exclude their own jobs
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+
   // Use centralized categories - get all parent categories for search
   const categories = getParentCategoriesForSearch();
 
@@ -128,6 +133,12 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
     `
     )
     .in("status", ["active", "in_progress"]);
+
+  // Exclude jobs created by the current user (whether they're a customer or tasker)
+  // Users should not see their own jobs when searching for jobs to apply to
+  if (currentUser?.id) {
+    query = query.neq("customer_id", currentUser.id);
+  }
 
   // Apply filters
   if (resolvedSearchParams.q && resolvedSearchParams.q.trim()) {

@@ -9,7 +9,6 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -229,14 +228,14 @@ export function ServiceDetailDrawer({
                       <DrawerTitle className="text-2xl md:text-3xl font-bold mb-2">
                         {serviceData.title}
                       </DrawerTitle>
-                      <DrawerDescription className="flex items-center gap-2 text-base">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        Listed on{" "}
+                        {t("listedOn")}{" "}
                         {format(
                           new Date(serviceData.created_at),
                           "MMMM d, yyyy"
                         )}
-                      </DrawerDescription>
+                      </div>
                     </div>
                     <DrawerClose asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">

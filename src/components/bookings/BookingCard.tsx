@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Calendar,
   User,
@@ -15,6 +16,8 @@ import { BookingWithDetails } from "@/actions/bookings";
 import { useRouter } from "next/navigation";
 import { createConversationAction } from "@/actions/messages";
 import { toast } from "sonner";
+import { useTranslations, useLocale } from "next-intl";
+import { formatDateShort, formatTimeShort, formatCurrency as formatCurrencyUtil } from "@/lib/date-utils";
 
 interface BookingCardProps {
   booking: BookingWithDetails;
@@ -27,31 +30,6 @@ interface BookingCardProps {
   };
 }
 
-// Utility functions moved outside component to avoid re-creation
-const formatCurrency = (amount: number, currency: string) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
-import { formatDateShort } from "@/lib/date-utils";
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "Date not set";
-  return formatDateShort(dateString);
-};
-
-const formatTime = (timeString: string | null) => {
-  if (!timeString) return "";
-  return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-};
 
 const formatDuration = (minutes: number | null) => {
   if (!minutes) return "";
@@ -82,9 +60,25 @@ const getLocation = (booking: BookingWithDetails) => {
 export const BookingCard = React.memo<BookingCardProps>(
   ({ booking, onActionClick, isUpdating, actionButton }) => {
     const router = useRouter();
+    const t = useTranslations("taskerBookings");
+    const locale = useLocale();
     const [isOpeningMessage, setIsOpeningMessage] = useState(false);
     const customerName = getCustomerName(booking);
     const location = getLocation(booking);
+
+    const formatCurrency = (amount: number, currency: string) => {
+      return formatCurrencyUtil(amount, currency, locale);
+    };
+
+    const formatDate = (dateString: string | null) => {
+      if (!dateString) return t("labels.flexible");
+      return formatDateShort(dateString, locale);
+    };
+
+    const formatTime = (timeString: string | null) => {
+      if (!timeString) return "";
+      return formatTimeShort(timeString, locale);
+    };
 
     const handleMessageClick = async () => {
       if (!booking.customer_id) {
@@ -125,17 +119,19 @@ export const BookingCard = React.memo<BookingCardProps>(
                 <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
                   {booking.service_title || "Service"}
                 </h3>
-                <span
+                <Badge
                   className={`text-xs px-2 py-1 rounded-full font-medium ${
                     booking.status === "pending"
                       ? "bg-color-warning/10 text-color-warning"
                       : booking.status === "completed"
                       ? "bg-color-success/10 text-color-success"
+                      : booking.status === "accepted"
+                      ? "bg-color-info/10 text-color-info"
                       : "bg-color-accent text-color-text-secondary"
                   }`}
                 >
-                  {booking.status.replace("_", " ")}
-                </span>
+                  {t(`status.${booking.status}`, { default: booking.status.replace("_", " ") })}
+                </Badge>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
                 <span className="flex items-center gap-1">
