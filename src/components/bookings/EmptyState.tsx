@@ -3,6 +3,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { User, AlertCircle, CheckCircle, Play, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type TaskStatus =
   | "all"
@@ -58,42 +59,12 @@ const getStatusBgColor = (status: TaskStatus) => {
   return bgColors[status];
 };
 
-const getEmptyStateMessage = (activeTab: TaskStatus) => {
-  const messages = {
-    all: {
-      title: "No bookings found",
-      description: "You have no bookings yet.",
-    },
-    pending: {
-      title: "No pending requests",
-      description: "You have no new booking requests at the moment.",
-    },
-    completed: {
-      title: "No completed bookings",
-      description: "You have no completed bookings yet.",
-    },
-    accepted: {
-      title: "No accepted bookings",
-      description: "You have no accepted bookings at the moment.",
-    },
-    confirmed: {
-      title: "No confirmed bookings",
-      description: "You have no confirmed bookings at the moment.",
-    },
-    in_progress: {
-      title: "No active tasks",
-      description: "You have no tasks in progress at the moment.",
-    },
-    cancelled: {
-      title: "No cancelled bookings",
-      description: "You have no cancelled bookings.",
-    },
-  };
-  return messages[activeTab];
-};
-
 export const EmptyState = React.memo<EmptyStateProps>(({ activeTab }) => {
-  const message = getEmptyStateMessage(activeTab);
+  const t = useTranslations("bookings.emptyStates");
+  const message = {
+    title: t(`${activeTab}.title`, { default: "No bookings found" }),
+    description: t(`${activeTab}.description`, { default: "You have no bookings yet." }),
+  };
 
   return (
     <Card className="border-color-border bg-color-surface shadow-sm">

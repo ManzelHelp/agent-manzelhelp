@@ -195,3 +195,138 @@ export const deleteUploadedFilesAction = async (
     };
   }
 };
+
+// Server action to upload refund receipt
+export const uploadRefundReceipt = async (
+  requestId: string,
+  file: File
+): Promise<UploadResult> => {
+  try {
+    const supabase = await createClient();
+
+    // Get authenticated user
+    const { data: { user: authUser }, error: authError } =
+      await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return {
+        success: false,
+        errorMessage: "User not authenticated. Please log in again.",
+      };
+    }
+
+    // Verify that the request belongs to the user
+    const { data: request, error: requestError } = await supabase
+      .from("wallet_refund_requests")
+      .select("tasker_id, status")
+      .eq("id", requestId)
+      .single();
+
+    if (requestError || !request) {
+      return {
+        success: false,
+        errorMessage: "Refund request not found",
+      };
+    }
+
+    if (request.tasker_id !== authUser.id) {
+      return {
+        success: false,
+        errorMessage: "Unauthorized: You can only upload receipts for your own requests",
+      };
+    }
+
+    if (request.status !== "pending") {
+      return {
+        success: false,
+        errorMessage: `Cannot upload receipt. Current status: ${request.status}`,
+      };
+    }
+
+    // Validate file type (images and PDF)
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      return {
+        success: false,
+        errorMessage: "Please upload a valid file (JPG, PNG, WebP, or PDF)",
+      };
+    }
+
+    if (file.size > maxSize) {
+      return {
+        success: false,
+        errorMessage: "File size must be less than 5MB",
+      };
+    }
+
+    // Determine file extension
+    const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const fileName = `receipt.${fileExt}`;
+    const filePath = `${authUser.id}/${requestId}/${fileName}`;
+
+    // Use receipts bucket (or verification-documents if receipts doesn't exist)
+    // First, try to upload to receipts bucket
+    let uploadResult = await supabase.storage
+      .from("receipts")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    // If receipts bucket doesn't exist, fallback to verification-documents
+    if (uploadResult.error && uploadResult.error.message.includes("bucket")) {
+      uploadResult = await supabase.storage
+        .from("verification-documents")
+        .upload(`receipts/${filePath}`, file, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+    }
+
+    if (uploadResult.error) {
+      return {
+        success: false,
+        errorMessage: `Failed to upload receipt: ${uploadResult.error.message}`,
+      };
+    }
+
+    // Create signed URL (valid for 1 year)
+    const bucketName = uploadResult.error ? "verification-documents" : "receipts";
+    const finalPath = uploadResult.error
+      ? `receipts/${filePath}`
+      : filePath;
+
+    const { data: signedUrlData, error: signedUrlError } =
+      await supabase.storage
+        .from(bucketName)
+        .createSignedUrl(finalPath, 60 * 60 * 24 * 365); // 1 year
+
+    if (signedUrlError) {
+      console.error("Error creating signed URL:", signedUrlError);
+      // Return the path even if signed URL creation fails
+      return {
+        success: true,
+        url: finalPath,
+      };
+    }
+
+    return {
+      success: true,
+      url: signedUrlData.signedUrl || finalPath,
+    };
+  } catch (error) {
+    console.error("Error uploading refund receipt:", error);
+    return {
+      success: false,
+      errorMessage: "Failed to upload receipt",
+    };
+  }
+};

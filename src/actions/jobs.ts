@@ -3,6 +3,9 @@
 import { createClient, createServiceRoleClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getAllCategoryHierarchies } from "@/lib/categories";
+import { getNotificationTranslationsForUser } from "@/lib/notifications";
+import { getErrorTranslationForUser } from "@/lib/errors";
+import { getUserLocale, getTranslatedString } from "@/lib/i18n-server";
 
 // Helper function to get category and service names by service ID (synchronous version for fallback)
 function getCategoryAndServiceNamesSync(serviceId: number) {
@@ -220,7 +223,7 @@ export async function getCustomerJobs(
       jobs: [],
       total: 0,
       hasMore: false,
-      error: error instanceof Error ? error.message : "An unexpected error occurred",
+      error: error instanceof Error ? error.message : await getErrorTranslationForUser(undefined, "general", "unexpected"),
     };
   }
 }
@@ -237,7 +240,12 @@ export async function getJobById(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("Authentication required");
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "jobs",
+      "notAuthenticated"
+    );
+    throw new Error(errorMessage);
   }
 
   const { data, error } = await supabase
@@ -283,7 +291,12 @@ export async function getJobById(
       return null; // Job not found
     }
     console.error("Error fetching job:", error);
-    throw new Error(`Failed to fetch job: ${error.message}`);
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "jobs",
+      "jobNotFound"
+    );
+    throw new Error(errorMessage);
   }
 
   // Get category and service names from database
@@ -320,11 +333,21 @@ export async function updateJobStatus(
       .single();
 
     if (fetchError || !existingJob) {
-      return { success: false, error: "Job not found" };
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "jobs",
+        "jobNotFound"
+      );
+      return { success: false, error: errorMessage };
     }
 
     if (existingJob.customer_id !== customerId) {
-      return { success: false, error: "Unauthorized" };
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "jobs",
+        "unauthorized"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Update the job
@@ -350,7 +373,12 @@ export async function updateJobStatus(
     return { success: true };
   } catch (error) {
     console.error("Error in updateJobStatus:", error);
-    return { success: false, error: "Failed to update job" };
+    const errorMessage = await getErrorTranslationForUser(
+      customerId,
+      "jobs",
+      "failedToUpdate"
+    );
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -369,25 +397,45 @@ export async function deleteJob(
       .single();
 
     if (fetchError || !existingJob) {
-      return { success: false, error: "Job not found" };
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "jobs",
+        "jobNotFound"
+      );
+      return { success: false, error: errorMessage };
     }
 
     if (existingJob.customer_id !== customerId) {
-      return { success: false, error: "Unauthorized" };
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "jobs",
+        "unauthorized"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Check if job can be deleted
     if (existingJob.assigned_tasker_id) {
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "jobs",
+        "jobAlreadyAssigned"
+      );
       return {
         success: false,
-        error: "Cannot delete job that has been assigned to a tasker",
+        error: errorMessage,
       };
     }
 
     if (["in_progress", "completed"].includes(existingJob.status || "")) {
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "jobs",
+        "failedToDelete"
+      );
       return {
         success: false,
-        error: "Cannot delete job in current status",
+        error: errorMessage,
       };
     }
 
@@ -396,9 +444,14 @@ export async function deleteJob(
 
     if (error) {
       console.error("Error deleting job:", error);
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "jobs",
+        "failedToDelete"
+      );
       return {
         success: false,
-        error: `Failed to delete job: ${error.message}`,
+        error: `${errorMessage}: ${error.message}`,
       };
     }
 
@@ -407,7 +460,12 @@ export async function deleteJob(
     return { success: true };
   } catch (error) {
     console.error("Error in deleteJob:", error);
-    return { success: false, error: "Failed to delete job" };
+    const errorMessage = await getErrorTranslationForUser(
+      customerId,
+      "jobs",
+      "failedToDelete"
+    );
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -425,7 +483,12 @@ export async function assignTaskerToJob(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Verify the job belongs to the customer
@@ -436,11 +499,21 @@ export async function assignTaskerToJob(
       .single();
 
     if (fetchError || !existingJob) {
-      return { success: false, error: "Job not found" };
+      const errorMessage = await getErrorTranslationForUser(
+        user.id,
+        "jobs",
+        "jobNotFound"
+      );
+      return { success: false, error: errorMessage };
     }
 
     if (existingJob.customer_id !== user.id) {
-      return { success: false, error: "Unauthorized" };
+      const errorMessage = await getErrorTranslationForUser(
+        user.id,
+        "jobs",
+        "unauthorized"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Allow assignment if job is active or under_review
@@ -475,7 +548,12 @@ export async function assignTaskerToJob(
     return { success: true };
   } catch (error) {
     console.error("Error in assignTaskerToJob:", error);
-    return { success: false, error: "Failed to assign tasker" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "jobs",
+      "failedToAcceptApplication"
+    );
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -518,7 +596,12 @@ export async function getJobApplications(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      throw new Error("Authentication required");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      throw new Error(errorMessage);
     }
 
     // First verify the job belongs to the customer
@@ -529,11 +612,21 @@ export async function getJobApplications(
       .single();
 
     if (jobError || !job) {
-      throw new Error("Job not found");
+      const errorMessage = await getErrorTranslationForUser(
+        user.id,
+        "jobs",
+        "jobNotFound"
+      );
+      throw new Error(errorMessage);
     }
 
     if (job.customer_id !== user.id) {
-      throw new Error("Unauthorized");
+      const errorMessage = await getErrorTranslationForUser(
+        user.id,
+        "jobs",
+        "unauthorized"
+      );
+      throw new Error(errorMessage);
     }
 
     // Get applications with tasker details
@@ -646,7 +739,12 @@ export async function updateJob(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Verify the job belongs to the customer
@@ -726,7 +824,12 @@ export async function createJob(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Validate required fields
@@ -856,7 +959,12 @@ export async function acceptJobApplication(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Get the application and verify ownership
@@ -900,7 +1008,12 @@ export async function acceptJobApplication(
 
     if (updateAppError) {
       console.error("Error updating application:", updateAppError);
-      return { success: false, error: "Failed to accept application" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "failedToAcceptApplication"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Update the job to assign the tasker
@@ -916,7 +1029,12 @@ export async function acceptJobApplication(
 
     if (updateJobError) {
       console.error("Error updating job:", updateJobError);
-      return { success: false, error: "Failed to assign tasker to job" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "failedToAcceptApplication"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Reject all other applications for this job
@@ -936,13 +1054,18 @@ export async function acceptJobApplication(
 
     // Create notification for the tasker that their application was accepted
     const jobTitle = (application.job as any)?.title || "the job";
+    const notificationTranslations = await getNotificationTranslationsForUser(
+      application.tasker_id,
+      "application_accepted",
+      { jobTitle }
+    );
     const { error: notificationError } = await supabase
       .from("notifications")
       .insert({
         user_id: application.tasker_id,
         type: "application_accepted",
-        title: "Application Accepted",
-        message: `Your application for job "${jobTitle}" has been accepted.`,
+        title: notificationTranslations.title,
+        message: notificationTranslations.message,
         related_job_id: application.job_id,
         is_read: false,
       });
@@ -989,7 +1112,12 @@ export async function rejectJobApplication(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Get the application and verify ownership
@@ -1025,7 +1153,12 @@ export async function rejectJobApplication(
 
     if (updateError) {
       console.error("Error updating application:", updateError);
-      return { success: false, error: "Failed to reject application" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "failedToRejectApplication"
+      );
+      return { success: false, error: errorMessage };
     }
 
     revalidatePath(`/customer/my-jobs/${application.job_id}/applications`);
@@ -1063,7 +1196,12 @@ export async function createJobApplication(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Check if user exists in users table (by ID first, then by email if ID doesn't match)
@@ -1338,13 +1476,18 @@ export async function createJobApplication(
     // Create notification for the customer that a new application was received
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
+      const notificationTranslations = await getNotificationTranslationsForUser(
+        job.customer_id,
+        "application_received",
+        { jobTitle }
+      );
       const { error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: job.customer_id,
           type: "application_received",
-          title: "New Application Received",
-          message: `A tasker has applied to your job: "${jobTitle}".`,
+          title: notificationTranslations.title,
+          message: notificationTranslations.message,
           related_job_id: applicationData.job_id,
           is_read: false,
         });
@@ -1399,7 +1542,12 @@ export async function startJob(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     const taskerId = user.id;
@@ -1457,13 +1605,18 @@ export async function startJob(
     // Create notification for the customer that the tasker has started the job
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
+      const notificationTranslations = await getNotificationTranslationsForUser(
+        job.customer_id,
+        "job_started",
+        { jobTitle }
+      );
       const { error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: job.customer_id,
           type: "job_started",
-          title: "Job Started",
-          message: `The tasker has started working on your job: "${jobTitle}".`,
+          title: notificationTranslations.title,
+          message: notificationTranslations.message,
           related_job_id: jobId,
           is_read: false,
         });
@@ -1495,7 +1648,12 @@ export async function startJob(
     return { success: true };
   } catch (error) {
     console.error("Error in startJob:", error);
-    return { success: false, error: "Failed to start job" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "jobs",
+      "failedToStart"
+    );
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -1516,7 +1674,12 @@ export async function completeJob(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     const taskerId = user.id;
@@ -1565,22 +1728,32 @@ export async function completeJob(
         details: updateError.details,
         hint: updateError.hint,
       });
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "failedToComplete"
+      );
       return {
         success: false,
-        error: `Failed to complete job: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+        error: `${errorMessage}: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
       };
     }
 
     // Create notification for the customer that the tasker has completed the job
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
+      const notificationTranslations = await getNotificationTranslationsForUser(
+        job.customer_id,
+        "job_completed",
+        { jobTitle }
+      );
       const { error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: job.customer_id,
           type: "job_completed",
-          title: "Job Completed",
-          message: `The tasker has completed your job: "${jobTitle}". Please review and confirm completion.`,
+          title: notificationTranslations.title,
+          message: notificationTranslations.message,
           related_job_id: jobId,
           is_read: false,
         });
@@ -1612,7 +1785,12 @@ export async function completeJob(
     return { success: true };
   } catch (error) {
     console.error("Error in completeJob:", error);
-    return { success: false, error: "Failed to complete job" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "jobs",
+      "failedToComplete"
+    );
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -1633,7 +1811,12 @@ export async function confirmJobCompletion(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     const customerId = user.id;
@@ -2050,13 +2233,18 @@ export async function confirmJobCompletion(
       }
 
       // 5. Create notification for customer about payment processed
+      const customerPaymentTranslations = await getNotificationTranslationsForUser(
+        customerId,
+        "payment_received",
+        { amount: totalAmount, currency, jobTitle }
+      );
       const { error: customerPaymentNotificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: customerId,
           type: "payment_received",
-          title: "Payment Processed",
-          message: `Your payment of ${totalAmount} ${currency} for job "${jobTitle}" has been processed.`,
+          title: customerPaymentTranslations.title,
+          message: customerPaymentTranslations.message,
           related_job_id: jobId,
           is_read: false,
         });
@@ -2064,14 +2252,25 @@ export async function confirmJobCompletion(
         console.error("Error creating customer payment notification:", customerPaymentNotificationError);
       }
 
-      // 6. Create notification for tasker
+      // 6. Create notification for tasker - Job Confirmed by Customer (special case)
+      const taskerLocale = await getUserLocale(taskerId);
+      const taskerConfirmedTitle = await getTranslatedString(
+        taskerLocale,
+        "notifications.titles.jobConfirmedByCustomer",
+        {}
+      );
+      const taskerConfirmedMessage = await getTranslatedString(
+        taskerLocale,
+        "notifications.messages.jobConfirmedByCustomer",
+        { jobTitle }
+      );
       const { error: taskerNotificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: taskerId,
           type: "job_completed",
-          title: "Job Confirmed by Customer",
-          message: `The customer has confirmed that you completed the job: "${jobTitle}".`,
+          title: taskerConfirmedTitle,
+          message: taskerConfirmedMessage,
           related_job_id: jobId,
           is_read: false,
         });
@@ -2097,7 +2296,12 @@ export async function confirmJobCompletion(
     return { success: true };
   } catch (error) {
     console.error("Error in confirmJobCompletion:", error);
-    return { success: false, error: "Failed to confirm job completion" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "jobs",
+      "failedToConfirm"
+    );
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -2119,7 +2323,12 @@ export async function approveJobByAdmin(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     // Verify the user is an admin
@@ -2181,13 +2390,18 @@ export async function approveJobByAdmin(
     // Create notification for the customer that their job has been approved
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
+      const notificationTranslations = await getNotificationTranslationsForUser(
+        job.customer_id,
+        "job_approved",
+        { jobTitle }
+      );
       const { error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: job.customer_id,
           type: "job_approved",
-          title: "Job Approved",
-          message: `Your job "${jobTitle}" has been approved and is now live! Taskers can now see and apply to your job.`,
+          title: notificationTranslations.title,
+          message: notificationTranslations.message,
           related_job_id: jobId,
           is_read: false,
         });

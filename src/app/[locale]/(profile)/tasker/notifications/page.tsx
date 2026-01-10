@@ -124,6 +124,18 @@ const getNotificationColor = (type: NotificationType) => {
       "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/20 dark:border-emerald-800",
     job_started:
       "text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/20 dark:border-blue-800",
+    wallet_refund_request_created:
+      "text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/20 dark:border-blue-800",
+    wallet_refund_payment_confirmed:
+      "text-cyan-600 bg-cyan-50 border-cyan-200 dark:text-cyan-400 dark:bg-cyan-950/20 dark:border-cyan-800",
+    wallet_refund_verifying:
+      "text-yellow-600 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-950/20 dark:border-yellow-800",
+    wallet_refund_approved:
+      "text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/20 dark:border-green-800",
+    wallet_refund_rejected:
+      "text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/20 dark:border-red-800",
+    wallet_low_balance:
+      "text-orange-600 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-950/20 dark:border-orange-800",
   };
   return (
     colorMap[type] ||
@@ -131,29 +143,12 @@ const getNotificationColor = (type: NotificationType) => {
   );
 };
 
-// Notification type labels
-const getNotificationTypeLabel = (type: NotificationType) => {
-  const labelMap: Record<NotificationType, string> = {
-    job_created: "New Job",
-    application_received: "Application",
-    application_accepted: "Accepted",
-    job_completed: "Completed",
-    payment_received: "Payment",
-    message_received: "Message",
-    booking_created: "Booking",
-    booking_accepted: "Accepted",
-    booking_confirmed: "Confirmed",
-    booking_cancelled: "Cancelled",
-    booking_completed: "Completed",
-    booking_reminder: "Reminder",
-    service_created: "Service",
-    service_updated: "Updated",
-    payment_confirmed: "Confirmed",
-    payment_pending: "Pending",
-    job_approved: "Approved",
-    job_started: "Started",
-  };
-  return labelMap[type] || "Notification";
+// Notification type labels - now uses translations
+const getNotificationTypeLabel = (type: NotificationType, t: (key: string) => string) => {
+  const translationKey = `types.${type}`;
+  const translated = t(translationKey);
+  // Fallback to "General" if translation not found
+  return translated !== translationKey ? translated : t("types.general");
 };
 
 function NotificationScrollHandler({ notificationId, notifications, user, markAsRead, router }: {
@@ -570,7 +565,7 @@ export default function NotificationsPage() {
         return (
           notification.title.toLowerCase().includes(query) ||
           notification.message.toLowerCase().includes(query) ||
-          getNotificationTypeLabel(notification.type)
+          getNotificationTypeLabel(notification.type, t)
             .toLowerCase()
             .includes(query)
         );
@@ -1039,7 +1034,8 @@ export default function NotificationsPage() {
                                       className="text-xs"
                                     >
                                       {getNotificationTypeLabel(
-                                        notification.type
+                                        notification.type,
+                                        t
                                       )}
                                     </Badge>
                                   </div>
@@ -1081,6 +1077,21 @@ export default function NotificationsPage() {
                                       className="text-primary hover:text-primary/80 hover:underline touch-target font-medium transition-colors"
                                     >
                                       {t("actions.viewDetails")}
+                                    </Link>
+                                  )}
+                                  {/* Lien vers les refunds pour les notifications wallet */}
+                                  {(notification.type === 'wallet_refund_approved' || 
+                                    notification.type === 'wallet_refund_rejected' ||
+                                    notification.type === 'wallet_refund_request_created' ||
+                                    notification.type === 'wallet_refund_payment_confirmed' ||
+                                    notification.type === 'wallet_low_balance') && (
+                                    <Link
+                                      href="/tasker/finance/refunds"
+                                      className="text-primary hover:text-primary/80 hover:underline touch-target font-medium transition-colors"
+                                    >
+                                      {notification.type === 'wallet_low_balance' 
+                                        ? t("actions.viewFinance", { default: "View Finance" })
+                                        : t("actions.viewRefunds", { default: "View Refunds" })}
                                     </Link>
                                   )}
                                 </div>

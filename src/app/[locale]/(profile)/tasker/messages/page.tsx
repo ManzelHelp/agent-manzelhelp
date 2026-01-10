@@ -39,7 +39,8 @@ type MessageStatus = "all" | "unread" | "read";
 
 export default function MessagesPage() {
   const router = useRouter();
-  const t = useTranslations("notifications.actions");
+  const t = useTranslations("messages");
+  const tCommon = useTranslations("common");
   const { user } = useUserStore();
   const [messageFilter, setMessageFilter] = useState<MessageStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -134,7 +135,7 @@ export default function MessagesPage() {
 
   // Helper function to format time
   const formatTime = (timestamp: string | undefined) => {
-    if (!timestamp) return "Unknown";
+    if (!timestamp) return tCommon("unknown", { default: "Unknown time" });
 
     const date = new Date(timestamp);
     const now = new Date();
@@ -142,13 +143,17 @@ export default function MessagesPage() {
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 1) return tCommon("timeAgo.justNow");
     if (diffInHours < 24)
-      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
+      return tCommon("timeAgo.hoursAgo", { count: diffInHours });
 
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7)
-      return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+    if (diffInDays < 7) {
+      if (diffInDays === 1) {
+        return tCommon("timeAgo.dayAgo");
+      }
+      return tCommon("timeAgo.daysAgo", { count: diffInDays });
+    }
 
     // Use short date format DD.MM.YYYY
     return formatDateShort(timestamp);
@@ -280,7 +285,7 @@ export default function MessagesPage() {
       ) : (
         <AlertCircle className="h-4 w-4" />
       )}
-      <span className="capitalize font-medium mobile-text-sm">{status}</span>
+      <span className="capitalize font-medium mobile-text-sm">{t(status)}</span>
       {count !== undefined && count > 0 && (
         <span
           className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
@@ -305,10 +310,10 @@ export default function MessagesPage() {
         {/* Header */}
         <div className="mobile-spacing">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)] mobile-leading">
-            Messages
+            {t("messages")}
           </h1>
           <p className="text-[var(--color-text-secondary)] mobile-leading mt-2">
-            Manage your communications with clients
+            {t("manageCommunications")}
           </p>
         </div>
 
@@ -317,17 +322,19 @@ export default function MessagesPage() {
             <div className="flex flex-col gap-4">
               <div>
                 <CardTitle className="text-[var(--color-text-primary)] mobile-text-lg">
-                  Inbox
+                  {t("inbox")}
                 </CardTitle>
                 <CardDescription className="text-[var(--color-text-secondary)] mobile-text-sm">
-                  {unreadCount} unread message{unreadCount !== 1 && "s"}
+                  {unreadCount === 1 
+                    ? t("unreadMessages", { count: unreadCount })
+                    : t("unreadMessagesPlural", { count: unreadCount })}
                 </CardDescription>
               </div>
               <div className="flex gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-secondary)]" />
                   <Input
-                    placeholder="Search messages..."
+                    placeholder={t("searchPlaceholder", { default: "Search messages..." })}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] mobile-focus touch-target"
@@ -367,10 +374,10 @@ export default function MessagesPage() {
                     <Loader2 className="h-12 w-12 text-[var(--color-primary)] animate-spin" />
                   </div>
                   <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
-                    Loading messages...
+                    {t("loadingMessages")}
                   </h3>
                   <p className="text-sm text-[var(--color-text-secondary)] mobile-leading">
-                    Please wait while we fetch your conversations
+                    {t("pleaseWait")}
                   </p>
                 </div>
               ) : error ? (
@@ -379,7 +386,7 @@ export default function MessagesPage() {
                     <AlertCircle className="h-12 w-12 text-red-500" />
                   </div>
                   <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
-                    Error loading messages
+                    {t("errorLoadingMessages")}
                   </h3>
                   <p className="text-sm text-[var(--color-text-secondary)] mobile-leading mb-4">
                     {error}
@@ -388,7 +395,7 @@ export default function MessagesPage() {
                     onClick={() => window.location.reload()}
                     className="touch-target"
                   >
-                    Try Again
+                    {t("tryAgain")}
                   </Button>
                 </div>
               ) : groupedConversations.length === 0 ? (
@@ -397,16 +404,16 @@ export default function MessagesPage() {
                     <MessageCircle className="h-12 w-12 text-[var(--color-text-secondary)]" />
                   </div>
                   <h3 className="font-semibold mb-2 text-[var(--color-text-primary)] mobile-text-lg">
-                    No messages found
+                    {t("noMessagesFound")}
                   </h3>
                   <p className="text-sm text-[var(--color-text-secondary)] mobile-leading">
                     {searchQuery
-                      ? "Try adjusting your search terms"
+                      ? t("tryAdjustingSearch")
                       : messageFilter === "unread"
-                      ? "You have no unread messages"
+                      ? t("noUnreadMessages")
                       : messageFilter === "read"
-                      ? "You have no read messages"
-                      : "Your inbox is empty"}
+                      ? t("noReadMessages")
+                      : t("emptyInbox")}
                   </p>
                 </div>
               ) : (

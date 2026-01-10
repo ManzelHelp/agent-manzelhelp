@@ -1049,6 +1049,107 @@ CREATE INDEX IF NOT EXISTS idx_wallet_transactions_created_at ON public.wallet_t
 CREATE INDEX IF NOT EXISTS idx_wallet_transactions_type ON public.wallet_transactions(type);
 CREATE INDEX IF NOT EXISTS idx_wallet_transactions_booking_id ON public.wallet_transactions(related_booking_id);
 
+-- 9.5. WALLET_REFUND_REQUESTS TABLE
+CREATE TABLE IF NOT EXISTS public.wallet_refund_requests (
+    id uuid DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
+    tasker_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    amount numeric(10,2) NOT NULL CHECK (amount > 0),
+    reference_code varchar(50) NOT NULL UNIQUE,
+    status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'payment_confirmed', 'admin_verifying', 'approved', 'rejected')),
+    receipt_url text,
+    admin_notes text,
+    admin_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
+    confirmed_at timestamp with time zone,
+    approved_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_wallet_refund_requests_tasker_id ON public.wallet_refund_requests(tasker_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_refund_requests_status ON public.wallet_refund_requests(status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_refund_requests_reference_code ON public.wallet_refund_requests(reference_code);
+CREATE INDEX IF NOT EXISTS idx_wallet_refund_requests_created_at ON public.wallet_refund_requests(created_at DESC);
+
+-- Trigger pour mettre à jour updated_at automatiquement
+CREATE OR REPLACE FUNCTION public.update_wallet_refund_requests_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER wallet_refund_requests_updated_at
+    BEFORE UPDATE ON public.wallet_refund_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_wallet_refund_requests_updated_at();
+
+-- Activer RLS
+ALTER TABLE public.wallet_refund_requests ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies pour wallet_refund_requests
+-- Policy INSERT : Les taskers peuvent créer leurs propres demandes
+DROP POLICY IF EXISTS "Taskers can create refund requests" ON public.wallet_refund_requests;
+
+CREATE POLICY "Taskers can create refund requests"
+ON public.wallet_refund_requests FOR INSERT
+TO authenticated
+WITH CHECK (
+    tasker_id = auth.uid() AND
+    EXISTS (
+        SELECT 1 FROM public.users
+        WHERE id = auth.uid() AND role IN ('tasker', 'both')
+    )
+);
+
+-- Policy SELECT : Les taskers peuvent lire leurs propres demandes, les admins peuvent tout lire
+DROP POLICY IF EXISTS "Taskers can read own refund requests" ON public.wallet_refund_requests;
+DROP POLICY IF EXISTS "Admins can read all refund requests" ON public.wallet_refund_requests;
+
+CREATE POLICY "Taskers can read own refund requests"
+ON public.wallet_refund_requests FOR SELECT
+TO authenticated
+USING (
+    tasker_id = auth.uid() OR
+    EXISTS (
+        SELECT 1 FROM public.users
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+);
+
+-- Policy UPDATE : Les taskers peuvent mettre à jour leurs demandes en statut 'pending', les admins peuvent tout mettre à jour
+DROP POLICY IF EXISTS "Taskers can update own pending refund requests" ON public.wallet_refund_requests;
+DROP POLICY IF EXISTS "Admins can update all refund requests" ON public.wallet_refund_requests;
+
+CREATE POLICY "Taskers can update own pending refund requests"
+ON public.wallet_refund_requests FOR UPDATE
+TO authenticated
+USING (
+    tasker_id = auth.uid() AND status = 'pending'
+)
+WITH CHECK (
+    tasker_id = auth.uid() AND (status = 'pending' OR status = 'payment_confirmed')
+);
+
+CREATE POLICY "Admins can update all refund requests"
+ON public.wallet_refund_requests FOR UPDATE
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM public.users
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+)
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.users
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+);
+
 -- 10. FAQ TABLE
 CREATE TABLE IF NOT EXISTS public.faq (
     id uuid DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
@@ -2661,6 +2762,8 @@ GRANT ALL ON TABLE public.job_application_counts TO anon, authenticated, service
 GRANT ALL ON TABLE public.user_monthly_usage TO anon, authenticated, service_role;
 
 GRANT ALL ON TABLE public.wallet_transactions TO anon, authenticated, service_role;
+
+GRANT ALL ON TABLE public.wallet_refund_requests TO anon, authenticated, service_role;
 
 GRANT ALL ON TABLE public.faq TO anon, authenticated, service_role;
 

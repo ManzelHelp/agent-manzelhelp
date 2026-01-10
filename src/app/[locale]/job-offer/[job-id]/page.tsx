@@ -133,7 +133,7 @@ export default function JobOfferPage() {
         jobData.id, // jobId
         undefined, // serviceId
         undefined, // bookingId
-        `Hi! I'm interested in your job: "${jobData.title}". I'd like to discuss the details with you.` // initialMessage
+        t("contactInitialMessage", { jobTitle: jobData.title }) // initialMessage
       );
 
       if (result.conversation) {

@@ -4,6 +4,8 @@ import { createClient } from "@/supabase/server";
 import { handleError } from "@/lib/utils";
 import type { Conversation, Message } from "@/types/supabase";
 import { revalidatePath } from "next/cache";
+import { getNotificationTranslationsForUser } from "@/lib/notifications";
+import { getErrorTranslationForUser } from "@/lib/errors";
 
 export interface MessageWithDetails extends Message {
   sender?: {
@@ -61,7 +63,12 @@ export const getConversationsAction = async (
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      throw new Error("User not authenticated");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "notAuthenticated"
+      );
+      throw new Error(errorMessage);
     }
 
     // Get total count
@@ -231,7 +238,12 @@ export const getMessagesAction = async (
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      throw new Error("User not authenticated");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "notAuthenticated"
+      );
+      throw new Error(errorMessage);
     }
 
     // Get conversation details
@@ -273,7 +285,12 @@ export const getMessagesAction = async (
       conversation.participant1_id !== user.id &&
       conversation.participant2_id !== user.id
     ) {
-      throw new Error("Unauthorized access to conversation");
+      const errorMessage = await getErrorTranslationForUser(
+        user.id,
+        "messages",
+        "unauthorized"
+      );
+      throw new Error(errorMessage);
     }
 
     // Get total count of messages
@@ -396,7 +413,12 @@ export const sendMessageAction = async (
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      throw new Error("User not authenticated");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "notAuthenticated"
+      );
+      throw new Error(errorMessage);
     }
 
     // Verify user is a participant in the conversation
@@ -474,7 +496,12 @@ export const sendMessageAction = async (
 
     if (!message) {
       console.error("Message insertion returned no data");
-      throw new Error("Failed to create message");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "failedToSend"
+      );
+      throw new Error(errorMessage);
     }
 
     // Update conversation's last_message_at
@@ -495,13 +522,18 @@ export const sendMessageAction = async (
         : conversation.participant1_id;
 
     if (receiverId) {
+      const notificationTranslations = await getNotificationTranslationsForUser(
+        receiverId,
+        "message_received",
+        { context: conversation.job_id ? " about a job" : "" }
+      );
       const { error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: receiverId,
           type: "message_received",
-          title: "New Message",
-          message: `You have received a new message${conversation.job_id ? " about a job" : ""}.`,
+          title: notificationTranslations.title,
+          message: notificationTranslations.message,
           related_job_id: conversation.job_id || undefined,
           is_read: false,
         });
@@ -571,7 +603,12 @@ export const markMessagesAsReadAction = async (
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      throw new Error("User not authenticated");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "notAuthenticated"
+      );
+      throw new Error(errorMessage);
     }
 
     // Mark all messages in the conversation as read (except those sent by the user)
@@ -655,7 +692,12 @@ export const createConversationAction = async (
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      throw new Error("User not authenticated");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "notAuthenticated"
+      );
+      throw new Error(errorMessage);
     }
 
     // Validate input parameters
@@ -974,9 +1016,14 @@ export const createConversationAction = async (
         }
       }
       
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "failedToCreateConversation"
+      );
       return {
         conversation: null,
-        errorMessage: `Failed to create conversation: ${conversationError.message}`,
+        errorMessage: `${errorMessage}: ${conversationError.message}`,
       };
     }
 
@@ -1016,12 +1063,17 @@ export const createConversationAction = async (
     };
   } catch (error) {
     console.error("Error creating conversation:", error);
+    const defaultErrorMessage = await getErrorTranslationForUser(
+      undefined,
+      "messages",
+      "failedToCreateConversation"
+    );
     return {
       conversation: null,
       errorMessage:
         error instanceof Error
           ? error.message
-          : "Failed to create conversation",
+          : defaultErrorMessage,
     };
   }
 };
@@ -1041,7 +1093,12 @@ export const getUnreadMessageCountAction = async (): Promise<{
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      throw new Error("User not authenticated");
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "messages",
+        "notAuthenticated"
+      );
+      throw new Error(errorMessage);
     }
 
     // Get conversations where user is a participant

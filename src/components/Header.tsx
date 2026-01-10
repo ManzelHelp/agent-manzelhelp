@@ -33,8 +33,8 @@ function Header() {
   }, []);
 
   return (
-    <header className="w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50">
-      <nav className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 md:py-4">
+    <header className="w-full max-w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50 overflow-x-hidden">
+      <nav className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 md:py-4 w-full">
         {/* Logo Section - Left */}
         <div className="flex items-center">
           <Link href="/" className="relative flex items-center">

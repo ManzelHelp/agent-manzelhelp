@@ -946,6 +946,8 @@
       "markAsUnread": "Als ungelesen markieren",
       "delete": "Löschen",
       "viewDetails": "Details anzeigen",
+      "viewRefunds": "Rückerstattungen anzeigen",
+      "viewFinance": "Finanzen anzeigen",
       "selectMultiple": "Mehrere auswählen",
       "cancelSelection": "Auswahl abbrechen",
       "selectAll": "Alle auswählen",
@@ -1632,7 +1634,7 @@
     },
     "actions": {
       "loadMore": "Mehr laden",
-      "loading": "Lädt..."
+      "loading": "Weitere Transaktionen werden geladen..."
     },
     "transactionHistory": {
       "title": "Transaktionsverlauf",
@@ -1648,10 +1650,132 @@
       "failed": "Fehlgeschlagen",
       "refunded": "Erstattet"
     },
+    "title": "Finanz-Dashboard",
+    "subtitle": "Verfolgen Sie Ihre Einnahmen, Leistung und Transaktionsverlauf",
+    "chartPeriod": "Diagramm-Zeitraum",
+    "refresh": "Aktualisieren",
+    "today": "Heute",
+    "thisWeek": "Diese Woche",
+    "thisMonth": "Dieser Monat",
+    "totalEarnings": "Gesamteinnahmen",
+    "allTimeEarnings": "Einnahmen insgesamt",
+    "vsYesterday": "vs gestern",
+    "vsLastWeek": "vs letzte Woche",
+    "vsLastMonth": "vs letzten Monat",
+    "performanceMetrics": "Leistungskennzahlen",
+    "performanceMetricsDescription": "Ihre wichtigsten Leistungsindikatoren und Kundenzufriedenheitsmetriken",
+    "completedJobs": "Abgeschlossene Jobs",
+    "totalReviews": "Gesamtbewertungen",
+    "averageRating": "Durchschnittliche Bewertung",
+    "avgResponseTime": "Durchschnittliche Antwortzeit",
+    "positiveReviews": "Positive Bewertungen",
+    "transactionHistory": "Transaktionsverlauf",
+    "transactionHistoryDescription": "Ihre neuesten Zahlungstransaktionen und Einnahmen. Klicken Sie, um Details anzuzeigen.",
+    "export": "Exportieren",
+    "noTransactions": "Keine Transaktionen gefunden",
+    "noTransactionsDescription": "Ihr Transaktionsverlauf wird hier angezeigt",
+    "periods": {
+      "day": "Tag",
+      "week": "Woche",
+      "month": "Monat"
+    },
     "errors": {
       "loadFailed": "Fehler beim Laden der Finanzdaten. Bitte versuchen Sie es erneut.",
       "authenticationRequired": "Authentifizierung Erforderlich",
       "loginRequired": "Bitte melden Sie sich an, um Ihre Finanzinformationen anzuzeigen."
+    },
+    "walletRefund": {
+      "title": "Geldbörsen-Rückerstattung Anfordern",
+      "description": "Fordern Sie eine Rückerstattung von Ihrem Geldbörsen-Guthaben an",
+      "amount": "Betrag",
+      "selectAmount": "Betrag Auswählen",
+      "customAmount": "Benutzerdefinierter Betrag",
+      "enterAmount": "Betrag eingeben",
+      "availableBalance": "Verfügbares Guthaben",
+      "referenceCode": "Referenzcode",
+      "referenceCodeGenerated": "Ihr Referenzcode wurde generiert",
+      "copyCode": "Code Kopieren",
+      "codeCopied": "Code kopiert!",
+      "instructions": "Anweisungen",
+      "instructionsText": "1. Verwenden Sie den obigen Referenzcode für Ihre Banküberweisung\n2. Führen Sie die Banküberweisung mit dem angegebenen Betrag durch\n3. Nach der Überweisung klicken Sie auf 'Zahlung Bestätigen' und laden Sie Ihren Beleg hoch\n4. Senden Sie den Beleg per WhatsApp an den Administrator\n5. Warten Sie auf die Überprüfung und Genehmigung durch den Administrator",
+      "createRequest": "Anfrage Erstellen",
+      "confirmPayment": "Zahlung Bestätigen",
+      "uploadReceipt": "Beleg Hochladen",
+      "receiptRequired": "Beleg ist erforderlich, um die Zahlung zu bestätigen",
+      "viewRequests": "Meine Anfragen Anzeigen",
+      "status": {
+        "pending": "Ausstehend",
+        "payment_confirmed": "Zahlung Bestätigt",
+        "admin_verifying": "Wird Überprüft",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
+      },
+      "waitingForAdmin": "Warten auf die Aktivierung des Fonds durch den Administrator",
+      "requests": {
+        "title": "Meine Rückerstattungsanfragen",
+        "noRequests": "Noch keine Rückerstattungsanfragen",
+        "noRequestsDescription": "Ihre Rückerstattungsanfragen werden hier angezeigt",
+        "amount": "Betrag",
+        "referenceCode": "Referenzcode",
+        "createdAt": "Erstellt",
+        "confirmedAt": "Bestätigt",
+        "approvedAt": "Genehmigt",
+        "actions": "Aktionen"
+      },
+      "errors": {
+        "insufficientBalance": "Unzureichendes Geldbörsen-Guthaben",
+        "invalidAmount": "Ungültiger Betrag",
+        "minAmount": "Der Mindestbetrag beträgt {min} MAD",
+        "maxAmount": "Der Höchstbetrag beträgt {max} MAD",
+        "pendingRequestExists": "Sie haben bereits eine ausstehende Rückerstattungsanfrage",
+        "createFailed": "Fehler beim Erstellen der Rückerstattungsanfrage",
+        "uploadFailed": "Fehler beim Hochladen des Belegs",
+        "confirmFailed": "Fehler bei der Bestätigung der Zahlung"
+      },
+      "success": {
+        "requestCreated": "Rückerstattungsanfrage erfolgreich erstellt",
+        "paymentConfirmed": "Zahlung erfolgreich bestätigt",
+        "redirectingWhatsApp": "Weiterleitung zu WhatsApp..."
+      },
+      "whatsapp": {
+        "message": "Hallo, ich habe die Banküberweisung für die Rückerstattungsanfrage {referenceCode} abgeschlossen. Betrag: {amount} MAD. Bitte finden Sie den Beleg im Anhang."
+      },
+      "fundActions": "Fondaktionen",
+      "manageFunds": "Verwalten Sie Ihre Geldbörse und Rückerstattungsanfragen",
+      "currentBalance": "Aktuelles Guthaben",
+      "requestRefund": "Rückerstattung Anfordern",
+      "withdrawFromWallet": "Von der Geldbörse abheben",
+      "viewBalance": "Geldbörse Anzeigen",
+      "viewRefunds": "Meine Anfragen",
+      "viewHistory": "Verlauf anzeigen",
+      "viewPendingRequests": "Ausstehende Anfragen",
+      "transactionHistory": "Transaktionsverlauf",
+      "allTransactions": "Alle Transaktionen",
+      "pendingRequest": "1 Anfrage ausstehend",
+      "pendingRequests": "{count} Anfragen ausstehend",
+      "pending": "ausstehend",
+      "waitingForActivation": "Warten auf die Aktivierung des Fonds durch den Administrator",
+      "refundRequestHistory": "Rückerstattungs-Verlauf",
+      "allRefundRequests": "Vollständiger Verlauf",
+      "close": "Schließen",
+      "adminNotes": "Admin-Notizen",
+      "viewAllRequests": "Alle Anfragen Anzeigen",
+      "refundHistory": {
+        "title": "Rückerstattungs-Verlauf",
+        "description": "Alle Ihre Rückerstattungsanfragen anzeigen"
+      },
+      "pendingRequestsDrawer": {
+        "title": "Ausstehende Rückerstattungsanfragen",
+        "description": "Ihre aktiven Rückerstattungsanfragen in Bearbeitung",
+        "noPending": "Keine ausstehenden Anfragen",
+        "noPendingDescription": "Alle Ihre Rückerstattungsanfragen wurden bearbeitet"
+      },
+      "instructions": {
+        "title": "Nächste Schritte",
+        "step1": "Verwenden Sie den Referenzcode oben für Ihre Banküberweisung",
+        "step2": "Führen Sie die Banküberweisung mit dem angegebenen Betrag durch",
+        "step3": "Klicken Sie auf \"Zahlung Bestätigen\" und laden Sie Ihren Beleg hoch"
+      }
     }
   },
   "chat": {
@@ -1956,6 +2080,63 @@
       "errors": {
         "loadFailed": "Fehler beim Laden der Nachrichten",
         "updateFailed": "Fehler beim Aktualisieren"
+      }
+    },
+    "walletRefunds": {
+      "title": "Geldbörsen-Rückerstattungsanfragen",
+      "description": "Verwalten Sie Geldbörsen-Rückerstattungsanfragen von Taskern",
+      "loading": "Anfragen werden geladen...",
+      "noRequests": "Keine Rückerstattungsanfragen gefunden",
+      "filters": {
+        "status": "Status",
+        "all": "Alle",
+        "pending": "Ausstehend",
+        "payment_confirmed": "Zahlung Bestätigt",
+        "admin_verifying": "Wird Überprüft",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
+      },
+      "status": {
+        "pending": "Ausstehend",
+        "payment_confirmed": "Zahlung Bestätigt",
+        "admin_verifying": "Wird Überprüft",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
+      },
+      "actions": {
+        "view": "Details Ansehen",
+        "approve": "Genehmigen",
+        "reject": "Ablehnen",
+        "viewReceipt": "Beleg Ansehen"
+      },
+      "detail": {
+        "tasker": "Tasker",
+        "amount": "Betrag",
+        "referenceCode": "Referenzcode",
+        "status": "Status",
+        "createdAt": "Erstellt Am",
+        "confirmedAt": "Bestätigt Am",
+        "approvedAt": "Genehmigt Am",
+        "receipt": "Beleg",
+        "adminNotes": "Admin-Notizen",
+        "enterNotes": "Notizen eingeben (erforderlich für Ablehnung)",
+        "rejectionReason": "Ablehnungsgrund"
+      },
+      "confirm": {
+        "approveTitle": "Rückerstattungsanfrage Genehmigen",
+        "approveMessage": "Sind Sie sicher, dass Sie diese Rückerstattungsanfrage genehmigen möchten? Der Betrag wird vom Geldbörsen-Guthaben des Taskers abgebucht.",
+        "rejectTitle": "Rückerstattungsanfrage Ablehnen",
+        "rejectMessage": "Bitte geben Sie einen Grund für die Ablehnung dieser Anfrage an. Dies wird an den Tasker gesendet.",
+        "rejectReasonRequired": "Ablehnungsgrund ist erforderlich"
+      },
+      "success": {
+        "approved": "Rückerstattungsanfrage erfolgreich genehmigt",
+        "rejected": "Rückerstattungsanfrage erfolgreich abgelehnt"
+      },
+      "errors": {
+        "loadFailed": "Fehler beim Laden der Rückerstattungsanfragen",
+        "approveFailed": "Fehler beim Genehmigen der Rückerstattungsanfrage",
+        "rejectFailed": "Fehler beim Ablehnen der Rückerstattungsanfrage"
       }
     }
   }

@@ -3,6 +3,7 @@
 import { createClient, createServiceRoleClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import { BookingStatus } from "@/types/supabase";
+import { getErrorTranslationForUser } from "@/lib/errors";
 
 export interface BookingWithDetails {
   id: string;
@@ -68,7 +69,12 @@ export async function getTaskerBookings(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("User not authenticated");
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "notAuthenticated"
+    );
+    throw new Error(errorMessage);
   }
 
   const taskerId = user.id;
@@ -83,7 +89,12 @@ export async function getTaskerBookings(
 
     if (countError) {
       console.error("Error fetching bookings count:", countError);
-      throw new Error(`Failed to fetch bookings count: ${countError.message}`);
+      const errorMessage = await getErrorTranslationForUser(
+        taskerId,
+        "bookings",
+        "failedToFetchBookingsCount"
+      );
+      throw new Error(errorMessage);
     }
     total = count || 0;
   }
@@ -125,7 +136,12 @@ export async function getTaskerBookings(
 
   if (error) {
     console.error("Error fetching bookings:", error);
-    throw new Error(`Failed to fetch bookings: ${error.message}`);
+    const errorMessage = await getErrorTranslationForUser(
+      taskerId,
+      "bookings",
+      "failedToFetchBookings"
+    );
+    throw new Error(errorMessage);
   }
 
   // Check if there are more items
@@ -332,7 +348,12 @@ export async function getCustomerBookings(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("User not authenticated");
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "notAuthenticated"
+    );
+    throw new Error(errorMessage);
   }
 
   const customerId = user.id;
@@ -347,9 +368,12 @@ export async function getCustomerBookings(
 
     if (countError) {
       console.error("Error fetching customer bookings count:", countError);
-      throw new Error(
-        `Failed to fetch customer bookings count: ${countError.message}`
+      const errorMessage = await getErrorTranslationForUser(
+        customerId,
+        "bookings",
+        "failedToFetchBookingsCount"
       );
+      throw new Error(errorMessage);
     }
     total = count || 0;
   }
@@ -391,7 +415,12 @@ export async function getCustomerBookings(
 
   if (error) {
     console.error("Error fetching customer bookings:", error);
-    throw new Error(`Failed to fetch customer bookings: ${error.message}`);
+    const errorMessage = await getErrorTranslationForUser(
+      customerId,
+      "bookings",
+      "failedToFetchBookings"
+    );
+    throw new Error(errorMessage);
   }
 
   // Check if there are more items by fetching one extra record
@@ -511,11 +540,21 @@ export async function updateBookingStatus(
     .single();
 
   if (fetchError || !booking) {
-    return { success: false, error: "Booking not found" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "bookingNotFound"
+    );
+    return { success: false, error: errorMessage };
   }
 
   if (booking.tasker_id !== taskerId) {
-    return { success: false, error: "Unauthorized" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "unauthorized"
+    );
+    return { success: false, error: errorMessage };
   }
 
   // Prepare update data based on status
@@ -583,7 +622,12 @@ export async function cancelCustomerBooking(
     .single();
 
   if (fetchError || !booking) {
-    return { success: false, error: "Booking not found" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "bookingNotFound"
+    );
+    return { success: false, error: errorMessage };
   }
 
   // Server-side authorization: Check if the user is the customer
@@ -593,7 +637,12 @@ export async function cancelCustomerBooking(
       userId: user.id,
       customerId: booking.customer_id,
     });
-    return { success: false, error: "Unauthorized" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "unauthorized"
+    );
+    return { success: false, error: errorMessage };
   }
 
   // Check if booking can be cancelled
@@ -702,7 +751,12 @@ export async function confirmBookingCompletion(
     });
 
     if (fetchError || !booking) {
-      return { success: false, error: "Booking not found" };
+      const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "bookingNotFound"
+    );
+    return { success: false, error: errorMessage };
     }
 
     // Verify the booking belongs to this customer
@@ -1459,7 +1513,9 @@ export async function createServiceBooking(
     return {
       success: false,
       error:
-        error instanceof Error ? error.message : "Failed to create booking",
+        error instanceof Error
+          ? error.message
+          : await getErrorTranslationForUser(undefined, "bookings", "failedToCreate"),
     };
   }
 }
@@ -1551,7 +1607,12 @@ export async function getTaskerJobApplications(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("User not authenticated");
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "notAuthenticated"
+    );
+    throw new Error(errorMessage);
   }
 
   const taskerId = user.id;
@@ -1652,7 +1713,12 @@ export async function getTaskerAsCustomerBookings(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("User not authenticated");
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "bookings",
+      "notAuthenticated"
+    );
+    throw new Error(errorMessage);
   }
 
   const customerId = user.id;

@@ -277,13 +277,13 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-3 sm:mb-4 animate-fade-in-up">
               {resolvedSearchParams.q
-                ? `Search Results for "${resolvedSearchParams.q}"`
-                : "Find Your Perfect Job"}
+                ? t("searchResultsFor", { query: resolvedSearchParams.q })
+                : t("findYourPerfectJob")}
             </h1>
             <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto animate-fade-in-up animate-delay-200">
               {resolvedSearchParams.q
-                ? "Discover amazing job opportunities tailored to your skills"
-                : "Connect with customers looking for your expertise"}
+                ? t("discoverJobOpportunities", { default: "Discover amazing job opportunities tailored to your skills" })
+                : t("connectWithCustomers")}
             </p>
           </div>
           <div className="max-w-2xl mx-auto animate-fade-in-up animate-delay-300">
@@ -355,7 +355,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       </span>
                       {resolvedSearchParams.q && (
                         <span className="text-[var(--color-text-secondary)] text-sm">
-                          for "{resolvedSearchParams.q}"
+                          {t("for", { query: resolvedSearchParams.q, default: `for "${resolvedSearchParams.q}"` })}
                         </span>
                       )}
                     </div>

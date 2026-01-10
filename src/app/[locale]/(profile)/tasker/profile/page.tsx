@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import { BackButton } from "@/components/ui/BackButton";
 import PersonalInfoSection from "@/components/profile/PersonalInfoSection";
 import BioExperienceSection from "@/components/profile/BioExperienceSection";
 import AvailabilitySection from "@/components/profile/AvailabilitySection";
@@ -57,40 +59,40 @@ interface ProfileStats {
   }>;
 }
 
-const SECTIONS = [
+const getSections = (t: ReturnType<typeof useTranslations>) => [
   {
     id: "personal" as ProfileSection,
-    title: "Personal Information",
+    title: t("personalInformation"),
     icon: UserIcon,
-    description: "Manage your basic profile details",
+    description: t("manageBasicDetails"),
     color: "from-blue-500 to-blue-600",
   },
   {
     id: "bio" as ProfileSection,
-    title: "Bio & Experience",
+    title: t("bioExperience"),
     icon: FileText,
-    description: "Tell customers about your skills",
+    description: t("tellCustomers"),
     color: "from-green-500 to-green-600",
   },
   {
     id: "availability" as ProfileSection,
-    title: "Availability",
+    title: t("availability"),
     icon: Clock,
-    description: "Set your working hours",
+    description: t("setWorkingHours"),
     color: "from-purple-500 to-purple-600",
   },
   {
     id: "addresses" as ProfileSection,
-    title: "Service Locations",
+    title: t("serviceLocations"),
     icon: MapPin,
-    description: "Manage your service areas",
+    description: t("manageServiceAreas"),
     color: "from-orange-500 to-orange-600",
   },
   {
     id: "payment" as ProfileSection,
-    title: "Payment Methods",
+    title: t("paymentMethods"),
     icon: CreditCard,
-    description: "Manage your payment info",
+    description: t("managePaymentInfo"),
     color: "from-indigo-500 to-indigo-600",
   },
 ];
@@ -98,6 +100,9 @@ const SECTIONS = [
 export default function TaskerProfilePage() {
   const router = useRouter();
   const { user, setUser } = useUserStore();
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
+  const sections = getSections(t);
 
   // Core state
   const [activeSection, setActiveSection] =
@@ -144,7 +149,7 @@ export default function TaskerProfilePage() {
       setProfileStats(stats);
     } catch (error) {
       console.error("Error fetching profile data:", error);
-      toast.error("Failed to load profile data");
+      toast.error(t("errors.loadFailed", { default: "Failed to load profile data" }));
     } finally {
       setLoading(false);
     }
@@ -208,10 +213,10 @@ export default function TaskerProfilePage() {
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
           </div>
           <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
-            Loading Profile
+            {t("loadingProfile")}
           </h3>
           <p className="text-[var(--color-text-secondary)]">
-            Please wait while we load your profile data
+            {t("pleaseWait")}
           </p>
         </div>
       </div>
@@ -233,11 +238,11 @@ export default function TaskerProfilePage() {
                 <Settings className="h-6 w-6 text-white" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)]">
-                Profile Settings
+                {t("profileSettings")}
               </h1>
             </div>
             <p className="text-[var(--color-text-secondary)] text-lg">
-              Manage your account information and preferences
+              {t("manageAccountInformation")}
             </p>
           </div>
 
@@ -258,12 +263,12 @@ export default function TaskerProfilePage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-[var(--color-text-primary)] text-lg">
-                      Profile Completion
+                      {t("profileCompletion")}
                     </h3>
                     <p className="text-[var(--color-text-secondary)]">
                       {profileStats.completionPercentage === 100
-                        ? "Your profile is complete! 🎉"
-                        : `${profileStats.missingFields.length} fields remaining`}
+                        ? t("profileComplete")
+                        : t("fieldsRemaining", { count: profileStats.missingFields.length })}
                     </p>
                   </div>
                 </div>
@@ -276,7 +281,7 @@ export default function TaskerProfilePage() {
                     />
                   </div>
                   <p className="text-xs text-[var(--color-text-secondary)] mt-1 text-center">
-                    {profileStats.completionPercentage}% complete
+                    {t("complete", { percentage: profileStats.completionPercentage })}
                   </p>
                 </div>
               </div>
@@ -290,7 +295,7 @@ export default function TaskerProfilePage() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-[var(--color-text-primary)]">
-                  Navigation
+                  {tCommon("navigation")}
                 </CardTitle>
                 <Button
                   variant="outline"
@@ -299,7 +304,7 @@ export default function TaskerProfilePage() {
                   className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
                 >
                   <Menu className="h-4 w-4 mr-2" />
-                  {mobileMenuOpen ? "Close" : "Menu"}
+                  {mobileMenuOpen ? tCommon("close") : tCommon("menu")}
                   <ChevronDown
                     className={`h-4 w-4 ml-2 transition-transform ${
                       mobileMenuOpen ? "rotate-180" : ""
@@ -311,7 +316,7 @@ export default function TaskerProfilePage() {
             {mobileMenuOpen && (
               <CardContent className="pt-0">
                 <nav className="space-y-2">
-                  {SECTIONS.map((section) => {
+                  {sections.map((section) => {
                     const sectionMissingFields = missingFields.filter(
                       (field) => field.section === section.id
                     );
@@ -369,7 +374,7 @@ export default function TaskerProfilePage() {
           <Card className="border-0 shadow-lg bg-[var(--color-surface)]/80 backdrop-blur-sm">
             <CardContent className="p-6">
               <nav className="grid grid-cols-3 gap-3">
-                {SECTIONS.map((section) => {
+                {sections.map((section) => {
                   const sectionMissingFields = missingFields.filter(
                     (field) => field.section === section.id
                   );

@@ -14,6 +14,7 @@ const languages = [
   { code: "en", label: "English", short: "EN" },
   { code: "de", label: "Deutsch", short: "DE" },
   { code: "fr", label: "Français", short: "FR" },
+  { code: "ar", label: "العربية", short: "AR" },
 ];
 
 export default function LanguageDropDown({

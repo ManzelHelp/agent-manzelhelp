@@ -31,10 +31,12 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { getAllCategoryHierarchies } from "@/lib/categories";
+import { useTranslations } from "next-intl";
 
 export default function TaskerServiceDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations("services");
   const [data, setData] = useState<ServiceDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export default function TaskerServiceDetailPage() {
   useEffect(() => {
     const fetchServiceData = async () => {
       if (!params["service-id"] || typeof params["service-id"] !== "string") {
-        setError("Invalid service ID");
+        setError(t("errors.invalidServiceId", { default: "Invalid service ID" }));
         setLoading(false);
         return;
       }
@@ -61,14 +63,14 @@ export default function TaskerServiceDetailPage() {
         const result = await getServiceDetails(params["service-id"]);
 
         if (!result.success) {
-          setError(result.error || "Failed to load service");
+          setError(result.error || t("errors.loadFailed"));
           setLoading(false);
           return;
         }
 
         const serviceData = result.data;
         if (!serviceData) {
-          setError("Service data not found");
+          setError(t("errors.serviceNotFound", { default: "Service data not found" }));
           setLoading(false);
           return;
         }
@@ -92,7 +94,7 @@ export default function TaskerServiceDetailPage() {
         });
       } catch (err) {
         console.error("Error fetching service data:", err);
-        setError("Failed to load the service. Please try again later.");
+        setError(t("errors.loadServiceFailed", { default: "Failed to load the service. Please try again later." }));
       } finally {
         setLoading(false);
       }
@@ -275,10 +277,10 @@ export default function TaskerServiceDetailPage() {
             <BackButton className="p-2 h-10 w-10 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]" />
             <div>
               <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                Service Details
+                {t("serviceDetails")}
               </h1>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Manage your service offer
+                {t("manageServiceOffer")}
               </p>
             </div>
           </div>
@@ -290,7 +292,7 @@ export default function TaskerServiceDetailPage() {
                 size="sm"
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                {t("actions.edit", { default: "Edit" })}
               </Button>
             ) : (
               <>
@@ -300,7 +302,7 @@ export default function TaskerServiceDetailPage() {
                   size="sm"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Save
+                  {t("actions.save", { default: "Save" })}
                 </Button>
                 <Button
                   onClick={handleCancel}
@@ -309,7 +311,7 @@ export default function TaskerServiceDetailPage() {
                   className="border-[var(--color-border)]"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Cancel
+                  {t("actions.cancel", { default: "Cancel" })}
                 </Button>
               </>
             )}
@@ -330,8 +332,8 @@ export default function TaskerServiceDetailPage() {
                     )}
                     <span className="font-medium text-[var(--color-text-primary)]">
                       {data.service_status === "active"
-                        ? "Available"
-                        : "Unavailable"}
+                        ? t("available", { default: "Available" })
+                        : t("unavailable", { default: "Unavailable" })}
                     </span>
                   </div>
                 </div>
@@ -382,7 +384,7 @@ export default function TaskerServiceDetailPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                      Description
+                      {t("description", { default: "Description" })}
                     </label>
                     <textarea
                       value={editForm.description}
@@ -400,7 +402,7 @@ export default function TaskerServiceDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Pricing Type
+                        {t("pricingType.title", { default: "Pricing Type" })}
                       </label>
                       <select
                         value={editForm.pricing_type}
@@ -415,17 +417,17 @@ export default function TaskerServiceDetailPage() {
                         }
                         className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
                       >
-                        <option value="fixed">Fixed Price</option>
-                        <option value="hourly">Hourly Rate</option>
-                        <option value="per_item">Per Item</option>
+                        <option value="fixed">{t("pricingType.fixed")}</option>
+                        <option value="hourly">{t("pricingType.hourly")}</option>
+                        <option value="per_item">{t("pricingType.perItem")}</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
                         {editForm.pricing_type === "hourly"
-                          ? "Hourly Rate (€)"
-                          : "Base Price (€)"}
+                          ? t("pricingType.hourlyWithCurrency", { default: "Hourly Rate (€)" })
+                          : t("pricingType.basePrice", { default: "Base Price (€)" })}
                       </label>
                       <input
                         type="number"
@@ -445,7 +447,7 @@ export default function TaskerServiceDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Minimum Duration (hours)
+                        {t("minimumDuration", { default: "Minimum Duration (hours)" })}
                       </label>
                       <input
                         type="number"
@@ -462,7 +464,7 @@ export default function TaskerServiceDetailPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Service Area
+                        {t("serviceArea")}
                       </label>
                       <input
                         type="text"
@@ -473,7 +475,7 @@ export default function TaskerServiceDetailPage() {
                             service_area: e.target.value,
                           })
                         }
-                        placeholder="e.g., Berlin, Germany"
+                        placeholder={t("serviceAreaPlaceholder", { default: "e.g., Berlin, Germany" })}
                         className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
                       />
                     </div>
@@ -498,7 +500,7 @@ export default function TaskerServiceDetailPage() {
                       htmlFor="service_status"
                       className="text-sm text-[var(--color-text-primary)]"
                     >
-                      Service is available for booking
+                      {t("serviceAvailableForBooking", { default: "Service is available for booking" })}
                     </label>
                   </div>
                 </div>
@@ -513,7 +515,7 @@ export default function TaskerServiceDetailPage() {
                       <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
                         <Calendar className="h-4 w-4" />
                         <span className="text-sm">
-                          Listed on{" "}
+                          {t("listedOn", { default: "Listed on" })}{" "}
                           {format(new Date(data.created_at), "MMMM d, yyyy")}
                         </span>
                       </div>
@@ -529,7 +531,7 @@ export default function TaskerServiceDetailPage() {
                       {data.minimum_duration && (
                         <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
                           <Clock className="h-4 w-4" />
-                          <span>Min. {data.minimum_duration}h</span>
+                          <span>{t("minDuration", { duration: data.minimum_duration, default: `Min. ${data.minimum_duration}h` })}</span>
                         </div>
                       )}
                     </div>
@@ -542,10 +544,10 @@ export default function TaskerServiceDetailPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                        {category?.name_en || "Service"}
+                        {category?.name_en || t("service", { default: "Service" })}
                       </p>
                       <p className="text-sm text-[var(--color-text-secondary)]">
-                        {category?.name_en || "Category"}
+                        {category?.name_en || t("category", { default: "Category" })}
                       </p>
                     </div>
                   </div>
@@ -553,10 +555,10 @@ export default function TaskerServiceDetailPage() {
                   {/* Description */}
                   <div>
                     <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
-                      Description
+                      {t("description", { default: "Description" })}
                     </h3>
                     <p className="text-[var(--color-text-secondary)] leading-relaxed">
-                      {data.description || "No description available"}
+                      {data.description || t("noDescription")}
                     </p>
                   </div>
 
@@ -567,14 +569,14 @@ export default function TaskerServiceDetailPage() {
                         <MapPin className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                         <div>
                           <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                            Service Area
+                            {t("serviceArea", { default: "Service Area" })}
                           </p>
                           <p className="text-sm text-[var(--color-text-secondary)]">
                             {typeof data.service_area === "string"
                               ? data.service_area
                               : data.service_area
                               ? JSON.stringify(data.service_area)
-                              : "Area not specified"}
+                              : t("areaNotSpecified")}
                           </p>
                         </div>
                       </div>
@@ -584,14 +586,14 @@ export default function TaskerServiceDetailPage() {
                       <Clock className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                       <div>
                         <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          Pricing Type
+                          {t("pricingType.title", { default: "Pricing Type" })}
                         </p>
                         <p className="text-sm text-[var(--color-text-secondary)]">
                           {data.pricing_type === "hourly"
-                            ? "Hourly Rate"
+                            ? t("pricingType.hourly")
                             : data.pricing_type === "per_item"
-                            ? "Per Item"
-                            : "Fixed Price"}
+                            ? t("pricingType.perItem")
+                            : t("pricingType.fixed")}
                         </p>
                       </div>
                     </div>
@@ -611,7 +613,7 @@ export default function TaskerServiceDetailPage() {
               className="flex-1 border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete Service
+              {t("deleteService")}
             </Button>
           </div>
         </div>

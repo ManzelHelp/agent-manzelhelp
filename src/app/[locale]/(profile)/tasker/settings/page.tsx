@@ -22,8 +22,10 @@ import React from "react";
 import { useUserStore } from "@/stores/userStore";
 import { getUserProfileAction } from "@/actions/auth";
 import { BackButton } from "@/components/ui/BackButton";
+import { useTranslations } from "next-intl";
 
 export default function SettingsPage() {
+  const t = useTranslations("settings");
   const [activeSection, setActiveSection] = useState("security");
   type NotificationKey = "email" | "push" | "sms" | "marketing" | "jobAlerts";
   const [notifications, setNotifications] = useState<
@@ -66,15 +68,15 @@ export default function SettingsPage() {
   const sections = [
     {
       id: "security",
-      title: "Security & Privacy",
+      title: t("securityAndPrivacy"),
       icon: Shield,
-      description: "Manage your account security and privacy settings",
+      description: t("manageAccountSecurity"),
     },
     {
       id: "notifications",
-      title: "Notifications",
+      title: t("notifications"),
       icon: Bell,
-      description: "Choose how you'd like to be notified",
+      description: t("chooseNotifications"),
     },
   ];
 
@@ -93,10 +95,10 @@ export default function SettingsPage() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-color-text-primary">
-                Settings
+                {t("settings", { default: "Settings" })}
               </h1>
               <p className="text-color-text-secondary mt-1">
-                Manage your account preferences and security
+                {t("manageAccountPreferences", { default: "Manage your account preferences and security" })}
               </p>
             </div>
           </div>
@@ -181,10 +183,10 @@ export default function SettingsPage() {
                         <div className="p-2 bg-color-primary/10 rounded-lg">
                           <Shield className="h-5 w-5 text-color-primary" />
                         </div>
-                        Security & Privacy
+                        {t("securityAndPrivacy")}
                       </CardTitle>
                       <CardDescription className="text-color-text-secondary">
-                        Manage your account security and privacy settings
+                        {t("manageAccountSecurity")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -192,7 +194,7 @@ export default function SettingsPage() {
                       <div className="space-y-4">
                         <h3 className="font-semibold text-color-text-primary flex items-center gap-2">
                           <User className="h-4 w-4" />
-                          Sign-in Methods
+                          {t("signInMethods")}
                         </h3>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between p-4 border border-color-border rounded-xl bg-color-surface hover:bg-color-accent/30 transition-colors">
@@ -202,7 +204,7 @@ export default function SettingsPage() {
                               </div>
                               <div>
                                 <p className="font-medium text-color-text-primary">
-                                  Email
+                                  {t("email")}
                                 </p>
                                 <p className="text-sm text-color-text-secondary">
                                   {user?.email || "user@email.com"}
@@ -216,7 +218,7 @@ export default function SettingsPage() {
                                 size="sm"
                                 className="border-color-border hover:bg-color-primary hover:text-color-surface touch-target"
                               >
-                                Change
+                                {t("change")}
                               </Button>
                             </div>
                           </div>
@@ -227,22 +229,22 @@ export default function SettingsPage() {
                       <div className="space-y-4">
                         <h3 className="font-semibold text-color-text-primary flex items-center gap-2">
                           <Shield className="h-4 w-4" />
-                          Password
+                          {t("password")}
                         </h3>
                         <div className="flex items-center justify-between p-4 border border-color-border rounded-xl bg-color-surface hover:bg-color-accent/30 transition-colors">
                           <div>
                             <p className="font-medium text-color-text-primary">
-                              Password
+                              {t("password")}
                             </p>
                             <p className="text-sm text-color-text-secondary">
-                              Use a strong password to protect your account
+                              {t("useStrongPassword")}
                             </p>
                           </div>
                           <Button
                             variant="outline"
                             className="border-color-border hover:bg-color-primary hover:text-color-surface touch-target"
                           >
-                            Change Password
+                            {t("changePassword")}
                           </Button>
                         </div>
                       </div>
@@ -251,16 +253,16 @@ export default function SettingsPage() {
                       <div className="space-y-4">
                         <h3 className="font-semibold text-color-error flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4" />
-                          Danger Zone
+                          {t("dangerZone")}
                         </h3>
                         <div className="p-4 border border-color-error/20 rounded-xl bg-color-error/5">
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium text-color-error">
-                                Deactivate Account
+                                {t("deactivateAccount")}
                               </p>
                               <p className="text-sm text-color-text-secondary">
-                                This will permanently disable your account
+                                {t("deactivateDescription")}
                               </p>
                             </div>
                             <Button
@@ -268,7 +270,7 @@ export default function SettingsPage() {
                               size="sm"
                               className="bg-color-error hover:bg-color-error/90 touch-target"
                             >
-                              Deactivate
+                              {t("deactivate")}
                             </Button>
                           </div>
                         </div>
@@ -286,10 +288,10 @@ export default function SettingsPage() {
                       <div className="p-2 bg-color-primary/10 rounded-lg">
                         <Bell className="h-5 w-5 text-color-primary" />
                       </div>
-                      Notifications
+                      {t("notifications")}
                     </CardTitle>
                     <CardDescription className="text-color-text-secondary">
-                      Choose how you'd like to be notified
+                      {t("chooseNotifications")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -297,34 +299,32 @@ export default function SettingsPage() {
                       [
                         {
                           key: "email",
-                          title: "Email Notifications",
-                          description: "Receive updates and alerts via email",
+                          title: t("emailNotifications"),
+                          description: t("receiveUpdatesViaEmail"),
                           icon: Mail,
                         },
                         {
                           key: "push",
-                          title: "Push Notifications",
-                          description:
-                            "Get instant notifications on your device",
+                          title: t("pushNotifications"),
+                          description: t("getInstantNotifications"),
                           icon: Bell,
                         },
                         {
                           key: "sms",
-                          title: "SMS Notifications",
-                          description: "Receive urgent alerts via text message",
+                          title: t("smsNotifications"),
+                          description: t("receiveUrgentAlerts"),
                           icon: Bell,
                         },
                         {
                           key: "marketing",
-                          title: "Marketing Emails",
-                          description: "Receive promotional offers and updates",
+                          title: t("marketingEmails"),
+                          description: t("receivePromotionalOffers"),
                           icon: Mail,
                         },
                         {
                           key: "jobAlerts",
-                          title: "Activity Alerts",
-                          description:
-                            "Get notified about important activities",
+                          title: t("activityAlerts"),
+                          description: t("getNotifiedAboutActivities"),
                           icon: Bell,
                         },
                       ] as {

@@ -40,6 +40,8 @@ import {
   updateVerificationDocument,
   fixAvatarUrlAction,
 } from "@/actions/profile";
+import { formatDateShort } from "@/lib/date-utils";
+import { useTranslations } from "next-intl";
 
 interface PersonalInfoSectionProps {
   user: UserType | null;
@@ -80,7 +82,8 @@ export default function PersonalInfoSection({
   onUserUpdate,
   onProfileRefresh,
   missingFields,
-}: PersonalInfoSectionProps) {
+  }: PersonalInfoSectionProps) {
+  const t = useTranslations("profile");
   const [editPersonalOpen, setEditPersonalOpen] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [processingPhoto, setProcessingPhoto] = useState(false);
@@ -396,10 +399,10 @@ export default function PersonalInfoSection({
             </div>
             <div>
               <CardTitle className="text-xl text-[var(--color-text-primary)]">
-                Personal Information
+                {t("personalInformation")}
               </CardTitle>
               <CardDescription className="text-[var(--color-text-secondary)]">
-                Your basic profile information
+                {t("yourBasicProfileInformation")}
               </CardDescription>
             </div>
           </div>
@@ -408,7 +411,7 @@ export default function PersonalInfoSection({
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
                 <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
                 <span className="text-sm font-medium text-[var(--color-error)]">
-                  {personalMissingFields.length} missing
+                  {t("missing", { count: personalMissingFields.length })}
                 </span>
               </div>
             )}
@@ -416,14 +419,14 @@ export default function PersonalInfoSection({
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                  {t("edit")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Edit Personal Information</DialogTitle>
+                  <DialogTitle>{t("editPersonalInformation", { default: "Edit Personal Information" })}</DialogTitle>
                   <DialogDescription>
-                    Update your personal information and profile photo
+                    {t("updatePersonalInformation", { default: "Update your personal information and profile photo" })}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -473,36 +476,30 @@ export default function PersonalInfoSection({
                     </div>
                     <div>
                       <h4 className="font-semibold text-[var(--color-text-primary)]">
-                        Profile Photo
+                        {t("profilePhoto", { default: "Profile Photo" })}
                       </h4>
                       <p className="text-sm text-[var(--color-text-secondary)]">
                         {user?.avatar_url
-                          ? "Click the camera icon to change"
-                          : "Add a profile photo"}
+                          ? t("clickCameraToChange", { default: "Click the camera icon to change" })
+                          : t("addProfilePhoto", { default: "Add a profile photo" })}
                       </p>
                       <div className="mt-2 p-3 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
                         <p className="text-xs text-[var(--color-text-secondary)]">
-                          <strong>📸 Photo Requirements:</strong>
+                          <strong>{t("photoRequirements", { default: "📸 Photo Requirements:" })}</strong>
                         </p>
                         <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
-                          <li>• Formats: JPEG, PNG, or WebP</li>
+                          <li>• {t("photoFormats", { default: "Formats: JPEG, PNG, or WebP" })}</li>
                           <li>
-                            • Max size:{" "}
-                            {IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)}MB
+                            • {t("photoMaxSize", { size: IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024), default: "Max size: {size}MB" })}
                           </li>
                           <li>
-                            • Min dimensions:{" "}
-                            {IMAGE_CONSTRAINTS.minDimensions.width}x
-                            {IMAGE_CONSTRAINTS.minDimensions.height}px
+                            • {t("photoMinDimensions", { width: IMAGE_CONSTRAINTS.minDimensions.width, height: IMAGE_CONSTRAINTS.minDimensions.height, default: "Min dimensions: {width}x{height}px" })}
                           </li>
                           <li>
-                            • Max dimensions:{" "}
-                            {IMAGE_CONSTRAINTS.maxDimensions.width}x
-                            {IMAGE_CONSTRAINTS.maxDimensions.height}px
+                            • {t("photoMaxDimensions", { width: IMAGE_CONSTRAINTS.maxDimensions.width, height: IMAGE_CONSTRAINTS.maxDimensions.height, default: "Max dimensions: {width}x{height}px" })}
                           </li>
                           <li>
-                            • Auto-resized and compressed for optimal
-                            performance
+                            • {t("photoAutoResized", { default: "Auto-resized and compressed for optimal performance" })}
                           </li>
                         </ul>
                       </div>
@@ -657,7 +654,7 @@ export default function PersonalInfoSection({
         {/* Verification Status */}
         <div className="space-y-3">
           <h4 className="font-semibold text-color-text-primary">
-            Verification Status
+            {t("verificationStatus")}
           </h4>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center justify-between p-3 rounded-lg border border-color-border/50 bg-color-surface/50">
@@ -666,7 +663,7 @@ export default function PersonalInfoSection({
                   <Mail className="h-4 w-4 text-color-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-color-text-primary">Email</p>
+                  <p className="font-medium text-color-text-primary">{t("email")}</p>
                   <p className="text-sm text-color-text-secondary">
                     {userDisplayData.email}
                   </p>
@@ -676,11 +673,11 @@ export default function PersonalInfoSection({
                 {userDisplayData.emailVerified ? (
                   <div className="flex items-center gap-2 text-color-success">
                     <CheckCircle className="h-4 w-4" />
-                    <span className="text-xs font-medium">Verified</span>
+                    <span className="text-xs font-medium">{t("verified")}</span>
                   </div>
                 ) : (
                   <Button size="sm" variant="outline">
-                    Verify
+                    {t("verify")}
                   </Button>
                 )}
               </div>
@@ -693,22 +690,21 @@ export default function PersonalInfoSection({
                 </div>
                 <div>
                   <p className="font-medium text-color-text-primary">
-                    Identity Verification
+                    {t("identityVerification")}
                   </p>
                   <p className="text-sm text-color-text-secondary">
-                    Upload clear photos of your ID (front and back) for
-                    verification
+                    {t("uploadClearPhotos")}
                   </p>
                   <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
                     <p className="text-xs text-[var(--color-text-secondary)]">
-                      <strong>📋 Document Requirements:</strong>
+                      <strong>{t("documentRequirements")}</strong>
                     </p>
                     <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
-                      <li>• Clear, high-quality photos or PDFs</li>
-                      <li>• Max size: 5MB per document</li>
-                      <li>• Formats: JPEG, PNG, WebP, or PDF</li>
-                      <li>• All text must be clearly readable</li>
-                      <li>• Documents will be reviewed within 24-48 hours</li>
+                      <li>• {t("documentClearPhotos")}</li>
+                      <li>• {t("documentMaxSize")}</li>
+                      <li>• {t("documentFormats")}</li>
+                      <li>• {t("documentReadable")}</li>
+                      <li>• {t("documentReviewTime")}</li>
                     </ul>
                   </div>
                 </div>
@@ -717,7 +713,7 @@ export default function PersonalInfoSection({
                 {taskerProfile?.identity_document_url ? (
                   <div className="flex items-center gap-2 text-color-success">
                     <CheckCircle className="h-4 w-4" />
-                    <span className="text-xs font-medium">Documents Uploaded</span>
+                    <span className="text-xs font-medium">{t("documentsUploaded")}</span>
                   </div>
                 ) : (
                   <>

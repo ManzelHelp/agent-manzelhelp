@@ -23,6 +23,7 @@ import {
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Plus, Trash2, MapPinIcon, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import type { Address } from "@/types/supabase";
 import {
   addAddress,
@@ -63,6 +64,8 @@ export default function AddressesSection({
   missingFields,
   userId,
 }: AddressesSectionProps) {
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const [addAddressOpen, setAddAddressOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<Address | null>(null);
@@ -84,7 +87,7 @@ export default function AddressesSection({
   const handleAddAddress = async () => {
     // Check if we have a valid user ID
     if (!userId) {
-      toast.error("User not found. Please refresh the page and try again.");
+      toast.error(t("userNotFound", { default: "User not found. Please refresh the page and try again." }));
       return;
     }
 
@@ -100,7 +103,7 @@ export default function AddressesSection({
       });
 
       if (result.success && result.address) {
-        toast.success("Address added successfully");
+        toast.success(t("addressAddedSuccessfully", { default: "Address added successfully" }));
         setAddAddressOpen(false);
 
         // Reset form
@@ -117,11 +120,11 @@ export default function AddressesSection({
         // Refresh profile data
         await onProfileRefresh();
       } else {
-        toast.error(result.error || "Failed to add address");
+        toast.error(result.error || t("failedToAddAddress", { default: "Failed to add address" }));
       }
     } catch (error) {
       console.error("Error adding address:", error);
-      toast.error("Failed to add address");
+      toast.error(t("failedToAddAddress", { default: "Failed to add address" }));
     }
   };
 
@@ -130,7 +133,7 @@ export default function AddressesSection({
     const address = addresses.find((addr) => addr.id === addressId);
 
     if (!address) {
-      toast.error("Address not found");
+      toast.error(t("addressNotFound", { default: "Address not found" }));
       return;
     }
 
@@ -140,7 +143,7 @@ export default function AddressesSection({
 
       if (usageCheck.success && usageCheck.isUsed) {
         toast.error(
-          `Cannot delete your ${address.label} location because it's being used in active job postings. Please delete or update those jobs first.`,
+          t("cannotDeleteLocationInUse", { label: address.label, default: `Cannot delete your ${address.label} location because it's being used in active job postings. Please delete or update those jobs first.` }),
           { duration: 6000 }
         );
         return;
@@ -151,7 +154,7 @@ export default function AddressesSection({
       setDeleteConfirmOpen(true);
     } catch (error) {
       console.error("Error checking address usage:", error);
-      toast.error("Failed to check address usage");
+      toast.error(t("failedToCheckAddressUsage", { default: "Failed to check address usage" }));
     }
   };
 
@@ -162,16 +165,16 @@ export default function AddressesSection({
       const result = await deleteAddress(addressToDelete.id);
 
       if (result.success) {
-        toast.success("Location deleted successfully");
+        toast.success(t("locationDeletedSuccessfully", { default: "Location deleted successfully" }));
         // Refresh profile data
         await onProfileRefresh();
       } else {
         // Show detailed error message
-        toast.error(result.error || "Failed to delete location");
+        toast.error(result.error || t("failedToDeleteLocation", { default: "Failed to delete location" }));
       }
     } catch (error) {
       console.error("Error deleting address:", error);
-      toast.error("Failed to delete location");
+      toast.error(t("failedToDeleteLocation", { default: "Failed to delete location" }));
     } finally {
       // Close dialog and reset state
       setDeleteConfirmOpen(false);
@@ -189,39 +192,39 @@ export default function AddressesSection({
             </div>
             <div>
               <CardTitle className="text-xl text-[var(--color-text-primary)]">
-                Service Locations
+                {t("serviceLocations")}
               </CardTitle>
               <CardDescription className="text-[var(--color-text-secondary)]">
-                Manage your locations
+                {t("manageYourLocations")}
               </CardDescription>
             </div>
           </div>
           {addressesMissingFields.length > 0 && (
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
               <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
-              <span className="text-sm font-medium text-[var(--color-error)]">
-                {addressesMissingFields.length} missing
-              </span>
+                <span className="text-sm font-medium text-[var(--color-error)]">
+                  {t("missing", { count: addressesMissingFields.length })}
+                </span>
             </div>
           )}
           <Dialog open={addAddressOpen} onOpenChange={setAddAddressOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Location
+                {t("addLocation")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Add Service Location</DialogTitle>
+                <DialogTitle>{t("addServiceLocation", { default: "Add Service Location" })}</DialogTitle>
                 <DialogDescription>
-                  Add a new location where you provide services
+                  {t("addServiceLocationDescription", { default: "Add a new location where you provide services" })}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="address_label">Label</Label>
+                    <Label htmlFor="address_label">{tCommon("label", { default: "Label" })}</Label>
                     <select
                       id="address_label"
                       value={newAddressForm.label}
@@ -233,13 +236,13 @@ export default function AddressesSection({
                       }
                       className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
                     >
-                      <option value="home">Home Location</option>
-                      <option value="work">Work Location</option>
-                      <option value="other">Other Location</option>
+                      <option value="home">{t("homeLocation", { default: "Home Location" })}</option>
+                      <option value="work">{t("workLocation", { default: "Work Location" })}</option>
+                      <option value="other">{t("otherLocation", { default: "Other Location" })}</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
+                    <Label htmlFor="country">{tCommon("country", { default: "Country" })}</Label>
                     <select
                       id="country"
                       value={newAddressForm.country}
@@ -259,7 +262,7 @@ export default function AddressesSection({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="street_address">Street Address</Label>
+                  <Label htmlFor="street_address">{tCommon("streetAddress", { default: "Street Address" })}</Label>
                   <Input
                     id="street_address"
                     value={newAddressForm.street_address}
@@ -269,13 +272,13 @@ export default function AddressesSection({
                         street_address: e.target.value,
                       }))
                     }
-                    placeholder="Enter street address"
+                    placeholder={tCommon("enterStreetAddress", { default: "Enter street address" })}
                   />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
+                    <Label htmlFor="city">{tCommon("city", { default: "City" })}</Label>
                     <Input
                       id="city"
                       value={newAddressForm.city}
@@ -285,11 +288,11 @@ export default function AddressesSection({
                           city: e.target.value,
                         }))
                       }
-                      placeholder="Enter city"
+                      placeholder={tCommon("enterCity", { default: "Enter city" })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="region">Region</Label>
+                    <Label htmlFor="region">{tCommon("region", { default: "Region" })}</Label>
                     <Input
                       id="region"
                       value={newAddressForm.region}
@@ -299,13 +302,13 @@ export default function AddressesSection({
                           region: e.target.value,
                         }))
                       }
-                      placeholder="Enter region"
+                      placeholder={tCommon("enterRegion", { default: "Enter region" })}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="postal_code">Postal Code</Label>
+                  <Label htmlFor="postal_code">{tCommon("postalCode", { default: "Postal Code" })}</Label>
                   <Input
                     id="postal_code"
                     value={newAddressForm.postal_code}
@@ -315,7 +318,7 @@ export default function AddressesSection({
                         postal_code: e.target.value,
                       }))
                     }
-                    placeholder="Enter postal code"
+                    placeholder={tCommon("enterPostalCode", { default: "Enter postal code" })}
                   />
                 </div>
               </div>
@@ -324,10 +327,10 @@ export default function AddressesSection({
                   variant="outline"
                   onClick={() => setAddAddressOpen(false)}
                 >
-                  Cancel
+                  {tCommon("cancel")}
                 </Button>
                 <Button onClick={handleAddAddress} disabled={loading}>
-                  {loading ? "Adding..." : "Add Location"}
+                  {loading ? tCommon("adding", { default: "Adding..." }) : t("addLocation")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -341,14 +344,14 @@ export default function AddressesSection({
               <MapPinIcon className="h-8 w-8 text-[var(--color-text-secondary)]" />
             </div>
             <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
-              No service locations
+              {t("noServiceLocations", { default: "No service locations" })}
             </h3>
             <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
-              Add locations for your services and job offers.
+              {t("addLocationsDescription", { default: "Add locations for your services and job offers." })}
             </p>
             <Button onClick={() => setAddAddressOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Add First Location
+              {t("addFirstLocation", { default: "Add First Location" })}
             </Button>
           </div>
         ) : (
@@ -372,7 +375,7 @@ export default function AddressesSection({
                             </span>
                             {address.is_default && (
                               <span className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-1 rounded-full font-medium">
-                                Default
+                                {t("default")}
                               </span>
                             )}
                           </div>
@@ -416,10 +419,10 @@ export default function AddressesSection({
           setAddressToDelete(null);
         }}
         onConfirm={handleConfirmDelete}
-        title="Delete Location"
-        description={`Are you sure you want to delete your ${addressToDelete?.label} location? This action cannot be undone.`}
-        confirmText="Delete Location"
-        cancelText="Cancel"
+        title={t("deleteLocation", { default: "Delete Location" })}
+        description={t("deleteLocationConfirmation", { label: addressToDelete?.label || "", default: `Are you sure you want to delete your ${addressToDelete?.label} location? This action cannot be undone.` })}
+        confirmText={t("deleteLocation", { default: "Delete Location" })}
+        cancelText={tCommon("cancel")}
         variant="destructive"
       />
     </Card>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { hasTaskerCompletedProfileAction } from "@/actions/auth";
 
@@ -48,6 +49,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations("dashboard");
+  const tCommon = useTranslations("common");
 
   // State management for dashboard data
   const [stats, setStats] = useState<DashboardStats>({
@@ -96,7 +99,7 @@ export default function DashboardPage() {
 
         // Check profile completion (non-blocking)
         if (!profileCheck.hasCompleted) {
-          toast.info("Please complete your profile setup to continue");
+          toast.info(t("completeProfileSetup"));
           router.replace("/finish-signUp");
           return;
         }
@@ -117,8 +120,9 @@ export default function DashboardPage() {
         setRecentActivity(data.recentActivity);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-        setError("Failed to load dashboard data");
-        toast.error("Failed to load dashboard data");
+        const errorMessage = t("failedToLoadData");
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
         setStatsLoading(false);
@@ -167,17 +171,17 @@ export default function DashboardPage() {
   };
 
   const formatTimeAgo = (dateString: string | undefined) => {
-    if (!dateString) return "Unknown time";
+    if (!dateString) return tCommon("unknown", { default: "Unknown time" });
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    if (diffInHours < 48) return "1 day ago";
-    return `${Math.floor(diffInHours / 24)} days ago`;
+    if (diffInHours < 1) return tCommon("timeAgo.justNow");
+    if (diffInHours < 24) return tCommon("timeAgo.hoursAgo", { count: diffInHours });
+    if (diffInHours < 48) return tCommon("timeAgo.dayAgo");
+    return tCommon("timeAgo.daysAgo", { count: Math.floor(diffInHours / 24) });
   };
 
   // Helper functions for activity display
@@ -258,17 +262,17 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--color-text-primary)] mobile-text-optimized">
-                Welcome back! 👋
+                {t("welcomeBack")}
               </h1>
               <p className="text-base sm:text-lg text-[var(--color-text-secondary)] mobile-leading">
-                Here's what's happening with your business today
+                {t("whatsHappening")}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <Link href="/tasker/post-service">
                 <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white shadow-lg hover:shadow-xl transition-all duration-300 mobile-button">
                   <Plus className="h-4 w-4 mr-2" />
-                  New Service
+                  {t("newService")}
                 </Button>
               </Link>
             </div>
@@ -280,7 +284,7 @@ export default function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <Wallet className="h-6 w-6" />
-              <h3 className="text-lg font-semibold">Wallet Balance</h3>
+              <h3 className="text-lg font-semibold">{t("walletBalance")}</h3>
             </div>
             <div className="text-3xl font-bold mb-2">
               {statsLoading ? (
@@ -290,7 +294,7 @@ export default function DashboardPage() {
               )}
             </div>
             <p className="text-sm opacity-90">
-              Available for withdrawals and payments
+              {t("availableForWithdrawals")}
             </p>
           </CardContent>
         </Card>
@@ -301,7 +305,7 @@ export default function DashboardPage() {
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-blue-800 dark:text-blue-200">
-                Active Jobs
+                {t("activeJobs")}
               </CardTitle>
               <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl group-hover:bg-blue-600 dark:group-hover:bg-blue-700 transition-colors duration-200">
                 <Briefcase className="h-5 w-5 text-white" />
@@ -329,7 +333,7 @@ export default function DashboardPage() {
           <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-green-800 dark:text-green-200">
-                Total Earnings
+                {t("totalEarnings")}
               </CardTitle>
               <div className="p-3 bg-green-500 dark:bg-green-600 rounded-xl group-hover:bg-green-600 dark:group-hover:bg-green-700 transition-colors duration-200">
                 <DollarSign className="h-5 w-5 text-white" />
@@ -376,12 +380,12 @@ export default function DashboardPage() {
                       : "N/A"}
                   </div>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    {stats.totalReviews} reviews
+                    {stats.totalReviews} {t("reviews")}
                   </p>
                   <div className="flex items-center gap-1 mt-2">
                     <Award className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
                     <span className="text-xs text-yellow-600 dark:text-yellow-400">
-                      Customer rating
+                      {t("customerRating")}
                     </span>
                   </div>
                 </>
@@ -393,7 +397,7 @@ export default function DashboardPage() {
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-purple-800 dark:text-purple-200">
-                Success Rate
+                {t("successRate")}
               </CardTitle>
               <div className="p-3 bg-purple-500 dark:bg-purple-600 rounded-xl group-hover:bg-purple-600 dark:group-hover:bg-purple-700 transition-colors duration-200">
                 <Target className="h-5 w-5 text-white" />
@@ -427,10 +431,10 @@ export default function DashboardPage() {
                 <div className="p-2 bg-[var(--color-primary)] rounded-lg">
                   <Zap className="h-5 w-5 text-white" />
                 </div>
-                Quick Actions
+                {t("quickActions")}
               </CardTitle>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Manage your business efficiently
+                {t("manageBusinessEfficiently")}
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -444,7 +448,7 @@ export default function DashboardPage() {
                       <Plus className="h-5 w-5" />
                     </div>
                     <span className="text-base font-semibold">
-                      Add New Service
+                      {t("addNewService")}
                     </span>
                   </div>
                   <ChevronRight className="h-5 w-5" />
@@ -459,7 +463,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <Briefcase className="h-4 w-4 text-[var(--color-secondary)]" />
-                      <span className="text-xs font-medium">Find Jobs</span>
+                      <span className="text-xs font-medium">{t("findJobs")}</span>
                     </div>
                   </Button>
                 </Link>
@@ -471,7 +475,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <Eye className="h-4 w-4 text-[var(--color-secondary)]" />
-                      <span className="text-xs font-medium">Bookings</span>
+                      <span className="text-xs font-medium">{t("bookings")}</span>
                     </div>
                   </Button>
                 </Link>
@@ -483,7 +487,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <DollarSign className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-medium">Earnings</span>
+                      <span className="text-xs font-medium">{t("earnings")}</span>
                     </div>
                   </Button>
                 </Link>
@@ -495,7 +499,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <MessageSquare className="h-4 w-4 text-blue-600" />
-                      <span className="text-xs font-medium">Messages</span>
+                      <span className="text-xs font-medium">{t("messages")}</span>
                     </div>
                     {messages.filter((m) => m.unread).length > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
@@ -512,7 +516,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <Star className="h-4 w-4 text-yellow-600" />
-                      <span className="text-xs font-medium">Reviews</span>
+                      <span className="text-xs font-medium">{t("reviews")}</span>
                     </div>
                   </Button>
                 </Link>
@@ -527,10 +531,10 @@ export default function DashboardPage() {
                 <div className="p-2 bg-[var(--color-secondary)] rounded-lg">
                   <Activity className="h-5 w-5 text-white" />
                 </div>
-                Recent Activity
+                {t("recentActivity")}
               </CardTitle>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Latest updates from your business
+                {t("latestUpdatesFromBusiness")}
               </p>
             </CardHeader>
             <CardContent>
@@ -541,7 +545,7 @@ export default function DashboardPage() {
               ) : recentActivity.length === 0 ? (
                 <div className="text-center py-8 text-[var(--color-text-secondary)]">
                   <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No recent activity</p>
+                  <p>{t("noRecentActivity")}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -591,10 +595,10 @@ export default function DashboardPage() {
                 <div className="p-2 bg-orange-500 rounded-lg">
                   <Bell className="h-5 w-5 text-white" />
                 </div>
-                Notifications
+                {t("notifications")}
               </CardTitle>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Stay updated with important alerts
+                {t("stayUpdatedWithAlerts")}
               </p>
             </CardHeader>
             <CardContent>
@@ -605,7 +609,7 @@ export default function DashboardPage() {
               ) : notifications.length === 0 ? (
                 <div className="text-center py-8 text-[var(--color-text-secondary)]">
                   <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No notifications yet</p>
+                  <p>{t("noNotificationsYet")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -652,7 +656,7 @@ export default function DashboardPage() {
                         variant="ghost"
                         className="w-full h-12 text-[var(--color-secondary)] hover:text-[var(--color-secondary-dark)] hover:bg-[var(--color-secondary)]/10 transition-all duration-200 mobile-button"
                       >
-                        View All Notifications
+                        {t("viewAllNotifications")}
                       </Button>
                     </Link>
                   )}
@@ -671,10 +675,10 @@ export default function DashboardPage() {
                   <div className="p-2 bg-blue-500 rounded-lg">
                     <MessageSquare className="h-5 w-5 text-white" />
                   </div>
-                  Recent Messages
+                  {t("recentMessages")}
                 </CardTitle>
                 <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                  Latest conversations with customers
+                  {t("latestConversationsWithCustomers")}
                 </p>
               </div>
               <Link href="/tasker/messages">
@@ -683,7 +687,7 @@ export default function DashboardPage() {
                   size="sm"
                   className="text-[var(--color-primary)] border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all duration-200"
                 >
-                  View All
+                  {t("viewAll")}
                 </Button>
               </Link>
             </div>
@@ -696,9 +700,9 @@ export default function DashboardPage() {
             ) : messages.length === 0 ? (
               <div className="text-center py-8 text-[var(--color-text-secondary)]">
                 <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No messages yet</p>
+                <p>{t("noMessagesYet")}</p>
                 <p className="text-xs mt-1">
-                  Start conversations with your customers
+                  {t("startConversationsWithCustomers")}
                 </p>
               </div>
             ) : (

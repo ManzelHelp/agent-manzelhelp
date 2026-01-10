@@ -54,7 +54,13 @@ export type NotificationType =
   | "service_created"
   | "service_updated"
   | "payment_confirmed"
-  | "payment_pending";
+  | "payment_pending"
+  | "wallet_refund_request_created"
+  | "wallet_refund_payment_confirmed"
+  | "wallet_refund_verifying"
+  | "wallet_refund_approved"
+  | "wallet_refund_rejected"
+  | "wallet_low_balance";
 export type BookingStatus =
   | "pending"
   | "accepted"

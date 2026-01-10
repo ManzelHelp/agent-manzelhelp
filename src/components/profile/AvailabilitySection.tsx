@@ -58,7 +58,17 @@ export default function AvailabilitySection({
   onProfileRefresh,
   missingFields,
 }: AvailabilitySectionProps) {
+  const t = useTranslations("profile");
   const tCommon = useTranslations("common");
+  const weekdays = [
+    { key: "monday", label: t("monday") },
+    { key: "tuesday", label: t("tuesday") },
+    { key: "wednesday", label: t("wednesday") },
+    { key: "thursday", label: t("thursday") },
+    { key: "friday", label: t("friday") },
+    { key: "saturday", label: t("saturday") },
+    { key: "sunday", label: t("sunday") },
+  ];
   const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
   const [availabilityForm, setAvailabilityForm] = useState<AvailabilitySlot[]>(
     []
@@ -138,19 +148,19 @@ export default function AvailabilitySection({
             </div>
             <div>
               <CardTitle className="text-xl text-[var(--color-text-primary)]">
-                Availability
+                {t("availability")}
               </CardTitle>
               <CardDescription className="text-[var(--color-text-secondary)]">
-                Set your working hours and availability
+                {t("setWorkingHours")}
               </CardDescription>
             </div>
           </div>
           {availabilityMissingFields.length > 0 && (
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
               <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
-              <span className="text-sm font-medium text-[var(--color-error)]">
-                {availabilityMissingFields.length} missing
-              </span>
+                <span className="text-sm font-medium text-[var(--color-error)]">
+                  {t("missing", { count: availabilityMissingFields.length })}
+                </span>
             </div>
           )}
           <Dialog
@@ -160,18 +170,18 @@ export default function AvailabilitySection({
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                {t("edit")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Edit Availability</DialogTitle>
+                <DialogTitle>{t("editAvailability", { default: "Edit Availability" })}</DialogTitle>
                 <DialogDescription>
-                  Set your working hours for each day of the week
+                  {t("setWorkingHoursDescription", { default: "Set your working hours for each day of the week" })}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                {WEEKDAYS.map((day, index) => {
+                {weekdays.map((day, index) => {
                   const slot =
                     availabilityForm[index] &&
                     typeof availabilityForm[index] === "object"
@@ -245,7 +255,7 @@ export default function AvailabilitySection({
                   variant="outline"
                   onClick={() => setEditAvailabilityOpen(false)}
                 >
-                  Cancel
+                  {tCommon("cancel")}
                 </Button>
                 <Button onClick={updateAvailability} disabled={loading}>
                   {loading ? tCommon("saving") : tCommon("saveChanges")}
@@ -257,7 +267,7 @@ export default function AvailabilitySection({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {WEEKDAYS.map((day, index) => {
+          {weekdays.map((day, index) => {
             const slot =
               availabilityForm[index] &&
               typeof availabilityForm[index] === "object"
@@ -296,7 +306,7 @@ export default function AvailabilitySection({
                     <p className="text-sm text-color-text-secondary">
                       {slot.enabled
                         ? `${slot.startTime} - ${slot.endTime}`
-                        : "Not available"}
+                        : t("notAvailable")}
                     </p>
                   </div>
                 </div>
@@ -307,7 +317,7 @@ export default function AvailabilitySection({
                       : "bg-color-accent/10 text-color-text-secondary"
                   }`}
                 >
-                  {slot.enabled ? "Available" : "Unavailable"}
+                  {slot.enabled ? t("available") : t("unavailable")}
                 </div>
               </div>
             );

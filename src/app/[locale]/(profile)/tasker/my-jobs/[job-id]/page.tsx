@@ -83,7 +83,7 @@ interface JobDetailsData {
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const t = useTranslations("myJobs");
+  const t = useTranslations("jobDetails");
   const [data, setData] = useState<JobDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -335,10 +335,10 @@ export default function JobDetailPage() {
             <BackButton className="p-2 h-10 w-10 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]" />
             <div>
               <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                Job Details
+                {t("jobDetails")}
               </h1>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Manage your job post
+                {t("manageJobPost")}
               </p>
             </div>
           </div>
@@ -359,7 +359,7 @@ export default function JobDetailPage() {
                         <EyeOff className="h-5 w-5 text-[var(--color-text-secondary)]" />
                       )}
                       <span className="font-medium text-[var(--color-text-primary)]">
-                        Job Status
+                        {t("jobStatus")}
                       </span>
                     </div>
                   </div>
@@ -400,7 +400,7 @@ export default function JobDetailPage() {
                         <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
                           <Calendar className="h-4 w-4" />
                           <span className="text-sm">
-                            Posted on {formatDate(data.created_at)}
+                            {t("postedOn", { date: formatDate(data.created_at) })}
                           </span>
                         </div>
                       </div>
@@ -439,11 +439,11 @@ export default function JobDetailPage() {
 
                     {/* Description */}
                     <div>
-                      <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
-                        Description
+                        <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
+                        {t("description")}
                       </h3>
                       <p className="text-[var(--color-text-secondary)] leading-relaxed">
-                        {data.description || "No description available"}
+                        {data.description || t("noDescription", { default: "No description available" })}
                       </p>
                     </div>
 
@@ -451,7 +451,7 @@ export default function JobDetailPage() {
                     {data.requirements && (
                       <div>
                         <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
-                          Requirements
+                          {t("requirements", { default: "Requirements" })}
                         </h3>
                         <p className="text-[var(--color-text-secondary)] leading-relaxed">
                           {data.requirements}
@@ -466,7 +466,7 @@ export default function JobDetailPage() {
                           <Calendar className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Preferred Date
+                              {t("preferredDate")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {formatDate(data.preferred_date)}
@@ -480,7 +480,7 @@ export default function JobDetailPage() {
                           <Clock className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Preferred Time
+                              {t("preferredTime")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {formatTime(data.preferred_time_start)}
@@ -496,10 +496,10 @@ export default function JobDetailPage() {
                           <CheckCircle className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Flexible Timing
+                              {t("flexibleTiming", { default: "Flexible Timing" })}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
-                              Open to schedule adjustments
+                              {t("openToScheduleAdjustments", { default: "Open to schedule adjustments" })}
                             </p>
                           </div>
                         </div>
@@ -510,13 +510,13 @@ export default function JobDetailPage() {
                           <MapPin className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Location
+                              {t("location")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {data.city && data.region
                                 ? `${data.city}, ${data.region}`
                                 : data.street_address ||
-                                  "Location not specified"}
+                                  t("locationNotSpecified", { default: "Location not specified" })}
                             </p>
                           </div>
                         </div>
@@ -535,7 +535,7 @@ export default function JobDetailPage() {
                   <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                     <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
-                  Customer Information
+                  {t("customerInformation")}
                 </h2>
               </div>
               <div className="p-8">
@@ -559,7 +559,7 @@ export default function JobDetailPage() {
                       {data.customer_first_name} {data.customer_last_name}
                     </h3>
                     <p className="text-slate-600 dark:text-slate-400 text-lg mb-2">
-                      Job posted by this customer
+                      {t("jobPostedByCustomer")}
                     </p>
                     {data.customer_email && (
                       <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -585,7 +585,7 @@ export default function JobDetailPage() {
                   <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  Job Progress
+                  {t("jobProgress")}
                 </h2>
               </div>
               <div className="p-8 space-y-4">
@@ -593,7 +593,7 @@ export default function JobDetailPage() {
                 <div className="flex items-center justify-between p-4 bg-[var(--color-accent)]/20 rounded-lg">
                   <div>
                     <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-                      Current Status
+                      {t("currentStatus")}
                     </p>
                     <Badge className={getStatusColor(data.status)}>
                       {getStatusIcon(data.status)}
@@ -603,7 +603,7 @@ export default function JobDetailPage() {
                   {data.started_at && (
                     <div>
                       <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-                        Started At
+                        {t("startedAt")}
                       </p>
                       <p className="text-sm font-medium text-[var(--color-text-primary)]">
                         {formatDate(data.started_at)} {data.started_at.split("T")[1] && formatTime(data.started_at.split("T")[1].split(".")[0])}
@@ -613,7 +613,7 @@ export default function JobDetailPage() {
                   {data.completed_at && (
                     <div>
                       <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-                        Completed At
+                        {t("completedAt")}
                       </p>
                       <p className="text-sm font-medium text-[var(--color-text-primary)]">
                         {formatDate(data.completed_at)} {data.completed_at.split("T")[1] && formatTime(data.completed_at.split("T")[1].split(".")[0])}

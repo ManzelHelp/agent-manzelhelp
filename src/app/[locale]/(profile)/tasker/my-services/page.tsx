@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import ServiceDeleteButton from "@/components/services/ServiceDeleteButton";
 import { User } from "@/types/supabase";
 import { BackButton } from "@/components/ui/BackButton";
+import { useTranslations } from "next-intl";
 
 // Enhanced loading component with modern design
 function ServicesLoadingSkeleton() {
@@ -96,6 +97,7 @@ function ServiceCard({
   service: ServiceWithDetails;
   taskerId: string;
 }) {
+  const t = useTranslations("services");
   const getPricingDisplay = (service: ServiceWithDetails) => {
     if (service.pricing_type === "hourly") {
       return `MAD ${service.price}/hr`;
@@ -124,15 +126,15 @@ function ServiceCard({
   const getStatusLabel = (status?: string) => {
     switch (status) {
       case "verified":
-        return "Verified";
+        return t("verified");
       case "pending":
-        return "Pending";
+        return t("pending", { default: "Pending" });
       case "rejected":
-        return "Rejected";
+        return t("rejected", { default: "Rejected" });
       case "under_review":
-        return "Under Review";
+        return t("underReview", { default: "Under Review" });
       default:
-        return "Pending";
+        return t("pending", { default: "Pending" });
     }
   };
 
@@ -145,12 +147,12 @@ function ServiceCard({
           {service.service_status === "active" ? (
             <div className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-success-light)] text-[var(--color-success)] rounded-full text-xs font-medium border border-[var(--color-success)]/30">
               <Eye className="h-3 w-3" />
-              <span>Active</span>
+              <span>{t("active")}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-surface)] text-[var(--color-text-secondary)] rounded-full text-xs font-medium border border-[var(--color-border)]">
               <EyeOff className="h-3 w-3" />
-              <span>Paused</span>
+              <span>{t("paused", { default: "Paused" })}</span>
             </div>
           )}
         </div>
@@ -189,15 +191,15 @@ function ServiceCard({
               {service.service_area && typeof service.service_area === "string"
                 ? service.service_area
                 : service.service_area
-                ? "Multiple areas"
-                : "Area not specified"}
+                ? t("multipleAreas", { default: "Multiple areas" })
+                : t("areaNotSpecified")}
             </span>
           </div>
         </div>
 
         {/* Description */}
         <p className="text-sm text-[var(--color-text-secondary)] line-clamp-3 mb-4 leading-relaxed">
-          {service.description || "No description available"}
+          {service.description || t("noDescription", { default: "No description available" })}
         </p>
 
         {/* Service Details */}
@@ -208,13 +210,13 @@ function ServiceCard({
               <span>
                 {service.created_at
                   ? format(new Date(service.created_at), "MMM d, yyyy")
-                  : "Unknown date"}
+                  : t("unknownDate", { default: "Unknown date" })}
               </span>
             </div>
             {service.booking_count > 0 && (
               <div className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
-                <span>{service.booking_count} bookings</span>
+                <span>{service.booking_count} {t("bookings")}</span>
               </div>
             )}
             {service.minimum_duration && (
@@ -236,12 +238,12 @@ function ServiceCard({
               )}`}
               title={
                 service.verification_status === "pending"
-                  ? "En attente de vérification par l'admin"
+                  ? t("verificationStatus.pending", { default: "Pending verification by admin" })
                   : service.verification_status === "verified"
-                  ? "Service vérifié et approuvé par l'admin"
+                  ? t("verificationStatus.verified", { default: "Service verified and approved by admin" })
                   : service.verification_status === "rejected"
-                  ? "Service rejeté par l'admin"
-                  : "Statut de vérification"
+                  ? t("verificationStatus.rejected", { default: "Service rejected by admin" })
+                  : t("verificationStatus.title", { default: "Verification status" })
               }
             >
               {getStatusLabel(service.verification_status)}
@@ -249,15 +251,15 @@ function ServiceCard({
             {service.is_promoted && (
               <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white">
                 <Sparkles className="h-3 w-3" />
-                <span>Promoted</span>
+                <span>{t("promoted", { default: "Promoted" })}</span>
               </span>
             )}
             <span className="px-3 py-1.5 rounded-full bg-[var(--color-accent)]/20 text-[var(--color-text-secondary)] font-medium text-xs">
               {service.pricing_type === "hourly"
-                ? "Hourly Rate"
+                ? t("pricingType.hourly", { default: "Hourly Rate" })
                 : service.pricing_type === "per_item"
-                ? "Per Item"
-                : "Fixed Price"}
+                ? t("pricingType.perItem", { default: "Per Item" })
+                : t("pricingType.fixed", { default: "Fixed Price" })}
             </span>
           </div>
 
@@ -266,7 +268,7 @@ function ServiceCard({
             <Link
               href={`./my-services/${service.id}`}
               className="p-3 rounded-xl bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] transition-all min-h-[44px] min-w-[44px] flex items-center justify-center shadow-sm hover:shadow-md group/btn"
-              title="Edit service"
+              title={t("actions.edit", { default: "Edit service" })}
             >
               <Edit className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
             </Link>
@@ -280,6 +282,7 @@ function ServiceCard({
 
 // Services list component with enhanced design
 function ServicesList({ taskerId }: { taskerId: string }) {
+  const t = useTranslations("services");
   const [services, setServices] = useState<ServiceWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -315,7 +318,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
         setTotal(result.total);
       } catch (error) {
         console.error("Error fetching services:", error);
-        toast.error("Failed to load services");
+        toast.error(t("errors.loadFailed", { default: "Failed to load services" }));
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -369,7 +372,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
                     {servicesArray.length}
                   </p>
                   <p className="text-xs text-[var(--color-text-secondary)]">
-                    Total Services
+                    {t("totalServices")}
                   </p>
                 </div>
               </div>
@@ -385,7 +388,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
                     {activeServices}
                   </p>
                   <p className="text-xs text-[var(--color-text-secondary)]">
-                    Active
+                    {t("active")}
                   </p>
                 </div>
               </div>
@@ -401,7 +404,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
                     {totalBookings}
                   </p>
                   <p className="text-xs text-[var(--color-text-secondary)]">
-                    Bookings
+                    {t("bookings")}
                   </p>
                 </div>
               </div>
@@ -417,7 +420,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
                     {verifiedServices}
                   </p>
                   <p className="text-xs text-[var(--color-text-secondary)]">
-                    Verified
+                    {t("verified")}
                   </p>
                 </div>
               </div>
@@ -429,10 +432,10 @@ function ServicesList({ taskerId }: { taskerId: string }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h3 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-1">
-              Your Service Portfolio
+              {t("yourServicePortfolio")}
             </h3>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Manage and showcase your professional services
+              {t("manageAndShowcase")}
             </p>
           </div>
           <Link
@@ -440,8 +443,8 @@ function ServicesList({ taskerId }: { taskerId: string }) {
             className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all min-h-[48px] mobile-button whitespace-nowrap group"
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-            <span className="hidden sm:inline">Add New Service</span>
-            <span className="sm:hidden">Add Service</span>
+            <span className="hidden sm:inline">{t("addNewService")}</span>
+            <span className="sm:hidden">{t("addNewService", { default: "Add Service" })}</span>
           </Link>
         </div>
 
@@ -452,19 +455,17 @@ function ServicesList({ taskerId }: { taskerId: string }) {
                 <Sparkles className="h-12 w-12 text-[var(--color-secondary)]" />
               </div>
               <h2 className="text-2xl font-bold mb-3 text-[var(--color-text-primary)]">
-                Start Your Service Journey
+                {t("startServiceJourney")}
               </h2>
               <p className="text-[var(--color-text-secondary)] mb-8 leading-relaxed">
-                Create your first service offer and start connecting with
-                customers who need your expertise. Build your professional
-                portfolio and grow your business.
+                {t("createFirstServiceDescription")}
               </p>
               <Link
                 href="./post-service"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all group"
               >
                 <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
-                Create Your First Service
+                {t("createFirstService")}
               </Link>
             </div>
           </div>
@@ -489,10 +490,10 @@ function ServicesList({ taskerId }: { taskerId: string }) {
                   {loadingMore ? (
                     <span className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Loading...
+                      {t("loading")}
                     </span>
                   ) : (
-                    "Load More"
+                    t("loadMore")
                   )}
                 </Button>
               </div>
@@ -510,17 +511,16 @@ function ServicesList({ taskerId }: { taskerId: string }) {
             <Award className="h-12 w-12 text-red-500" />
           </div>
           <h2 className="text-2xl font-bold mb-3 text-[var(--color-text-primary)]">
-            Oops! Something went wrong
+            {t("oopsSomethingWentWrong")}
           </h2>
           <p className="text-[var(--color-text-secondary)] mb-8 leading-relaxed">
-            We couldn't load your services right now. Please try refreshing the
-            page or contact support if the problem persists.
+            {t("couldntLoadServices")}
           </p>
           <Link
             href="/tasker/my-services"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
           >
-            Try Again
+            {t("tryAgain")}
           </Link>
         </div>
       </div>
@@ -530,6 +530,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
 
 export default function MyServicesPage() {
   const router = useRouter();
+  const t = useTranslations("services");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -544,7 +545,7 @@ export default function MyServicesPage() {
 
         // Check profile completion (non-blocking)
         if (!profileCheck.hasCompleted) {
-          toast.info("Please complete your profile setup to continue");
+          toast.info(t("pleaseCompleteProfile"));
           router.replace("/finish-signUp");
           return;
         }
@@ -552,7 +553,7 @@ export default function MyServicesPage() {
         setUser(userData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Failed to load data");
+        toast.error(t("failedToLoadData"));
       } finally {
         setLoading(false);
       }
@@ -565,7 +566,7 @@ export default function MyServicesPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-        <p>Loading...</p>
+        <p>{t("loading")}</p>
       </div>
     );
   }
@@ -577,17 +578,16 @@ export default function MyServicesPage() {
           <Award className="h-10 w-10 text-red-500" />
         </div>
         <h2 className="text-xl font-bold mb-2 text-[var(--color-text-primary)]">
-          Access Required
+          {t("accessRequired")}
         </h2>
         <p className="text-[var(--color-text-secondary)] mb-6 max-w-sm">
-          Please sign in to access your service management dashboard and start
-          building your professional portfolio.
+          {t("pleaseSignIn")}
         </p>
         <Link
           href="/login"
           className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white font-semibold hover:shadow-lg transition-all"
         >
-          Sign In
+          {t("signIn")}
         </Link>
       </div>
     );
@@ -601,25 +601,23 @@ export default function MyServicesPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div className="flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-3">
-                Service Management Hub
+                {t("serviceManagementHub")}
               </h1>
               <p className="text-[var(--color-text-secondary)] mb-4 text-base sm:text-lg leading-relaxed">
-                Build and manage your professional service portfolio. Create
-                compelling offers, track performance, and grow your business
-                with our powerful tools.
+                {t("buildAndManage")}
               </p>
               <div className="flex flex-wrap gap-2">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 rounded-full text-sm font-medium text-[var(--color-text-primary)]">
                   <TrendingUp className="h-4 w-4 text-[var(--color-secondary)]" />
-                  <span>Performance Tracking</span>
+                  <span>{t("performanceTracking")}</span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 rounded-full text-sm font-medium text-[var(--color-text-primary)]">
                   <Users className="h-4 w-4 text-[var(--color-secondary)]" />
-                  <span>Customer Insights</span>
+                  <span>{t("customerInsights")}</span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 rounded-full text-sm font-medium text-[var(--color-text-primary)]">
                   <Award className="h-4 w-4 text-[var(--color-secondary)]" />
-                  <span>Quality Control</span>
+                  <span>{t("qualityControl")}</span>
                 </div>
               </div>
             </div>

@@ -277,7 +277,7 @@ export default function CreateOfferPage() {
       }
     } catch (error) {
       console.error("Error fetching initial data:", error);
-      toast.error("Failed to load form data. Please try again.");
+      toast.error(t("errors.loadFormDataFailed", { default: "Failed to load form data. Please try again." }));
     } finally {
       setLoading(false);
     }

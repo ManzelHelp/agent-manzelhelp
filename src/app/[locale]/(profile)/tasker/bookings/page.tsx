@@ -27,6 +27,7 @@ import { useUserStore } from "@/stores/userStore";
 import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
 import { useJobApplicationsRealtime } from "@/hooks/useJobApplicationsRealtime";
 import { BackButton } from "@/components/ui/BackButton";
+import { useTranslations } from "next-intl";
 
 // Removed unused TaskStatus type
 
@@ -116,6 +117,7 @@ const getCustomerName = (booking: BookingWithDetails) => {
 
 export default function BookingsPage() {
   const { user } = useUserStore();
+  const t = useTranslations("bookings");
   // Note: "booked-taskers" tab is hidden from UI but code is kept for future use
   const [activeTab, setActiveTab] = useState<TaskerBookingTab>("my-bookings");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
@@ -584,10 +586,10 @@ export default function BookingsPage() {
               <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                 <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              Tasker Bookings
+              {t("taskerBookings", { default: "Tasker Bookings" })}
             </h2>
             <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
-              Manage your bookings, applications, and hired services
+              {t("manageBookings")}
             </p>
           </div>
           <div className="p-6">
@@ -691,7 +693,7 @@ export default function BookingsPage() {
                       onClick={handleRetryLoadMore}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-semibold underline transition-colors"
                     >
-                      Try again
+                      {t("tryAgain")}
                     </button>
                   </div>
                 )}

@@ -20,7 +20,7 @@ export function ContactSupportDialog({
   isOpen,
   onClose,
 }: ContactSupportDialogProps) {
-  const t = useTranslations("contact.form");
+  const t = useTranslations("contact.support");
 
   const handleSuccess = () => {
     // Le formulaire gère déjà le succès avec toast
@@ -40,10 +40,10 @@ export function ContactSupportDialog({
             </div>
             <div>
               <DialogTitle className="text-xl font-bold text-[var(--color-text-primary)]">
-                Contact Support
+                {t("title")}
               </DialogTitle>
               <DialogDescription className="text-[var(--color-text-secondary)]">
-                Send us a message and we'll get back to you as soon as possible.
+                {t("description")}
               </DialogDescription>
             </div>
           </div>

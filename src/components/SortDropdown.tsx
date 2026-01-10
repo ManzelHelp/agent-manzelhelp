@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowUpDown,
   ArrowUp,
@@ -23,6 +23,7 @@ export default function SortDropdown({
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = useLocale();
+  const t = useTranslations("search");
 
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -40,27 +41,27 @@ export default function SortDropdown({
   };
 
   const sortOptions = [
-    { value: "created_at", label: "Newest First", icon: Clock },
+    { value: "created_at", label: t("sortOptions.newestFirst"), icon: Clock },
     {
       value: "price_low",
-      label: type === "jobs" ? "Budget: Low to High" : "Price: Low to High",
+      label: type === "jobs" ? t("sortOptions.budgetLowToHigh") : t("sortOptions.priceLowToHigh"),
       icon: ArrowUp,
     },
     {
       value: "price_high",
-      label: type === "jobs" ? "Budget: High to Low" : "Price: High to Low",
+      label: type === "jobs" ? t("sortOptions.budgetHighToLow") : t("sortOptions.priceHighToLow"),
       icon: ArrowDown,
     },
     ...(type === "services"
       ? [
-          { value: "rating", label: "Highest Rated", icon: Star },
-          { value: "reviews", label: "Most Reviews", icon: MessageSquare },
+          { value: "rating", label: t("sortOptions.highestRated"), icon: Star },
+          { value: "reviews", label: t("sortOptions.mostReviews"), icon: MessageSquare },
         ]
       : [
-          { value: "date", label: "Date: Earliest First", icon: Clock },
+          { value: "date", label: t("sortOptions.dateEarliestFirst"), icon: Clock },
           {
             value: "applications",
-            label: "Most Applications",
+            label: t("sortOptions.mostApplications"),
             icon: MessageSquare,
           },
         ]),
@@ -71,7 +72,7 @@ export default function SortDropdown({
       <div className="flex items-center gap-2">
         <ArrowUpDown className="w-4 h-4 text-[var(--color-text-secondary)]" />
         <label className="text-sm font-medium text-[var(--color-text-primary)]">
-          Sort by:
+          {t("sortBy")}
         </label>
       </div>
       <div className="relative">

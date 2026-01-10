@@ -2,8 +2,11 @@
 
 import { createClient, createServiceRoleClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getNotificationTranslationsForUser } from "@/lib/notifications";
+import { getErrorTranslationForUser } from "@/lib/errors";
 
-// Input validation
+// Input validation - Note: This function is used synchronously, so we can't use async translations here
+// The error messages will be translated at the call site if needed
 function validateReplyText(text: string): { isValid: boolean; error?: string } {
   if (!text || text.trim().length === 0) {
     return { isValid: false, error: "Reply cannot be empty" };
@@ -17,7 +20,12 @@ function validateReplyText(text: string): { isValid: boolean; error?: string } {
 export async function getTaskerReviews(taskerId: string) {
   try {
     if (!taskerId) {
-      return { data: null, error: "Tasker ID is required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "reviews",
+        "reviewIdAndTaskerIdRequired"
+      );
+      return { data: null, error: errorMessage };
     }
 
     const supabase = await createClient();
@@ -151,7 +159,12 @@ export async function getTaskerReviews(taskerId: string) {
     return { data, error: null };
   } catch (error) {
     console.error("Error in getTaskerReviews:", error);
-    return { data: null, error: "Failed to fetch reviews" };
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "reviews",
+      "failedToCreate"
+    );
+    return { data: null, error: errorMessage };
   }
 }
 
@@ -164,11 +177,25 @@ export async function replyToReview(
     // Input validation
     const validation = validateReplyText(replyText);
     if (!validation.isValid) {
-      return { success: false, error: validation.error };
+      // Translate the error message
+      const errorKey = validation.error === "Reply cannot be empty" 
+        ? "replyCannotBeEmpty" 
+        : "replyTooLong";
+      const errorMessage = await getErrorTranslationForUser(
+        taskerId,
+        "reviews",
+        errorKey
+      );
+      return { success: false, error: errorMessage };
     }
 
     if (!reviewId || !taskerId) {
-      return { success: false, error: "Review ID and Tasker ID are required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "reviews",
+        "reviewIdAndTaskerIdRequired"
+      );
+      return { success: false, error: errorMessage };
     }
 
     const supabase = await createClient();
@@ -181,15 +208,30 @@ export async function replyToReview(
       .single();
 
     if (checkError || !reviewCheck) {
-      return { success: false, error: "Review not found" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "reviews",
+        "reviewNotFound"
+      );
+      return { success: false, error: errorMessage };
     }
 
     if (reviewCheck.reviewee_id !== taskerId) {
-      return { success: false, error: "Unauthorized to reply to this review" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "reviews",
+        "unauthorized"
+      );
+      return { success: false, error: errorMessage };
     }
 
     if (reviewCheck.reply_comment) {
-      return { success: false, error: "Already replied to this review" };
+      const errorMessage = await getErrorTranslationForUser(
+        taskerId,
+        "reviews",
+        "alreadyReplied"
+      );
+      return { success: false, error: errorMessage };
     }
 
     const { error } = await supabase
@@ -563,7 +605,12 @@ export async function createReview(data: {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return { success: false, error: "Authentication required" };
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "reviews",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
     }
 
     const reviewerId = user.id;
@@ -581,12 +628,22 @@ export async function createReview(data: {
         .single();
 
       if (jobError || !job) {
-        return { success: false, error: "Job not found" };
+        const errorMessage = await getErrorTranslationForUser(
+          undefined,
+          "jobs",
+          "jobNotFound"
+        );
+        return { success: false, error: errorMessage };
       }
 
       // Verify customer owns the job
       if (job.customer_id !== reviewerId) {
-        return { success: false, error: "Unauthorized: You can only review your own jobs" };
+        const errorMessage = await getErrorTranslationForUser(
+          undefined,
+          "reviews",
+          "unauthorized"
+        );
+        return { success: false, error: errorMessage };
       }
 
       // Verify job is confirmed
@@ -633,7 +690,12 @@ export async function createReview(data: {
 
       // Verify customer owns the booking
       if (booking.customer_id !== reviewerId) {
-        return { success: false, error: "Unauthorized: You can only review your own bookings" };
+        const errorMessage = await getErrorTranslationForUser(
+          undefined,
+          "reviews",
+          "unauthorized"
+        );
+        return { success: false, error: errorMessage };
       }
 
       // Verify booking is confirmed
@@ -691,7 +753,12 @@ export async function createReview(data: {
 
     if (reviewError || !newReview) {
       console.error("Error creating review:", reviewError);
-      return { success: false, error: reviewError?.message || "Failed to create review" };
+      const defaultErrorMessage = await getErrorTranslationForUser(
+        undefined,
+        "reviews",
+        "failedToCreate"
+      );
+      return { success: false, error: reviewError?.message || defaultErrorMessage };
     }
 
     // Note: tasker_rating and total_reviews are automatically updated by database trigger
@@ -700,13 +767,22 @@ export async function createReview(data: {
 
     // Send notification to tasker
     try {
+      const notificationTranslations = await getNotificationTranslationsForUser(
+        revieweeId,
+        "review_received",
+        {
+          rating: data.overallRating,
+          jobTitle: jobTitle || undefined,
+          bookingTitle: bookingTitle || undefined,
+        }
+      );
       const { error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: revieweeId,
-          type: "payment_received", // Using existing notification type
-          title: "New Review Received",
-          message: `You received a ${data.overallRating}-star review${jobTitle ? ` for "${jobTitle}"` : bookingTitle ? ` for "${bookingTitle}"` : ""}`,
+          type: "review_received",
+          title: notificationTranslations.title,
+          message: notificationTranslations.message,
           metadata: {
             review_id: newReview.id,
             job_id: data.jobId || null,
@@ -737,7 +813,9 @@ export async function createReview(data: {
     console.error("Error in createReview:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create review",
+      error: error instanceof Error
+        ? error.message
+        : await getErrorTranslationForUser(undefined, "reviews", "failedToCreate"),
     };
   }
 }

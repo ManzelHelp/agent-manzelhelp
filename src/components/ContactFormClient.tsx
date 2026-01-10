@@ -164,6 +164,7 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
+            placeholder={t("fields.firstName")}
             className={`w-full ${
               errors.firstName ? "border-red-500" : ""
             }`}
@@ -187,6 +188,7 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
+            placeholder={t("fields.lastName")}
             className={`w-full ${
               errors.lastName ? "border-red-500" : ""
             }`}
@@ -209,6 +211,7 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
           name="email"
           value={formData.email}
           onChange={handleChange}
+          placeholder={t("fields.email")}
           className={`w-full ${errors.email ? "border-red-500" : ""}`}
           disabled={isPending}
           required

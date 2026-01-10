@@ -26,6 +26,7 @@ import { getTaskerReviewsWithStats, replyToReview } from "@/actions/reviews";
 import { toast } from "sonner";
 import { formatDateShort } from "@/lib/date-utils";
 import { BackButton } from "@/components/ui/BackButton";
+import { useTranslations } from "next-intl";
 import type {
   Review,
   User as UserType,
@@ -76,6 +77,7 @@ export default function ReviewsPage() {
   const [replyText, setReplyText] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
   const [avatarErrors, setAvatarErrors] = useState<Set<string>>(new Set());
+  const t = useTranslations("reviews");
 
   const fetchReviews = useCallback(async () => {
     if (!user) return;
@@ -86,7 +88,7 @@ export default function ReviewsPage() {
 
       if (error) {
         console.error("Error fetching reviews:", error);
-        toast.error("Failed to load reviews");
+        toast.error(t("errors.loadFailed", { default: "Failed to load reviews" }));
         return;
       }
 
@@ -96,7 +98,7 @@ export default function ReviewsPage() {
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      toast.error("An unexpected error occurred while loading reviews");
+      toast.error(t("errors.unexpected", { default: "An unexpected error occurred while loading reviews" }));
     } finally {
       setLoading(false);
     }
@@ -145,12 +147,12 @@ export default function ReviewsPage() {
         ),
       }));
 
-      toast.success("Reply submitted successfully!");
+      toast.success(t("success.replySubmitted", { default: "Reply submitted successfully!" }));
       setReplyingTo(null);
       setReplyText("");
     } catch (error) {
       console.error("Error submitting reply:", error);
-      toast.error("An unexpected error occurred");
+      toast.error(t("errors.unexpected", { default: "An unexpected error occurred" }));
     } finally {
       setSubmittingReply(false);
     }
@@ -234,11 +236,10 @@ export default function ReviewsPage() {
             <Star className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-            Reviews & Feedback
+            {t("reviewsAndFeedback")}
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Monitor your performance and build trust with clients through
-            meaningful interactions
+            {t("monitorPerformance")}
           </p>
         </div>
 
@@ -270,10 +271,10 @@ export default function ReviewsPage() {
                 </div>
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
-                Average Rating
+                {t("averageRating")}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Based on {stats.totalReviews} reviews
+                {t("basedOnReviews", { count: stats.totalReviews })}
               </p>
             </CardContent>
           </Card>
@@ -300,10 +301,10 @@ export default function ReviewsPage() {
                 </div>
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
-                5-Star Reviews
+                {t("fiveStarReviews")}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Excellence rate
+                {t("excellenceRate")}
               </p>
             </CardContent>
           </Card>
@@ -324,15 +325,15 @@ export default function ReviewsPage() {
                     {stats.responseRate}%
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Response rate
+                    {t("responseRate")}
                   </div>
                 </div>
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
-                Response Rate
+                {t("responseRateLabel")}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Client engagement
+                {t("clientEngagement")}
               </p>
             </CardContent>
           </Card>
@@ -349,15 +350,15 @@ export default function ReviewsPage() {
                     {stats.totalReviews}
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Total reviews
+                    {t("totalReviewsLabel", { default: "Total reviews" })}
                   </div>
                 </div>
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">
-                Total Reviews
+                {t("totalReviews")}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                All time feedback
+                {t("allTimeFeedback")}
               </p>
             </CardContent>
           </Card>
@@ -369,33 +370,34 @@ export default function ReviewsPage() {
             <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div className="space-y-2">
                 <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  Client Reviews
+                  {t("clientReviews")}
                 </CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-400">
-                  {filteredReviews.length} review
-                  {filteredReviews.length !== 1 && "s"}
+                  {filteredReviews.length === 1 
+                    ? t("reviewCount", { count: filteredReviews.length })
+                    : t("reviewCountPlural", { count: filteredReviews.length })}
                   {activeFilter !== "all" &&
-                    ` (${activeFilter} filter applied)`}
+                    ` (${t(activeFilter === "positive" ? "fourStarPlus" : activeFilter === "negative" ? "threeStarMinus" : "needsReply")} ${t("filterApplied")})`}
                 </CardDescription>
               </div>
 
               {/* Filter Buttons */}
               <div className="flex flex-wrap gap-2">
                 {[
-                  { key: "all", label: "All", count: filterCounts.all },
+                  { key: "all", label: t("all"), count: filterCounts.all },
                   {
                     key: "positive",
-                    label: "4★+",
+                    label: t("fourStarPlus"),
                     count: filterCounts.positive,
                   },
                   {
                     key: "negative",
-                    label: "3★-",
+                    label: t("threeStarMinus"),
                     count: filterCounts.negative,
                   },
                   {
                     key: "no-response",
-                    label: "Needs Reply",
+                    label: t("needsReply"),
                     count: filterCounts.noResponse,
                   },
                 ].map((filter) => (
@@ -431,12 +433,12 @@ export default function ReviewsPage() {
                   <Star className="w-12 h-12 text-slate-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                  No reviews found
+                  {t("noReviewsFound", { default: "No reviews found" })}
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
                   {activeFilter === "no-response"
-                    ? "Great job! You've responded to all reviews."
-                    : "No reviews match the selected filter. Try adjusting your filter criteria."}
+                    ? t("greatJob", { default: "Great job! You've responded to all reviews." })
+                    : t("noReviewsMatch", { default: "No reviews match the selected filter. Try adjusting your filter criteria." })}
                 </p>
               </div>
             ) : (
@@ -452,7 +454,7 @@ export default function ReviewsPage() {
                           {review.reviewer?.avatar_url && !avatarErrors.has(review.id) ? (
                             <Image
                               src={review.reviewer.avatar_url}
-                              alt={review.reviewer.first_name || "Client"}
+                              alt={review.reviewer.first_name || t("client")}
                               width={48}
                               height={48}
                               unoptimized
@@ -489,7 +491,7 @@ export default function ReviewsPage() {
                               {review.reviewer?.first_name &&
                               review.reviewer?.last_name
                                 ? `${review.reviewer.first_name} ${review.reviewer.last_name}`
-                                : review.reviewer?.first_name || "Anonymous"}
+                                : review.reviewer?.first_name || t("client")}
                             </h3>
                             <div className="flex items-center gap-1">
                               {[1, 2, 3, 4, 5].map((star) => (
@@ -532,19 +534,22 @@ export default function ReviewsPage() {
                           <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                             {[
                               {
-                                label: "Quality",
+                                label: t("quality"),
                                 rating: review.quality_rating,
+                                key: "quality",
                               },
                               {
-                                label: "Communication",
+                                label: t("communication"),
                                 rating: review.communication_rating,
+                                key: "communication",
                               },
                               {
-                                label: "Timeliness",
+                                label: t("timeliness"),
                                 rating: review.timeliness_rating,
+                                key: "timeliness",
                               },
                             ].map((item) => (
-                              <div key={item.label} className="text-center">
+                              <div key={item.key} className="text-center">
                                 <div className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
                                   {item.label}
                                 </div>
@@ -568,7 +573,7 @@ export default function ReviewsPage() {
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                             <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                              Your Response
+                              {t("yourResponse")}
                             </span>
                           </div>
                           <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
@@ -576,7 +581,7 @@ export default function ReviewsPage() {
                           </p>
                           {review.replied_at && (
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                              Replied on {formatDate(review.replied_at)}
+                              {t("repliedOn", { date: formatDate(review.replied_at) })}
                             </p>
                           )}
                         </div>
@@ -587,14 +592,14 @@ export default function ReviewsPage() {
                               <textarea
                                 value={replyText}
                                 onChange={(e) => setReplyText(e.target.value)}
-                                placeholder="Write a thoughtful response to this review..."
+                                placeholder={t("writeThoughtfulResponse")}
                                 maxLength={1000}
                                 className="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-lg resize-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 rows={4}
                               />
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-slate-500 dark:text-slate-400">
-                                  {replyText.length}/1000 characters
+                                  {t("charactersCount", { count: replyText.length })}
                                 </span>
                                 <div className="flex gap-2">
                                   <Button
@@ -607,8 +612,8 @@ export default function ReviewsPage() {
                                   >
                                     <Send className="w-4 h-4 mr-2" />
                                     {submittingReply
-                                      ? "Sending..."
-                                      : "Send Reply"}
+                                      ? t("sending", { default: "Sending..." })
+                                      : t("sendReply")}
                                   </Button>
                                   <Button
                                     size="sm"
@@ -620,7 +625,7 @@ export default function ReviewsPage() {
                                     className="border-slate-300 dark:border-slate-600"
                                   >
                                     <X className="w-4 h-4 mr-2" />
-                                    Cancel
+                                    {t("cancel")}
                                   </Button>
                                 </div>
                               </div>
@@ -633,7 +638,7 @@ export default function ReviewsPage() {
                               className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                             >
                               <MessageSquare className="w-4 h-4 mr-2" />
-                              Reply to Review
+                              {t("replyToReview")}
                             </Button>
                           )}
                         </div>

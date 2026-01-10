@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { createReview } from "@/actions/reviews";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 interface ReviewFormProps {
   jobId?: string;
@@ -27,12 +28,13 @@ export default function ReviewForm({
   const [timelinessRating, setTimelinessRating] = useState<number>(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const t = useTranslations("reviews");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (overallRating === 0) {
-      toast.error("Please provide an overall rating");
+      toast.error(t("errors.overallRatingRequired", { default: "Please provide an overall rating" }));
       return;
     }
 
@@ -52,17 +54,17 @@ export default function ReviewForm({
       });
 
       if (!result.success) {
-        toast.error(result.error || "Failed to submit review");
+        toast.error(result.error || t("errors.submitFailed", { default: "Failed to submit review" }));
         return;
       }
 
-      toast.success("Review submitted successfully!");
+      toast.success(t("success.submitted", { default: "Review submitted successfully!" }));
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
       console.error("Error submitting review:", error);
-      toast.error("An unexpected error occurred");
+      toast.error(t("errors.unexpected", { default: "An unexpected error occurred" }));
     } finally {
       setIsSubmitting(false);
     }
