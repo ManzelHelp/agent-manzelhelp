@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { Card } from "./ui/card";
@@ -13,6 +15,7 @@ import {
 } from "lucide-react";
 import { getCategoryName } from "@/lib/categories";
 import { Category } from "@/lib/categories";
+import { useTranslations } from "next-intl";
 
 interface PopularServicesProps {
   categories: Pick<
@@ -50,6 +53,8 @@ const categoryColors: Record<number, string> = {
 };
 
 function PopularServices({ categories, locale }: PopularServicesProps) {
+  const t = useTranslations("homepage.popularServices");
+  
   return (
     <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-[var(--color-bg)] to-[var(--color-surface)]">
       <div className="max-w-7xl mx-auto">
@@ -60,16 +65,15 @@ function PopularServices({ categories, locale }: PopularServicesProps) {
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-semibold text-[var(--color-primary)]">
-              Popular Services
+              {t("badge")}
             </span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-[var(--color-primary)] px-2 leading-tight">
-            Explore Our Services
+            {t("title")}
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-[var(--color-text-secondary)] max-w-3xl mx-auto px-2 leading-relaxed font-light">
-            Discover the most popular service categories and find the perfect
-            tasker for your needs
+            {t("description")}
           </p>
         </div>
 
@@ -109,12 +113,12 @@ function PopularServices({ categories, locale }: PopularServicesProps) {
 
                     {/* Description */}
                     <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed mb-6">
-                      Professional services in this category
+                      {t("categoryDescription")}
                     </p>
 
                     {/* CTA Button */}
                     <div className="inline-flex items-center gap-2 text-[var(--color-primary)] font-semibold group-hover:gap-3 transition-all duration-300">
-                      <span>Explore Services</span>
+                      <span>{t("exploreButton")}</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </div>
@@ -128,15 +132,15 @@ function PopularServices({ categories, locale }: PopularServicesProps) {
         <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 mt-12 sm:mt-16 text-[var(--color-text-secondary)]">
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
-            <span className="text-sm font-medium">Verified Taskers</span>
+            <span className="text-sm font-medium">{t("verifiedTaskers")}</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-[var(--color-accent)]" />
-            <span className="text-sm font-medium">Quality Guaranteed</span>
+            <span className="text-sm font-medium">{t("qualityGuaranteed")}</span>
           </div>
           <div className="flex items-center gap-2">
             <Star className="h-5 w-5 text-yellow-500" />
-            <span className="text-sm font-medium">Top Rated</span>
+            <span className="text-sm font-medium">{t("topRated")}</span>
           </div>
         </div>
       </div>

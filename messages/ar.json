@@ -50,7 +50,9 @@
       "de": "الألمانية",
       "fr": "الفرنسية",
       "ar": "العربية"
-    }
+    },
+    "getStartedToday": "ابدأ اليوم",
+    "getStartedNow": "ابدأ الآن"
   },
   "Header": {
     "services": "الخدمات",
@@ -79,23 +81,105 @@
     "contactSupport": "اتصل بالدعم"
   },
   "homepage": {
-    "title": "Welcome to ManzelHelp",
-    "description": "A friendly place where users can offer and request services like housekeeping, tutoring, pet care, and more. Connect, help, and grow together!",
-    "servicesOffered": "Services Offered",
-    "servicesOfferedPlaceholder": "Coming soon: Browse available services",
-    "requestService": "Request a Service",
-    "requestServicePlaceholder": "Coming soon: Post your service needs",
-    "jobsOffered": "Jobs Available",
-    "jobsOfferedTitle": "Find Your Next Opportunity",
-    "jobsOfferedDescription": "Discover exciting job opportunities posted by customers in your area",
-    "noJobsAvailable": "No jobs available at the moment",
-    "noJobsAvailableDescription": "Check back soon for amazing opportunities from our customers!",
-    "becomeTasker": "Become a Tasker",
-    "whyTitle": "Why ManzelHelp?",
-    "why1": "Connect with trusted local helpers",
-    "why2": "Offer your skills and earn extra income",
-    "why3": "Easy, friendly, and secure",
-    "trustedBy": "Trusted by 1000+ customers"
+    "title": "مرحباً بك في ManzelHelp",
+    "description": "مكان ودود حيث يمكن للمستخدمين تقديم وطلب خدمات مثل الأعمال المنزلية والدروس الخصوصية ورعاية الحيوانات الأليفة والمزيد. تواصل ومساعدة ونمو معاً!",
+    "servicesOffered": "الخدمات المقدمة",
+    "servicesOfferedPlaceholder": "قريباً: تصفح الخدمات المتاحة",
+    "requestService": "طلب خدمة",
+    "requestServicePlaceholder": "قريباً: انشر احتياجاتك من الخدمات",
+    "jobsOffered": "الوظائف المتاحة",
+    "jobsOfferedTitle": "ابحث عن فرصتك القادمة",
+    "jobsOfferedDescription": "اكتشف فرص عمل مثيرة نشرها العملاء في منطقتك",
+    "noJobsAvailable": "لا توجد وظائف متاحة في الوقت الحالي",
+    "noJobsAvailableDescription": "تحقق مرة أخرى قريباً للحصول على فرص رائعة من عملائنا!",
+    "becomeTasker": "كن مساعداً",
+    "whyTitle": "لماذا ManzelHelp؟",
+    "why1": "تواصل مع مساعدين محليين موثوقين",
+    "why2": "قدم مهاراتك واكسب دخلاً إضافياً",
+    "why3": "سهل وودود وآمن",
+    "trustedBy": "موثوق به من قبل أكثر من 1000 عميل",
+    "stats": {
+      "verifiedTaskers": "مساعدون موثقون",
+      "serviceCategories": "فئات الخدمات",
+      "happyCustomers": "عملاء سعداء",
+      "averageRating": "التقييم المتوسط"
+    },
+    "popularServices": {
+      "badge": "الخدمات الشائعة",
+      "title": "استكشف خدماتنا",
+      "description": "اكتشف فئات الخدمات الأكثر شيوعاً وابحث عن المساعد المثالي لاحتياجاتك",
+      "categoryDescription": "خدمات مهنية في هذه الفئة",
+      "exploreButton": "استكشف الخدمات",
+      "verifiedTaskers": "مساعدون موثقون",
+      "qualityGuaranteed": "الجودة مضمونة",
+      "topRated": "الأعلى تقييماً"
+    },
+    "featuredServices": {
+      "badge": "الخدمات المميزة",
+      "description": "اكتشف المساعدين الأعلى تقييماً الذين يقدمون خدمات مهنية في منطقتك",
+      "noServices": "لا توجد خدمات متاحة في الوقت الحالي",
+      "noServicesDescription": "تحقق مرة أخرى قريباً للحصول على خدمات رائعة من مساعدينا الموثقين!",
+      "viewAll": "عرض جميع الخدمات"
+    },
+    "whyChooseUs": {
+      "badge": "لماذا تختارنا",
+      "description": "نوصل بينك وبين المحترفين المهرة الموثقين لجميع احتياجات منزلك وأعمالك",
+      "verifiedProfessionals": {
+        "title": "محترفون موثقون",
+        "description": "جميع مساعدينا يتم فحصهم بدقة والتحقق من خلفياتهم لسلامتك وراحة بالك"
+      },
+      "quickReliable": {
+        "title": "سريع وموثوق",
+        "description": "احصل على مطابقة مع مساعدين متاحين في منطقتك في غضون دقائق، متاح 24/7"
+      },
+      "qualityGuaranteed": {
+        "title": "الجودة مضمونة",
+        "description": "رضا مضمون مع ضمان الجودة وفريق دعم العملاء المخصص"
+      },
+      "bestPrices": {
+        "title": "أفضل الأسعار",
+        "description": "أسعار تنافسية للخدمات عالية الجودة"
+      },
+      "trustedPlatform": {
+        "title": "منصة موثوقة",
+        "description": "مدفوعات آمنة وتقييمات"
+      },
+      "instantBooking": {
+        "title": "حجز فوري",
+        "description": "احجز الخدمات في ثوانٍ"
+      },
+      "topRated": {
+        "title": "الأعلى تقييماً",
+        "description": "تقييم متوسط 4.8★"
+      }
+    },
+    "offeredJobs": {
+      "badge": "الوظائف المتاحة",
+      "title": "ابحث عن وظيفتك القادمة",
+      "description": "تصفح الوظائف المتاحة التي نشرها العملاء وتقدم للبدء في الكسب",
+      "noJobs": "لا توجد وظائف متاحة في الوقت الحالي",
+      "noJobsDescription": "تحقق مرة أخرى قريباً للحصول على فرص عمل جديدة من عملائنا!",
+      "viewAllJobs": "عرض جميع الوظائف",
+      "becomeTasker": "كن مساعداً",
+      "stats": {
+        "newJobsDaily": "وظائف جديدة يومياً",
+        "newJobsDailyDescription": "فرص جديدة تُنشر بانتظام",
+        "competitiveRates": "أسعار تنافسية",
+        "competitiveRatesDescription": "تعويض عادل للعمل عالي الجودة",
+        "verifiedCustomers": "عملاء موثقون",
+        "verifiedCustomersDescription": "اعمل مع عملاء موثوقين"
+      }
+    },
+    "cta": {
+      "badge": "انضم إلى مجتمعنا",
+      "title": "هل أنت مستعد للبدء؟",
+      "description": "انضم إلى آلاف العملاء الراضين الذين يثقون بنا لاحتياجاتهم من الخدمات",
+      "findTasker": "ابحث عن مساعد",
+      "findJobs": "ابحث عن وظائف",
+      "securePlatform": "منصة آمنة",
+      "verifiedTaskers": "مساعدون موثقون",
+      "support24_7": "دعم 24/7"
+    }
   },
   "dashboard": {
     "viewAllNotifications": "عرض جميع الإشعارات",
@@ -151,6 +235,39 @@
     "refundRequestApproved": "تم الموافقة على طلب الاسترداد",
     "refundRequestMessage": "طلب الاسترداد الخاص بك {referenceCode} بمبلغ {amount} درهم {status}. {actionMessage}",
     "customer": {
+      "welcomeBack": "مرحباً بعودتك! 👋",
+      "overview": "إليك نظرة عامة على وظائفك وحجوزاتك",
+      "postJob": "نشر وظيفة",
+      "activeBookings": "الحجوزات النشطة",
+      "currentlyInProgress": "قيد التنفيذ حالياً",
+      "inProgress": "قيد التنفيذ",
+      "totalSpent": "إجمالي الإنفاق",
+      "allTimeSpending": "إجمالي الإنفاق",
+      "lifetimeTotal": "المجموع الكلي",
+      "activeJobs": "الوظائف النشطة",
+      "postedJobs": "الوظائف المنشورة",
+      "completedJobs": "الوظائف المكتملة",
+      "jobsCompleted": "الوظائف المكتملة",
+      "greatWork": "عمل رائع!",
+      "quickActions": "إجراءات سريعة",
+      "manageJobs": "إدارة وظائفك وحجوزاتك بكفاءة",
+      "postNewJob": "نشر وظيفة جديدة",
+      "browseServices": "تصفح الخدمات",
+      "bookings": "الحجوزات",
+      "finance": "المالية",
+      "messages": "الرسائل",
+      "addresses": "العناوين",
+      "recentActivity": "النشاط الأخير",
+      "latestUpdates": "أحدث التحديثات من خدماتك",
+      "noRecentActivity": "لا يوجد نشاط حديث",
+      "recentNotifications": "الإشعارات الأخيرة",
+      "stayUpdated": "ابق على اطلاع مع التنبيهات المهمة",
+      "noNotifications": "لا توجد إشعارات بعد",
+      "viewAll": "عرض الكل",
+      "recentMessages": "الرسائل الأخيرة",
+      "latestConversations": "أحدث المحادثات مع المساعدين",
+      "noMessages": "لا توجد رسائل بعد",
+      "startConversations": "ابدأ المحادثات مع مساعديك",
       "loadingDashboard": "جاري تحميل لوحة التحكم...",
       "somethingWentWrong": "حدث خطأ ما",
       "tryAgain": "حاول مرة أخرى"
@@ -430,6 +547,7 @@
     "photoMaxDimensions": "الحد الأقصى للأبعاد: {width}x{height} بكسل",
     "photoAutoResized": "يتم تعديل الحجم والضغط تلقائياً للأداء الأمثل",
     "yourBasicProfileInformation": "معلومات ملفك الشخصي الأساسية",
+    "role": "الدور",
     "edit": "تعديل",
     "editPersonalInformation": "تعديل المعلومات الشخصية",
     "updatePersonalInformation": "قم بتحديث معلوماتك الشخصية وصورة ملفك الشخصي",
@@ -487,27 +605,27 @@
     "addFirstPaymentMethod": "إضافة أول طريقة دفع"
   },
   "Footer": {
-    "about": "About Us",
-    "aboutDescription": "ManzelHelp connects people who need services with those who can provide them. Our mission is to make help accessible, friendly, and secure for everyone.",
-    "company": "Company",
-    "aboutUs": "About Us",
-    "services": "Services",
-    "careers": "Careers",
-    "contact": "Contact",
-    "blog": "Blog",
-    "joinUs": "Join Us",
-    "signUp": "Sign Up",
-    "becomeHelper": "Become a Helper",
-    "findHelper": "Find a Helper",
-    "searchServices": "Search Services",
-    "popularServices": "Popular Services",
-    "newsletter": "Newsletter",
-    "support": "Support",
-    "helpCenter": "Help Center",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
-    "cookiePolicy": "Cookie Policy",
-    "allRightsReserved": "All rights reserved.",
+    "about": "من نحن",
+    "aboutDescription": "ManzelHelp يربط بين الأشخاص الذين يحتاجون إلى خدمات وأولئك الذين يمكنهم تقديمها. مهمتنا هي جعل المساعدة في متناول الجميع وودية وآمنة.",
+    "company": "الشركة",
+    "aboutUs": "من نحن",
+    "services": "الخدمات",
+    "careers": "الوظائف",
+    "contact": "اتصل بنا",
+    "blog": "المدونة",
+    "joinUs": "انضم إلينا",
+    "signUp": "التسجيل",
+    "becomeHelper": "كن مساعداً",
+    "findHelper": "ابحث عن مساعد",
+    "searchServices": "البحث عن الخدمات",
+    "popularServices": "الخدمات الشائعة",
+    "newsletter": "النشرة الإخبارية",
+    "support": "الدعم",
+    "helpCenter": "مركز المساعدة",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsOfService": "شروط الخدمة",
+    "cookiePolicy": "سياسة ملفات تعريف الارتباط",
+    "allRightsReserved": "جميع الحقوق محفوظة.",
     "sitemap": "Sitemap",
     "accessibility": "Accessibility",
     "housekeeping": "Housekeeping",
@@ -515,6 +633,16 @@
     "petCare": "Pet Care",
     "gardening": "Gardening",
     "handyman": "Handyman",
+    "forCustomers": "للعملاء",
+    "howItWorks": "كيف يعمل",
+    "browseServices": "تصفح الخدمات",
+    "pricingGuide": "دليل الأسعار",
+    "safetyTrust": "الأمان والثقة",
+    "forTaskers": "للمساعدين",
+    "gettingStarted": "البدء",
+    "earningsCalculator": "حاسبة الأرباح",
+    "resources": "الموارد",
+    "successStories": "قصص النجاح",
     "rights": "© 2024 ManzelHelp. All rights reserved.",
     "privacy": "Privacy",
     "terms": "Terms"
@@ -592,10 +720,22 @@
       "inactive": "Inactive"
     },
     "availability": {
-      "description": "Set your weekly availability for new jobs",
-      "unavailable": "Unavailable",
-      "quickBookingTitle": "Quick Booking",
-      "quickBookingDescription": "Clients can instantly book you during your available hours for faster jobs"
+      "description": "حدد توفرك الأسبوعي للوظائف الجديدة",
+      "unavailable": "غير متاح",
+      "quickBookingTitle": "حجز سريع",
+      "quickBookingDescription": "يمكن للعملاء حجزك على الفور خلال ساعات توفرك للوظائف الأسرع",
+      "success": {
+        "updated": "تم تحديث التوفر بنجاح"
+      },
+      "errors": {
+        "enableAtLeastOneDay": "يرجى تفعيل يوم واحد على الأقل من التوفر",
+        "setStartEndTimes": "يرجى تعيين أوقات البدء والانتهاء لجميع الأيام المفعلة",
+        "endTimeAfterStart": "يجب أن يكون وقت الانتهاء بعد وقت البدء",
+        "profileNotFound": "الملف الشخصي غير موجود. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+        "updateFailed": "فشل تحديث التوفر",
+        "invalidDataFormat": "تنسيق بيانات التوفر غير صالح",
+        "invalidTimeFormat": "تنسيق الوقت غير صالح. يرجى استخدام تنسيق HH:MM (مثال: 09:00)"
+      }
     },
     "verification": {
       "description": "Verify your identity to build trust and unlock all features",
@@ -738,64 +878,64 @@
     "logout": "تسجيل الخروج",
     "logoutSuccess": "تم تسجيل الخروج بنجاح",
     "signup": "إنشاء حساب",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "role": "I want to",
-    "customer": "Request Services",
-    "tasker": "Offer Services",
-    "both": "Both",
-    "loginButton": "Sign In",
-    "signupButton": "Create Account",
-    "switchToLogin": "Already have an account? Sign in",
-    "switchToSignup": "Don't have an account? Sign up",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "role": "أريد أن",
+    "customer": "طلب الخدمات",
+    "tasker": "تقديم الخدمات",
+    "both": "كلاهما",
+    "loginButton": "تسجيل الدخول",
+    "signupButton": "إنشاء حساب",
+    "switchToLogin": "لديك حساب بالفعل؟ سجل الدخول",
+    "switchToSignup": "ليس لديك حساب؟ سجل الآن",
     "pages": {
       "login": {
-        "title": "Welcome Back",
-        "subtitle": "Sign in to your account to continue",
-        "skipToMainContent": "Skip to main content",
-        "welcomeBack": "Welcome Back",
-        "signInToContinue": "Sign in to your account to continue",
-        "termsAndPrivacy": "By signing in, you agree to our Terms of Service and Privacy Policy",
-        "emailLabel": "Email",
-        "passwordLabel": "Password",
-        "signIn": "Sign In",
-        "forgotPassword": "Forgot password?",
-        "noAccount": "Don't have an account?",
-        "signUpHere": "Sign Up Here",
-        "emailPlaceholder": "Enter your email",
-        "passwordPlaceholder": "Enter your password",
-        "signingIn": "Signing in...",
-        "backToHome": "Back to Home",
-        "accountCreated": "Account created! You can now log in.",
-        "loginSuccessful": "Login successful",
-        "failedToLoadProfile": "Failed to load user profile"
+        "title": "مرحباً بعودتك",
+        "subtitle": "قم بتسجيل الدخول إلى حسابك للمتابعة",
+        "skipToMainContent": "تخطي إلى المحتوى الرئيسي",
+        "welcomeBack": "مرحباً بعودتك",
+        "signInToContinue": "قم بتسجيل الدخول إلى حسابك للمتابعة",
+        "termsAndPrivacy": "بتسجيل الدخول، أنت توافق على شروط الخدمة وسياسة الخصوصية الخاصة بنا",
+        "emailLabel": "البريد الإلكتروني",
+        "passwordLabel": "كلمة المرور",
+        "signIn": "تسجيل الدخول",
+        "forgotPassword": "نسيت كلمة المرور؟",
+        "noAccount": "ليس لديك حساب؟",
+        "signUpHere": "سجل هنا",
+        "emailPlaceholder": "أدخل بريدك الإلكتروني",
+        "passwordPlaceholder": "أدخل كلمة المرور",
+        "signingIn": "جاري تسجيل الدخول...",
+        "backToHome": "العودة إلى الصفحة الرئيسية",
+        "accountCreated": "تم إنشاء الحساب! يمكنك الآن تسجيل الدخول.",
+        "loginSuccessful": "تم تسجيل الدخول بنجاح",
+        "failedToLoadProfile": "فشل تحميل ملف المستخدم"
       },
       "signUp": {
-        "title": "Create Account",
-        "subtitle": "Join thousands of users and start your journey",
-        "skipToMainContent": "Skip to main content",
-        "backToHome": "Back to Home",
-        "createAccountTitle": "Create Account",
-        "joinUsersDescription": "Join thousands of users and start your journey",
-        "termsAndPrivacy": "By signing up, you agree to our Terms of Service and Privacy Policy",
-        "emailLabel": "Email",
-        "emailPlaceholder": "Enter your email",
-        "passwordLabel": "Password",
-        "passwordPlaceholder": "Enter your password (min. 8 characters)",
-        "userRoleLabel": "I want to",
-        "selectOption": "Select an option",
-        "findHelp": "Find Help",
-        "becomeHelper": "Become a Helper",
-        "createAccount": "Create Account",
-        "creatingAccount": "Creating account...",
-        "alreadyHaveAccount": "Already have an account?",
-        "signInHere": "Sign In Here",
-        "signUpSuccessful": "Sign up successful",
-        "checkEmailVerification": "Please check your email for verification",
-        "unexpectedError": "An unexpected error occurred. Please try again."
+        "title": "إنشاء حساب",
+        "subtitle": "انضم إلى آلاف المستخدمين وابدأ رحلتك",
+        "skipToMainContent": "تخطي إلى المحتوى الرئيسي",
+        "backToHome": "العودة إلى الصفحة الرئيسية",
+        "createAccountTitle": "إنشاء حساب",
+        "joinUsersDescription": "انضم إلى آلاف المستخدمين وابدأ رحلتك",
+        "termsAndPrivacy": "بالتسجيل، أنت توافق على شروط الخدمة وسياسة الخصوصية الخاصة بنا",
+        "emailLabel": "البريد الإلكتروني",
+        "emailPlaceholder": "أدخل بريدك الإلكتروني",
+        "passwordLabel": "كلمة المرور",
+        "passwordPlaceholder": "أدخل كلمة المرور (8 أحرف على الأقل)",
+        "userRoleLabel": "أريد أن",
+        "selectOption": "اختر خياراً",
+        "findHelp": "ابحث عن مساعد",
+        "becomeHelper": "كن مساعداً",
+        "createAccount": "إنشاء حساب",
+        "creatingAccount": "جاري إنشاء الحساب...",
+        "alreadyHaveAccount": "لديك حساب بالفعل؟",
+        "signInHere": "سجل الدخول هنا",
+        "signUpSuccessful": "تم التسجيل بنجاح",
+        "checkEmailVerification": "يرجى التحقق من بريدك الإلكتروني للتحقق",
+        "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
       },
       "becomeTasker": {
         "title": "Become a Tasker",
@@ -1006,26 +1146,26 @@
       }
     },
     "forgotPassword": {
-      "title": "Forgot Password?",
-      "subtitle": "Enter your email address and we'll send you a link to reset your password.",
-      "description": "Enter your email address and we'll send you a link to reset your password.",
-      "backToLogin": "Back to login",
-      "emailPlaceholder": "Enter your email",
-      "sendingEmail": "Sending email...",
-      "sendResetLink": "Send Reset Link",
-      "resetEmailSent": "Password reset email sent! Check your inbox.",
-      "passwordResetEmailSent": "Password reset email sent! Check your inbox."
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "أدخل عنوان بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.",
+      "description": "أدخل عنوان بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.",
+      "backToLogin": "العودة إلى تسجيل الدخول",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "sendingEmail": "جاري إرسال البريد الإلكتروني...",
+      "sendResetLink": "إرسال رابط إعادة التعيين",
+      "resetEmailSent": "تم إرسال بريد إعادة تعيين كلمة المرور! تحقق من صندوق الوارد.",
+      "passwordResetEmailSent": "تم إرسال بريد إعادة تعيين كلمة المرور! تحقق من صندوق الوارد."
     },
     "passwordRequirements": {
-      "title": "Password must contain:",
-      "minCharacters": "At least 8 characters",
-      "uppercaseLetter": "One uppercase letter",
-      "lowercaseLetter": "One lowercase letter",
-      "number": "One number",
-      "specialCharacter": "One special character (@$!%*?&)"
+      "title": "يجب أن تحتوي كلمة المرور على:",
+      "minCharacters": "8 أحرف على الأقل",
+      "uppercaseLetter": "حرف كبير واحد",
+      "lowercaseLetter": "حرف صغير واحد",
+      "number": "رقم واحد",
+      "specialCharacter": "حرف خاص واحد (@$!%*?&)"
     },
-    "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور"
   },
   "search": {
     "filters": "الفلاتر",
@@ -1042,9 +1182,10 @@
     "allServices": "جميع الخدمات",
     "allJobs": "جميع الوظائف",
     "resultsFound": "نتيجة",
-    "noResults": "No Results Found",
-    "tryAdjustingFilters": "Try adjusting your filters or search criteria",
-    "placeholder": "Search for services, professionals, or skills...",
+    "forQuery": "لـ \"{query}\"",
+    "noResults": "لم يتم العثور على نتائج",
+    "tryAdjustingFilters": "حاول تعديل الفلاتر أو معايير البحث الخاصة بك",
+    "placeholder": "ابحث عن الخدمات أو المحترفين أو المهارات...",
     "jobPlaceholder": "ابحث عن الوظائف أو المهام أو الفرص...",
     "searchButton": "بحث",
     "popularSearches": "البحث الشائع",
@@ -1072,6 +1213,17 @@
     "discoverJobOpportunities": "اكتشف فرص عمل مذهلة مصممة لمهاراتك",
     "searchPlaceholder": "ابحث عن الوظائف أو المهام أو الفرص...",
     "search": "بحث",
+    "findYourPerfectService": "ابحث عن الخدمة المثالية",
+    "connectWithProfessionals": "تواصل مع المحترفين المهرة في منطقتك",
+    "discoverServices": "اكتشف خدمات رائعة مصممة خصيصاً لاحتياجاتك",
+    "clearAllFilters": "مسح جميع الفلاتر",
+    "previous": "السابق",
+    "prev": "السابق",
+    "next": "التالي",
+    "pageOf": "صفحة {page} من {total}",
+    "errorLoadingServices": "خطأ في تحميل الخدمات",
+    "errorLoadingServicesDescription": "نواجه مشكلة في تحميل الخدمات. يرجى المحاولة مرة أخرى لاحقاً.",
+    "tryAgain": "حاول مرة أخرى",
     "sortBy": "ترتيب حسب:",
     "newestFirst": "الأحدث أولاً",
     "sortOptions": {
@@ -1085,6 +1237,21 @@
       "dateEarliestFirst": "التاريخ: الأقدم أولاً",
       "mostApplications": "الأكثر طلبات"
     }
+  },
+  "serviceCard": {
+    "multipleAreas": "مناطق متعددة",
+    "areaNotSpecified": "المنطقة غير محددة",
+    "review": "مراجعة",
+    "reviews": "مراجعات",
+    "minDuration": "الحد الأدنى {hours} ساعة",
+    "hourlyRate": "السعر بالساعة",
+    "perItem": "لكل عنصر",
+    "fixedPrice": "سعر ثابت",
+    "verified": "موثق",
+    "perHour": "/ساعة",
+    "perItemUnit": "/عنصر",
+    "plusFees": "+ رسوم",
+    "viewDetails": "عرض التفاصيل"
   },
   "notifications": {
     "title": "الإشعارات",
@@ -1551,27 +1718,32 @@
     }
   },
   "taskerOffer": {
-    "title": "Service Offer",
-    "bookService": "Book Service",
-    "contactTasker": "Contact Tasker",
-    "aboutService": "About this service",
-    "aboutTasker": "About the Tasker",
-    "serviceArea": "Service Area",
-    "pricingType": "Pricing Type",
-    "experienceLevel": "Experience Level",
-    "rating": "Rating",
-    "jobsCompleted": "Jobs completed",
-    "avgResponse": "Avg response",
-    "memberSince": "Member since",
-    "jobs": "Jobs",
-    "reviews": "Reviews",
-    "professionalServiceProvider": "Professional Service Provider",
-    "notLoggedIn": "Not Logged In",
-    "loginRequired": "Please log in to book services",
-    "onlyCustomersCanBook": "Only customers can book services",
-    "taskersCannotBook": "Taskers cannot book services. Please switch to customer account.",
-    "bookingSuccess": "Service booked successfully!",
-    "bookingError": "Failed to book service",
+    "title": "عرض الخدمة",
+    "bookService": "حجز الخدمة",
+    "contactTasker": "اتصل بالمساعد",
+    "aboutService": "حول هذه الخدمة",
+    "aboutTasker": "حول المساعد",
+    "serviceArea": "منطقة الخدمة",
+    "pricingType": "نوع التسعير",
+    "pricingTypes": {
+      "fixed": "سعر ثابت",
+      "hourly": "السعر بالساعة",
+      "perItem": "لكل عنصر"
+    },
+    "experienceLevel": "مستوى الخبرة",
+    "rating": "التقييم",
+    "jobsCompleted": "الوظائف المكتملة",
+    "avgResponse": "متوسط الاستجابة",
+    "memberSince": "عضو منذ",
+    "jobs": "الوظائف",
+    "reviews": "المراجعات",
+    "professionalServiceProvider": "مزود خدمة محترف",
+    "notLoggedIn": "غير مسجل الدخول",
+    "loginRequired": "يرجى تسجيل الدخول لحجز الخدمات",
+    "onlyCustomersCanBook": "يمكن للعملاء فقط حجز الخدمات",
+    "taskersCannotBook": "لا يمكن للمساعدين حجز الخدمات. يرجى التبديل إلى حساب العميل.",
+    "bookingSuccess": "تم حجز الخدمة بنجاح!",
+    "bookingError": "فشل حجز الخدمة",
     "contactSuccess": "تم بدء المحادثة بنجاح!",
     "contactError": "فشل بدء المحادثة",
     "loading": "جاري التحميل...",
@@ -1581,91 +1753,95 @@
     "failedToLoad": "فشل تحميل عرض الخدمة. يرجى المحاولة مرة أخرى لاحقًا.",
     "goToDashboard": "الذهاب إلى لوحة التحكم",
     "listedOn": "تم الإدراج في",
+    "minDuration": "الحد الأدنى {hours} ساعة",
+    "noDescriptionAvailable": "لا يوجد وصف متاح",
+    "notAvailable": "غير متاح",
+    "about": "حول",
     "bookingDialog": {
-      "title": "Confirm Booking",
-      "description": "Review your booking details and confirm your service request",
-      "serviceDetails": "Service Details",
-      "service": "Service",
-      "tasker": "Tasker",
-      "basePrice": "Base Price",
-      "totalPrice": "Total Price",
-      "bookingType": "Booking Type",
-      "instant": "Instant",
-      "scheduled": "Scheduled",
-      "recurring": "Recurring",
-      "date": "Date",
-      "startTime": "Start Time",
-      "endTime": "End Time",
-      "duration": "Duration (hours)",
-      "serviceAddress": "Service Address",
-      "loadingAddresses": "Loading addresses...",
-      "noAddressesFound": "No addresses found",
-      "addAddressFirst": "Please add an address to your profile first.",
-      "default": "Default",
-      "specialRequirements": "Special Requirements (Optional)",
-      "specialRequirementsPlaceholder": "Any special instructions or requirements for the service...",
-      "paymentMethod": "Payment Method",
-      "cash": "Cash",
-      "online": "Online",
-      "wallet": "Wallet",
-      "payLater": "Pay Later",
-      "cancel": "Cancel",
-      "creatingBooking": "Creating Booking...",
-      "confirmBooking": "Confirm Booking",
+      "title": "تأكيد الحجز",
+      "description": "راجع تفاصيل حجزك وأكد طلب الخدمة",
+      "serviceDetails": "تفاصيل الخدمة",
+      "service": "الخدمة",
+      "tasker": "المساعد",
+      "basePrice": "السعر الأساسي",
+      "totalPrice": "السعر الإجمالي",
+      "bookingType": "نوع الحجز",
+      "instant": "فوري",
+      "scheduled": "مجدول",
+      "recurring": "متكرر",
+      "date": "التاريخ",
+      "startTime": "وقت البدء",
+      "endTime": "وقت الانتهاء",
+      "duration": "المدة (ساعات)",
+      "serviceAddress": "عنوان الخدمة",
+      "loadingAddresses": "جاري تحميل العناوين...",
+      "noAddressesFound": "لم يتم العثور على عناوين",
+      "addAddressFirst": "يرجى إضافة عنوان إلى ملفك الشخصي أولاً.",
+      "default": "افتراضي",
+      "specialRequirements": "متطلبات خاصة (اختياري)",
+      "specialRequirementsPlaceholder": "أي تعليمات أو متطلبات خاصة للخدمة...",
+      "paymentMethod": "طريقة الدفع",
+      "cash": "نقدي",
+      "online": "عبر الإنترنت",
+      "wallet": "المحفظة",
+      "payLater": "الدفع لاحقاً",
+      "cancel": "إلغاء",
+      "creatingBooking": "جاري إنشاء الحجز...",
+      "confirmBooking": "تأكيد الحجز",
       "errors": {
-        "selectAddress": "Please select an address",
-        "selectDate": "Please select a date",
-        "selectStartTime": "Please select a start time",
-        "selectEndTime": "Please select an end time",
-        "priceGreaterThanZero": "Price must be greater than 0",
-        "durationGreaterThanZero": "Duration must be greater than 0",
-        "messageRequired": "Message is required",
-        "messageTooShort": "Message must be at least {min} characters long"
+        "selectAddress": "يرجى اختيار عنوان",
+        "selectDate": "يرجى اختيار تاريخ",
+        "selectStartTime": "يرجى اختيار وقت البدء",
+        "selectEndTime": "يرجى اختيار وقت الانتهاء",
+        "priceGreaterThanZero": "يجب أن يكون السعر أكبر من 0",
+        "durationGreaterThanZero": "يجب أن تكون المدة أكبر من 0",
+        "messageRequired": "الرسالة مطلوبة",
+        "messageTooShort": "يجب أن تحتوي الرسالة على {min} أحرف على الأقل"
       },
       "toasts": {
-        "failedToLoadAddresses": "Failed to load addresses",
-        "bookingCreatedSuccess": "Booking created successfully!",
-        "failedToCreateBooking": "Failed to create booking"
+        "failedToLoadAddresses": "فشل تحميل العناوين",
+        "bookingCreatedSuccess": "تم إنشاء الحجز بنجاح!",
+        "failedToCreateBooking": "فشل إنشاء الحجز"
       }
     },
     "contactDialog": {
-      "title": "Contact Tasker",
-      "description": "Start a conversation with {taskerName} about this service",
-      "serviceDetails": "Service Details",
-      "service": "Service",
-      "tasker": "Tasker",
-      "yourMessage": "Your Message",
-      "messagePlaceholder": "Hi! I'm interested in your service. Could you tell me more about...",
-      "charactersCount": "{count}/500 characters",
-      "warningTitle": "Important Notice",
-      "warningMessage": "Discussing unrelated topics or sharing contact information may result in a ban of your account. All transactions and contact regarding this service must be handled through ManzelHelp.",
-      "tipsTitle": "Tips for a great conversation",
+      "title": "اتصل بالمساعد",
+      "description": "ابدأ محادثة مع {taskerName} حول هذه الخدمة",
+      "serviceDetails": "تفاصيل الخدمة",
+      "service": "الخدمة",
+      "tasker": "المساعد",
+      "yourMessage": "رسالتك",
+      "messagePlaceholder": "مرحباً! أنا مهتم بخدمتك. هل يمكنك إخباري بالمزيد حول...",
+      "charactersCount": "{count}/500 حرف",
+      "warningTitle": "إشعار مهم",
+      "warningMessage": "مناقشة مواضيع غير ذات صلة أو مشاركة معلومات الاتصال قد يؤدي إلى حظر حسابك. يجب التعامل مع جميع المعاملات والاتصالات المتعلقة بهذه الخدمة من خلال ManzelHelp.",
+      "tipsTitle": "نصائح لمحادثة رائعة",
       "tips": {
-        "tip1": "Be specific about your needs and requirements",
-        "tip2": "Ask about availability and pricing details",
-        "tip3": "Mention your preferred timeline if you have one",
-        "tip4": "Be polite and professional in your communication",
-        "warning": "Sharing contact information or discussing unrelated topics may result in account suspension."
+        "tip1": "كن محدداً بشأن احتياجاتك ومتطلباتك",
+        "tip2": "اسأل عن التوفر وتفاصيل الأسعار",
+        "tip3": "اذكر الجدول الزمني المفضل لديك إن وجد",
+        "tip4": "كن مهذباً ومهنياً في تواصلك",
+        "warning": "مشاركة معلومات الاتصال أو مناقشة مواضيع غير ذات صلة قد يؤدي إلى تعليق الحساب."
       },
-      "cancel": "Cancel",
-      "startingConversation": "Starting Conversation...",
-      "sendMessage": "Send Message",
+      "cancel": "إلغاء",
+      "startingConversation": "بدء المحادثة...",
+      "sendMessage": "إرسال الرسالة",
       "errors": {
-        "enterMessage": "Please enter a message to start the conversation",
-        "messageTooShort": "Message must be at least 10 characters long",
-        "messageTooLong": "Message must be less than 500 characters"
+        "enterMessage": "يرجى إدخال رسالة لبدء المحادثة",
+        "messageTooShort": "يجب أن تحتوي الرسالة على 10 أحرف على الأقل",
+        "messageTooLong": "يجب أن تكون الرسالة أقل من 500 حرف"
       },
       "toasts": {
-        "conversationStartedSuccess": "Conversation started successfully!",
-        "failedToStartConversation": "Failed to start conversation"
+        "conversationStartedSuccess": "تم بدء المحادثة بنجاح!",
+        "failedToStartConversation": "فشل بدء المحادثة"
       }
     },
-    "ownService": "This is your own service",
-    "ownServiceDescription": "You cannot book or contact yourself for this service. This is your own service listing.",
-    "goToBooking": "Go to Booking",
-    "goToChat": "Go to Chat",
-    "bookingExists": "You have an active booking for this service",
-    "conversationExists": "You have an ongoing conversation with this tasker"
+    "ownService": "هذه خدمتك الخاصة",
+    "ownServiceDescription": "لا يمكنك حجز أو الاتصال بنفسك لهذه الخدمة. هذا إدراج خدمتك الخاصة.",
+    "goToBooking": "الذهاب إلى الحجز",
+    "goToChat": "الذهاب إلى المحادثة",
+    "bookingExists": "لديك حجز نشط لهذه الخدمة",
+    "conversationExists": "لديك محادثة جارية مع هذا المساعد"
   },
   "customerBookings": {
     "title": "حجوزاتي",
@@ -2139,7 +2315,9 @@
       "message": "رسالة",
       "appliedOn": "تم التقديم في",
       "flexible": "مرن",
-      "notSpecified": "Not specified"
+      "notSpecified": "غير محدد",
+      "jobCompletedMessage": "تم إكمال هذه الوظيفة. طلبك لم يعد ذا صلة.",
+      "jobCancelledMessage": "تم إلغاء هذه الوظيفة. طلبك لم يعد ذا صلة."
     },
     "actions": {
       "viewDetails": "View Details",
@@ -2617,7 +2795,9 @@
     "completedAt": "اكتمل في",
     "actions": {
       "jobCompleted": "اكتمل العمل",
-      "waitingConfirmation": "بانتظار تأكيد العميل"
+      "waitingConfirmation": "بانتظار تأكيد العميل",
+      "jobConfirmed": "تم تأكيد العمل",
+      "customerConfirmed": "تم التأكيد من قبل العميل في {date}"
     },
     "requirements": "المتطلبات",
     "flexibleTiming": "التوقيت المرن",
@@ -2661,8 +2841,15 @@
     "promoted": "مميز",
     "actions": {
       "edit": "تعديل الخدمة",
-      "delete": "حذف الخدمة"
+      "delete": "حذف الخدمة",
+      "save": "حفظ",
+      "cancel": "إلغاء"
     },
+    "noDescription": "لا يوجد وصف متاح",
+    "hours": "ساعات",
+    "serviceRadius": "نطاق الخدمة",
+    "lastUpdated": "آخر تحديث",
+    "unavailable": "غير متاح",
     "verificationStatus": {
       "pending": "بانتظار التحقق من قبل المسؤول",
       "verified": "تم التحقق من الخدمة والموافقة عليها من قبل المسؤول",
@@ -2740,5 +2927,418 @@
     "activityAlerts": "تنبيهات النشاط",
     "getNotifiedAboutActivities": "تلقي إشعارات حول الأنشطة المهمة",
     "deactivate": "إلغاء التفعيل"
+  },
+  "findAHelper": {
+    "hero": {
+      "title": "ابحث عن مساعدين موثوقين لأي مهمة",
+      "description": "احجز وكلاء خدمة موثوقين في منطقتك – سريع وسهل وآمن.",
+      "startSearching": "ابدأ البحث"
+    },
+    "advantages": {
+      "verifiedTrusted": {
+        "title": "مساعدون موثوقون ومتحقق منهم",
+        "description": "جميع وكلاء الخدمة لدينا يتم فحصهم ومراجعتهم من قبل المجتمع."
+      },
+      "flexibleFast": {
+        "title": "حجز مرن وسريع",
+        "description": "احجز مساعداً للوقت والخدمة التي تحتاجها، مع تأكيد فوري."
+      },
+      "wideRange": {
+        "title": "مجموعة واسعة من الخدمات",
+        "description": "من التنظيف إلى الإصلاحات، ابحث عن الخبير المناسب لأي مهمة."
+      }
+    },
+    "pricing": {
+      "title": "الأسعار المقدرة",
+      "description": "تعتمد الأسعار على نوع الخدمة وخبرة العامل. فيما يلي بعض النطاقات النموذجية:",
+      "perHour": "ساعة",
+      "cleaning": {
+        "service": "التنظيف",
+        "note": "يعتمد على الخبرة وتعقيد المهمة"
+      },
+      "handyman": {
+        "service": "السباك والكهربائي",
+        "note": "يختلف حسب المهارة وحجم المشروع"
+      },
+      "gardening": {
+        "service": "البستنة",
+        "note": "يعتمد على الخبرة وحجم الحديقة"
+      }
+    },
+    "cta": {
+      "title": "هل أنت مستعد للعثور على مساعدك المثالي؟",
+      "getStarted": "ابدأ الآن"
+    }
+  },
+  "becomeAHelper": {
+    "hero": {
+      "badge": "انضم إلى آلاف المساعدين الناجحين",
+      "titlePart1": "حول مهاراتك",
+      "titlePart2": "إلى دخل",
+      "description": "هل أنت مستعد لكسب المال من خلال ما تحب؟ انضم إلى ManzelHelp كمساعد وتواصل مع الأشخاص الذين يحتاجون إلى خبرتك.",
+      "descriptionBold": "سواء كنت تنظف أو تصلح أو تدرس أو تساعد بأي طريقة، يمكنك إحداث فرق والحصول على أجر مقابل ذلك!"
+    },
+    "stats": {
+      "activeHelpers": {
+        "value": "10K+",
+        "label": "مساعدون نشطون"
+      },
+      "earned": {
+        "label": "كسبه المساعدون"
+      },
+      "averageRating": {
+        "value": "4.9★",
+        "label": "التقييم المتوسط"
+      }
+    },
+    "benefitsSection": {
+      "title": "لماذا تختار",
+      "titleHighlight": "ManzelHelp؟",
+      "description": "انضم إلى منصة مصممة لمساعدتك على النجاح وتنمية عملك"
+    },
+    "benefits": {
+      "earnMoney": {
+        "title": "كسب المال",
+        "description": "حدد أسعارك الخاصة واحصل على أجر مقابل مهاراتك ووقتك"
+      },
+      "helpCommunity": {
+        "title": "ساعد مجتمعك",
+        "description": "أحدث فرقاً حقيقياً في حياة الناس أثناء بناء سمعتك"
+      },
+      "buildReputation": {
+        "title": "ابنِ سمعتك",
+        "description": "احصل على التقييمات والمراجعات التي تعرض خبرتك"
+      },
+      "flexibleSchedule": {
+        "title": "جدول مرن",
+        "description": "اعمل متى تريد، وأين تريد - سيطرة كاملة على وقتك"
+      },
+      "securePayments": {
+        "title": "مدفوعات آمنة",
+        "description": "احصل على أجرك بأمان من خلال نظام الدفع المحمي لدينا"
+      },
+      "makeConnections": {
+        "title": "أنشئ علاقات",
+        "description": "ابنِ علاقات دائمة مع العملاء الذين يقدرون عملك"
+      }
+    },
+    "howItWorks": {
+      "title": "كيفية",
+      "titleHighlight": "البدء",
+      "description": "ابدأ الكسب في 4 خطوات بسيطة فقط"
+    },
+    "steps": {
+      "createAccount": {
+        "title": "أنشئ حسابك",
+        "description": "سجل في دقائق باستخدام بريدك الإلكتروني والمعلومات الأساسية فقط"
+      },
+      "buildProfile": {
+        "title": "ابنِ ملفك الشخصي",
+        "description": "أضف مهاراتك وخبرتك واعرض ما يميزك"
+      },
+      "listServices": {
+        "title": "اعرض خدماتك",
+        "description": "اوصف ما تقدمه، حدد أسعارك، وحدد منطقة خدمتك"
+      },
+      "startEarning": {
+        "title": "ابدأ الكسب",
+        "description": "تواصل مع العملاء، أكمل المهام، واحصل على أجر مقابل خبرتك"
+      }
+    },
+    "cta": {
+      "badge": "هل أنت مستعد للبدء في الكسب؟",
+      "title": "انضم إلى مجتمعنا من",
+      "titleHighlight": "المساعدين الناجحين",
+      "description": "لا تنتظر - ابدأ رحلتك اليوم وابدأ في كسب المال من خلال ما تحب. انضم إلى آلاف المساعدين الذين يحدثون بالفعل فرقاً في مجتمعاتهم.",
+      "features": "✓ انضم مجاناً ✓ بدون رسوم شهرية ✓ ابدأ الكسب فوراً"
+    }
+  },
+  "help": {
+    "hero": {
+      "title": "مركز المساعدة",
+      "description": "ابحث عن إجابات لأسئلتك واحصل على الدعم الذي تحتاجه.",
+      "searchPlaceholder": "ابحث عن المساعدة..."
+    },
+    "contact": {
+      "title": "تواصل معنا",
+      "whatsapp": {
+        "title": "دردشة مباشرة عبر WhatsApp",
+        "description": "تواصل معنا مباشرة عبر WhatsApp",
+        "action": "فتح WhatsApp",
+        "available": "متاح 24/7"
+      },
+      "email": {
+        "title": "دعم البريد الإلكتروني",
+        "description": "أرسل لنا رسالة مفصلة",
+        "action": "إرسال بريد إلكتروني",
+        "available": "رد خلال 24 ساعة"
+      }
+    },
+    "faq": {
+      "title": "الأسئلة الشائعة",
+      "noResults": "لم يتم العثور على نتائج لـ \"{query}\"",
+      "categories": {
+        "gettingStarted": {
+          "title": "البدء",
+          "questions": {
+            "createAccount": {
+              "question": "كيف أنشئ حساباً؟",
+              "answer": "انقر على زر 'التسجيل' في الزاوية اليمنى العلوية، املأ بياناتك، وتحقق من عنوان بريدك الإلكتروني."
+            },
+            "helperVsCustomer": {
+              "question": "ما الفرق بين المساعد والعميل؟",
+              "answer": "المساعدون يقدمون خدمات للآخرين، بينما العملاء يحجزون الخدمات. يمكنك أن تكون كليهما على نفس الحساب."
+            },
+            "completeProfile": {
+              "question": "كيف أكمل ملفي الشخصي؟",
+              "answer": "انتقل إلى صفحة ملفك الشخصي وأضف مهاراتك وخبرتك وصورك وتوفرك لجذب المزيد من العملاء."
+            }
+          }
+        },
+        "payments": {
+          "title": "المدفوعات والفوترة",
+          "questions": {
+            "howPaymentsWork": {
+              "question": "كيف تعمل المدفوعات؟",
+              "answer": "يتم معالجة المدفوعات بأمان من خلال منصتنا. يدفع العملاء مسبقاً، ويتلقى المساعدون الدفع بعد اكتمال الخدمة."
+            },
+            "paymentMethods": {
+              "question": "ما هي طرق الدفع التي تقبلونها؟",
+              "answer": "نقبل جميع بطاقات الائتمان الرئيسية، PayPal، والتحويلات المصرفية في المناطق المدعومة."
+            },
+            "whenGetPaid": {
+              "question": "متى أحصل على أجرتي؟",
+              "answer": "يتلقى المساعدون الدفع خلال 2-3 أيام عمل بعد تأكيد العميل اكتمال الخدمة."
+            }
+          }
+        },
+        "safety": {
+          "title": "الأمان والحماية",
+          "questions": {
+            "verifyHelpers": {
+              "question": "كيف تتحققون من المساعدين؟",
+              "answer": "جميع المساعدين يخضعون لفحوصات الخلفية والتحقق من الهوية وتقييمات المهارات قبل الانضمام إلى منصتنا."
+            },
+            "notSatisfied": {
+              "question": "ماذا لو لم أكن راضياً عن خدمة؟",
+              "answer": "اتصل بفريق الدعم لدينا خلال 24 ساعة. سنعمل معك لحل المشكلة أو تقديم استرداد."
+            },
+            "personalInfoSafe": {
+              "question": "هل معلوماتي الشخصية آمنة؟",
+              "answer": "نعم، نستخدم التشفير وفقاً لمعايير الصناعة وإجراءات الأمان لحماية بياناتك. اقرأ سياسة الخصوصية الخاصة بنا للتفاصيل."
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "title": "موارد إضافية",
+      "userGuide": {
+        "title": "دليل المستخدم",
+        "description": "دليل كامل لاستخدام ManzelHelp",
+        "action": "قراءة الدليل"
+      },
+      "communityForum": {
+        "title": "منتدى المجتمع",
+        "description": "تواصل مع المستخدمين الآخرين",
+        "action": "انضم إلى المنتدى"
+      },
+      "safetyTips": {
+        "title": "نصائح الأمان",
+        "description": "ابق آمناً أثناء استخدام منصتنا",
+        "action": "معرفة المزيد"
+      },
+      "videoTutorials": {
+        "title": "دروس الفيديو",
+        "description": "شاهد دروساً خطوة بخطوة",
+        "action": "شاهد الآن"
+      }
+    }
+  },
+  "privacyPolicy": {
+    "hero": {
+      "title": "سياسة الخصوصية",
+      "description": "خصوصيتك مهمة بالنسبة لنا. توضح هذه السياسة كيف نجمع معلوماتك ونستخدمها ونحميها.",
+      "lastUpdated": "آخر تحديث:"
+    },
+    "sections": {
+      "informationWeCollect": {
+        "title": "1. المعلومات التي نجمعها",
+        "personalInformation": {
+          "title": "المعلومات الشخصية",
+          "description": "نجمع المعلومات التي تقدمها لنا مباشرة، مثل عندما تنشئ حساباً أو تستخدم خدماتنا أو تتصل بنا للحصول على الدعم. قد يشمل ذلك:",
+          "items": {
+            "nameContact": "الاسم ومعلومات الاتصال (البريد الإلكتروني، رقم الهاتف)",
+            "profilePreferences": "معلومات الملف الشخصي والتفضيلات",
+            "paymentBilling": "معلومات الدفع والفوترة",
+            "communications": "التواصل معنا ومع المستخدمين الآخرين"
+          }
+        },
+        "usageInformation": {
+          "title": "معلومات الاستخدام",
+          "description": "نجمع تلقائياً معلومات معينة حول استخدامك لخدماتنا، بما في ذلك:",
+          "items": {
+            "deviceInfo": "معلومات الجهاز والمعرفات",
+            "logData": "بيانات السجل والتحليلات",
+            "locationInfo": "معلومات الموقع (بإذنك)",
+            "cookies": "ملفات تعريف الارتباط والتقنيات المشابهة"
+          }
+        }
+      },
+      "howWeUse": {
+        "title": "2. كيف نستخدم معلوماتك",
+        "description": "نستخدم المعلومات التي نجمعها لـ:",
+        "items": {
+          "provideServices": "توفير خدماتنا وصيانتها وتحسينها",
+          "processTransactions": "معالجة المعاملات وإرسال المعلومات ذات الصلة",
+          "sendNotices": "إرسال الإشعارات التقنية والتحديثات ورسائل الدعم",
+          "respondComments": "الرد على تعليقاتك وأسئلتك",
+          "monitorAnalyze": "مراقبة وتحليل الاتجاهات والاستخدام",
+          "personalize": "تخصيص وتحسين تجربتك",
+          "ensureSafety": "ضمان السلامة والأمان على منصتنا"
+        }
+      },
+      "informationSharing": {
+        "title": "3. مشاركة المعلومات",
+        "description": "قد نشارك معلوماتك في الحالات التالية:",
+        "items": {
+          "withUsers": "مع المستخدمين الآخرين حسب الحاجة لتوفير خدماتنا",
+          "withProviders": "مع مقدمي الخدمات الذين يساعدوننا في تشغيل منصتنا",
+          "requiredByLaw": "عندما يتطلب القانون ذلك أو لحماية حقوقنا",
+          "businessTransfer": "في إطار نقل أو استحواذ تجاري",
+          "withConsent": "بموافقتك أو بتوجيه منك"
+        }
+      },
+      "dataSecurity": {
+        "title": "4. أمان البيانات",
+        "description": "ننفذ التدابير التقنية والتنظيمية المناسبة لحماية معلوماتك الشخصية من الوصول غير المصرح به أو التعديل أو الكشف أو التدمير. ومع ذلك، لا توجد طريقة نقل عبر الإنترنت أو تخزين إلكتروني آمنة بنسبة 100%."
+      },
+      "yourRights": {
+        "title": "5. حقوقك",
+        "description": "اعتماداً على موقعك، قد يكون لديك الحقوق التالية:",
+        "items": {
+          "accessUpdate": "الوصول إلى معلوماتك الشخصية وتحديثها",
+          "deleteAccount": "حذف حسابك والبيانات المرتبطة به",
+          "optOut": "الانسحاب من بعض الاتصالات",
+          "requestCopy": "طلب نسخة من بياناتك",
+          "objectProcessing": "الاعتراض على أنشطة معالجة معينة"
+        }
+      },
+      "cookiesTracking": {
+        "title": "6. ملفات تعريف الارتباط والتتبع",
+        "description": "نستخدم ملفات تعريف الارتباط والتقنيات المشابهة لتحسين تجربتك وتحليل الاستخدام وتوفير محتوى مخصص. يمكنك التحكم في إعدادات ملفات تعريف الارتباط من خلال متصفحك، ولكن تعطيل ملفات تعريف الارتباط قد يؤثر على وظائف خدماتنا."
+      },
+      "childrenPrivacy": {
+        "title": "7. خصوصية الأطفال",
+        "description": "خدماتنا غير مخصصة للأطفال دون سن 13 عاماً. لا نجمع معلومات شخصية عن قصد من الأطفال دون سن 13 عاماً. إذا علمنا أننا جمعنا مثل هذه المعلومات، فسنقوم باتخاذ خطوات لحذفها."
+      },
+      "changesToPolicy": {
+        "title": "8. التغييرات على هذه السياسة",
+        "description": "قد نحدث سياسة الخصوصية هذه من وقت لآخر. سنخطرك بأي تغييرات عن طريق نشر السياسة الجديدة على هذه الصفحة وتحديث تاريخ \"آخر تحديث\". استمرارك في استخدام خدماتنا بعد أي تغييرات يشكل قبولاً للسياسة المحدثة."
+      },
+      "contactUs": {
+        "title": "9. اتصل بنا",
+        "description": "إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه أو ممارسات الخصوصية لدينا، يرجى الاتصال بنا على:",
+        "email": "البريد الإلكتروني:",
+        "emailValue": "privacy@manzelhelp.com"
+      }
+    }
+  },
+  "termsOfService": {
+    "hero": {
+      "title": "شروط الخدمة",
+      "description": "يرجى قراءة هذه الشروط بعناية قبل استخدام خدماتنا.",
+      "lastUpdated": "آخر تحديث:"
+    },
+    "sections": {
+      "acceptanceOfTerms": {
+        "title": "1. قبول الشروط",
+        "description": "من خلال الوصول إلى ManzelHelp واستخدامه (\"الخدمة\")، فإنك تقبل وتوافق على الالتزام بشروط وأحكام هذه الاتفاقية. إذا كنت لا توافق على الالتزام بما سبق، يرجى عدم استخدام هذه الخدمة."
+      },
+      "descriptionOfService": {
+        "title": "2. وصف الخدمة",
+        "description": "ManzelHelp هي منصة تربط مقدمي الخدمات (\"المساعدون\") مع العملاء الذين يبحثون عن خدمات متنوعة. نسهل الاتصال ولكننا لسنا طرفاً في اتفاقيات الخدمة الفعلية بين المستخدمين."
+      },
+      "userAccounts": {
+        "title": "3. حسابات المستخدمين",
+        "description": "لاستخدام خدمتنا، يجب عليك:",
+        "items": {
+          "accurateInfo": "توفير معلومات دقيقة وكاملة",
+          "maintainSecurity": "الحفاظ على أمان حسابك",
+          "ageRequirement": "أن يكون عمرك 18 عاماً على الأقل (أو الحصول على موافقة الوالدين)",
+          "complyLaws": "الامتثال لجميع القوانين واللوائح المعمول بها"
+        }
+      },
+      "userResponsibilities": {
+        "title": "4. مسؤوليات المستخدمين",
+        "description": "يوافق المستخدمون على:",
+        "items": {
+          "lawfulPurposes": "استخدام الخدمة فقط لأغراض قانونية",
+          "notInterfere": "عدم التدخل أو تعطيل الخدمة",
+          "notImpersonate": "عدم انتحال شخصية أي شخص أو كيان",
+          "respectUsers": "احترام المستخدمين الآخرين والحفاظ على السلوك المهني",
+          "accurateServiceInfo": "توفير معلومات دقيقة حول الخدمات والأسعار",
+          "completeServices": "إكمال الخدمات المتفق عليها في الوقت المناسب"
+        }
+      },
+      "prohibitedActivities": {
+        "title": "5. الأنشطة المحظورة",
+        "description": "الأنشطة التالية محظورة:",
+        "items": {
+          "falseInfo": "نشر معلومات كاذبة أو مضللة أو احتيالية",
+          "harassment": "المضايقة أو الإساءة أو السلوك التهديدي",
+          "spam": "البريد العشوائي أو الاتصالات غير المرغوب فيها أو الإعلان",
+          "ipViolation": "انتهاك حقوق الملكية الفكرية",
+          "circumventPayment": "محاولة التحايل على نظام الدفع لدينا",
+          "illegalActivities": "أي أنشطة غير قانونية أو ضارة"
+        }
+      },
+      "paymentTerms": {
+        "title": "6. شروط الدفع",
+        "description": "يتم معالجة المدفوعات من خلال مقدمي خدمات أطراف ثالثة آمنين. يوافق المستخدمون على:",
+        "items": {
+          "payFees": "دفع جميع الرسوم والرسوم كما هو موضح",
+          "accuratePayment": "توفير معلومات دقيقة للدفع",
+          "authorizeCharges": "تفويض الرسوم للخدمات المقدمة",
+          "finalSales": "فهم أن جميع المبيعات نهائية ما لم يُذكر خلاف ذلك"
+        }
+      },
+      "disputeResolution": {
+        "title": "7. حل النزاعات",
+        "description": "في حالة النزاعات بين المستخدمين، نشجع التواصل المباشر والحل. قد يساعد ManzelHelp في حل النزاعات ولكنه غير مسؤول عن نتيجة اتفاقيات الخدمة بين المستخدمين."
+      },
+      "limitationOfLiability": {
+        "title": "8. الحد من المسؤولية",
+        "description": "تعمل ManzelHelp كمنصة تربط المستخدمين وليست مسؤولة عن:",
+        "items": {
+          "serviceQuality": "جودة أو نتيجة الخدمات المقدمة",
+          "userConduct": "سلوك المستخدمين أو تفاعلاتهم",
+          "damages": "الأضرار الناتجة عن اتفاقيات الخدمة",
+          "thirdParty": "إجراءات أو محتوى أطراف ثالثة"
+        }
+      },
+      "intellectualProperty": {
+        "title": "9. الملكية الفكرية",
+        "description": "منصة ManzelHelp، بما في ذلك تصميمها ووظائفها ومحتواها، محمية بقوانين الملكية الفكرية. يحتفظ المستخدمون بحقوق محتواهم الخاص ولكنهم يمنحوننا ترخيصاً لاستخدامه فيما يتعلق بخدماتنا."
+      },
+      "termination": {
+        "title": "10. الإنهاء",
+        "description": "نحتفظ بالحق في إنهاء أو تعليق الحسابات التي تنتهك هذه الشروط. يمكن للمستخدمين أيضاً إنهاء حساباتهم في أي وقت. عند الإنهاء، ستستمر بعض أحكام هذه الشروط في التطبيق."
+      },
+      "changesToTerms": {
+        "title": "11. التغييرات على الشروط",
+        "description": "قد نعدل هذه الشروط في أي وقت. الاستمرار في استخدام الخدمة بعد التغييرات يشكل قبولاً للشروط المحدثة. سنخطر المستخدمين بالتغييرات المهمة عبر المنصة أو البريد الإلكتروني."
+      },
+      "governingLaw": {
+        "title": "12. القانون الحاكم",
+        "description": "هذه الشروط محكومة بقوانين [الولاية القضائية الخاصة بك]. سيتم حل أي نزاعات في محاكم [الولاية القضائية الخاصة بك]."
+      },
+      "contactInformation": {
+        "title": "13. معلومات الاتصال",
+        "description": "للأسئلة حول شروط الخدمة هذه، يرجى الاتصال بنا على:",
+        "email": "البريد الإلكتروني:",
+        "emailValue": "legal@manzelhelp.com"
+      }
+    }
   }
 }

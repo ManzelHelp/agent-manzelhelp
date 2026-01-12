@@ -789,10 +789,10 @@ export async function getTaskerServiceOffer(
       return { success: false, error: "Service not found" };
     }
 
-    // Fetch tasker stats
+    // Fetch tasker stats (includes completed_jobs from user_stats)
     const { data: statsData, error: statsError } = await supabase
       .from("user_stats")
-      .select("*")
+      .select("completed_jobs, response_time_hours")
       .eq("id", taskerServiceData.tasker_id)
       .single();
 
@@ -812,15 +812,35 @@ export async function getTaskerServiceOffer(
     const [completedBookingsResult, completedJobsResult] = await Promise.all([
       supabase
         .from("service_bookings")
-        .select("id, customer_confirmed_at")
+        .select("id, customer_confirmed_at, status")
         .eq("tasker_id", taskerServiceData.tasker_id)
         .eq("status", "completed"),
       supabase
         .from("jobs")
-        .select("id, customer_confirmed_at")
+        .select("id, customer_confirmed_at, status")
         .eq("assigned_tasker_id", taskerServiceData.tasker_id)
         .eq("status", "completed"),
     ]);
+
+    // Log for debugging
+    console.log("[getTaskerServiceOffer] Completed bookings result:", {
+      data: completedBookingsResult.data,
+      error: completedBookingsResult.error,
+      count: completedBookingsResult.data?.length || 0,
+    });
+    console.log("[getTaskerServiceOffer] Completed jobs result:", {
+      data: completedJobsResult.data,
+      error: completedJobsResult.error,
+      count: completedJobsResult.data?.length || 0,
+    });
+
+    // Check for errors
+    if (completedBookingsResult.error) {
+      console.error("[getTaskerServiceOffer] Error fetching completed bookings:", completedBookingsResult.error);
+    }
+    if (completedJobsResult.error) {
+      console.error("[getTaskerServiceOffer] Error fetching completed jobs:", completedJobsResult.error);
+    }
 
     // Filter to only confirmed bookings/jobs (customer_confirmed_at IS NOT NULL)
     const confirmedBookings = (completedBookingsResult.data || []).filter(
@@ -830,6 +850,21 @@ export async function getTaskerServiceOffer(
       (j) => j.customer_confirmed_at !== null && j.customer_confirmed_at !== undefined
     );
     const realCompletedJobs = confirmedBookings.length + confirmedJobs.length;
+
+    console.log("[getTaskerServiceOffer] Completed jobs count:", {
+      totalCompletedBookings: completedBookingsResult.data?.length || 0,
+      confirmedBookings: confirmedBookings.length,
+      totalCompletedJobs: completedJobsResult.data?.length || 0,
+      confirmedJobs: confirmedJobs.length,
+      realCompletedJobs,
+      fromUserStats: statsData?.completed_jobs || 0,
+    });
+
+    // Use user_stats.completed_jobs if available and higher, otherwise use calculated value
+    // This ensures we get the most accurate count (user_stats is updated by triggers)
+    const finalCompletedJobs = statsData?.completed_jobs 
+      ? Math.max(statsData.completed_jobs, realCompletedJobs)
+      : realCompletedJobs;
 
     // Use stored values from tasker_profiles (calculated when review is created)
     const totalReviews = taskerProfileData?.total_reviews || 0;
@@ -868,7 +903,7 @@ export async function getTaskerServiceOffer(
       },
       stats: {
         tasker_rating: taskerRating, // Use real-time calculation from reviews table
-        completed_jobs: realCompletedJobs, // Use real count instead of user_stats
+        completed_jobs: finalCompletedJobs, // Use user_stats if available, otherwise calculated count
         total_reviews: totalReviews, // Use real-time count from reviews table
         response_time_hours: statsData?.response_time_hours || null,
       },

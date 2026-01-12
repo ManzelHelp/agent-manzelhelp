@@ -32,7 +32,7 @@ import {
   type FinanceSummary,
   type Transaction,
 } from "@/actions/finance";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { formatDateShort } from "@/lib/date-utils";
 import { BackButton } from "@/components/ui/BackButton";
 
@@ -85,6 +85,7 @@ function TransactionSkeleton() {
 // Main component
 export default function CustomerFinancePage() {
   const t = useTranslations("finance");
+  const { toast } = useToast();
   const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(
     null
   );
@@ -130,7 +131,11 @@ export default function CustomerFinancePage() {
       setHasMore(transactionHistory.hasMore);
     } catch (error) {
       console.error("Error fetching finance data:", error);
-      toast.error(t("errors.loadFailed"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadFailed"),
+      });
     } finally {
       setLoading(false);
       setIsLoadingMore(false);
@@ -163,7 +168,11 @@ export default function CustomerFinancePage() {
 
   const handleExport = () => {
     if (!transactions || transactions.length === 0) {
-      toast.error("Aucune transaction à exporter");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Aucune transaction à exporter",
+      });
       return;
     }
 
@@ -224,10 +233,18 @@ export default function CustomerFinancePage() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success("Transactions exportées avec succès");
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: "Transactions exportées avec succès",
+      });
     } catch (error) {
       console.error("Error exporting transactions:", error);
-      toast.error("Erreur lors de l'export des transactions");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Erreur lors de l'export des transactions",
+      });
     }
   };
 

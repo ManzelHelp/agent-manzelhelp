@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Copy } from "lucide-react";
 import { createJob } from "@/actions/jobs";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import type { JobWithDetails } from "@/actions/jobs";
@@ -18,6 +18,7 @@ export default function JobCloneButton({ job }: JobCloneButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCloning, setIsCloning] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
   const t = useTranslations("myJobs");
 
   const handleClone = async () => {
@@ -41,15 +42,27 @@ export default function JobCloneButton({ job }: JobCloneButtonProps) {
       });
       
       if (result.success && result.jobId) {
-        toast.success(t("jobCard.cloneSuccess") || "Job cloned successfully!");
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: t("jobCard.cloneSuccess") || "Job cloné avec succès!",
+        });
         setIsOpen(false);
         router.push(`/customer/my-jobs/${result.jobId}`);
       } else {
-        toast.error(result.error || t("jobCard.cloneError") || "Failed to clone job");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("jobCard.cloneError") || "Échec du clonage du job",
+        });
       }
     } catch (error) {
       console.error("Error cloning job:", error);
-      toast.error(t("jobCard.cloneError") || "Failed to clone job");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("jobCard.cloneError") || "Échec du clonage du job",
+      });
     } finally {
       setIsCloning(false);
     }

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
-import { toast } from "sonner";
+import { useTransition, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -9,22 +11,8 @@ import { Label } from "./ui/label";
 import { Loader2 } from "lucide-react";
 import { submitContactMessage } from "@/actions/contact";
 import { useUserStore } from "@/stores/userStore";
-
-interface ContactFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  subject: string;
-  message: string;
-}
-
-const initialFormData: ContactFormData = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  subject: "",
-  message: "",
-};
+import { contactFormSchema, type ContactFormData } from "@/lib/schemas/contact";
+import { cn } from "@/lib/utils";
 
 interface ContactFormClientProps {
   onSuccess?: () => void;
@@ -33,82 +21,59 @@ interface ContactFormClientProps {
 export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as ContactFormClientProps) {
   const t = useTranslations("contact.form");
   const { user } = useUserStore();
-  const [formData, setFormData] = useState<ContactFormData>(initialFormData);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      subject: "",
+      message: "",
+    },
+  });
 
   // Pré-remplir les champs si l'utilisateur est connecté
   useEffect(() => {
     if (user) {
-      setFormData((prev) => ({
-        ...prev,
+      reset({
         firstName: user.first_name || "",
         lastName: user.last_name || "",
         email: user.email || "",
-      }));
+        subject: "",
+        message: "",
+      });
     }
-  }, [user]);
+  }, [user, reset]);
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = t("errors.firstNameRequired");
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = t("errors.lastNameRequired");
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = t("errors.emailRequired");
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        newErrors.email = t("errors.emailInvalid");
-      }
-    }
-
-    if (!formData.subject) {
-      newErrors.subject = t("errors.subjectRequired");
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = t("errors.messageRequired");
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = t("errors.messageTooShort");
-    } else if (formData.message.trim().length > 5000) {
-      newErrors.message = t("errors.messageTooLong");
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const onSubmit = async (data: ContactFormData) => {
     startTransition(async () => {
       try {
         const result = await submitContactMessage({
-          first_name: formData.firstName.trim(),
-          last_name: formData.lastName.trim(),
-          email: formData.email.trim(),
-          subject: formData.subject,
-          message: formData.message.trim(),
+          first_name: data.firstName.trim(),
+          last_name: data.lastName.trim(),
+          email: data.email.trim(),
+          subject: data.subject,
+          message: data.message.trim(),
         });
 
         if (result.success) {
-          toast.success(t("success.title"), {
+          toast({
+            variant: "success",
+            title: t("success.title"),
             description: t("success.description"),
           });
           // Reset form
           if (user) {
-            setFormData({
+            reset({
               firstName: user.first_name || "",
               lastName: user.last_name || "",
               email: user.email || "",
@@ -116,40 +81,40 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
               message: "",
             });
           } else {
-            setFormData(initialFormData);
+            reset({
+              firstName: "",
+              lastName: "",
+              email: "",
+              subject: "",
+              message: "",
+            });
           }
-          setErrors({});
           // Appeler onSuccess si fourni
           if (onSuccess) {
             onSuccess();
           }
         } else {
-          toast.error(result.errorMessage || t("errors.submitFailed"));
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: result.errorMessage || t("errors.submitFailed"),
+          });
         }
       } catch (error) {
         console.error("Error submitting contact form:", error);
-        toast.error(t("errors.submitFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: t("errors.submitFailed"),
+        });
       }
     });
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
+  const messageValue = watch("message");
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <Label
@@ -161,18 +126,18 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
           <Input
             type="text"
             id="firstName"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
+            {...register("firstName")}
             placeholder={t("fields.firstName")}
-            className={`w-full ${
-              errors.firstName ? "border-red-500" : ""
-            }`}
+            className={cn(
+              "w-full",
+              errors.firstName && "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+            )}
             disabled={isPending}
-            required
           />
           {errors.firstName && (
-            <p className="text-sm text-red-500 mt-1">{errors.firstName}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+              {errors.firstName.message}
+            </p>
           )}
         </div>
         <div>
@@ -185,18 +150,18 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
           <Input
             type="text"
             id="lastName"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
+            {...register("lastName")}
             placeholder={t("fields.lastName")}
-            className={`w-full ${
-              errors.lastName ? "border-red-500" : ""
-            }`}
+            className={cn(
+              "w-full",
+              errors.lastName && "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+            )}
             disabled={isPending}
-            required
           />
           {errors.lastName && (
-            <p className="text-sm text-red-500 mt-1">{errors.lastName}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+              {errors.lastName.message}
+            </p>
           )}
         </div>
       </div>
@@ -208,16 +173,18 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
         <Input
           type="email"
           id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
+          {...register("email")}
           placeholder={t("fields.email")}
-          className={`w-full ${errors.email ? "border-red-500" : ""}`}
+          className={cn(
+            "w-full",
+            errors.email && "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+          )}
           disabled={isPending}
-          required
         />
         {errors.email && (
-          <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
@@ -227,14 +194,12 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
         </Label>
         <select
           id="subject"
-          name="subject"
-          value={formData.subject}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
-            errors.subject ? "border-red-500" : ""
-          }`}
+          {...register("subject")}
+          className={cn(
+            "w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
+            errors.subject && "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+          )}
           disabled={isPending}
-          required
         >
           <option value="">{t("fields.subjectPlaceholder")}</option>
           <option value="general">{t("subjects.general")}</option>
@@ -244,7 +209,9 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
           <option value="partnership">{t("subjects.partnership")}</option>
         </select>
         {errors.subject && (
-          <p className="text-sm text-red-500 mt-1">{errors.subject}</p>
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {errors.subject.message}
+          </p>
         )}
       </div>
 
@@ -254,19 +221,24 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
         </Label>
         <textarea
           id="message"
-          name="message"
           rows={5}
-          value={formData.message}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
-            errors.message ? "border-red-500" : ""
-          }`}
+          {...register("message")}
+          className={cn(
+            "w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
+            errors.message && "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+          )}
           placeholder={t("fields.messagePlaceholder")}
           disabled={isPending}
-          required
         />
         {errors.message && (
-          <p className="text-sm text-red-500 mt-1">{errors.message}</p>
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {errors.message.message}
+          </p>
+        )}
+        {!errors.message && messageValue && (
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            {messageValue.length} / 5000 caractères
+          </p>
         )}
       </div>
 

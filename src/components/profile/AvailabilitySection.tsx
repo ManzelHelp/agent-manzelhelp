@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +21,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Edit, Clock, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { Edit, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { availabilityFormSchema } from "@/lib/schemas/profile";
 import type { TaskerProfile, AvailabilitySlot } from "@/types/supabase";
 import { updateTaskerAvailability } from "@/actions/profile";
 import { convertOperationHoursToSlots } from "@/lib/availability-utils";
@@ -31,25 +33,8 @@ interface AvailabilitySectionProps {
   loading: boolean;
   onProfileUpdate: (updatedProfile: TaskerProfile) => void;
   onProfileRefresh: () => Promise<void>;
-  missingFields: Array<{
-    id: string;
-    label: string;
-    section: string;
-    icon: React.ReactNode;
-    description: string;
-    required: boolean;
-  }>;
+  missingFields: any[];
 }
-
-const WEEKDAYS = [
-  { key: "monday", label: "Monday" },
-  { key: "tuesday", label: "Tuesday" },
-  { key: "wednesday", label: "Wednesday" },
-  { key: "thursday", label: "Thursday" },
-  { key: "friday", label: "Friday" },
-  { key: "saturday", label: "Saturday" },
-  { key: "sunday", label: "Sunday" },
-];
 
 export default function AvailabilitySection({
   taskerProfile,
@@ -60,6 +45,8 @@ export default function AvailabilitySection({
 }: AvailabilitySectionProps) {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
+  const { toast } = useToast();
+
   const weekdays = [
     { key: "monday", label: t("monday") },
     { key: "tuesday", label: t("tuesday") },
@@ -69,81 +56,63 @@ export default function AvailabilitySection({
     { key: "saturday", label: t("saturday") },
     { key: "sunday", label: t("sunday") },
   ];
-  const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
-  const [availabilityForm, setAvailabilityForm] = useState<AvailabilitySlot[]>(
-    []
-  );
 
-  // Update form when profile changes
+  const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
+  const [availabilityForm, setAvailabilityForm] = useState<AvailabilitySlot[]>([]);
+
   useEffect(() => {
     if (taskerProfile) {
-      // Convert operation_hours to AvailabilitySlot array using utility function
-      const validSlots = convertOperationHoursToSlots(
-        taskerProfile.operation_hours
-      );
+      const validSlots = convertOperationHoursToSlots(taskerProfile.operation_hours);
       setAvailabilityForm(validSlots);
     }
   }, [taskerProfile]);
 
-  // Get missing fields for this section
   const availabilityMissingFields = missingFields.filter(
     (field) => field.section === "availability"
   );
 
-  const updateAvailability = async () => {
-    // Validate that at least one day is enabled
-    const enabledDays = availabilityForm.filter((slot) => slot && slot.enabled);
-    if (enabledDays.length === 0) {
-      toast.error("Please enable at least one day of availability");
+  const handleUpdateAvailability = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const validation = availabilityFormSchema.safeParse(availabilityForm);
+    
+    if (!validation.success) {
+      toast({
+        variant: "destructive",
+        title: "Attention",
+        description: validation.error.issues[0].message,
+      });
       return;
     }
 
-    // Validate time format for enabled days
-    for (const slot of enabledDays) {
-      if (!slot || !slot.startTime || !slot.endTime) {
-        toast.error("Please set start and end times for all enabled days");
-        return;
-      }
-
-      // Validate that end time is after start time
-      if (slot.startTime >= slot.endTime) {
-        toast.error("End time must be after start time");
-        return;
-      }
-    }
-
-    // Check if we have a valid tasker profile
-    if (!taskerProfile?.id) {
-      toast.error("Profile not found. Please refresh the page and try again.");
-      return;
-    }
+    if (!taskerProfile?.id) return;
 
     try {
-      const result = await updateTaskerAvailability(
-        taskerProfile.id,
-        availabilityForm
-      );
+      const result = await updateTaskerAvailability(taskerProfile.id, availabilityForm);
 
       if (result.success && result.taskerProfile) {
         onProfileUpdate(result.taskerProfile);
-        await onProfileRefresh(); // Refresh profile data
-        toast.success("Availability updated successfully");
+        await onProfileRefresh();
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: "Horaires mis à jour avec succès.",
+        });
         setEditAvailabilityOpen(false);
       } else {
-        toast.error(result.error || "Failed to update availability");
+        toast({ variant: "destructive", description: "Échec de la mise à jour" });
       }
     } catch (error) {
-      console.error("Error updating availability:", error);
-      toast.error("Failed to update availability");
+      toast({ variant: "destructive", description: "Une erreur est survenue" });
     }
   };
 
   return (
-    <Card className="border-0 shadow-xl bg-[var(--color-surface)]/80 backdrop-blur-sm">
+    <Card className="border-0 shadow-xl bg-[var(--color-surface)]/80 backdrop-blur-sm dark:bg-slate-900/50">
       <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full">
+            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full shadow-lg shadow-purple-500/20">
               <Clock className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -155,170 +124,127 @@ export default function AvailabilitySection({
               </CardDescription>
             </div>
           </div>
-          {availabilityMissingFields.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
-              <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
-                <span className="text-sm font-medium text-[var(--color-error)]">
-                  {t("missing", { count: availabilityMissingFields.length })}
-                </span>
-            </div>
-          )}
-          <Dialog
-            open={editAvailabilityOpen}
-            onOpenChange={setEditAvailabilityOpen}
-          >
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                {t("edit")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>{t("editAvailability", { default: "Edit Availability" })}</DialogTitle>
-                <DialogDescription>
-                  {t("setWorkingHoursDescription", { default: "Set your working hours for each day of the week" })}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                {weekdays.map((day, index) => {
-                  const slot =
-                    availabilityForm[index] &&
-                    typeof availabilityForm[index] === "object"
-                      ? availabilityForm[index]
-                      : {
-                          day: day.key,
-                          enabled: false,
-                          startTime: "09:00",
-                          endTime: "17:00",
-                        };
-                  return (
-                    <div
-                      key={day.key}
-                      className="space-y-3 p-3 rounded-lg border border-color-border/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={slot.enabled}
-                          onChange={(e) => {
-                            const newForm = [...availabilityForm];
-                            newForm[index] = {
-                              ...slot,
-                              enabled: e.target.checked,
-                            };
-                            setAvailabilityForm(newForm);
-                          }}
-                          className="rounded border-color-border focus:ring-color-primary/20"
-                        />
-                        <span className="font-medium text-color-text-primary">
-                          {day.label}
-                        </span>
-                      </div>
-                      {slot.enabled && (
-                        <div className="flex items-center gap-3 ml-6">
-                          <Input
-                            type="time"
-                            value={slot.startTime}
-                            onChange={(e) => {
-                              const newForm = [...availabilityForm];
-                              newForm[index] = {
-                                ...slot,
-                                startTime: e.target.value,
-                              };
-                              setAvailabilityForm(newForm);
-                            }}
-                            className="w-32"
-                          />
-                          <span className="text-color-text-secondary">to</span>
-                          <Input
-                            type="time"
-                            value={slot.endTime}
-                            onChange={(e) => {
-                              const newForm = [...availabilityForm];
-                              newForm[index] = {
-                                ...slot,
-                                endTime: e.target.value,
-                              };
-                              setAvailabilityForm(newForm);
-                            }}
-                            className="w-32"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+          
+          <div className="flex items-center gap-2">
+            {availabilityMissingFields.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <span className="text-xs font-medium text-red-500">Incomplet</span>
               </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditAvailabilityOpen(false)}
-                >
-                  {tCommon("cancel")}
+            )}
+            
+            <Dialog open={editAvailabilityOpen} onOpenChange={setEditAvailabilityOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="dark:border-slate-700 dark:hover:bg-slate-800">
+                  <Edit className="h-4 w-4 mr-2" />
+                  {t("edit")}
                 </Button>
-                <Button onClick={updateAvailability} disabled={loading}>
-                  {loading ? tCommon("saving") : tCommon("saveChanges")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800">
+                <form onSubmit={handleUpdateAvailability} noValidate className="space-y-4">
+                  <DialogHeader>
+                    <DialogTitle className="dark:text-white">{t("editAvailability")}</DialogTitle>
+                    <DialogDescription className="dark:text-slate-400">
+                      Configurez vos heures de travail par jour.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {weekdays.map((day, index) => {
+                      const slot = availabilityForm[index] || { day: day.key, enabled: false, startTime: "09:00", endTime: "17:00" };
+                      return (
+                        <div key={day.key} className="p-3 border rounded-xl space-y-3 bg-slate-50/50 dark:bg-slate-800/40 dark:border-slate-700/50">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={slot.enabled}
+                              onChange={(e) => {
+                                const newForm = [...availabilityForm];
+                                newForm[index] = { ...slot, enabled: e.target.checked };
+                                setAvailabilityForm(newForm);
+                              }}
+                              className="h-4 w-4 rounded border-gray-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 dark:bg-slate-700"
+                            />
+                            <Label className="font-semibold text-sm cursor-pointer dark:text-slate-200">{day.label}</Label>
+                          </div>
+                          
+                          {slot.enabled && (
+                            <div className="flex items-center gap-2 ml-7">
+                              <Input 
+                                type="time" 
+                                value={slot.startTime} 
+                                onChange={(e) => {
+                                  const newForm = [...availabilityForm];
+                                  newForm[index] = { ...slot, startTime: e.target.value };
+                                  setAvailabilityForm(newForm);
+                                }}
+                                className="h-9 dark:bg-slate-800 dark:border-slate-700"
+                              />
+                              <span className="text-xs text-slate-400">à</span>
+                              <Input 
+                                type="time" 
+                                value={slot.endTime} 
+                                onChange={(e) => {
+                                  const newForm = [...availabilityForm];
+                                  newForm[index] = { ...slot, endTime: e.target.value };
+                                  setAvailabilityForm(newForm);
+                                }}
+                                className="h-9 dark:bg-slate-800 dark:border-slate-700"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <DialogFooter className="pt-4 gap-2">
+                    <Button type="button" variant="ghost" onClick={() => setEditAvailabilityOpen(false)} className="dark:text-slate-400">
+                      {tCommon("cancel")}
+                    </Button>
+                    <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white">
+                      {loading ? "Chargement..." : tCommon("saveChanges")}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </CardHeader>
+      
       <CardContent>
-        <div className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           {weekdays.map((day, index) => {
-            const slot =
-              availabilityForm[index] &&
-              typeof availabilityForm[index] === "object"
-                ? availabilityForm[index]
-                : {
-                    day: day.key,
-                    enabled: false,
-                    startTime: "09:00",
-                    endTime: "17:00",
-                  };
+            const slot = availabilityForm[index];
+            const isEnabled = slot?.enabled;
             return (
-              <div
-                key={day.key}
-                className="flex items-center justify-between p-3 rounded-lg border border-color-border/50 bg-color-surface/50"
+              <div 
+                key={day.key} 
+                className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+                  isEnabled 
+                    ? "bg-white dark:bg-slate-800 border-purple-100 dark:border-purple-900/50 shadow-sm" 
+                    : "bg-slate-50/50 dark:bg-slate-800/20 border-transparent opacity-60"
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-lg ${
-                      slot.enabled
-                        ? "bg-color-success/10"
-                        : "bg-color-accent/10"
-                    }`}
-                  >
-                    <Clock
-                      className={`h-4 w-4 ${
-                        slot.enabled
-                          ? "text-color-success"
-                          : "text-color-text-secondary"
-                      }`}
-                    />
+                  <div className={`p-2 rounded-lg ${
+                    isEnabled 
+                      ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400" 
+                      : "bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500"
+                  }`}>
+                    <Clock className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="font-medium text-color-text-primary">
+                    <p className={`font-bold text-sm ${isEnabled ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"}`}>
                       {day.label}
                     </p>
-                    <p className="text-sm text-color-text-secondary">
-                      {slot.enabled
-                        ? `${slot.startTime} - ${slot.endTime}`
-                        : t("notAvailable")}
+                    <p className="text-xs text-slate-500 dark:text-slate-500">
+                      {isEnabled ? `${slot.startTime} - ${slot.endTime}` : t("notAvailable")}
                     </p>
                   </div>
                 </div>
-                <div
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    slot.enabled
-                      ? "bg-color-success/10 text-color-success"
-                      : "bg-color-accent/10 text-color-text-secondary"
-                  }`}
-                >
-                  {slot.enabled ? t("available") : t("unavailable")}
-                </div>
+                {isEnabled && <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />}
               </div>
             );
           })}

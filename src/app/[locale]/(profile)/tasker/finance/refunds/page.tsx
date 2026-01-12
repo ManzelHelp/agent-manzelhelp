@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { formatDateShort } from "@/lib/date-utils";
 
 export default function RefundRequestsPage() {
   const t = useTranslations("finance.walletRefund");
+  const { toast } = useToast();
   const [requests, setRequests] = useState<WalletRefundRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] =
@@ -32,11 +33,18 @@ export default function RefundRequestsPage() {
       if (result.success && result.requests) {
         setRequests(result.requests);
       } else {
-        toast.error(result.error || "Failed to load refund requests");
+        toast({
+          variant: "destructive",
+          title: "Failed to load refund requests",
+          description: result.error,
+        });
       }
     } catch (error) {
       console.error("Error fetching refund requests:", error);
-      toast.error(t("errors.loadFailed", { default: "Failed to load refund requests" }));
+      toast({
+        variant: "destructive",
+        title: t("errors.loadFailed", { default: "Failed to load refund requests" }),
+      });
     } finally {
       setLoading(false);
     }
@@ -216,7 +224,7 @@ export default function RefundRequestsPage() {
             }}
             request={selectedRequest}
             onSuccess={handleConfirmSuccess}
-            adminWhatsAppPhone={adminWhatsAppPhone}
+            adminWhatsAppPhone={process.env.NEXT_PUBLIC_ADMIN_WHATSAPP_PHONE}
           />
         )}
       </div>

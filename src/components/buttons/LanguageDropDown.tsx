@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -11,10 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 
 const languages = [
-  { code: "en", short: "EN" },
-  { code: "de", short: "DE" },
-  { code: "fr", short: "FR" },
-  { code: "ar", short: "AR" },
+  { code: "en", short: "EN", name: "English" },
+  { code: "de", short: "DE", name: "Deutsch" },
+  { code: "fr", short: "FR", name: "Français" },
+  { code: "ar", short: "AR", name: "العربية" },
 ];
 
 export default function LanguageDropDown({
@@ -25,17 +26,32 @@ export default function LanguageDropDown({
   const router = useRouter();
   const pathname = usePathname();
   const currentLocale = useLocale();
-  const t = useTranslations("common.languages");
+  
+  // LOGIQUE ANTI-HYDRATION ERROR
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleChange = (locale: string) => {
     if (locale !== currentLocale) {
-      // Use next-intl's router which handles locale switching properly
       router.push(pathname, { locale });
     }
   };
 
   const currentLang =
     languages.find((l) => l.code === currentLocale) || languages[0];
+
+  // Tant que le client n'est pas prêt, on rend un bouton inactif 
+  // qui ressemble exactement au vrai bouton pour éviter le saut visuel.
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="sm" className={className} disabled>
+        <span className="font-semibold">{currentLang.short}</span>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -56,7 +72,7 @@ export default function LanguageDropDown({
             onClick={() => handleChange(lang.code)}
             className={lang.code === currentLocale ? "font-bold" : ""}
           >
-            {t(lang.code as "en" | "de" | "fr" | "ar")}
+            {lang.name}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

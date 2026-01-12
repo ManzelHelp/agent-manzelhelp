@@ -133,7 +133,7 @@ function Footer() {
               className="text-lg font-semibold mb-4 text-[var(--color-text-primary)]"
               style={{ fontFamily: "var(--font-sans)" }}
             >
-              For Customers
+              {t("forCustomers")}
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
@@ -149,7 +149,7 @@ function Footer() {
                   href="/how-does-it-work"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  How It Works
+                  {t("howItWorks")}
                 </Link>
               </li>
               <li>
@@ -157,7 +157,7 @@ function Footer() {
                   href="/services"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  Browse Services
+                  {t("browseServices")}
                 </Link>
               </li>
               <li>
@@ -165,7 +165,7 @@ function Footer() {
                   href="/pricing"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  Pricing Guide
+                  {t("pricingGuide")}
                 </Link>
               </li>
               <li>
@@ -173,7 +173,7 @@ function Footer() {
                   href="/safety"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  Safety & Trust
+                  {t("safetyTrust")}
                 </Link>
               </li>
             </ul>
@@ -185,7 +185,7 @@ function Footer() {
               className="text-lg font-semibold mb-4 text-[var(--color-text-primary)]"
               style={{ fontFamily: "var(--font-sans)" }}
             >
-              For Taskers
+              {t("forTaskers")}
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
@@ -201,7 +201,7 @@ function Footer() {
                   href="/tasker-guide"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  Getting Started
+                  {t("gettingStarted")}
                 </Link>
               </li>
               <li>
@@ -209,7 +209,7 @@ function Footer() {
                   href="/earnings"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  Earnings Calculator
+                  {t("earningsCalculator")}
                 </Link>
               </li>
               <li>
@@ -217,7 +217,7 @@ function Footer() {
                   href="/tasker-resources"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  Resources
+                  {t("resources")}
                 </Link>
               </li>
               <li>
@@ -225,7 +225,7 @@ function Footer() {
                   href="/success-stories"
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
-                  Success Stories
+                  {t("successStories")}
                 </Link>
               </li>
             </ul>

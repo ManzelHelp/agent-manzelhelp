@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import {
   Card,
@@ -123,6 +123,7 @@ const STEPS = [
 
 export default function PostJobPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [showContactDialog, setShowContactDialog] = useState(false);
   const t = useTranslations("postJob");
   const { user } = useUserStore();
@@ -243,11 +244,19 @@ export default function PostJobPage() {
         }
       } else {
         console.error("Error fetching addresses:", addressesResult.error);
-        toast.error("Failed to load addresses. Please try again.");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Failed to load addresses. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Error fetching initial data:", error);
-      toast.error("Failed to load form data. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Failed to load form data. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -366,14 +375,26 @@ export default function PostJobPage() {
       const result = await createJob(jobData);
 
       if (result.success) {
-        toast.success(t("success.jobPosted"));
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: t("success.jobPosted"),
+        });
         router.push("/tasker/my-jobs");
       } else {
-        toast.error(result.error || t("errors.jobCreationFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("errors.jobCreationFailed"),
+        });
       }
     } catch (error) {
       console.error("Error creating job:", error);
-      toast.error(t("errors.jobCreationFailed"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.jobCreationFailed"),
+      });
     } finally {
       setSubmitting(false);
     }

@@ -37,7 +37,7 @@ import {
   Eye,
 } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 // Loading skeleton component
 function ApplicationLoadingSkeleton() {
@@ -352,6 +352,7 @@ function ApplicationCard({
 export default function ApplicationsPage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const t = useTranslations();
   const jobId = params["job-id"] as string;
 
@@ -396,7 +397,11 @@ export default function ApplicationsPage() {
             ? err.message
             : t("applications.errors.loadFailed")
         );
-        toast.error(t("applications.errors.loadFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: t("applications.errors.loadFailed"),
+        });
       } finally {
         setLoading(false);
       }
@@ -490,11 +495,14 @@ export default function ApplicationsPage() {
           );
         }
 
-        toast.success(
-          confirmDialog.type === "accept"
-            ? "Application accepted successfully"
-            : "Application rejected successfully"
-        );
+        toast({
+          variant: "success",
+          title: "Succès",
+          description:
+            confirmDialog.type === "accept"
+              ? "Candidature acceptée avec succès"
+              : "Candidature rejetée avec succès",
+        });
 
         // If application was accepted, redirect to job detail page after a short delay
         // because the job now has an assigned tasker
@@ -504,11 +512,19 @@ export default function ApplicationsPage() {
           }, 1500);
         }
       } else {
-        toast.error(result.error || "Action failed");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || "Action échouée",
+        });
       }
     } catch (err) {
       console.error("Error performing action:", err);
-      toast.error("Action failed");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Action échouée",
+      });
     } finally {
       setConfirmDialog({
         isOpen: false,

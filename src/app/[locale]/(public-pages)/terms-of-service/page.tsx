@@ -7,11 +7,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
  * Use a stable date to prevent hydration mismatches.
  * The date is captured once during server-side rendering.
  */
-const LAST_UPDATED_DATE = new Date("2024-12-23").toLocaleDateString("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+const LAST_UPDATED_DATE = "2024-12-23";
 
 export async function generateMetadata({
   params,
@@ -19,16 +15,14 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Footer" });
+  const t = await getTranslations({ locale, namespace: "termsOfService" });
 
   return {
-    title: t("termsOfService"),
-    description:
-      "ManzelHelp Terms of Service - Read our terms and conditions for using our platform.",
+    title: t("hero.title"),
+    description: t("hero.description"),
     openGraph: {
-      title: t("termsOfService"),
-      description:
-        "ManzelHelp Terms of Service - Read our terms and conditions for using our platform.",
+      title: t("hero.title"),
+      description: t("hero.description"),
       locale: locale,
       type: "website",
     },
@@ -42,6 +36,14 @@ export default async function TermsOfServicePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "termsOfService" });
+
+  // Format date according to locale
+  const formattedDate = new Date(LAST_UPDATED_DATE).toLocaleDateString(locale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
@@ -49,13 +51,13 @@ export default async function TermsOfServicePage({
       <section className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Terms of Service
+            {t("hero.title")}
           </h1>
           <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto">
-            Please read these terms carefully before using our services.
+            {t("hero.description")}
           </p>
           <p className="text-sm opacity-90">
-            Last updated: {LAST_UPDATED_DATE}
+            {t("hero.lastUpdated")} {formattedDate}
           </p>
         </div>
       </section>
@@ -65,179 +67,153 @@ export default async function TermsOfServicePage({
         <div className="max-w-4xl mx-auto prose prose-lg">
           <div className="bg-[var(--color-surface)] rounded-xl p-8 border border-[var(--color-border)]">
             <h2 className="text-2xl font-bold mb-6 text-[var(--color-text-primary)]">
-              1. Acceptance of Terms
+              {t("sections.acceptanceOfTerms.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                By accessing and using ManzelHelp ("the Service"), you accept
-                and agree to be bound by the terms and provision of this
-                agreement. If you do not agree to abide by the above, please do
-                not use this service.
+                {t("sections.acceptanceOfTerms.description")}
               </p>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              2. Description of Service
+              {t("sections.descriptionOfService.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                ManzelHelp is a platform that connects service providers
-                ("Helpers") with customers seeking various services. We
-                facilitate the connection but are not a party to the actual
-                service agreements between users.
+                {t("sections.descriptionOfService.description")}
               </p>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              3. User Accounts
+              {t("sections.userAccounts.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>To use our service, you must:</p>
+              <p>{t("sections.userAccounts.description")}</p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Provide accurate and complete information</li>
-                <li>Maintain the security of your account</li>
-                <li>Be at least 18 years old (or have parental consent)</li>
-                <li>Comply with all applicable laws and regulations</li>
+                <li>{t("sections.userAccounts.items.accurateInfo")}</li>
+                <li>{t("sections.userAccounts.items.maintainSecurity")}</li>
+                <li>{t("sections.userAccounts.items.ageRequirement")}</li>
+                <li>{t("sections.userAccounts.items.complyLaws")}</li>
               </ul>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              4. User Responsibilities
+              {t("sections.userResponsibilities.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>Users agree to:</p>
+              <p>{t("sections.userResponsibilities.description")}</p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Use the service only for lawful purposes</li>
-                <li>Not interfere with or disrupt the service</li>
-                <li>Not impersonate any person or entity</li>
-                <li>Respect other users and maintain professional conduct</li>
-                <li>Provide accurate information about services and pricing</li>
-                <li>Complete agreed-upon services in a timely manner</li>
+                <li>{t("sections.userResponsibilities.items.lawfulPurposes")}</li>
+                <li>{t("sections.userResponsibilities.items.notInterfere")}</li>
+                <li>{t("sections.userResponsibilities.items.notImpersonate")}</li>
+                <li>{t("sections.userResponsibilities.items.respectUsers")}</li>
+                <li>{t("sections.userResponsibilities.items.accurateServiceInfo")}</li>
+                <li>{t("sections.userResponsibilities.items.completeServices")}</li>
               </ul>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              5. Prohibited Activities
+              {t("sections.prohibitedActivities.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>The following activities are prohibited:</p>
+              <p>{t("sections.prohibitedActivities.description")}</p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Posting false, misleading, or fraudulent information</li>
-                <li>Harassment, abuse, or threatening behavior</li>
-                <li>Spam, unsolicited communications, or advertising</li>
-                <li>Violation of intellectual property rights</li>
-                <li>Attempting to circumvent our payment system</li>
-                <li>Any illegal or harmful activities</li>
+                <li>{t("sections.prohibitedActivities.items.falseInfo")}</li>
+                <li>{t("sections.prohibitedActivities.items.harassment")}</li>
+                <li>{t("sections.prohibitedActivities.items.spam")}</li>
+                <li>{t("sections.prohibitedActivities.items.ipViolation")}</li>
+                <li>{t("sections.prohibitedActivities.items.circumventPayment")}</li>
+                <li>{t("sections.prohibitedActivities.items.illegalActivities")}</li>
               </ul>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              6. Payment Terms
+              {t("sections.paymentTerms.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                Payment processing is handled through secure third-party
-                providers. Users agree to:
+                {t("sections.paymentTerms.description")}
               </p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Pay all fees and charges as described</li>
-                <li>Provide accurate payment information</li>
-                <li>Authorize charges for services rendered</li>
+                <li>{t("sections.paymentTerms.items.payFees")}</li>
+                <li>{t("sections.paymentTerms.items.accuratePayment")}</li>
+                <li>{t("sections.paymentTerms.items.authorizeCharges")}</li>
                 <li>
-                  Understand that all sales are final unless otherwise specified
+                  {t("sections.paymentTerms.items.finalSales")}
                 </li>
               </ul>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              7. Dispute Resolution
+              {t("sections.disputeResolution.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                In case of disputes between users, we encourage direct
-                communication and resolution. ManzelHelp may assist in dispute
-                resolution but is not responsible for the outcome of service
-                agreements between users.
+                {t("sections.disputeResolution.description")}
               </p>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              8. Limitation of Liability
+              {t("sections.limitationOfLiability.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                ManzelHelp acts as a platform connecting users and is not
-                responsible for:
+                {t("sections.limitationOfLiability.description")}
               </p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>The quality or outcome of services provided</li>
-                <li>User conduct or interactions</li>
-                <li>Damages resulting from service agreements</li>
-                <li>Third-party actions or content</li>
+                <li>{t("sections.limitationOfLiability.items.serviceQuality")}</li>
+                <li>{t("sections.limitationOfLiability.items.userConduct")}</li>
+                <li>{t("sections.limitationOfLiability.items.damages")}</li>
+                <li>{t("sections.limitationOfLiability.items.thirdParty")}</li>
               </ul>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              9. Intellectual Property
+              {t("sections.intellectualProperty.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                The ManzelHelp platform, including its design, functionality,
-                and content, is protected by intellectual property laws. Users
-                retain rights to their own content but grant us a license to use
-                it in connection with our services.
+                {t("sections.intellectualProperty.description")}
               </p>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              10. Termination
+              {t("sections.termination.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                We reserve the right to terminate or suspend accounts that
-                violate these terms. Users may also terminate their accounts at
-                any time. Upon termination, certain provisions of these terms
-                will continue to apply.
+                {t("sections.termination.description")}
               </p>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              11. Changes to Terms
+              {t("sections.changesToTerms.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                We may modify these terms at any time. Continued use of the
-                service after changes constitutes acceptance of the updated
-                terms. We will notify users of significant changes through the
-                platform or email.
+                {t("sections.changesToTerms.description")}
               </p>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              12. Governing Law
+              {t("sections.governingLaw.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                These terms are governed by the laws of [Your Jurisdiction]. Any
-                disputes will be resolved in the courts of [Your Jurisdiction].
+                {t("sections.governingLaw.description")}
               </p>
             </div>
 
             <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              13. Contact Information
+              {t("sections.contactInformation.title")}
             </h2>
             <div className="space-y-4 text-[var(--color-text-secondary)]">
               <p>
-                For questions about these Terms of Service, please contact us
-                at:
+                {t("sections.contactInformation.description")}
               </p>
               <div className="bg-[var(--color-bg)] p-4 rounded-lg">
                 <p>
-                  <strong>Email:</strong> legal@manzelhelp.com
-                </p>
-                <p>
-                  <strong>Address:</strong> ManzelHelp Legal Team, [Your
-                  Address]
+                  <strong>{t("sections.contactInformation.email")}</strong> {t("sections.contactInformation.emailValue")}
                 </p>
               </div>
             </div>

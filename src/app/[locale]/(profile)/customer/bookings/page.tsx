@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CustomerBookingCard } from "@/components/bookings/CustomerBookingCard";
@@ -116,6 +116,7 @@ const getTaskerName = (booking: BookingWithDetails) => {
 
 export default function CustomerBookingsPage() {
   const { user } = useUserStore();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TaskStatus>("all");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
@@ -175,7 +176,11 @@ export default function CustomerBookingsPage() {
 
         // Only show toast for initial load errors, not for load more errors
         if (!append) {
-          toast.error(errorMessage);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: errorMessage,
+          });
           setBookings([]);
         }
       } finally {
@@ -288,15 +293,27 @@ export default function CustomerBookingsPage() {
                 : booking
             )
           );
-          toast.success(t("success.bookingCancelled"));
+          toast({
+            variant: "success",
+            title: "Succès",
+            description: t("success.bookingCancelled"),
+          });
         } else {
           console.error("Failed to cancel booking:", result.error);
-          toast.error(result.error || t("errors.cancelFailed"));
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: result.error || t("errors.cancelFailed"),
+          });
         }
       }
     } catch (error) {
       console.error("Error cancelling booking:", error);
-      toast.error(t("errors.unexpectedError"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.unexpectedError"),
+      });
     } finally {
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));

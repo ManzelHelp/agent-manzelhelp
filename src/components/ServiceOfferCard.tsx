@@ -7,6 +7,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { MapPin, Star, Clock, Shield, ArrowRight, User as UserIcon } from "lucide-react";
 import { ServiceDetailDrawer } from "./drawers/ServiceDetailDrawer";
+import { useTranslations, useLocale } from "next-intl";
 
 interface ServiceOfferCardProps {
   service: TaskerService;
@@ -21,8 +22,15 @@ function ServiceOfferCard({
   rating = 0,
   totalReviews = 0,
 }: ServiceOfferCardProps) {
+  const t = useTranslations("serviceCard");
+  const locale = useLocale();
   const [avatarError, setAvatarError] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Get currency symbol based on locale
+  const getCurrencySymbol = () => {
+    return locale === "ar" ? "د.م." : "MAD";
+  };
 
   return (
     <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 h-full flex flex-col bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-secondary)]/30 hover:-translate-y-2">
@@ -68,8 +76,8 @@ function ServiceOfferCard({
                     typeof service.service_area === "string"
                       ? service.service_area
                       : service.service_area
-                      ? "Multiple areas"
-                      : "Area not specified"}
+                      ? t("multipleAreas")
+                      : t("areaNotSpecified")}
                   </span>
                 </div>
               </div>
@@ -81,7 +89,7 @@ function ServiceOfferCard({
                       {rating.toFixed(1)}
                     </span>
                     <span className="text-xs text-[var(--color-text-secondary)]">
-                      ({totalReviews} review{totalReviews !== 1 ? "s" : ""})
+                      ({totalReviews} {totalReviews !== 1 ? t("reviews") : t("review")})
                     </span>
                   </div>
                 )}
@@ -104,28 +112,28 @@ function ServiceOfferCard({
             {service.minimum_duration && (
               <div className="flex items-center gap-1 px-2 py-1 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)]">
                 <Clock size={12} />
-                <span>Min {service.minimum_duration}h</span>
+                <span>{t("minDuration", { hours: service.minimum_duration })}</span>
               </div>
             )}
             {service.pricing_type === "hourly" && (
               <div className="px-2 py-1 bg-[var(--color-secondary)]/10 rounded-full text-xs text-[var(--color-secondary)] font-medium">
-                Hourly Rate
+                {t("hourlyRate")}
               </div>
             )}
             {service.pricing_type === "per_item" && (
               <div className="px-2 py-1 bg-[var(--color-primary)]/10 rounded-full text-xs text-[var(--color-primary)] font-medium">
-                Per Item
+                {t("perItem")}
               </div>
             )}
             {service.pricing_type === "fixed" && (
               <div className="px-2 py-1 bg-[var(--color-accent)]/10 rounded-full text-xs text-[var(--color-text-secondary)] font-medium">
-                Fixed Price
+                {t("fixedPrice")}
               </div>
             )}
             {service.verification_status === "verified" && (
               <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
                 <Shield size={12} />
-                <span>Verified</span>
+                <span>{t("verified")}</span>
               </div>
             )}
           </div>
@@ -136,21 +144,21 @@ function ServiceOfferCard({
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
-                ${service.price}
+                {service.price} {getCurrencySymbol()}
               </span>
               {service.pricing_type === "hourly" && (
                 <span className="text-sm text-[var(--color-text-secondary)] font-medium">
-                  /hour
+                  {t("perHour")}
                 </span>
               )}
               {service.pricing_type === "per_item" && (
                 <span className="text-sm text-[var(--color-text-secondary)] font-medium">
-                  /item
+                  {t("perItemUnit")}
                 </span>
               )}
               {service.extra_fees && service.extra_fees > 0 && (
                 <span className="text-xs text-[var(--color-text-secondary)]">
-                  + fees
+                  {t("plusFees")}
                 </span>
               )}
             </div>
@@ -158,7 +166,7 @@ function ServiceOfferCard({
               onClick={() => setDrawerOpen(true)}
               className="group/btn inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-dark)] text-white rounded-xl hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              View Details
+              {t("viewDetails")}
               <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
             </Button>
           </div>

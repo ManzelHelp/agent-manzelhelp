@@ -20,7 +20,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
 import { BackButton } from "@/components/ui/BackButton";
 import PersonalInfoSection from "@/components/profile/PersonalInfoSection";
@@ -98,6 +98,7 @@ const getSections = (t: ReturnType<typeof useTranslations>) => [
 ];
 
 export default function TaskerProfilePage() {
+  const { toast } = useToast();
   const router = useRouter();
   const { user, setUser } = useUserStore();
   const t = useTranslations("profile");
@@ -134,7 +135,11 @@ export default function TaskerProfilePage() {
       const result = await getCompleteProfileData(user.id);
 
       if (result.error) {
-        toast.error(result.error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error,
+        });
         return;
       }
 
@@ -149,7 +154,11 @@ export default function TaskerProfilePage() {
       setProfileStats(stats);
     } catch (error) {
       console.error("Error fetching profile data:", error);
-      toast.error(t("errors.loadFailed", { default: "Failed to load profile data" }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadFailed", { default: "Failed to load profile data" }),
+      });
     } finally {
       setLoading(false);
     }

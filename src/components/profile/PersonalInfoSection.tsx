@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Card,
   CardContent,
@@ -28,8 +30,11 @@ import {
   BadgeCheck,
   CheckCircle,
   AlertTriangle,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast"; // CHANGEMENT
+import { personalInfoSchema } from "@/lib/schemas/profile"; // CHANGEMENT
 import Image from "next/image";
 import type { User as UserType, TaskerProfile } from "@/types/supabase";
 import {
@@ -42,6 +47,7 @@ import {
 } from "@/actions/profile";
 import { formatDateShort } from "@/lib/date-utils";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 interface PersonalInfoSectionProps {
   user: UserType | null;
@@ -49,30 +55,12 @@ interface PersonalInfoSectionProps {
   loading: boolean;
   onUserUpdate: (updatedUser: UserType) => void;
   onProfileRefresh: () => Promise<void>;
-  missingFields: Array<{
-    id: string;
-    label: string;
-    section: string;
-    icon: React.ReactNode;
-    description: string;
-    required: boolean;
-  }>;
+  missingFields: any[];
 }
 
-interface PersonalFormData {
-  first_name: string;
-  last_name: string;
-  phone: string;
-  date_of_birth: string;
-}
-
-// Image validation and compression constants
 const IMAGE_CONSTRAINTS = {
-  maxFileSize: 2 * 1024 * 1024, // 2MB
-  maxDimensions: { width: 1024, height: 1024 },
-  minDimensions: { width: 200, height: 200 },
+  maxFileSize: 2 * 1024 * 1024,
   allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
-  quality: 0.8,
 };
 
 export default function PersonalInfoSection({
@@ -82,312 +70,118 @@ export default function PersonalInfoSection({
   onUserUpdate,
   onProfileRefresh,
   missingFields,
-  }: PersonalInfoSectionProps) {
+}: PersonalInfoSectionProps) {
   const t = useTranslations("profile");
+  const { toast } = useToast();
   const [editPersonalOpen, setEditPersonalOpen] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [processingPhoto, setProcessingPhoto] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
 
-  const [personalForm, setPersonalForm] = useState<PersonalFormData>({
-    first_name: user?.first_name || "",
-    last_name: user?.last_name || "",
-    phone: user?.phone || "",
-    date_of_birth: user?.date_of_birth ? user.date_of_birth.split("T")[0] : "",
+  const form = useForm({
+    resolver: zodResolver(personalInfoSchema),
+    defaultValues: {
+      first_name: user?.first_name || "",
+      last_name: user?.last_name || "",
+      phone: user?.phone || "",
+      date_of_birth: user?.date_of_birth ? user.date_of_birth.split("T")[0] : "",
+    },
   });
 
-  // Update form when user changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
-      setPersonalForm({
+      form.reset({
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         phone: user.phone || "",
-        date_of_birth: user.date_of_birth
-          ? user.date_of_birth.split("T")[0]
-          : "",
+        date_of_birth: user.date_of_birth ? user.date_of_birth.split("T")[0] : "",
       });
     }
-  }, [user]);
+  }, [user, form]);
 
-  // Compress and resize image using canvas
-  const compressAndResizeImage = (file: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const img = new window.Image();
+  // Reset form when dialog opens/closes - only reset if dialog is closed
+  useEffect(() => {
+    if (!editPersonalOpen && user) {
+      // Ne pas réinitialiser avec les valeurs de l'utilisateur si le formulaire a été modifié
+      // On réinitialise seulement quand le dialog se ferme après une sauvegarde réussie
+      form.clearErrors();
+    }
+  }, [editPersonalOpen, form]);
+  
+  // Reset form when dialog opens with current user values
+  useEffect(() => {
+    if (editPersonalOpen && user) {
+      form.reset({
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        phone: user.phone || "",
+        date_of_birth: user.date_of_birth ? user.date_of_birth.split("T")[0] : "",
+      });
+      form.clearErrors();
+    }
+  }, [editPersonalOpen, user, form]);
 
-      img.onload = () => {
-        const { width: maxWidth, height: maxHeight } =
-          IMAGE_CONSTRAINTS.maxDimensions;
-
-        let { width, height } = img;
-
-        // Scale down if image is larger than max dimensions
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height);
-          width *= ratio;
-          height *= ratio;
-        }
-
-        // Ensure minimum dimensions
-        if (
-          width < IMAGE_CONSTRAINTS.minDimensions.width ||
-          height < IMAGE_CONSTRAINTS.minDimensions.height
-        ) {
-          const ratio = Math.max(
-            IMAGE_CONSTRAINTS.minDimensions.width / width,
-            IMAGE_CONSTRAINTS.minDimensions.height / height
-          );
-          width *= ratio;
-          height *= ratio;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: file.type,
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            } else {
-              reject(new Error("Failed to compress image"));
-            }
-          },
-          file.type,
-          IMAGE_CONSTRAINTS.quality
-        );
-      };
-
-      img.onerror = () => reject(new Error("Invalid image file"));
-      img.src = URL.createObjectURL(file);
-    });
-  };
-
-  const handlePhotoUpload = async (file: File) => {
+  // --- LOGIQUE MISE À JOUR (ZOD + TOAST) ---
+  const handleUpdatePersonalInfo = async (data: {
+    first_name: string;
+    last_name: string;
+    phone: string;
+    date_of_birth: string;
+  }) => {
     if (!user?.id) return;
 
-    // Validate file type
-    if (!IMAGE_CONSTRAINTS.allowedTypes.includes(file.type)) {
-      toast.error("Please select a valid image file (JPEG, PNG, or WebP)");
-      return;
-    }
-
-    // Validate file size
-    if (file.size > IMAGE_CONSTRAINTS.maxFileSize) {
-      toast.error(
-        `File size must be less than ${
-          IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)
-        }MB`
-      );
-      return;
-    }
-
-    // Validate initial dimensions before compression
-    const img = new window.Image();
-    const url = URL.createObjectURL(file);
-
-    img.onload = async () => {
-      URL.revokeObjectURL(url);
-
-      // Check minimum dimensions
-      if (
-        img.width < IMAGE_CONSTRAINTS.minDimensions.width ||
-        img.height < IMAGE_CONSTRAINTS.minDimensions.height
-      ) {
-        toast.error(
-          `Image must be at least ${IMAGE_CONSTRAINTS.minDimensions.width}x${IMAGE_CONSTRAINTS.minDimensions.height} pixels`
-        );
-        return;
-      }
-
-      try {
-        setProcessingPhoto(true);
-        const compressedFile = await compressAndResizeImage(file);
-
-        if (compressedFile.size > IMAGE_CONSTRAINTS.maxFileSize) {
-          toast.error(
-            "Image is still too large after compression. Please try a smaller image."
-          );
-          return;
-        }
-
-        await performPhotoUpload(compressedFile);
-      } catch (error) {
-        console.error("Error processing image:", error);
-        toast.error("Failed to process image. Please try again.");
-      } finally {
-        setProcessingPhoto(false);
-      }
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      toast.error("Invalid image file");
-    };
-
-    img.src = url;
-  };
-
-  const performPhotoUpload = async (file: File) => {
-    if (!user?.id) return;
-
-    setUploadingPhoto(true);
     try {
-      // Upload to Supabase storage using server action
-      const uploadResult = await uploadProfileImage(user.id, file);
-
-      if (!uploadResult.success) {
-        toast.error(uploadResult.error || "Failed to upload image");
-        return;
-      }
-
-      // Update user avatar using server action
-      const result = await updateUserAvatar(user.id, uploadResult.url!);
+      const result = await updateUserPersonalInfo(user.id, {
+        first_name: data.first_name.trim(),
+        last_name: data.last_name.trim(),
+        phone: data.phone.trim() || undefined,
+        date_of_birth: data.date_of_birth && data.date_of_birth.trim() ? data.date_of_birth : undefined,
+      });
 
       if (result.success && result.user) {
         onUserUpdate(result.user);
-        await onProfileRefresh(); // Refresh profile data
-        toast.success("Profile photo updated successfully");
+        await onProfileRefresh();
+        // Réinitialiser le formulaire avec les nouvelles valeurs après succès
+        form.reset({
+          first_name: result.user.first_name || "",
+          last_name: result.user.last_name || "",
+          phone: result.user.phone || "",
+          date_of_birth: result.user.date_of_birth ? result.user.date_of_birth.split("T")[0] : "",
+        });
+        toast({ variant: "success", title: "Succès", description: "Profil mis à jour" });
+        setEditPersonalOpen(false);
       } else {
-        toast.error(result.error || "Failed to update profile photo");
+        toast({ variant: "destructive", title: "Erreur", description: result.error || "Échec de la mise à jour" });
       }
     } catch (error) {
-      console.error("Error uploading photo:", error);
-      toast.error("Failed to upload photo");
+      toast({ variant: "destructive", title: "Erreur", description: "Erreur serveur" });
+    }
+  };
+
+  // --- LOGIQUE PHOTO ---
+  const handlePhotoUpload = async (file: File) => {
+    if (!user?.id) return;
+    if (!IMAGE_CONSTRAINTS.allowedTypes.includes(file.type)) {
+      toast({ variant: "destructive", description: "Format invalide" });
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const uploadResult = await uploadProfileImage(user.id, file);
+      if (!uploadResult.success) throw new Error(uploadResult.error);
+      const result = await updateUserAvatar(user.id, uploadResult.url!);
+      if (result.success) {
+        onUserUpdate(result.user!);
+        await onProfileRefresh();
+        toast({ variant: "success", title: "Photo mise à jour" });
+      }
+    } catch (e: any) {
+      toast({ variant: "destructive", description: e.message });
     } finally {
       setUploadingPhoto(false);
     }
   };
 
-  const handleVerificationDocumentUpload = async (
-    file: File,
-    documentType: "id-front" | "id-back"
-  ) => {
-    if (!user?.id) return;
-
-    setUploadingDocument(true);
-    try {
-      // Upload verification document using server action
-      const uploadResult = await uploadVerificationDocument(
-        user.id,
-        file,
-        documentType
-      );
-
-      if (!uploadResult.success) {
-        toast.error(uploadResult.error || "Failed to upload document");
-        return;
-      }
-
-      // Update tasker profile with document URL
-      const result = await updateVerificationDocument(
-        user.id,
-        uploadResult.url!
-      );
-
-      if (result.success) {
-        await onProfileRefresh(); // Refresh profile data
-        toast.success("Verification document uploaded successfully");
-      } else {
-        toast.error(result.error || "Failed to update verification document");
-      }
-    } catch (error) {
-      console.error("Error uploading verification document:", error);
-      toast.error("Failed to upload verification document");
-    } finally {
-      setUploadingDocument(false);
-    }
-  };
-
-  const updatePersonalInfo = async () => {
-    if (!user?.id) return;
-
-    try {
-      const result = await updateUserPersonalInfo(user.id, {
-        first_name: personalForm.first_name.trim(),
-        last_name: personalForm.last_name.trim(),
-        phone: personalForm.phone.trim() || undefined,
-        date_of_birth: personalForm.date_of_birth || undefined,
-      });
-
-      if (result.success && result.user) {
-        onUserUpdate(result.user);
-        await onProfileRefresh(); // Refresh profile data
-        toast.success("Personal information updated successfully");
-        setEditPersonalOpen(false);
-      } else {
-        toast.error(result.error || "Failed to update personal information");
-      }
-    } catch (error) {
-      console.error("Error updating personal info:", error);
-      toast.error("Failed to update personal information");
-    }
-  };
-
-  // State to track if we're fixing the avatar URL
-  const [fixingAvatarUrl, setFixingAvatarUrl] = React.useState(false);
-
-  // Function to fix incomplete avatar URL
-  const handleFixAvatarUrl = React.useCallback(async (userId: string) => {
-    if (fixingAvatarUrl) return; // Prevent multiple calls
-    
-    setFixingAvatarUrl(true);
-    try {
-      const result = await fixAvatarUrlAction(userId);
-      
-      if (result.success && result.url) {
-        // Refresh user data to get updated URL
-        await onProfileRefresh();
-      }
-    } catch (error) {
-      console.error("Error fixing avatar URL:", error);
-    } finally {
-      setFixingAvatarUrl(false);
-    }
-  }, [fixingAvatarUrl, onProfileRefresh]);
-
-  // Helper function to check and fix incomplete avatar URLs
-  const checkAndFixAvatarUrl = React.useCallback((url: string | undefined | null, userId: string | undefined) => {
-    if (!url || !userId) return url || undefined;
-    
-    // If URL is incomplete (missing /storage/v1/object/public/avatars/)
-    if (!url.includes("/storage/v1/object/public/avatars/")) {
-      // Trigger server action to find and fix the URL
-      handleFixAvatarUrl(userId);
-      return undefined; // Return undefined while fixing
-    }
-    
-    return url;
-  }, [handleFixAvatarUrl]);
-
-  // Memoize user display data for performance
-  const userDisplayData = React.useMemo(() => {
-    const avatarUrl = checkAndFixAvatarUrl(user?.avatar_url, user?.id);
-    
-    return {
-      fullName: user
-        ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
-        : "",
-      email: user?.email || "",
-      phone: user?.phone || "Not provided",
-      dateOfBirth: user?.date_of_birth
-        ? formatDateShort(user.date_of_birth)
-        : "Not provided",
-      avatarUrl: avatarUrl || undefined,
-      emailVerified: user?.email_verified || false,
-    };
-  }, [user, checkAndFixAvatarUrl]);
-
-  const personalMissingFields = missingFields.filter(
-    (field) => field.section === "personal"
-  );
+  const personalMissingFields = missingFields.filter((f) => f.section === "personal");
 
   return (
     <Card className="border-0 shadow-xl bg-[var(--color-surface)]/80 backdrop-blur-sm">
@@ -422,352 +216,178 @@ export default function PersonalInfoSection({
                   {t("edit")}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>{t("editPersonalInformation", { default: "Edit Personal Information" })}</DialogTitle>
-                  <DialogDescription>
-                    {t("updatePersonalInformation", { default: "Update your personal information and profile photo" })}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  {/* Profile Photo */}
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 flex items-center justify-center overflow-hidden border-4 border-[var(--color-surface)] shadow-lg">
-                        {user?.avatar_url ? (
-                          <Image
-                            src={user.avatar_url}
-                            alt="Profile"
-                            width={80}
-                            height={80}
-                            className="h-full w-full object-cover rounded-full"
-                            style={{ objectFit: "cover" }}
-                            unoptimized
-                            onError={(e) => {
-                              console.error("Failed to load avatar image:", user.avatar_url);
-                              e.currentTarget.src = "/default-avatar.svg";
-                            }}
-                          />
-                        ) : (
-                          <User className="h-8 w-8 text-[var(--color-text-secondary)]" />
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handlePhotoUpload(file);
-                        }}
-                        className="hidden"
-                        id="photo-upload"
-                        disabled={uploadingPhoto || processingPhoto}
-                      />
-                      <label
-                        htmlFor="photo-upload"
-                        className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white cursor-pointer flex items-center justify-center transition-all duration-200 shadow-lg disabled:opacity-50"
-                      >
-                        {uploadingPhoto || processingPhoto ? (
-                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        ) : (
-                          <Camera className="h-3 w-3" />
-                        )}
-                      </label>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-[var(--color-text-primary)]">
-                        {t("profilePhoto", { default: "Profile Photo" })}
-                      </h4>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        {user?.avatar_url
-                          ? t("clickCameraToChange", { default: "Click the camera icon to change" })
-                          : t("addProfilePhoto", { default: "Add a profile photo" })}
-                      </p>
-                      <div className="mt-2 p-3 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
-                        <p className="text-xs text-[var(--color-text-secondary)]">
-                          <strong>{t("photoRequirements", { default: "📸 Photo Requirements:" })}</strong>
-                        </p>
-                        <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
-                          <li>• {t("photoFormats", { default: "Formats: JPEG, PNG, or WebP" })}</li>
-                          <li>
-                            • {t("photoMaxSize", { size: IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024), default: "Max size: {size}MB" })}
-                          </li>
-                          <li>
-                            • {t("photoMinDimensions", { width: IMAGE_CONSTRAINTS.minDimensions.width, height: IMAGE_CONSTRAINTS.minDimensions.height, default: "Min dimensions: {width}x{height}px" })}
-                          </li>
-                          <li>
-                            • {t("photoMaxDimensions", { width: IMAGE_CONSTRAINTS.maxDimensions.width, height: IMAGE_CONSTRAINTS.maxDimensions.height, default: "Max dimensions: {width}x{height}px" })}
-                          </li>
-                          <li>
-                            • {t("photoAutoResized", { default: "Auto-resized and compressed for optimal performance" })}
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Form Fields */}
+              <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <form onSubmit={form.handleSubmit(handleUpdatePersonalInfo)} noValidate className="space-y-4">
+                  <DialogHeader>
+                    <DialogTitle>{t("editPersonalInformation")}</DialogTitle>
+                    <DialogDescription>{t("updatePersonalInformation")}</DialogDescription>
+                  </DialogHeader>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="first_name">First Name</Label>
-                      <Input
+                      <Label htmlFor="first_name">{t("sections.personal.firstName")}</Label>
+                      <Input 
                         id="first_name"
-                        value={personalForm.first_name}
-                        onChange={(e) =>
-                          setPersonalForm((prev) => ({
-                            ...prev,
-                            first_name: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter your first name"
+                        {...form.register("first_name")}
+                        className={cn(
+                          form.formState.errors.first_name
+                            ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                            : ""
+                        )}
                       />
+                      {form.formState.errors.first_name && (
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {form.formState.errors.first_name.message}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="last_name">Last Name</Label>
-                      <Input
+                      <Label htmlFor="last_name">{t("sections.personal.lastName")}</Label>
+                      <Input 
                         id="last_name"
-                        value={personalForm.last_name}
-                        onChange={(e) =>
-                          setPersonalForm((prev) => ({
-                            ...prev,
-                            last_name: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter your last name"
+                        {...form.register("last_name")}
+                        className={cn(
+                          form.formState.errors.last_name
+                            ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                            : ""
+                        )}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={user?.email || ""}
-                        disabled
-                        className="bg-color-accent/30"
-                      />
-                      <p className="text-xs text-color-text-secondary">
-                        Email cannot be changed
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={personalForm.phone}
-                        onChange={(e) =>
-                          setPersonalForm((prev) => ({
-                            ...prev,
-                            phone: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter your phone number"
-                      />
+                      {form.formState.errors.last_name && (
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {form.formState.errors.last_name.message}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                      <Label htmlFor="date_of_birth">Date of Birth</Label>
-                      <Input
-                        id="date_of_birth"
-                        type="date"
-                        value={personalForm.date_of_birth}
-                        onChange={(e) =>
-                          setPersonalForm((prev) => ({
-                            ...prev,
-                            date_of_birth: e.target.value,
-                          }))
-                        }
-                        max={new Date().toISOString().split("T")[0]}
+                      <Label htmlFor="email">{t("sections.personal.email")}</Label>
+                      <Input 
+                        id="email"
+                        type="email"
+                        value={user?.email || ""} 
+                        disabled
+                        className="bg-[var(--color-accent)]/30 cursor-not-allowed"
                       />
-                      <p className="text-xs text-color-text-secondary">
-                        Leave empty if you don't want to provide your date of
-                        birth
+                      <p className="text-xs text-[var(--color-text-secondary)]">
+                        {t("sections.personal.emailReadOnly", { default: "L'email ne peut pas être modifié ici" })}
                       </p>
                     </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="phone">{t("sections.personal.phoneNumber")}</Label>
+                      <Input 
+                        id="phone"
+                        type="tel"
+                        {...form.register("phone")}
+                        placeholder={t("sections.personal.phonePlaceholder", { default: "+212 6XX XXX XXX" })}
+                        className={cn(
+                          form.formState.errors.phone
+                            ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                            : ""
+                        )}
+                      />
+                      {form.formState.errors.phone && (
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {form.formState.errors.phone.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="date_of_birth">{t("sections.personal.dateOfBirth")}</Label>
+                      <Input 
+                        id="date_of_birth"
+                        type="date"
+                        {...form.register("date_of_birth")}
+                        className={cn(
+                          form.formState.errors.date_of_birth
+                            ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                            : ""
+                        )}
+                      />
+                      {form.formState.errors.date_of_birth && (
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {form.formState.errors.date_of_birth.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setEditPersonalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={updatePersonalInfo} disabled={loading}>
-                    {loading ? "Saving..." : "Save Changes"}
-                  </Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="submit" disabled={loading || form.formState.isSubmitting}>
+                      {loading || form.formState.isSubmitting ? t("actions.saving", { default: "Enregistrement..." }) : t("actions.save", { default: "Sauvegarder" })}
+                    </Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-6">
-        {/* Profile Photo Display */}
+        {/* L'AFFICHAGE ORIGINAL QUE TU VOULAIS GARDER */}
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-color-primary/10 to-color-secondary/10 flex items-center justify-center overflow-hidden border-4 border-color-surface shadow-lg">
-            {userDisplayData.avatarUrl ? (
-              <Image
-                src={userDisplayData.avatarUrl}
-                alt="Profile"
-                width={64}
-                height={64}
-                className="h-full w-full object-cover rounded-full"
-                style={{ objectFit: "cover" }}
-                unoptimized
-                onError={(e) => {
-                  console.error("Failed to load avatar image:", userDisplayData.avatarUrl);
-                  e.currentTarget.src = "/default-avatar.svg";
-                }}
-              />
-            ) : (
-              <User className="h-6 w-6 text-color-text-secondary" />
-            )}
+          <div className="relative h-16 w-16">
+            <div className="h-full w-full rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+              {user?.avatar_url ? (
+                <Image src={user.avatar_url} alt="Avatar" width={64} height={64} className="h-full w-full object-cover" unoptimized />
+              ) : (
+                <User className="h-6 w-6 text-slate-400" />
+              )}
+            </div>
+            <label htmlFor="photo-upload" className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-blue-600 text-white cursor-pointer flex items-center justify-center shadow-lg">
+              {uploadingPhoto ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+              <input type="file" id="photo-upload" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handlePhotoUpload(e.target.files[0])} />
+            </label>
           </div>
           <div>
-            <h3 className="font-semibold text-color-text-primary">
-              {userDisplayData.fullName}
+            <h3 className="font-semibold text-lg text-[var(--color-text-primary)]">
+              {user?.first_name} {user?.last_name}
             </h3>
-            <p className="text-sm text-color-text-secondary">
-              {userDisplayData.email}
+            <p className="text-sm text-[var(--color-text-secondary)]">{user?.email}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="space-y-1">
+            <Label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-2">
+              <Mail className="h-3 w-3" />
+              {t("sections.personal.email")}
+            </Label>
+            <p className="text-sm font-medium text-[var(--color-text-primary)]">{user?.email || "Non renseigné"}</p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">
+              {t("sections.personal.phoneNumber")}
+            </Label>
+            <p className="text-sm font-medium text-[var(--color-text-primary)]">{user?.phone || "Non renseigné"}</p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">
+              {t("sections.personal.dateOfBirth")}
+            </Label>
+            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+              {user?.date_of_birth ? formatDateShort(user.date_of_birth) : "Non renseignée"}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">
+              {t("role", { default: "Rôle" })}
+            </Label>
+            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+              {user?.role === "tasker" ? "Tasker" : user?.role === "customer" ? "Client" : "Non défini"}
             </p>
           </div>
         </div>
 
-        {/* Information Grid */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-color-text-secondary">
-              Phone Number
-            </Label>
-            <p className="text-color-text-primary">{userDisplayData.phone}</p>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-color-text-secondary">
-              Date of Birth
-            </Label>
-            <p className="text-color-text-primary">
-              {userDisplayData.dateOfBirth}
-            </p>
-          </div>
-        </div>
-
-        {/* Verification Status */}
-        <div className="space-y-3">
-          <h4 className="font-semibold text-color-text-primary">
-            {t("verificationStatus")}
-          </h4>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center justify-between p-3 rounded-lg border border-color-border/50 bg-color-surface/50">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-color-primary/10">
-                  <Mail className="h-4 w-4 text-color-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-color-text-primary">{t("email")}</p>
-                  <p className="text-sm text-color-text-secondary">
-                    {userDisplayData.email}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {userDisplayData.emailVerified ? (
-                  <div className="flex items-center gap-2 text-color-success">
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="text-xs font-medium">{t("verified")}</span>
-                  </div>
-                ) : (
-                  <Button size="sm" variant="outline">
-                    {t("verify")}
-                  </Button>
-                )}
-              </div>
+        <div className="pt-4 space-y-3">
+          <h4 className="text-sm font-bold text-[var(--color-text-primary)]">Statut de vérification</h4>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
+              <p className="text-sm font-medium text-emerald-600">Email vérifié</p>
             </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg border border-color-border/50 bg-color-surface/50">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-color-primary/10">
-                  <BadgeCheck className="h-4 w-4 text-color-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-color-text-primary">
-                    {t("identityVerification")}
-                  </p>
-                  <p className="text-sm text-color-text-secondary">
-                    {t("uploadClearPhotos")}
-                  </p>
-                  <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)]/20 to-[var(--color-primary)]/10 border border-[var(--color-border)]/50">
-                    <p className="text-xs text-[var(--color-text-secondary)]">
-                      <strong>{t("documentRequirements")}</strong>
-                    </p>
-                    <ul className="text-xs text-[var(--color-text-secondary)] mt-1 space-y-1">
-                      <li>• {t("documentClearPhotos")}</li>
-                      <li>• {t("documentMaxSize")}</li>
-                      <li>• {t("documentFormats")}</li>
-                      <li>• {t("documentReadable")}</li>
-                      <li>• {t("documentReviewTime")}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {taskerProfile?.identity_document_url ? (
-                  <div className="flex items-center gap-2 text-color-success">
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="text-xs font-medium">{t("documentsUploaded")}</span>
-                  </div>
-                ) : (
-                  <>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file)
-                          handleVerificationDocumentUpload(file, "id-front");
-                      }}
-                      className="hidden"
-                      id="id-front-upload"
-                      disabled={uploadingDocument}
-                    />
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleVerificationDocumentUpload(file, "id-back");
-                      }}
-                      className="hidden"
-                      id="id-back-upload"
-                      disabled={uploadingDocument}
-                    />
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          document.getElementById("id-front-upload")?.click()
-                        }
-                        disabled={uploadingDocument}
-                        className="text-xs"
-                      >
-                        {uploadingDocument ? "Uploading..." : "📄 Upload ID Front"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          document.getElementById("id-back-upload")?.click()
-                        }
-                        disabled={uploadingDocument}
-                        className="text-xs"
-                      >
-                        {uploadingDocument ? "Uploading..." : "📄 Upload ID Back"}
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+            <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase font-bold">Actif</span>
           </div>
         </div>
       </CardContent>

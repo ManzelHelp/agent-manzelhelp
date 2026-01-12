@@ -33,7 +33,7 @@ import {
   Eye,
 } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 // Loading skeleton component
 function ApplicationLoadingSkeleton() {
@@ -310,6 +310,7 @@ export default function ApplicationsPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations();
+  const { toast } = useToast();
   const jobId = params["job-id"] as string;
 
   const [applications, setApplications] = useState<JobApplicationWithDetails[]>(
@@ -343,7 +344,10 @@ export default function ApplicationsPage() {
             ? err.message
             : t("applications.errors.loadFailed")
         );
-        toast.error(t("applications.errors.loadFailed"));
+        toast({
+          variant: "destructive",
+          title: t("applications.errors.loadFailed"),
+        });
       } finally {
         setLoading(false);
       }
@@ -399,17 +403,26 @@ export default function ApplicationsPage() {
           )
         );
 
-        toast.success(
-          confirmDialog.type === "accept"
-            ? "Application accepted successfully"
-            : "Application rejected successfully"
-        );
+        toast({
+          variant: "success",
+          title:
+            confirmDialog.type === "accept"
+              ? "Application accepted successfully"
+              : "Application rejected successfully",
+        });
       } else {
-        toast.error(result.error || "Action failed");
+        toast({
+          variant: "destructive",
+          title: "Action failed",
+          description: result.error,
+        });
       }
     } catch (err) {
       console.error("Error performing action:", err);
-      toast.error("Action failed");
+      toast({
+        variant: "destructive",
+        title: "Action failed",
+      });
     } finally {
       setConfirmDialog({
         isOpen: false,

@@ -5,14 +5,14 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, DollarSign, User, MessageSquare } from "lucide-react";
-import { JobApplicationWithDetails } from "@/actions/bookings";
+import { Calendar, Clock, DollarSign, User, MessageSquare, AlertCircle } from "lucide-react";
+import type { TaskerJobApplicationWithDetails } from "@/actions/bookings";
 import { useTranslations } from "next-intl";
 import { formatDateShort } from "@/lib/date-utils";
 
 interface JobApplicationCardProps {
-  application: JobApplicationWithDetails;
-  onActionClick?: (application: JobApplicationWithDetails) => void;
+  application: TaskerJobApplicationWithDetails;
+  onActionClick?: (application: TaskerJobApplicationWithDetails) => void;
   isUpdating?: boolean;
   actionButton?: {
     text: string;
@@ -84,6 +84,9 @@ export function JobApplicationCard({
     return `${firstName} ${lastName}`.trim() || t("labels.jobPoster");
   };
 
+  // Use the status from the application (already processed in getTaskerJobApplications)
+  const displayStatus = application.status || "pending";
+
   return (
     <Card className="p-6 hover:shadow-xl transition-all duration-300 border-0 bg-white dark:bg-slate-800 shadow-lg hover:scale-[1.01]">
       <div className="flex flex-col space-y-5">
@@ -98,16 +101,17 @@ export function JobApplicationCard({
             </p>
           </div>
           <div className="flex flex-col items-end space-y-2 flex-shrink-0">
-            <Badge className={getStatusColor(application.status)}>
-              {application.status
-                ? t(`status.${application.status}`)
-                : t("status.pending")}
+            <Badge className={getStatusColor(displayStatus)}>
+              {t(`status.${displayStatus}`)}
             </Badge>
-            <Badge className={getJobStatusColor(application.job_status)}>
-              {application.job_status
-                ? t(`jobStatus.${application.job_status}`)
-                : t("jobStatus.open")}
-            </Badge>
+            {/* Only show job status if job is still active/relevant */}
+            {application.job_status && 
+             application.job_status !== "completed" && 
+             application.job_status !== "cancelled" && (
+              <Badge className={getJobStatusColor(application.job_status)}>
+                {t(`jobStatus.${application.job_status}`)}
+              </Badge>
+            )}
           </div>
         </div>
 

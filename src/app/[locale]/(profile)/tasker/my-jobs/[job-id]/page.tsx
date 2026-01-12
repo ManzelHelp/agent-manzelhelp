@@ -8,7 +8,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import {
   Eye,
@@ -53,6 +53,7 @@ interface JobDetailsData {
   assigned_tasker_id: string | null;
   started_at: string | null;
   completed_at: string | null;
+  customer_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
   images: string[] | null;
@@ -84,6 +85,7 @@ export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("jobDetails");
+  const { toast } = useToast();
   const [data, setData] = useState<JobDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -136,7 +138,10 @@ export default function JobDetailPage() {
       const result = await startJob(data.id);
 
       if (result.success) {
-        toast.success(t("actions.jobStarted"));
+        toast({
+          variant: "success",
+          title: t("actions.jobStarted"),
+        });
         // Refresh the job data
         const updatedData = await getJobWithCustomerDetails(data.id);
         if (updatedData) {
@@ -147,7 +152,11 @@ export default function JobDetailPage() {
       } else {
         const errorMessage = result.error || t("actions.startJobFailed");
         setError(errorMessage);
-        toast.error(errorMessage);
+        toast({
+          variant: "destructive",
+          title: t("error"),
+          description: errorMessage,
+        });
       }
     } catch (err) {
       console.error("Error starting job:", err);
@@ -166,7 +175,10 @@ export default function JobDetailPage() {
       const result = await completeJob(data.id);
 
       if (result.success) {
-        toast.success(t("actions.jobCompletedSuccess"));
+        toast({
+          variant: "success",
+          title: t("actions.jobCompletedSuccess"),
+        });
         // Refresh the job data
         const updatedData = await getJobWithCustomerDetails(data.id);
         if (updatedData) {
@@ -177,7 +189,11 @@ export default function JobDetailPage() {
       } else {
         const errorMessage = result.error || t("actions.completeJobFailed");
         setError(errorMessage);
-        toast.error(errorMessage);
+        toast({
+          variant: "destructive",
+          title: t("error"),
+          description: errorMessage,
+        });
       }
     } catch (err) {
       console.error("Error completing job:", err);
@@ -664,7 +680,7 @@ export default function JobDetailPage() {
                     </Button>
                   )}
 
-                  {data.status === "completed" && (
+                  {data.status === "completed" && !data.customer_confirmed_at && (
                     <div className="flex-1 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
                       <div className="flex items-center gap-3">
                         <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -674,6 +690,24 @@ export default function JobDetailPage() {
                           </p>
                           <p className="text-sm text-green-700 dark:text-green-300">
                             {t("actions.waitingConfirmation")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {data.status === "completed" && data.customer_confirmed_at && (
+                    <div className="flex-1 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                        <div>
+                          <p className="font-semibold text-emerald-900 dark:text-emerald-100">
+                            {t("actions.jobConfirmed")}
+                          </p>
+                          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                            {t("actions.customerConfirmed", {
+                              date: format(new Date(data.customer_confirmed_at), "PPP 'at' p"),
+                            })}
                           </p>
                         </div>
                       </div>

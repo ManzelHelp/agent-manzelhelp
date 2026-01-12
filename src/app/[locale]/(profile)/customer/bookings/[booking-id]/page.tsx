@@ -30,7 +30,7 @@ import {
   Navigation,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import {
   getBookingById,
   cancelCustomerBooking,
@@ -72,6 +72,7 @@ export default function CustomerBookingDetailPage({
 }) {
   // Use the use() hook to handle async params in client component
   const { "booking-id": bookingId } = use(params);
+  const { toast } = useToast();
 
   const [booking, setBooking] = useState<BookingWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,7 +98,11 @@ export default function CustomerBookingDetailPage({
       setIsLoading(true);
       const bookingData = await getBookingById(bookingId);
       if (!bookingData) {
-        toast.error(t("notFound"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: t("notFound"),
+        });
         router.push("/customer/bookings");
         return;
       }
@@ -113,7 +118,11 @@ export default function CustomerBookingDetailPage({
       console.error("Error fetching booking:", error);
       const errorMessage =
         error instanceof Error ? error.message : t("errors.unexpectedError");
-      toast.error(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: errorMessage,
+      });
       router.push("/customer/bookings");
     } finally {
       setIsLoading(false);
@@ -286,14 +295,26 @@ export default function CustomerBookingDetailPage({
         setBooking((prev) =>
           prev ? { ...prev, status: "cancelled" as BookingStatus } : null
         );
-        toast.success(t("success.statusUpdated"));
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: t("success.statusUpdated"),
+        });
       } else {
         console.error("Failed to cancel booking:", result.error);
-        toast.error(result.error || t("errors.updateFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("errors.updateFailed"),
+        });
       }
     } catch (error) {
       console.error("Error updating booking:", error);
-      toast.error(t("errors.unexpectedError"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.unexpectedError"),
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -312,7 +333,11 @@ export default function CustomerBookingDetailPage({
       }
     } catch (error) {
       console.error("Error updating booking:", error);
-      toast.error(t("errors.unexpectedError"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.unexpectedError"),
+      });
     } finally {
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
@@ -411,7 +436,11 @@ export default function CustomerBookingDetailPage({
                     // Copy booking ID to clipboard
                     if (booking) {
                       navigator.clipboard.writeText(booking.id);
-                      toast.success(t("success.copiedToClipboard"));
+                      toast({
+                        variant: "success",
+                        title: "Succès",
+                        description: t("success.copiedToClipboard"),
+                      });
                     }
                   }}
                   className="cursor-pointer"
@@ -430,12 +459,20 @@ export default function CustomerBookingDetailPage({
                       }).catch(() => {
                         // Fallback to copy
                         navigator.clipboard.writeText(window.location.href);
-                        toast.success(t("success.linkCopied"));
+                        toast({
+                          variant: "success",
+                          title: "Succès",
+                          description: t("success.linkCopied"),
+                        });
                       });
                     } else {
                       // Fallback to copy
                       navigator.clipboard.writeText(window.location.href);
-                        toast.success(t("success.linkCopied"));
+                      toast({
+                        variant: "success",
+                        title: "Succès",
+                        description: t("success.linkCopied"),
+                      });
                     }
                   }}
                   className="cursor-pointer"
@@ -765,10 +802,13 @@ export default function CustomerBookingDetailPage({
                   </div>
                   <div className="flex-1">
                     <p className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-                      {booking.street_address || t("addressNotSpecified")}
+                      {booking.address?.street_address || booking.street_address || t("addressNotSpecified")}
                     </p>
                     <p className="text-slate-600 dark:text-slate-400">
-                      {[booking.city, booking.region]
+                      {[
+                        booking.address?.city || booking.city,
+                        booking.address?.region || booking.region
+                      ]
                         .filter(Boolean)
                         .join(", ")}
                     </p>
@@ -907,7 +947,11 @@ export default function CustomerBookingDetailPage({
                 variant="outline"
                 onClick={async () => {
                   if (!booking || !booking.tasker_id) {
-                    toast.error("Tasker information not available");
+                    toast({
+                      variant: "destructive",
+                      title: "Erreur",
+                      description: "Tasker information not available",
+                    });
                     return;
                   }
                   
@@ -923,11 +967,19 @@ export default function CustomerBookingDetailPage({
                     if (result.conversation) {
                       router.push(`/customer/messages/${result.conversation.id}`);
                     } else {
-                      toast.error(result.errorMessage || "Failed to start conversation");
+                      toast({
+                        variant: "destructive",
+                        title: "Erreur",
+                        description: result.errorMessage || "Failed to start conversation",
+                      });
                     }
                   } catch (error) {
                     console.error("Error starting conversation:", error);
-                    toast.error("Failed to start conversation");
+                    toast({
+                      variant: "destructive",
+                      title: "Erreur",
+                      description: "Failed to start conversation",
+                    });
                   }
                 }}
                 className="h-12 sm:h-14 text-sm sm:text-base lg:text-lg font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] touch-target mobile-focus"
@@ -1096,13 +1148,25 @@ export default function CustomerBookingDetailPage({
                     if (updatedBooking) {
                       setBooking(updatedBooking);
                     }
-                    toast.success("Booking confirmed successfully");
+                    toast({
+                      variant: "success",
+                      title: "Succès",
+                      description: "Booking confirmed successfully",
+                    });
                   } else {
-                    toast.error(result.error || "Failed to confirm booking completion");
+                    toast({
+                      variant: "destructive",
+                      title: "Erreur",
+                      description: result.error || "Failed to confirm booking completion",
+                    });
                   }
                 } catch (err) {
                   console.error("Error confirming booking:", err);
-                  toast.error("Failed to confirm booking completion");
+                  toast({
+                    variant: "destructive",
+                    title: "Erreur",
+                    description: "Failed to confirm booking completion",
+                  });
                 } finally {
                   setIsConfirming(false);
                 }

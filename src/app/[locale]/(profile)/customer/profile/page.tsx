@@ -33,7 +33,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import {
   getCustomerProfileData,
@@ -45,6 +45,7 @@ import {
   updateUserAvatar,
 } from "@/actions/profile";
 import { BackButton } from "@/components/ui/BackButton";
+import { personalInfoSchema, addressSchema } from "@/lib/schemas/profile";
 
 type ProfileSection = "personal" | "addresses" | "payment";
 
@@ -69,6 +70,7 @@ interface ProfileStats {
 
 export default function CustomerProfilePage() {
   const { user, setUser } = useUserStore();
+  const { toast } = useToast();
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
 
@@ -164,7 +166,11 @@ export default function CustomerProfilePage() {
       const result = await getCustomerProfileData();
 
       if (result.error) {
-        toast.error(result.error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error,
+        });
         return;
       }
 
@@ -178,7 +184,11 @@ export default function CustomerProfilePage() {
       setProfileStats(stats);
     } catch (error) {
       console.error("Error fetching profile data:", error);
-      toast.error(t("errors.loadProfileData"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadProfileData"),
+      });
     } finally {
       setLoading(false);
     }
@@ -294,17 +304,23 @@ export default function CustomerProfilePage() {
 
     // Validate file type
     if (!IMAGE_CONSTRAINTS.allowedTypes.includes(file.type)) {
-      toast.error("Please select a valid image file (JPEG, PNG, or WebP)");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Please select a valid image file (JPEG, PNG, or WebP)",
+      });
       return;
     }
 
     // Validate file size
     if (file.size > IMAGE_CONSTRAINTS.maxFileSize) {
-      toast.error(
-        `File size must be less than ${
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: `File size must be less than ${
           IMAGE_CONSTRAINTS.maxFileSize / (1024 * 1024)
-        }MB`
-      );
+        }MB`,
+      });
       return;
     }
 
@@ -320,9 +336,11 @@ export default function CustomerProfilePage() {
         img.width < IMAGE_CONSTRAINTS.minDimensions.width ||
         img.height < IMAGE_CONSTRAINTS.minDimensions.height
       ) {
-        toast.error(
-          `Image must be at least ${IMAGE_CONSTRAINTS.minDimensions.width}x${IMAGE_CONSTRAINTS.minDimensions.height} pixels`
-        );
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: `Image must be at least ${IMAGE_CONSTRAINTS.minDimensions.width}x${IMAGE_CONSTRAINTS.minDimensions.height} pixels`,
+        });
         return;
       }
 
@@ -331,16 +349,22 @@ export default function CustomerProfilePage() {
         const compressedFile = await compressAndResizeImage(file);
 
         if (compressedFile.size > IMAGE_CONSTRAINTS.maxFileSize) {
-          toast.error(
-            "Image is still too large after compression. Please try a smaller image."
-          );
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Image is still too large after compression. Please try a smaller image.",
+          });
           return;
         }
 
         await performPhotoUpload(compressedFile);
       } catch (error) {
         console.error("Error processing image:", error);
-        toast.error("Failed to process image. Please try again.");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Failed to process image. Please try again.",
+        });
       } finally {
         setProcessingPhoto(false);
       }
@@ -348,7 +372,11 @@ export default function CustomerProfilePage() {
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      toast.error("Invalid image file");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Invalid image file",
+      });
     };
 
     img.src = url;
@@ -364,7 +392,11 @@ export default function CustomerProfilePage() {
       const uploadResult = await uploadProfileImage(user.id, file);
 
       if (!uploadResult.success) {
-        toast.error(uploadResult.error || "Failed to upload image");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: uploadResult.error || "Failed to upload image",
+        });
         return;
       }
 
@@ -381,13 +413,25 @@ export default function CustomerProfilePage() {
         }));
         // Refresh profile data to ensure consistency
         await fetchProfileData();
-        toast.success("Profile photo updated successfully");
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: "Profile photo updated successfully",
+        });
       } else {
-        toast.error(result.error || "Failed to update profile photo");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || "Failed to update profile photo",
+        });
       }
     } catch (error) {
       console.error("Error uploading photo:", error);
-      toast.error("Failed to upload photo");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Failed to upload photo",
+      });
     } finally {
       setUploadingPhoto(false);
     }
@@ -397,21 +441,57 @@ export default function CustomerProfilePage() {
   const updatePersonalInfo = async () => {
     setLoading(true);
 
-    const result = await updateCustomerPersonalInfo({
+    // Validate with Zod schema
+    const validation = personalInfoSchema.safeParse({
       first_name: personalInfo.first_name,
       last_name: personalInfo.last_name,
-      phone: personalInfo.phone,
-      date_of_birth: personalInfo.date_of_birth || undefined,
+      phone: personalInfo.phone || "",
+      date_of_birth: personalInfo.date_of_birth || "",
+    });
+
+    if (!validation.success) {
+      const errors: Record<string, string> = {};
+      validation.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        errors[field] = issue.message;
+      });
+      
+      // Show first error
+      const firstError = Object.values(errors)[0];
+      if (firstError) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de validation",
+          description: firstError,
+        });
+      }
+      setLoading(false);
+      return;
+    }
+
+    const result = await updateCustomerPersonalInfo({
+      first_name: validation.data.first_name,
+      last_name: validation.data.last_name,
+      phone: validation.data.phone || undefined,
+      date_of_birth: validation.data.date_of_birth || undefined,
     });
 
     if (result.success && result.user) {
       setUser(result.user);
-      toast.success(t("success.profileUpdated"));
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: t("success.profileUpdated"),
+      });
       setPersonalInfoDialogOpen(false);
       // Refresh profile data to update completion stats
       fetchProfileData();
     } else {
-      toast.error(result.error || t("errors.updateProfile"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: result.error || t("errors.updateProfile"),
+      });
     }
 
     setLoading(false);
@@ -419,14 +499,39 @@ export default function CustomerProfilePage() {
 
   // Add address
   const addAddress = async () => {
-    if (!newAddress.street_address || !newAddress.city) return;
-
     setLoading(true);
 
-    const result = await addCustomerAddress(newAddress);
+    // Validate with Zod schema
+    const validation = addressSchema.safeParse(newAddress);
+
+    if (!validation.success) {
+      const errors: Record<string, string> = {};
+      validation.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        errors[field] = issue.message;
+      });
+      
+      // Show first error
+      const firstError = Object.values(errors)[0];
+      if (firstError) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de validation",
+          description: firstError,
+        });
+      }
+      setLoading(false);
+      return;
+    }
+
+    const result = await addCustomerAddress(validation.data);
 
     if (result.success) {
-      toast.success(t("success.addressAdded"));
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: t("success.addressAdded"),
+      });
       setNewAddress({
         label: "home",
         street_address: "",
@@ -440,7 +545,11 @@ export default function CustomerProfilePage() {
       // Refresh profile data to update completion stats
       fetchProfileData();
     } else {
-      toast.error(result.error || t("errors.addAddress"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: result.error || t("errors.addAddress"),
+      });
     }
 
     setLoading(false);
@@ -453,11 +562,19 @@ export default function CustomerProfilePage() {
     const result = await deleteCustomerAddress(addressId);
 
     if (result.success) {
-      toast.success(t("success.addressDeleted"));
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: t("success.addressDeleted"),
+      });
       // Refresh profile data to update completion stats
       fetchProfileData();
     } else {
-      toast.error(result.error || t("errors.deleteAddress"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: result.error || t("errors.deleteAddress"),
+      });
     }
 
     setLoading(false);
@@ -1084,6 +1201,13 @@ export default function CustomerProfilePage() {
                     variant="outline"
                     size="sm"
                     className="border-[var(--color-border)] hover:bg-[var(--color-primary)]/5"
+                    onClick={() => {
+                      toast({
+                        variant: "default",
+                        title: "Coming Soon",
+                        description: "Payment methods will be available soon",
+                      });
+                    }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {t("sections.payment.addPaymentMethod")}
@@ -1091,24 +1215,6 @@ export default function CustomerProfilePage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Wallet Balance */}
-                <div className="p-6 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-xl text-white">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Wallet className="h-6 w-6" />
-                    <h3 className="text-lg font-semibold">
-                      {t("sections.payment.walletBalance")}
-                    </h3>
-                  </div>
-                  <div className="text-3xl font-bold mb-2">
-                    {user.wallet_balance
-                      ? `${user.wallet_balance} MAD`
-                      : "0 MAD"}
-                  </div>
-                  <p className="text-sm opacity-90">
-                    {t("sections.payment.availableForPayments")}
-                  </p>
-                </div>
-
                 {/* Payment Methods Placeholder */}
                 <div className="text-center py-8">
                   <CreditCard className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-4" />
@@ -1118,7 +1224,16 @@ export default function CustomerProfilePage() {
                   <p className="text-[var(--color-text-secondary)] mb-4">
                     {t("sections.payment.addPaymentMethodDescription")}
                   </p>
-                  <Button className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90">
+                  <Button 
+                    className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90"
+                    onClick={() => {
+                      toast({
+                        variant: "default",
+                        title: "Coming Soon",
+                        description: "Payment methods will be available soon",
+                      });
+                    }}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     {t("sections.payment.addFirstPaymentMethod")}
                   </Button>
@@ -1134,7 +1249,7 @@ export default function CustomerProfilePage() {
         open={personalInfoDialogOpen}
         onOpenChange={setPersonalInfoDialogOpen}
       >
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserIcon className="h-5 w-5" />

@@ -41,7 +41,7 @@ import {
   type Transaction,
   type ChartData,
 } from "@/actions/finance";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { formatDateShort } from "@/lib/date-utils";
 import { FundActionsCard } from "@/components/finance/FundActionsCard";
 import { TransactionDetailDrawer } from "@/components/finance/TransactionDetailDrawer";
@@ -112,6 +112,7 @@ export default function TaskerFinancePage() {
   const router = useRouter();
   const t = useTranslations("finance");
   const locale = useLocale();
+  const { toast } = useToast();
 
   const fetchFinanceData = useCallback(async (append = false, offsetOverride?: number) => {
     try {
@@ -145,7 +146,11 @@ export default function TaskerFinancePage() {
       setChartData(chart);
     } catch (error) {
       console.error("Error fetching finance data:", error);
-      toast.error(t("errors.loadFailed", { default: "Failed to load finance data. Please try again." }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadFailed", { default: "Failed to load finance data. Please try again." }),
+      });
     } finally {
       setLoading(false);
       setIsLoadingMore(false);
@@ -168,7 +173,11 @@ export default function TaskerFinancePage() {
         setHasMore(result.hasMore);
       } catch (error) {
         console.error("Error loading more transactions:", error);
-        toast.error(t("errors.loadMoreFailed", { default: "Failed to load more transactions" }));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: t("errors.loadMoreFailed", { default: "Failed to load more transactions" }),
+        });
       } finally {
         setIsLoadingMore(false);
       }
@@ -292,7 +301,77 @@ export default function TaskerFinancePage() {
       setChartData(newChartData);
     } catch (err) {
       console.error("Error fetching chart data:", err);
-      toast.error(t("errors.loadChartFailed", { default: "Failed to load chart data" }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadChartFailed", { default: "Failed to load chart data" }),
+      });
+    }
+  };
+
+  const handleExportTransactions = () => {
+    if (transactions.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.noTransactionsToExport", { default: "No transactions to export" }),
+      });
+      return;
+    }
+
+    try {
+      // Create CSV content
+      const headers = [
+        t("export.id", { default: "ID" }),
+        t("export.date", { default: "Date" }),
+        t("export.service", { default: "Service" }),
+        t("export.amount", { default: "Amount" }),
+        t("export.netAmount", { default: "Net Amount" }),
+        t("export.fee", { default: "Fee" }),
+        t("export.status", { default: "Status" }),
+        t("export.currency", { default: "Currency" }),
+      ];
+
+      const rows = transactions.map((transaction) => [
+        transaction.id,
+        formatDate(transaction.createdAt),
+        transaction.serviceTitle || t("export.servicePayment", { default: "Service Payment" }),
+        formatCurrency(transaction.amount, transaction.currency),
+        formatCurrency(transaction.netAmount, transaction.currency),
+        formatCurrency(transaction.platformFee, transaction.currency),
+        transaction.paymentStatus,
+        transaction.currency,
+      ]);
+
+      // Combine headers and rows
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
+      ].join("\n");
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `transactions_${new Date().toISOString().split("T")[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: t("export.success", { default: "Transactions exported successfully" }),
+      });
+    } catch (error) {
+      console.error("Error exporting transactions:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.exportFailed", { default: "Failed to export transactions" }),
+      });
     }
   };
 
@@ -512,7 +591,13 @@ export default function TaskerFinancePage() {
                 {t("transactionHistoryDescription")}
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full sm:w-auto"
+              onClick={handleExportTransactions}
+              disabled={loading || transactions.length === 0}
+            >
               <Download className="h-4 w-4 mr-2" />
               {t("export")}
             </Button>

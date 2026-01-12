@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -50,6 +50,7 @@ export function JobDetailDrawer({
   onOpenChange,
 }: JobDetailDrawerProps) {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("jobOffer");
   const { user } = useUserStore();
   const [jobData, setJobData] = useState<JobWithCustomerDetails | null>(null);
@@ -173,7 +174,8 @@ export function JobDetailDrawer({
   };
 
   const canApply = () => {
-    if (!user || !jobData) return false;
+    if (!jobData) return false;
+    if (!user) return false; // User not logged in
     if (user.role === "customer") return false;
     if (jobData.customer_id === user.id) return false;
     if (jobData.status !== "active" && jobData.status !== "under_review")
@@ -183,10 +185,31 @@ export function JobDetailDrawer({
   };
 
   const canContact = () => {
-    if (!user || !jobData) return false;
+    if (!jobData) return false;
+    if (!user) return false; // User not logged in
     if (user.role === "customer") return false;
     if (jobData.customer_id === user.id) return false;
     return true;
+  };
+
+  const isNotLoggedIn = () => {
+    return !user;
+  };
+
+  const handleApplyRedirect = () => {
+    onOpenChange(false);
+    // Use window.location to ensure proper locale handling
+    setTimeout(() => {
+      window.location.href = `/${locale}/login`;
+    }, 100);
+  };
+
+  const handleContactRedirect = () => {
+    onOpenChange(false);
+    // Use window.location to ensure proper locale handling
+    setTimeout(() => {
+      window.location.href = `/${locale}/login`;
+    }, 100);
   };
 
   return (
@@ -519,7 +542,16 @@ export function JobDetailDrawer({
                         {/* Primary Actions */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {/* Apply Button */}
-                          {canApply() ? (
+                          {isNotLoggedIn() ? (
+                            <Button
+                              onClick={handleApplyRedirect}
+                              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                              size="lg"
+                            >
+                              <CheckCircle className="h-5 w-5 mr-2" />
+                              {t("applyForJob")}
+                            </Button>
+                          ) : canApply() ? (
                             <Button
                               onClick={handleApplyForJob}
                               className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
@@ -546,7 +578,16 @@ export function JobDetailDrawer({
                           )}
 
                           {/* Contact Button */}
-                          {canContact() ? (
+                          {isNotLoggedIn() ? (
+                            <Button
+                              onClick={handleContactRedirect}
+                              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                              size="lg"
+                            >
+                              <MessageSquare className="h-5 w-5 mr-2" />
+                              {t("contactCustomer")}
+                            </Button>
+                          ) : canContact() ? (
                             <Button
                               onClick={handleContactCustomer}
                               disabled={isContacting}
@@ -575,7 +616,7 @@ export function JobDetailDrawer({
                         </div>
 
                         {/* Status Messages */}
-                        {!canApply() && (
+                        {!isNotLoggedIn() && !canApply() && (
                           <div className="text-center">
                             <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-3 border border-orange-200/50 dark:border-orange-700/50">
                               <p className="text-orange-700 dark:text-orange-300 text-sm font-medium">

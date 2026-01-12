@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { getTaskerReviewsWithStats, replyToReview } from "@/actions/reviews";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { formatDateShort } from "@/lib/date-utils";
 import { BackButton } from "@/components/ui/BackButton";
 import { useTranslations } from "next-intl";
@@ -78,6 +78,7 @@ export default function ReviewsPage() {
   const [submittingReply, setSubmittingReply] = useState(false);
   const [avatarErrors, setAvatarErrors] = useState<Set<string>>(new Set());
   const t = useTranslations("reviews");
+  const { toast } = useToast();
 
   const fetchReviews = useCallback(async () => {
     if (!user) return;
@@ -88,7 +89,10 @@ export default function ReviewsPage() {
 
       if (error) {
         console.error("Error fetching reviews:", error);
-        toast.error(t("errors.loadFailed", { default: "Failed to load reviews" }));
+        toast({
+          variant: "destructive",
+          title: t("errors.loadFailed", { default: "Failed to load reviews" }),
+        });
         return;
       }
 
@@ -98,7 +102,10 @@ export default function ReviewsPage() {
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      toast.error(t("errors.unexpected", { default: "An unexpected error occurred while loading reviews" }));
+      toast({
+        variant: "destructive",
+        title: t("errors.unexpected", { default: "An unexpected error occurred while loading reviews" }),
+      });
     } finally {
       setLoading(false);
     }
@@ -122,7 +129,11 @@ export default function ReviewsPage() {
       );
 
       if (!success) {
-        toast.error(error || "Failed to submit reply");
+        toast({
+          variant: "destructive",
+          title: "Failed to submit reply",
+          description: error,
+        });
         return;
       }
 
@@ -147,12 +158,18 @@ export default function ReviewsPage() {
         ),
       }));
 
-      toast.success(t("success.replySubmitted", { default: "Reply submitted successfully!" }));
+      toast({
+        variant: "success",
+        title: t("success.replySubmitted", { default: "Reply submitted successfully!" }),
+      });
       setReplyingTo(null);
       setReplyText("");
     } catch (error) {
       console.error("Error submitting reply:", error);
-      toast.error(t("errors.unexpected", { default: "An unexpected error occurred" }));
+      toast({
+        variant: "destructive",
+        title: t("errors.unexpected", { default: "An unexpected error occurred" }),
+      });
     } finally {
       setSubmittingReply(false);
     }

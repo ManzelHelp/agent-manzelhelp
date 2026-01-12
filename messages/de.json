@@ -33,7 +33,9 @@
     "promoted": "Beworben",
     "flexible": "Flexibel",
     "budget": "Budget",
-    "view": "Anzeigen"
+    "view": "Anzeigen",
+    "getStartedToday": "Heute Loslegen",
+    "getStartedNow": "Jetzt Loslegen"
   },
   "Header": {
     "services": "Dienstleistungen",
@@ -75,7 +77,89 @@
     "why1": "Verbindung zu vertrauenswürdigen lokalen Helfern",
     "why2": "Ihre Fähigkeiten anbieten und zusätzliches Einkommen erzielen",
     "why3": "Einfach, freundlich und sicher",
-    "trustedBy": "Vertraut von über 1000 Kunden"
+    "trustedBy": "Vertraut von über 1000 Kunden",
+    "stats": {
+      "verifiedTaskers": "Verifizierte Tasker",
+      "serviceCategories": "Dienstkategorien",
+      "happyCustomers": "Zufriedene Kunden",
+      "averageRating": "Durchschnittliche Bewertung"
+    },
+    "popularServices": {
+      "badge": "Beliebte Dienste",
+      "title": "Entdecken Sie unsere Dienste",
+      "description": "Entdecken Sie die beliebtesten Dienstkategorien und finden Sie den perfekten Tasker für Ihre Bedürfnisse",
+      "categoryDescription": "Professionelle Dienste in dieser Kategorie",
+      "exploreButton": "Dienste erkunden",
+      "verifiedTaskers": "Verifizierte Tasker",
+      "qualityGuaranteed": "Qualität garantiert",
+      "topRated": "Top bewertet"
+    },
+    "featuredServices": {
+      "badge": "Empfohlene Dienste",
+      "description": "Entdecken Sie top-bewertete Tasker, die professionelle Dienste in Ihrer Umgebung anbieten",
+      "noServices": "Derzeit keine Dienste verfügbar",
+      "noServicesDescription": "Schauen Sie bald wieder vorbei für großartige Dienste von unseren verifizierten Taskern!",
+      "viewAll": "Alle Dienste anzeigen"
+    },
+    "whyChooseUs": {
+      "badge": "Warum uns wählen",
+      "description": "Wir verbinden Sie mit verifizierten, qualifizierten Fachleuten für alle Ihre Haushalts- und Geschäftsbedürfnisse",
+      "verifiedProfessionals": {
+        "title": "Verifizierte Fachleute",
+        "description": "Alle unsere Tasker werden gründlich überprüft und auf ihre Hintergründe geprüft, für Ihre Sicherheit und Ihr Wohlbefinden"
+      },
+      "quickReliable": {
+        "title": "Schnell & Zuverlässig",
+        "description": "Werden Sie innerhalb von Minuten mit verfügbaren Taskern in Ihrer Umgebung zusammengebracht, 24/7 verfügbar"
+      },
+      "qualityGuaranteed": {
+        "title": "Qualität garantiert",
+        "description": "Zufriedenheit garantiert mit unserer Qualitätssicherung und unserem engagierten Kundensupport-Team"
+      },
+      "bestPrices": {
+        "title": "Beste Preise",
+        "description": "Wettbewerbsfähige Preise für qualitativ hochwertige Dienste"
+      },
+      "trustedPlatform": {
+        "title": "Vertrauenswürdige Plattform",
+        "description": "Sichere Zahlungen und Bewertungen"
+      },
+      "instantBooking": {
+        "title": "Sofortige Buchung",
+        "description": "Buchen Sie Dienste in Sekunden"
+      },
+      "topRated": {
+        "title": "Top bewertet",
+        "description": "4.8★ durchschnittliche Bewertung"
+      }
+    },
+    "offeredJobs": {
+      "badge": "Verfügbare Jobs",
+      "title": "Finden Sie Ihren nächsten Job",
+      "description": "Durchsuchen Sie verfügbare Jobs, die von Kunden gepostet wurden, und bewerben Sie sich, um zu verdienen",
+      "noJobs": "Derzeit keine Jobs verfügbar",
+      "noJobsDescription": "Schauen Sie bald wieder vorbei für neue Jobmöglichkeiten von unseren Kunden!",
+      "viewAllJobs": "Alle Jobs anzeigen",
+      "becomeTasker": "Tasker werden",
+      "stats": {
+        "newJobsDaily": "Täglich neue Jobs",
+        "newJobsDailyDescription": "Frische Möglichkeiten werden regelmäßig gepostet",
+        "competitiveRates": "Wettbewerbsfähige Preise",
+        "competitiveRatesDescription": "Faire Vergütung für qualitativ hochwertige Arbeit",
+        "verifiedCustomers": "Verifizierte Kunden",
+        "verifiedCustomersDescription": "Arbeiten Sie mit vertrauenswürdigen Kunden"
+      }
+    },
+    "cta": {
+      "badge": "Treten Sie unserer Community bei",
+      "title": "Bereit loszulegen?",
+      "description": "Schließen Sie sich Tausenden zufriedenen Kunden an, die uns für ihre Dienstleistungsbedürfnisse vertrauen",
+      "findTasker": "Einen Tasker finden",
+      "findJobs": "Jobs finden",
+      "securePlatform": "Sichere Plattform",
+      "verifiedTaskers": "Verifizierte Tasker",
+      "support24_7": "24/7 Support"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -380,6 +464,16 @@
     "petCare": "Tierpflege",
     "gardening": "Gartenarbeit",
     "handyman": "Handwerker",
+    "forCustomers": "Für Kunden",
+    "howItWorks": "Wie es funktioniert",
+    "browseServices": "Dienstleistungen durchsuchen",
+    "pricingGuide": "Preisführer",
+    "safetyTrust": "Sicherheit & Vertrauen",
+    "forTaskers": "Für Tasker",
+    "gettingStarted": "Erste Schritte",
+    "earningsCalculator": "Verdienstrechner",
+    "resources": "Ressourcen",
+    "successStories": "Erfolgsgeschichten",
     "rights": "© 2024 ManzelHelp. Alle Rechte vorbehalten.",
     "privacy": "Datenschutz",
     "terms": "Bedingungen"
@@ -460,7 +554,19 @@
       "description": "Legen Sie Ihre wöchentliche Verfügbarkeit für neue Jobs fest",
       "unavailable": "Nicht verfügbar",
       "quickBookingTitle": "Schnellbuchung",
-      "quickBookingDescription": "Kunden können Sie während Ihrer verfügbaren Stunden sofort für schnellere Jobs buchen"
+      "quickBookingDescription": "Kunden können Sie während Ihrer verfügbaren Stunden sofort für schnellere Jobs buchen",
+      "success": {
+        "updated": "Verfügbarkeit erfolgreich aktualisiert"
+      },
+      "errors": {
+        "enableAtLeastOneDay": "Bitte aktivieren Sie mindestens einen Tag der Verfügbarkeit",
+        "setStartEndTimes": "Bitte legen Sie Start- und Endzeiten für alle aktivierten Tage fest",
+        "endTimeAfterStart": "Die Endzeit muss nach der Startzeit liegen",
+        "profileNotFound": "Profil nicht gefunden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+        "updateFailed": "Fehler beim Aktualisieren der Verfügbarkeit",
+        "invalidDataFormat": "Ungültiges Verfügbarkeitsdatenformat",
+        "invalidTimeFormat": "Ungültiges Zeitformat. Bitte verwenden Sie das Format HH:MM (z.B. 09:00)"
+      }
     },
     "verification": {
       "description": "Verifizieren Sie Ihre Identität, um Vertrauen aufzubauen und alle Funktionen freizuschalten",
@@ -897,6 +1003,7 @@
     "allServices": "Alle Dienstleistungen",
     "allJobs": "Alle Jobs",
     "resultsFound": "Ergebnisse gefunden",
+    "forQuery": "für \"{query}\"",
     "noResults": "Keine Ergebnisse gefunden",
     "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen",
     "placeholder": "Nach Dienstleistungen, Fachkräften oder Fähigkeiten suchen...",
@@ -920,7 +1027,33 @@
       "handyman": "Handwerker",
       "tutoring": "Nachhilfe",
       "delivery": "Lieferung"
-    }
+    },
+    "findYourPerfectService": "Finden Sie Ihren perfekten Service",
+    "connectWithProfessionals": "Verbinden Sie sich mit qualifizierten Fachleuten in Ihrer Umgebung",
+    "discoverServices": "Entdecken Sie großartige Dienste, die auf Ihre Bedürfnisse zugeschnitten sind",
+    "clearAllFilters": "Alle Filter löschen",
+    "previous": "Zurück",
+    "prev": "Zurück",
+    "next": "Weiter",
+    "pageOf": "Seite {page} von {total}",
+    "errorLoadingServices": "Fehler beim Laden der Dienste",
+    "errorLoadingServicesDescription": "Wir haben Probleme beim Laden der Dienste. Bitte versuchen Sie es später erneut.",
+    "tryAgain": "Erneut versuchen"
+  },
+  "serviceCard": {
+    "multipleAreas": "Mehrere Bereiche",
+    "areaNotSpecified": "Bereich nicht angegeben",
+    "review": "Bewertung",
+    "reviews": "Bewertungen",
+    "minDuration": "Min {hours}h",
+    "hourlyRate": "Stundensatz",
+    "perItem": "Pro Artikel",
+    "fixedPrice": "Fester Preis",
+    "verified": "Verifiziert",
+    "perHour": "/Stunde",
+    "perItemUnit": "/Artikel",
+    "plusFees": "+ Gebühren",
+    "viewDetails": "Details anzeigen"
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -1329,6 +1462,11 @@
     "serviceNotFound": "Service nicht gefunden",
     "failedToLoad": "Service-Angebot konnte nicht geladen werden. Bitte versuchen Sie es später erneut.",
     "goToDashboard": "Zum Dashboard",
+    "listedOn": "Gelistet am",
+    "minDuration": "Min {hours}h",
+    "noDescriptionAvailable": "Keine Beschreibung verfügbar",
+    "notAvailable": "Nicht verfügbar",
+    "about": "Über",
     "bookingDialog": {
       "title": "Buchung Bestätigen",
       "description": "Überprüfen Sie Ihre Buchungsdetails und bestätigen Sie Ihre Serviceanfrage",
@@ -1853,7 +1991,9 @@
       "message": "Nachricht",
       "appliedOn": "Beworben am",
       "flexible": "Flexibel",
-      "notSpecified": "Nicht angegeben"
+      "notSpecified": "Nicht angegeben",
+      "jobCompletedMessage": "Dieser Job wurde abgeschlossen. Ihre Bewerbung ist nicht mehr relevant.",
+      "jobCancelledMessage": "Dieser Job wurde storniert. Ihre Bewerbung ist nicht mehr relevant."
     },
     "actions": {
       "viewDetails": "Details anzeigen",
@@ -2139,6 +2279,513 @@
         "rejectFailed": "Fehler beim Ablehnen der Rückerstattungsanfrage"
       }
     }
+  },
+  "findAHelper": {
+    "hero": {
+      "title": "Finden Sie Vertrauenswürdige Helfer für Jede Aufgabe",
+      "description": "Buchen Sie zuverlässige Service-Agenten in Ihrer Nähe – schnell, einfach und sicher.",
+      "startSearching": "Suche Starten"
+    },
+    "advantages": {
+      "verifiedTrusted": {
+        "title": "Verifizierte und Vertrauenswürdige Helfer",
+        "description": "Alle unsere Service-Agenten werden überprüft und von der Community bewertet."
+      },
+      "flexibleFast": {
+        "title": "Flexible und Schnelle Buchung",
+        "description": "Buchen Sie einen Helfer für die Zeit und den Service, den Sie benötigen, mit sofortiger Bestätigung."
+      },
+      "wideRange": {
+        "title": "Breite Palette von Dienstleistungen",
+        "description": "Von der Reinigung bis zu Reparaturen finden Sie den richtigen Experten für jede Aufgabe."
+      }
+    },
+    "pricing": {
+      "title": "Geschätzte Preise",
+      "description": "Die Preise hängen von der Art des Service und der Erfahrung des Arbeiters ab. Hier sind einige typische Bereiche:",
+      "perHour": "Stunde",
+      "cleaning": {
+        "service": "Reinigung",
+        "note": "Hängt von Erfahrung und Aufgabenkomplexität ab"
+      },
+      "handyman": {
+        "service": "Handwerker",
+        "note": "Variiert je nach Fähigkeiten und Projektgröße"
+      },
+      "gardening": {
+        "service": "Gartenarbeit",
+        "note": "Basiert auf Expertise und Gartengröße"
+      }
+    },
+    "cta": {
+      "title": "Bereit, Ihren perfekten Helfer zu finden?",
+      "getStarted": "Loslegen"
+    }
+  },
+  "becomeAHelper": {
+    "hero": {
+      "badge": "Schließen Sie sich Tausenden erfolgreicher Helfer an",
+      "titlePart1": "Verwandeln Sie Ihre Fähigkeiten",
+      "titlePart2": "in Einkommen",
+      "description": "Bereit, Geld zu verdienen, indem Sie tun, was Sie lieben? Schließen Sie sich ManzelHelp als Helfer an und verbinden Sie sich mit Menschen, die Ihre Expertise benötigen.",
+      "descriptionBold": "Ob Sie putzen, reparieren, unterrichten oder auf andere Weise helfen - Sie können einen Unterschied machen und dafür bezahlt werden!"
+    },
+    "stats": {
+      "activeHelpers": {
+        "value": "10K+",
+        "label": "Aktive Helfer"
+      },
+      "earned": {
+        "label": "Von Helfern Verdient"
+      },
+      "averageRating": {
+        "value": "4.9★",
+        "label": "Durchschnittliche Bewertung"
+      }
+    },
+    "benefitsSection": {
+      "title": "Warum",
+      "titleHighlight": "ManzelHelp wählen?",
+      "description": "Schließen Sie sich einer Plattform an, die darauf ausgelegt ist, Ihnen beim Erfolg zu helfen und Ihr Geschäft auszubauen"
+    },
+    "benefits": {
+      "earnMoney": {
+        "title": "Geld Verdienen",
+        "description": "Legen Sie Ihre eigenen Preise fest und werden Sie für Ihre Fähigkeiten und Zeit bezahlt"
+      },
+      "helpCommunity": {
+        "title": "Helfen Sie Ihrer Gemeinschaft",
+        "description": "Machen Sie einen echten Unterschied im Leben der Menschen und bauen Sie gleichzeitig Ihren Ruf auf"
+      },
+      "buildReputation": {
+        "title": "Bauen Sie Ihren Ruf auf",
+        "description": "Verdienen Sie Bewertungen und Noten, die Ihre Expertise zeigen"
+      },
+      "flexibleSchedule": {
+        "title": "Flexibler Zeitplan",
+        "description": "Arbeiten Sie, wann und wo Sie wollen - vollständige Kontrolle über Ihre Zeit"
+      },
+      "securePayments": {
+        "title": "Sichere Zahlungen",
+        "description": "Werden Sie sicher durch unser geschütztes Zahlungssystem bezahlt"
+      },
+      "makeConnections": {
+        "title": "Verbindungen Knüpfen",
+        "description": "Bauen Sie dauerhafte Beziehungen zu Kunden auf, die Ihre Arbeit schätzen"
+      }
+    },
+    "howItWorks": {
+      "title": "Wie man",
+      "titleHighlight": "Loslegt",
+      "description": "Beginnen Sie in nur 4 einfachen Schritten zu verdienen"
+    },
+    "steps": {
+      "createAccount": {
+        "title": "Erstellen Sie Ihr Konto",
+        "description": "Melden Sie sich in wenigen Minuten mit Ihrer E-Mail und grundlegenden Informationen an"
+      },
+      "buildProfile": {
+        "title": "Erstellen Sie Ihr Profil",
+        "description": "Fügen Sie Ihre Fähigkeiten, Erfahrung hinzu und zeigen Sie, was Sie einzigartig macht"
+      },
+      "listServices": {
+        "title": "Listen Sie Ihre Dienstleistungen",
+        "description": "Beschreiben Sie, was Sie anbieten, legen Sie Ihre Preise fest und definieren Sie Ihr Servicegebiet"
+      },
+      "startEarning": {
+        "title": "Beginnen Sie zu Verdienen",
+        "description": "Verbinden Sie sich mit Kunden, erledigen Sie Aufgaben und werden Sie für Ihre Expertise bezahlt"
+      }
+    },
+    "cta": {
+      "badge": "Bereit, mit dem Verdienen zu beginnen?",
+      "title": "Schließen Sie sich unserer Gemeinschaft von",
+      "titleHighlight": "Erfolgreichen Helfern an",
+      "description": "Warten Sie nicht - beginnen Sie heute Ihre Reise und verdienen Sie Geld, indem Sie tun, was Sie lieben. Schließen Sie sich Tausenden von Helfern an, die bereits einen Unterschied in ihren Gemeinden machen.",
+      "features": "✓ Kostenlos beitreten ✓ Keine monatlichen Gebühren ✓ Sofort mit dem Verdienen beginnen"
+    }
+  },
+  "help": {
+    "hero": {
+      "title": "Hilfezentrum",
+      "description": "Finden Sie Antworten auf Ihre Fragen und erhalten Sie die Unterstützung, die Sie benötigen.",
+      "searchPlaceholder": "Nach Hilfe suchen..."
+    },
+    "contact": {
+      "title": "Kontakt aufnehmen",
+      "whatsapp": {
+        "title": "Live-Chat WhatsApp",
+        "description": "Kontaktieren Sie uns direkt über WhatsApp",
+        "action": "WhatsApp öffnen",
+        "available": "24/7 verfügbar"
+      },
+      "email": {
+        "title": "E-Mail-Support",
+        "description": "Senden Sie uns eine detaillierte Nachricht",
+        "action": "E-Mail senden",
+        "available": "Antwort innerhalb von 24 Stunden"
+      }
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "noResults": "Keine Ergebnisse gefunden für \"{query}\"",
+      "categories": {
+        "gettingStarted": {
+          "title": "Erste Schritte",
+          "questions": {
+            "createAccount": {
+              "question": "Wie erstelle ich ein Konto?",
+              "answer": "Klicken Sie auf die Schaltfläche 'Registrieren' oben rechts, füllen Sie Ihre Daten aus und bestätigen Sie Ihre E-Mail-Adresse."
+            },
+            "helperVsCustomer": {
+              "question": "Was ist der Unterschied zwischen einem Helfer und einem Kunden?",
+              "answer": "Helfer bieten anderen Dienstleistungen an, während Kunden Dienstleistungen buchen. Sie können beides auf demselben Konto sein."
+            },
+            "completeProfile": {
+              "question": "Wie vervollständige ich mein Profil?",
+              "answer": "Gehen Sie zu Ihrer Profilseite und fügen Sie Ihre Fähigkeiten, Erfahrung, Fotos und Verfügbarkeit hinzu, um mehr Kunden anzuziehen."
+            }
+          }
+        },
+        "payments": {
+          "title": "Zahlungen & Abrechnung",
+          "questions": {
+            "howPaymentsWork": {
+              "question": "Wie funktionieren Zahlungen?",
+              "answer": "Zahlungen werden sicher über unsere Plattform abgewickelt. Kunden zahlen im Voraus, und Helfer erhalten die Zahlung nach Abschluss der Dienstleistung."
+            },
+            "paymentMethods": {
+              "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+              "answer": "Wir akzeptieren alle gängigen Kreditkarten, PayPal und Banküberweisungen in unterstützten Regionen."
+            },
+            "whenGetPaid": {
+              "question": "Wann werde ich bezahlt?",
+              "answer": "Helfer erhalten die Zahlung innerhalb von 2-3 Werktagen, nachdem der Kunde die Dienstleistung bestätigt hat."
+            }
+          }
+        },
+        "safety": {
+          "title": "Sicherheit & Schutz",
+          "questions": {
+            "verifyHelpers": {
+              "question": "Wie verifizieren Sie Helfer?",
+              "answer": "Alle Helfer durchlaufen Hintergrundprüfungen, Identitätsverifizierung und Kompetenzbewertungen, bevor sie unserer Plattform beitreten."
+            },
+            "notSatisfied": {
+              "question": "Was ist, wenn ich mit einer Dienstleistung nicht zufrieden bin?",
+              "answer": "Kontaktieren Sie unser Support-Team innerhalb von 24 Stunden. Wir arbeiten mit Ihnen zusammen, um das Problem zu lösen oder eine Rückerstattung zu gewähren."
+            },
+            "personalInfoSafe": {
+              "question": "Sind meine persönlichen Daten sicher?",
+              "answer": "Ja, wir verwenden branchenübliche Verschlüsselung und Sicherheitsmaßnahmen zum Schutz Ihrer Daten. Lesen Sie unsere Datenschutzrichtlinie für Details."
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "title": "Zusätzliche Ressourcen",
+      "userGuide": {
+        "title": "Benutzerhandbuch",
+        "description": "Vollständiger Leitfaden zur Verwendung von ManzelHelp",
+        "action": "Handbuch lesen"
+      },
+      "communityForum": {
+        "title": "Community-Forum",
+        "description": "Verbinden Sie sich mit anderen Benutzern",
+        "action": "Forum beitreten"
+      },
+      "safetyTips": {
+        "title": "Sicherheitstipps",
+        "description": "Bleiben Sie sicher bei der Nutzung unserer Plattform",
+        "action": "Mehr erfahren"
+      },
+      "videoTutorials": {
+        "title": "Video-Tutorials",
+        "description": "Schauen Sie sich Schritt-für-Schritt-Tutorials an",
+        "action": "Jetzt ansehen"
+      }
+    }
+  },
+  "privacyPolicy": {
+    "hero": {
+      "title": "Datenschutzrichtlinie",
+      "description": "Ihre Privatsphäre ist uns wichtig. Diese Richtlinie erklärt, wie wir Ihre Informationen sammeln, verwenden und schützen.",
+      "lastUpdated": "Zuletzt aktualisiert:"
+    },
+    "sections": {
+      "informationWeCollect": {
+        "title": "1. Informationen, die wir sammeln",
+        "personalInformation": {
+          "title": "Persönliche Informationen",
+          "description": "Wir sammeln Informationen, die Sie uns direkt zur Verfügung stellen, z. B. wenn Sie ein Konto erstellen, unsere Dienste nutzen oder uns für Support kontaktieren. Dies kann umfassen:",
+          "items": {
+            "nameContact": "Name und Kontaktinformationen (E-Mail, Telefonnummer)",
+            "profilePreferences": "Profilinformationen und Präferenzen",
+            "paymentBilling": "Zahlungs- und Abrechnungsinformationen",
+            "communications": "Kommunikation mit uns und anderen Benutzern"
+          }
+        },
+        "usageInformation": {
+          "title": "Nutzungsinformationen",
+          "description": "Wir sammeln automatisch bestimmte Informationen über Ihre Nutzung unserer Dienste, einschließlich:",
+          "items": {
+            "deviceInfo": "Geräteinformationen und Identifikatoren",
+            "logData": "Protokolldaten und Analysen",
+            "locationInfo": "Standortinformationen (mit Ihrer Erlaubnis)",
+            "cookies": "Cookies und ähnliche Technologien"
+          }
+        }
+      },
+      "howWeUse": {
+        "title": "2. Wie wir Ihre Informationen verwenden",
+        "description": "Wir verwenden die von uns gesammelten Informationen, um:",
+        "items": {
+          "provideServices": "Unsere Dienste bereitzustellen, zu warten und zu verbessern",
+          "processTransactions": "Transaktionen zu bearbeiten und verwandte Informationen zu senden",
+          "sendNotices": "Technische Hinweise, Updates und Support-Nachrichten zu senden",
+          "respondComments": "Auf Ihre Kommentare und Fragen zu antworten",
+          "monitorAnalyze": "Trends und Nutzung zu überwachen und zu analysieren",
+          "personalize": "Ihre Erfahrung zu personalisieren und zu verbessern",
+          "ensureSafety": "Sicherheit auf unserer Plattform zu gewährleisten"
+        }
+      },
+      "informationSharing": {
+        "title": "3. Informationsweitergabe",
+        "description": "Wir können Ihre Informationen in folgenden Fällen weitergeben:",
+        "items": {
+          "withUsers": "Mit anderen Benutzern, soweit dies zur Bereitstellung unserer Dienste erforderlich ist",
+          "withProviders": "Mit Dienstleistern, die uns beim Betrieb unserer Plattform unterstützen",
+          "requiredByLaw": "Wenn dies gesetzlich vorgeschrieben ist oder zum Schutz unserer Rechte",
+          "businessTransfer": "Im Zusammenhang mit einer Geschäftsübertragung oder -übernahme",
+          "withConsent": "Mit Ihrer Zustimmung oder auf Ihre Anweisung"
+        }
+      },
+      "dataSecurity": {
+        "title": "4. Datensicherheit",
+        "description": "Wir setzen angemessene technische und organisatorische Maßnahmen um, um Ihre persönlichen Informationen vor unbefugtem Zugriff, Änderung, Offenlegung oder Zerstörung zu schützen. Jedoch ist keine Übertragungsmethode über das Internet oder elektronische Speicherung zu 100% sicher."
+      },
+      "yourRights": {
+        "title": "5. Ihre Rechte",
+        "description": "Je nach Ihrem Standort können Sie folgende Rechte haben:",
+        "items": {
+          "accessUpdate": "Zugriff auf Ihre persönlichen Informationen und deren Aktualisierung",
+          "deleteAccount": "Ihr Konto und zugehörige Daten löschen",
+          "optOut": "Sich von bestimmten Kommunikationen abmelden",
+          "requestCopy": "Eine Kopie Ihrer Daten anfordern",
+          "objectProcessing": "Widerspruch gegen bestimmte Verarbeitungsaktivitäten einlegen"
+        }
+      },
+      "cookiesTracking": {
+        "title": "6. Cookies und Tracking",
+        "description": "Wir verwenden Cookies und ähnliche Technologien, um Ihre Erfahrung zu verbessern, die Nutzung zu analysieren und personalisierte Inhalte bereitzustellen. Sie können Cookie-Einstellungen über Ihren Browser steuern, aber das Deaktivieren von Cookies kann die Funktionalität unserer Dienste beeinträchtigen."
+      },
+      "childrenPrivacy": {
+        "title": "7. Datenschutz für Kinder",
+        "description": "Unsere Dienste sind nicht für Kinder unter 13 Jahren bestimmt. Wir sammeln nicht wissentlich persönliche Informationen von Kindern unter 13 Jahren. Wenn wir erfahren, dass wir solche Informationen gesammelt haben, werden wir Schritte unternehmen, um sie zu löschen."
+      },
+      "changesToPolicy": {
+        "title": "8. Änderungen an dieser Richtlinie",
+        "description": "Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden Sie über Änderungen informieren, indem wir die neue Richtlinie auf dieser Seite veröffentlichen und das Datum \"Zuletzt aktualisiert\" aktualisieren. Ihre fortgesetzte Nutzung unserer Dienste nach Änderungen stellt eine Annahme der aktualisierten Richtlinie dar."
+      },
+      "contactUs": {
+        "title": "9. Kontaktieren Sie uns",
+        "description": "Wenn Sie Fragen zu dieser Datenschutzrichtlinie oder unseren Datenschutzpraktiken haben, kontaktieren Sie uns bitte unter:",
+        "email": "E-Mail:",
+        "emailValue": "privacy@manzelhelp.com"
+      }
+    }
+  },
+  "termsOfService": {
+    "hero": {
+      "title": "Nutzungsbedingungen",
+      "description": "Bitte lesen Sie diese Bedingungen sorgfältig durch, bevor Sie unsere Dienste nutzen.",
+      "lastUpdated": "Zuletzt aktualisiert:"
+    },
+    "sections": {
+      "acceptanceOfTerms": {
+        "title": "1. Annahme der Bedingungen",
+        "description": "Durch den Zugriff auf und die Nutzung von ManzelHelp (\"der Dienst\") akzeptieren und stimmen Sie zu, an die Bedingungen und Bestimmungen dieser Vereinbarung gebunden zu sein. Wenn Sie nicht zustimmen, sich an das oben Genannte zu halten, verwenden Sie diesen Dienst bitte nicht."
+      },
+      "descriptionOfService": {
+        "title": "2. Beschreibung des Dienstes",
+        "description": "ManzelHelp ist eine Plattform, die Dienstleister (\"Helfer\") mit Kunden verbindet, die verschiedene Dienstleistungen suchen. Wir erleichtern die Verbindung, sind aber nicht Partei der tatsächlichen Servicevereinbarungen zwischen Benutzern."
+      },
+      "userAccounts": {
+        "title": "3. Benutzerkonten",
+        "description": "Um unseren Dienst zu nutzen, müssen Sie:",
+        "items": {
+          "accurateInfo": "Genaue und vollständige Informationen bereitstellen",
+          "maintainSecurity": "Die Sicherheit Ihres Kontos aufrechterhalten",
+          "ageRequirement": "Mindestens 18 Jahre alt sein (oder elterliche Zustimmung haben)",
+          "complyLaws": "Alle geltenden Gesetze und Vorschriften einhalten"
+        }
+      },
+      "userResponsibilities": {
+        "title": "4. Benutzerverantwortlichkeiten",
+        "description": "Benutzer stimmen zu:",
+        "items": {
+          "lawfulPurposes": "Den Dienst nur für rechtmäßige Zwecke nutzen",
+          "notInterfere": "Den Dienst nicht stören oder unterbrechen",
+          "notImpersonate": "Sich nicht als Person oder Entität ausgeben",
+          "respectUsers": "Andere Benutzer respektieren und professionelles Verhalten aufrechterhalten",
+          "accurateServiceInfo": "Genaue Informationen über Dienstleistungen und Preise bereitstellen",
+          "completeServices": "Vereinbarte Dienstleistungen rechtzeitig abschließen"
+        }
+      },
+      "prohibitedActivities": {
+        "title": "5. Verbotene Aktivitäten",
+        "description": "Die folgenden Aktivitäten sind verboten:",
+        "items": {
+          "falseInfo": "Veröffentlichung falscher, irreführender oder betrügerischer Informationen",
+          "harassment": "Belästigung, Missbrauch oder bedrohliches Verhalten",
+          "spam": "Spam, unerwünschte Kommunikation oder Werbung",
+          "ipViolation": "Verletzung geistiger Eigentumsrechte",
+          "circumventPayment": "Versuch, unser Zahlungssystem zu umgehen",
+          "illegalActivities": "Illegale oder schädliche Aktivitäten"
+        }
+      },
+      "paymentTerms": {
+        "title": "6. Zahlungsbedingungen",
+        "description": "Die Zahlungsabwicklung erfolgt über sichere Drittanbieter. Benutzer stimmen zu:",
+        "items": {
+          "payFees": "Alle Gebühren und Kosten wie beschrieben zahlen",
+          "accuratePayment": "Genaue Zahlungsinformationen bereitstellen",
+          "authorizeCharges": "Gebühren für erbrachte Dienstleistungen autorisieren",
+          "finalSales": "Verstehen, dass alle Verkäufe endgültig sind, sofern nicht anders angegeben"
+        }
+      },
+      "disputeResolution": {
+        "title": "7. Streitbeilegung",
+        "description": "Im Falle von Streitigkeiten zwischen Benutzern fördern wir direkte Kommunikation und Lösung. ManzelHelp kann bei der Streitbeilegung helfen, ist aber nicht für das Ergebnis von Servicevereinbarungen zwischen Benutzern verantwortlich."
+      },
+      "limitationOfLiability": {
+        "title": "8. Haftungsbeschränkung",
+        "description": "ManzelHelp fungiert als Plattform, die Benutzer verbindet, und ist nicht verantwortlich für:",
+        "items": {
+          "serviceQuality": "Die Qualität oder das Ergebnis der erbrachten Dienstleistungen",
+          "userConduct": "Benutzerverhalten oder Interaktionen",
+          "damages": "Schäden aus Servicevereinbarungen",
+          "thirdParty": "Handlungen oder Inhalte Dritter"
+        }
+      },
+      "intellectualProperty": {
+        "title": "9. Geistiges Eigentum",
+        "description": "Die ManzelHelp-Plattform, einschließlich ihres Designs, ihrer Funktionalität und ihres Inhalts, ist durch Gesetze zum geistigen Eigentum geschützt. Benutzer behalten Rechte an ihrem eigenen Inhalt, gewähren uns jedoch eine Lizenz, ihn in Verbindung mit unseren Diensten zu verwenden."
+      },
+      "termination": {
+        "title": "10. Kündigung",
+        "description": "Wir behalten uns das Recht vor, Konten zu kündigen oder zu sperren, die diese Bedingungen verletzen. Benutzer können ihre Konten auch jederzeit kündigen. Bei Kündigung gelten bestimmte Bestimmungen dieser Bedingungen weiterhin."
+      },
+      "changesToTerms": {
+        "title": "11. Änderungen der Bedingungen",
+        "description": "Wir können diese Bedingungen jederzeit ändern. Die fortgesetzte Nutzung des Dienstes nach Änderungen stellt eine Annahme der aktualisierten Bedingungen dar. Wir werden Benutzer über wesentliche Änderungen über die Plattform oder per E-Mail benachrichtigen."
+      },
+      "governingLaw": {
+        "title": "12. Geltendes Recht",
+        "description": "Diese Bedingungen unterliegen den Gesetzen von [Ihre Gerichtsbarkeit]. Streitigkeiten werden vor den Gerichten von [Ihre Gerichtsbarkeit] beigelegt."
+      },
+      "contactInformation": {
+        "title": "13. Kontaktinformationen",
+        "description": "Bei Fragen zu diesen Nutzungsbedingungen kontaktieren Sie uns bitte unter:",
+        "email": "E-Mail:",
+        "emailValue": "legal@manzelhelp.com"
+      }
+    }
+  },
+  "services": {
+    "serviceManagementHub": "Service-Management-Hub",
+    "buildAndManage": "Erstellen und verwalten Sie Ihr professionelles Service-Portfolio. Erstellen Sie überzeugende Angebote, verfolgen Sie die Leistung und wachsen Sie Ihr Geschäft mit unseren leistungsstarken Tools.",
+    "performanceTracking": "Leistungsverfolgung",
+    "customerInsights": "Kunden-Insights",
+    "qualityControl": "Qualitätskontrolle",
+    "totalServices": "Gesamte Services",
+    "active": "Aktiv",
+    "bookings": "Buchungen",
+    "verified": "Verifiziert",
+    "yourServicePortfolio": "Ihr Service-Portfolio",
+    "manageAndShowcase": "Verwalten und präsentieren Sie Ihre professionellen Dienstleistungen",
+    "addNewService": "Neuen Service Hinzufügen",
+    "areaNotSpecified": "Bereich nicht angegeben",
+    "edit": "Bearbeiten",
+    "available": "Verfügbar",
+    "unverified": "nicht verifiziert",
+    "deleteService": "Service Löschen",
+    "deleteServiceConfirmation": {
+      "title": "Service Löschen",
+      "description": "Sind Sie sicher, dass Sie diesen Service löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden. Wenn es aktive Buchungen für diesen Service gibt, kann er nicht gelöscht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Service Löschen",
+      "deleting": "Wird gelöscht...",
+      "success": "Service erfolgreich gelöscht",
+      "failed": "Fehler beim Löschen des Services",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
+    },
+    "serviceDetails": "Service-Details",
+    "manageServiceOffer": "Verwalten Sie Ihr Service-Angebot",
+    "paused": "Pausiert",
+    "pending": "Ausstehend",
+    "rejected": "Abgelehnt",
+    "underReview": "In Überprüfung",
+    "multipleAreas": "Mehrere Bereiche",
+    "promoted": "Beworben",
+    "actions": {
+      "edit": "Service bearbeiten",
+      "delete": "Service Löschen",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "noDescription": "Keine Beschreibung verfügbar",
+    "hours": "Stunden",
+    "serviceRadius": "Service-Radius",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "unavailable": "Nicht verfügbar",
+    "verificationStatus": {
+      "pending": "Wartet auf Überprüfung durch Admin",
+      "verified": "Service wurde vom Admin überprüft und genehmigt",
+      "rejected": "Service wurde vom Admin abgelehnt",
+      "title": "Überprüfungsstatus"
+    },
+    "pricingType": {
+      "title": "Preistyp",
+      "hourly": "Stundensatz",
+      "perItem": "Pro Artikel",
+      "fixed": "Fester Preis",
+      "hourlyWithCurrency": "Stundensatz (€)",
+      "basePrice": "Grundpreis (€)"
+    },
+    "listedOn": "Aufgelistet am",
+    "description": "Beschreibung",
+    "serviceArea": "Service-Bereich",
+    "serviceAreaPlaceholder": "z.B.: Berlin, Deutschland",
+    "minimumDuration": "Mindestdauer (Stunden)",
+    "minDuration": "Min. {duration}h"
+  },
+  "jobDetails": {
+    "jobDetails": "Job-Details",
+    "manageJobPost": "Verwalten Sie Ihre Job-Anzeige",
+    "jobStatus": "Job-Status",
+    "completed": "Abgeschlossen",
+    "postedOn": "Veröffentlicht am {date}",
+    "description": "Beschreibung",
+    "preferredDate": "Bevorzugtes Datum",
+    "preferredTime": "Bevorzugte Zeit",
+    "location": "Standort",
+    "customerInformation": "Kundeninformationen",
+    "jobPostedByCustomer": "Job veröffentlicht von diesem Kunden",
+    "jobProgress": "Job-Fortschritt",
+    "currentStatus": "Aktueller Status",
+    "startedAt": "Gestartet am",
+    "completedAt": "Abgeschlossen am",
+    "actions": {
+      "jobCompleted": "Job Abgeschlossen",
+      "waitingConfirmation": "Warten auf Kundenbestätigung",
+      "jobConfirmed": "Job Bestätigt",
+      "customerConfirmed": "Bestätigt vom Kunden am {date}"
+    },
+    "requirements": "Anforderungen",
+    "flexibleTiming": "Flexible Zeiten",
+    "openToScheduleAdjustments": "Offen für Terminanpassungen"
   }
 }
   

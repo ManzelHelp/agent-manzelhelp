@@ -2,6 +2,7 @@
 
 import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "../ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -20,6 +21,7 @@ export default function BecomeTaskerButton({
 }: BecomeTaskerButtonProps) {
   const router = useRouter();
   const { user } = useUserStore();
+  const t = useTranslations("common");
 
   const handleGetStarted = () => {
     if (!user) {
@@ -35,7 +37,7 @@ export default function BecomeTaskerButton({
   };
 
   const buttonText =
-    text || (variant === "gradient" ? "Get Started Today" : "Get Started Now");
+    text || (variant === "gradient" ? t("getStartedToday") : t("getStartedNow"));
 
   const buttonClasses =
     variant === "gradient"

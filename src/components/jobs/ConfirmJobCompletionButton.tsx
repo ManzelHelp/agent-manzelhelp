@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { confirmJobCompletion } from "@/actions/jobs";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 interface ConfirmJobCompletionButtonProps {
@@ -18,6 +18,7 @@ export default function ConfirmJobCompletionButton({
 }: ConfirmJobCompletionButtonProps) {
   const [isConfirming, setIsConfirming] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleConfirm = async () => {
     if (!completedAt) return;
@@ -26,15 +27,27 @@ export default function ConfirmJobCompletionButton({
     try {
       const result = await confirmJobCompletion(jobId);
       if (result.success) {
-        toast.success("Job completion confirmed successfully!");
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: "Complétion du job confirmée avec succès!",
+        });
         // Refresh the page to show updated status
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to confirm job completion");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || "Échec de la confirmation de complétion du job",
+        });
       }
     } catch (err) {
       console.error("Error confirming job:", err);
-      toast.error("Failed to confirm job completion");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Échec de la confirmation de complétion du job",
+      });
     } finally {
       setIsConfirming(false);
     }

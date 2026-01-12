@@ -71,7 +71,7 @@ export function convertOperationHoursToSlots(
 export function convertSlotsToOperationHours(
   slots: AvailabilitySlot[]
 ): OperationHoursObject {
-  const validDays = new Set([
+  const validDays: (keyof OperationHoursObject)[] = [
     "monday",
     "tuesday",
     "wednesday",
@@ -79,23 +79,36 @@ export function convertSlotsToOperationHours(
     "friday",
     "saturday",
     "sunday",
-  ]);
+  ];
 
-  return slots.reduce<OperationHoursObject>((acc, slot) => {
-    if (!slot?.day || typeof slot.day !== "string") {
-      return acc;
+  // Create a map of slots by day for quick lookup
+  const slotsByDay = new Map<string, AvailabilitySlot>();
+  slots.forEach((slot) => {
+    if (slot?.day && typeof slot.day === "string") {
+      const dayKey = slot.day.toLowerCase();
+      if (validDays.includes(dayKey as keyof OperationHoursObject)) {
+        slotsByDay.set(dayKey, slot);
+      }
     }
+  });
 
-    const dayKey = slot.day.toLowerCase() as keyof OperationHoursObject;
-
-    if (validDays.has(dayKey)) {
-      acc[dayKey] = {
+  // Create operation hours object with all days
+  return validDays.reduce<OperationHoursObject>((acc, day) => {
+    const slot = slotsByDay.get(day);
+    if (slot) {
+      acc[day] = {
         enabled: Boolean(slot.enabled),
         startTime: slot.startTime || "09:00",
         endTime: slot.endTime || "17:00",
       };
+    } else {
+      // Default values for days not in slots array
+      acc[day] = {
+        enabled: false,
+        startTime: "09:00",
+        endTime: "17:00",
+      };
     }
-
     return acc;
   }, {});
 }

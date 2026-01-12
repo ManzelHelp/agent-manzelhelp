@@ -30,7 +30,7 @@ import {
 import { getTaskerRefundRequests, type WalletRefundRequest } from "@/actions/wallet-refunds";
 import { formatDateShort } from "@/lib/date-utils";
 import { useTranslations, useLocale } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface RefundRequestsHistoryDrawerProps {
   isOpen: boolean;
@@ -43,6 +43,7 @@ export function RefundRequestsHistoryDrawer({
 }: RefundRequestsHistoryDrawerProps) {
   const t = useTranslations("finance.walletRefund");
   const locale = useLocale();
+  const { toast } = useToast();
   const [requests, setRequests] = useState<WalletRefundRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -81,7 +82,11 @@ export function RefundRequestsHistoryDrawer({
         }
       } catch (error) {
         console.error("Error loading more requests:", error);
-        toast.error(t("errors.loadFailed", { default: "Failed to load more requests" }));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: t("errors.loadFailed", { default: "Failed to load more requests" }),
+        });
       } finally {
         setIsLoadingMore(false);
       }
@@ -117,11 +122,19 @@ export function RefundRequestsHistoryDrawer({
         // Since getTaskerRefundRequests returns all, we assume no more for now
         setHasMore(false);
       } else {
-        toast.error(result.error || t("errors.loadFailed", { default: "Failed to load requests" }));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("errors.loadFailed", { default: "Failed to load requests" }),
+        });
       }
     } catch (error) {
       console.error("Error loading refund requests:", error);
-      toast.error(t("errors.loadFailed", { default: "Failed to load requests" }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadFailed", { default: "Failed to load requests" }),
+      });
     } finally {
       setLoading(false);
     }
@@ -170,11 +183,19 @@ export function RefundRequestsHistoryDrawer({
     try {
       await navigator.clipboard.writeText(text);
       setCopiedCode(code);
-      toast.success(t("codeCopied", { default: "Code copied!" }));
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: t("codeCopied", { default: "Code copied!" }),
+      });
       setTimeout(() => setCopiedCode(null), 2000);
     } catch (error) {
       console.error("Failed to copy:", error);
-      toast.error(t("errors.copyFailed", { default: "Failed to copy code" }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.copyFailed", { default: "Failed to copy code" }),
+      });
     }
   };
 

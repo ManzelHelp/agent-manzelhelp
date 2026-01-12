@@ -366,7 +366,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       </span>
                       {resolvedSearchParams.q && (
                         <span className="text-[var(--color-text-secondary)] text-sm">
-                          {t("for", { query: resolvedSearchParams.q, default: `for "${resolvedSearchParams.q}"` })}
+                          {t("forQuery", { query: resolvedSearchParams.q })}
                         </span>
                       )}
                     </div>
@@ -468,7 +468,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       href={`/${locale}/search/jobs`}
                       className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-secondary)] text-white rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium text-sm sm:text-base"
                     >
-                      Clear All Filters
+                      {t("clearAllFilters")}
                     </Link>
                   </div>
                 </div>

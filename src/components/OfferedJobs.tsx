@@ -1,9 +1,12 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { ArrowRight, Briefcase, Users, DollarSign, Star } from "lucide-react";
 import JobOfferCard from "./JobOfferCard";
 import { User } from "@/types/supabase";
+import { useTranslations } from "next-intl";
 
 interface Job {
   id: string;
@@ -29,6 +32,8 @@ interface OfferedJobsProps {
 }
 
 function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
+  const t = useTranslations("homepage.offeredJobs");
+  
   return (
     <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-[var(--color-surface)] to-[var(--color-bg)]">
       <div className="max-w-7xl mx-auto">
@@ -39,15 +44,15 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
               <Briefcase className="h-4 w-4 text-[var(--color-primary)]" />
             </div>
             <span className="text-sm font-semibold text-[var(--color-accent)]">
-              Available Jobs
+              {t("badge")}
             </span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-[var(--color-primary)] px-2 leading-tight">
-            Find Your Next Job
+            {t("title")}
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-[var(--color-text-secondary)] max-w-3xl mx-auto px-2 leading-relaxed font-light">
-            Browse available jobs posted by customers and apply to start earning
+            {t("description")}
           </p>
         </div>
 
@@ -72,10 +77,10 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--color-secondary)] rounded-full animate-ping"></div>
             </div>
             <h3 className="text-xl sm:text-2xl font-semibold text-[var(--color-text-primary)] mb-3">
-              No jobs available at the moment
+              {t("noJobs")}
             </h3>
             <p className="text-[var(--color-text-secondary)] px-2 max-w-md mx-auto">
-              Check back soon for new job opportunities from our customers!
+              {t("noJobsDescription")}
             </p>
           </div>
         )}
@@ -88,7 +93,7 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
               className="group bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-light)] hover:from-[var(--color-accent-dark)] hover:to-[var(--color-accent)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0"
             >
               <span className="flex items-center gap-3">
-                View All Jobs
+                {t("viewAllJobs")}
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>
@@ -100,7 +105,7 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
             >
               <span className="flex items-center gap-3">
                 <Star className="h-5 w-5" />
-                Become a Tasker
+                {t("becomeTasker")}
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>
@@ -114,10 +119,10 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
               <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-accent)]" />
             </div>
             <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-              New Jobs Daily
+              {t("stats.newJobsDaily")}
             </h4>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Fresh opportunities posted regularly
+              {t("stats.newJobsDailyDescription")}
             </p>
           </div>
 
@@ -126,10 +131,10 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
               <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-primary)]" />
             </div>
             <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-              Competitive Rates
+              {t("stats.competitiveRates")}
             </h4>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Fair compensation for quality work
+              {t("stats.competitiveRatesDescription")}
             </p>
           </div>
 
@@ -138,10 +143,10 @@ function OfferedJobs({ jobs, locale }: OfferedJobsProps) {
               <Users className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-secondary)]" />
             </div>
             <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-              Verified Customers
+              {t("stats.verifiedCustomers")}
             </h4>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Work with trusted clients
+              {t("stats.verifiedCustomersDescription")}
             </p>
           </div>
         </div>

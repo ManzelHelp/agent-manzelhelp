@@ -198,16 +198,16 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
             </svg>
           </div>
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
-            Error Loading Services
+            {t("errorLoadingServices")}
           </h2>
           <p className="text-[var(--color-text-secondary)] mb-4">
-            We're having trouble loading the services. Please try again later.
+            {t("errorLoadingServicesDescription")}
           </p>
           <Link
-            href={`/${locale}/search`}
+            href={`/${locale}/search/services`}
             className="inline-flex items-center px-4 py-2 bg-[var(--color-secondary)] text-white rounded-lg hover:bg-[var(--color-secondary-dark)] transition-colors"
           >
-            Try Again
+            {t("tryAgain")}
           </Link>
         </div>
       </div>
@@ -229,13 +229,13 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-3 sm:mb-4 animate-fade-in-up">
               {resolvedSearchParams.q
-                ? `Search Results for "${resolvedSearchParams.q}"`
-                : "Find Your Perfect Service"}
+                ? t("searchResults", { query: resolvedSearchParams.q })
+                : t("findYourPerfectService")}
             </h1>
             <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto animate-fade-in-up animate-delay-200">
               {resolvedSearchParams.q
-                ? "Discover amazing services tailored to your needs"
-                : "Connect with skilled professionals in your area"}
+                ? t("discoverServices")
+                : t("connectWithProfessionals")}
             </p>
           </div>
           <div className="max-w-2xl mx-auto animate-fade-in-up animate-delay-300">
@@ -305,7 +305,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       </span>
                       {resolvedSearchParams.q && (
                         <span className="text-[var(--color-text-secondary)] text-sm">
-                          for "{resolvedSearchParams.q}"
+                          {t("forQuery", { query: resolvedSearchParams.q })}
                         </span>
                       )}
                     </div>
@@ -415,10 +415,10 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       {t("tryAdjustingFilters")}
                     </p>
                     <Link
-                      href={`/${locale}/search`}
+                      href={`/${locale}/search/services`}
                       className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-secondary)] text-white rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium text-sm sm:text-base"
                     >
-                      Clear All Filters
+                      {t("clearAllFilters")}
                     </Link>
                   </div>
                 </div>
@@ -449,27 +449,27 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                         d="M15 19l-7-7 7-7"
                       />
                     </svg>
-                    <span className="hidden sm:inline">Previous</span>
-                    <span className="sm:hidden">Prev</span>
+                    <span className="hidden sm:inline">{t("previous")}</span>
+                    <span className="sm:hidden">{t("prev")}</span>
                   </Link>
                 )}
 
                 <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl shadow-sm">
                   <span className="text-[var(--color-text-primary)] font-medium text-sm sm:text-base">
-                    Page {page} of {Math.ceil((count || 0) / limit)}
+                    {t("pageOf", { page, total: Math.ceil((count || 0) / limit) })}
                   </span>
                 </div>
 
                 {page < Math.ceil((count || 0) / limit) && (
                   <Link
-                    href={`/${locale}/search?${new URLSearchParams({
+                    href={`/${locale}/search/services?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page + 1).toString(),
                     }).toString()}`}
                     className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">Next</span>
-                    <span className="sm:hidden">Next</span>
+                    <span className="hidden sm:inline">{t("next")}</span>
+                    <span className="sm:hidden">{t("next")}</span>
                     <svg
                       className="w-4 h-4 ml-1 sm:ml-2"
                       fill="none"

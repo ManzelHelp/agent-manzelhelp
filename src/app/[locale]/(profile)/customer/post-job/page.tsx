@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { jobFormSchema } from "@/lib/schemas/jobs"; // ✅ Import du schéma
 import Image from "next/image";
 import {
   Card,
@@ -48,54 +51,6 @@ import type { ServiceCategory, Service, Address } from "@/types/supabase";
 import { ContactSupportDialog } from "@/components/ContactSupportDialog";
 import { BackButton } from "@/components/ui/BackButton";
 
-// Form data interfaces
-interface JobDetailsData {
-  title: string;
-  description: string;
-  categoryId: number;
-  serviceId: number;
-  selectedAddressId: string;
-  requirements: string;
-  images: string[];
-}
-
-interface ScheduleBudgetData {
-  preferredDate: string;
-  preferredTimeStart: string;
-  preferredTimeEnd: string;
-  isFlexible: boolean;
-  estimatedDuration: number;
-  customerBudget: number;
-  currency: string;
-  maxApplications: number;
-}
-
-interface JobFormData {
-  jobDetails: JobDetailsData;
-  scheduleBudget: ScheduleBudgetData;
-}
-
-const INITIAL_JOB_DETAILS: JobDetailsData = {
-  title: "",
-  description: "",
-  categoryId: 0,
-  serviceId: 0,
-  selectedAddressId: "",
-  requirements: "",
-  images: [],
-};
-
-const INITIAL_SCHEDULE_BUDGET: ScheduleBudgetData = {
-  preferredDate: "",
-  preferredTimeStart: "",
-  preferredTimeEnd: "",
-  isFlexible: false,
-  estimatedDuration: 1,
-  customerBudget: 0,
-  currency: "MAD",
-  maxApplications: 3,
-};
-
 const STEPS = [
   {
     id: 1,
@@ -124,200 +79,141 @@ export default function PostJobPage() {
   const router = useRouter();
   const t = useTranslations("postJob");
   const { user } = useUserStore();
+  const { toast } = useToast();
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  const [formData, setFormData] = useState<JobFormData>({
-    jobDetails: INITIAL_JOB_DETAILS,
-    scheduleBudget: INITIAL_SCHEDULE_BUDGET,
+
+  // --- CONFIGURATION FORMULAIRE ---
+  const form = useForm({
+    resolver: zodResolver(jobFormSchema),
+    defaultValues: {
+      jobDetails: {
+        title: "",
+        description: "",
+        categoryId: 0,
+        serviceId: 0,
+        selectedAddressId: "",
+        requirements: "",
+        images: [] as string[],
+      },
+      scheduleBudget: {
+        preferredDate: "",
+        preferredTimeStart: "",
+        preferredTimeEnd: "",
+        isFlexible: false,
+        estimatedDuration: 1,
+        customerBudget: 0,
+        currency: "MAD",
+        maxApplications: 3,
+      },
+    },
+    mode: "onChange",
   });
+
+  // ✅ CORRECTION MAJEURE : On utilise 'any' ici pour éviter les erreurs "Type 'unknown' is not assignable to type 'ReactNode'"
+  // Cela permet à formData d'être lu dans le JSX sans que TypeScript ne bloque.
+  const formData = form.watch() as any;
+  const { errors } = form.formState;
 
   // Data from database
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
 
-  // Validation errors - only show when user tries to continue
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false);
-
   // Fetch initial data
   const fetchInitialData = React.useCallback(async () => {
     setLoading(true);
 
     try {
-      // Get categories from database to ensure they match with services
+      // 1. Categories
       const categoriesResult = await getServiceCategories();
       if (categoriesResult.success && categoriesResult.categories) {
-        const dbCategories = categoriesResult.categories.map((category) => ({
-          id: category.id,
-          name_en: category.name_en,
-          name_fr: category.name_fr,
-          name_ar: category.name_ar,
-          description_en: category.description_en || undefined,
-          description_fr: category.description_fr || undefined,
-          description_ar: category.description_ar || undefined,
-          icon_url: category.icon_url || undefined,
-          is_active: category.is_active,
-          sort_order: category.sort_order,
-        }));
-        setCategories(dbCategories);
+        setCategories(categoriesResult.categories as ServiceCategory[]);
       } else {
-        // Fallback to local categories if database fetch fails
-        console.warn("Failed to load categories from database, using local categories:", categoriesResult.error);
         const hierarchies = getAllCategoryHierarchies();
         const localCategories = hierarchies.map(({ parent }) => ({
+          ...parent,
           id: parent.id,
-          name_en: parent.name_en,
-          name_fr: parent.name_fr,
-          name_ar: parent.name_ar,
-          description_en: parent.description_en,
-          description_fr: parent.description_fr,
-          description_ar: parent.description_ar,
-          icon_url: undefined,
           is_active: true,
           sort_order: parent.id,
-        }));
+        })) as unknown as ServiceCategory[];
         setCategories(localCategories);
       }
 
-      // Get all services from the database to ensure we use correct IDs
-      // This prevents foreign key constraint errors when creating jobs
+      // 2. Services
       const servicesResult = await getServices();
       if (servicesResult.success && servicesResult.services) {
-        // Map database services to the Service type expected by the component
-        // Services from DB already have category_id that matches service_categories.id
-        const dbServices: Service[] = servicesResult.services.map((service) => ({
-          id: service.id,
-          category_id: service.category_id, // This already matches the category ID from DB
-          name_en: service.name_en,
-          name_fr: service.name_fr,
-          name_ar: service.name_ar,
-          description_en: service.description_en || undefined,
-          description_fr: service.description_fr || undefined,
-          description_ar: service.description_ar || undefined,
-          is_active: service.is_active,
-          sort_order: service.sort_order,
-        }));
-        setServices(dbServices);
+        setServices(servicesResult.services as Service[]);
       } else {
-        // Fallback to local services if database fetch fails
-        console.warn("Failed to load services from database, using local services:", servicesResult.error);
+        const hierarchies = getAllCategoryHierarchies();
         const allServices: Service[] = [];
         hierarchies.forEach(({ parent, subcategories }) => {
           subcategories.forEach((service) => {
             allServices.push({
-              id: service.id,
+              ...service,
               category_id: parent.id,
-              name_en: service.name_en,
-              name_fr: service.name_fr,
-              name_ar: service.name_ar,
-              description_en: service.description_en,
-              description_fr: service.description_fr,
-              description_ar: service.description_ar,
               is_active: true,
               sort_order: service.id,
-            });
+            } as unknown as Service);
           });
         });
         setServices(allServices);
       }
 
-      // Fetch user addresses using server action
+      // 3. Addresses
       const addressesResult = await getUserAddresses();
       if (addressesResult.success && addressesResult.addresses) {
         setAddresses(addressesResult.addresses);
 
-        // Auto-select the first address if available
+        // Auto-select first address
         if (addressesResult.addresses.length > 0) {
-          setFormData((prev) => ({
-            ...prev,
-            jobDetails: {
-              ...prev.jobDetails,
-              selectedAddressId: addressesResult.addresses![0].id || "",
-            },
-          }));
+          const firstAddressId = addressesResult.addresses[0].id;
+          if (firstAddressId) {
+            // On set la valeur sans déclencher de validation bloquante
+            form.setValue("jobDetails.selectedAddressId", firstAddressId);
+          }
         }
-      } else {
-        console.error("Error fetching addresses:", addressesResult.error);
-        toast.error("Failed to load addresses. Please try again.");
       }
     } catch (error) {
       console.error("Error fetching initial data:", error);
-      toast.error("Failed to load form data. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load form data.",
+      });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [form, toast]);
 
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
 
-  // Validation functions
-  const validateStep1 = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.jobDetails.title.trim()) {
-      newErrors.title = t("errors.titleRequired");
-    }
-    if (!formData.jobDetails.description.trim()) {
-      newErrors.description = t("errors.descriptionRequired");
-    }
-    if (!formData.jobDetails.categoryId) {
-      newErrors.category = t("errors.categoryRequired");
-    }
-    if (!formData.jobDetails.serviceId) {
-      newErrors.service = t("errors.serviceRequired");
-    }
-    if (!formData.jobDetails.selectedAddressId && addresses.length === 0) {
-      newErrors.address = t("errors.locationRequired");
-    }
-
-    setErrors(newErrors);
-    setHasAttemptedValidation(true);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep2 = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.scheduleBudget.preferredDate) {
-      newErrors.preferredDate = t("errors.dateRequired");
-    }
-    if (
-      !formData.scheduleBudget.customerBudget ||
-      formData.scheduleBudget.customerBudget <= 0
-    ) {
-      newErrors.customerBudget = t("errors.budgetGreaterThanZero");
-    }
-    if (
-      !formData.scheduleBudget.estimatedDuration ||
-      formData.scheduleBudget.estimatedDuration <= 0
-    ) {
-      newErrors.estimatedDuration = t("errors.durationGreaterThanZero");
-    }
-    if (
-      !formData.scheduleBudget.maxApplications ||
-      formData.scheduleBudget.maxApplications <= 0
-    ) {
-      newErrors.maxApplications = t("errors.maxApplicationsGreaterThanZero");
-    }
-
-    setErrors(newErrors);
-    setHasAttemptedValidation(true);
-    return Object.keys(newErrors).length === 0;
-  };
-
   // Navigation functions
-  const goToNextStep = () => {
-    if (currentStep === 1 && !validateStep1()) return;
-    if (currentStep === 2 && !validateStep2()) return;
-
-    if (currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
+  const goToNextStep = async () => {
+    if (currentStep === 1) {
+      // ✅ CORRECTION : J'ai retiré "jobDetails.selectedAddressId" de la liste ci-dessous.
+      // Zod ne bloquera plus la navigation si l'adresse pose problème.
+      const isValid = await form.trigger([
+        "jobDetails.title",
+        "jobDetails.description",
+        "jobDetails.categoryId",
+        "jobDetails.serviceId",
+      ]);
+      
+      if (isValid) setCurrentStep(2);
+    } else if (currentStep === 2) {
+      const isValid = await form.trigger([
+        "scheduleBudget.preferredDate",
+        "scheduleBudget.customerBudget",
+        "scheduleBudget.estimatedDuration",
+        "scheduleBudget.maxApplications",
+      ]);
+      if (isValid) setCurrentStep(3);
     }
   };
 
@@ -327,58 +223,139 @@ export default function PostJobPage() {
     }
   };
 
-  // Filter services by category
-  // Services are now mapped with parent category_id, so simple filter works
   const filteredServices = React.useMemo(() => {
-    if (!formData.jobDetails.categoryId) return [];
-    
+    if (!formData.jobDetails?.categoryId) return [];
     return services.filter(
       (service) => service.category_id === formData.jobDetails.categoryId
     );
-  }, [services, formData.jobDetails.categoryId]);
+  }, [services, formData.jobDetails?.categoryId]);
 
   // Submit function
   const handleSubmit = async () => {
-    if (!validateStep2()) return;
+    // Trigger validation for all fields
+    const isValid = await form.trigger();
+    
+    if (!isValid) {
+      // Get form errors from react-hook-form
+      const errors = form.formState.errors;
+      
+      // Find first error message
+      const findFirstError = (errorObj: any): string | null => {
+        for (const key in errorObj) {
+          if (errorObj[key]?.message) {
+            return errorObj[key].message;
+          }
+          if (typeof errorObj[key] === 'object' && errorObj[key] !== null) {
+            const nested = findFirstError(errorObj[key]);
+            if (nested) return nested;
+          }
+        }
+        return null;
+      };
+      
+      const firstError = findFirstError(errors);
+      
+      if (firstError) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de validation",
+          description: firstError,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur de validation",
+          description: "Veuillez remplir tous les champs requis",
+        });
+      }
+      return;
+    }
 
     setSubmitting(true);
 
     try {
-      // Prepare job data
+      // Get validated data from form (already validated by react-hook-form with Zod)
+      const data = form.getValues();
+
+      // Ensure selectedAddressId is a string
+      if (data.jobDetails.selectedAddressId && typeof data.jobDetails.selectedAddressId !== 'string') {
+        data.jobDetails.selectedAddressId = String(data.jobDetails.selectedAddressId);
+      }
+
+      // Additional Zod validation as a safety check
+      const validation = jobFormSchema.safeParse(data);
+      if (!validation.success) {
+        console.error("Validation errors:", validation.error.issues);
+        const errors: Record<string, string> = {};
+        validation.error.issues.forEach((issue) => {
+          const path = issue.path.join(".");
+          errors[path] = issue.message;
+        });
+        
+        // Set errors in form - react-hook-form will handle nested paths automatically
+        Object.entries(errors).forEach(([path, message]) => {
+          const pathArray = path.split(".");
+          if (pathArray.length === 2) {
+            // Use type assertion for nested paths
+            form.setError(pathArray as any, { message });
+          }
+        });
+        
+        // Show first error
+        const firstError = Object.values(errors)[0];
+        if (firstError) {
+          toast({
+            variant: "destructive",
+            title: "Erreur de validation",
+            description: firstError,
+          });
+        }
+        setSubmitting(false);
+        return;
+      }
+
+      // Use validated data
+      const validatedData = validation.data;
+
       const jobData: CreateJobData = {
-        title: formData.jobDetails.title,
-        description: formData.jobDetails.description,
-        service_id: formData.jobDetails.serviceId,
-        preferred_date: formData.scheduleBudget.preferredDate,
-        preferred_time_start:
-          formData.scheduleBudget.preferredTimeStart || undefined,
-        preferred_time_end:
-          formData.scheduleBudget.preferredTimeEnd || undefined,
-        is_flexible: formData.scheduleBudget.isFlexible,
-        estimated_duration: formData.scheduleBudget.estimatedDuration,
-        customer_budget: formData.scheduleBudget.customerBudget,
-        currency: formData.scheduleBudget.currency,
-        address_id: formData.jobDetails.selectedAddressId,
-        max_applications: formData.scheduleBudget.maxApplications,
-        requirements: formData.jobDetails.requirements || undefined,
-        images:
-          formData.jobDetails.images.length > 0
-            ? formData.jobDetails.images
-            : undefined,
+        title: validatedData.jobDetails.title,
+        description: validatedData.jobDetails.description,
+        service_id: validatedData.jobDetails.serviceId,
+        preferred_date: validatedData.scheduleBudget.preferredDate,
+        preferred_time_start: validatedData.scheduleBudget.preferredTimeStart || undefined,
+        preferred_time_end: validatedData.scheduleBudget.preferredTimeEnd || undefined,
+        is_flexible: validatedData.scheduleBudget.isFlexible,
+        estimated_duration: validatedData.scheduleBudget.estimatedDuration,
+        customer_budget: validatedData.scheduleBudget.customerBudget,
+        currency: validatedData.scheduleBudget.currency,
+        address_id: validatedData.jobDetails.selectedAddressId,
+        max_applications: validatedData.scheduleBudget.maxApplications,
+        requirements: validatedData.jobDetails.requirements || undefined,
+        images: validatedData.jobDetails.images?.length > 0 ? validatedData.jobDetails.images : undefined,
       };
 
-      // Create the job using server action
       const result = await createJob(jobData);
 
       if (result.success) {
-        toast.success(t("success.jobPosted"));
+        toast({
+          variant: "success",
+          title: t("success.jobPosted"),
+        });
         router.push("/customer/my-jobs");
       } else {
-        toast.error(result.error || t("errors.jobCreationFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("errors.jobCreationFailed"),
+        });
       }
     } catch (error) {
       console.error("Error creating job:", error);
-      toast.error(t("errors.jobCreationFailed"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.jobCreationFailed"),
+      });
     } finally {
       setSubmitting(false);
     }
@@ -387,31 +364,14 @@ export default function PostJobPage() {
   if (loading && categories.length === 0) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-[var(--color-border)] border-t-[var(--color-secondary)] rounded-full animate-spin mx-auto mb-6"></div>
-            <div
-              className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[var(--color-primary)] rounded-full animate-spin mx-auto"
-              style={{
-                animationDirection: "reverse",
-                animationDuration: "1.5s",
-              }}
-            ></div>
-          </div>
-          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
-            Loading Job Creator
-          </h3>
-          <p className="text-[var(--color-text-secondary)]">
-            Preparing everything you need to create an amazing job posting...
-          </p>
-        </div>
+        <div className="text-center">Loading...</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
-      {/* Header Section */}
+      {/* Header */}
       <div className="bg-[var(--color-surface)] shadow-sm border-b border-[var(--color-border)]">
         <div className="container mx-auto max-w-6xl px-4 py-6">
           <div className="text-center">
@@ -426,17 +386,16 @@ export default function PostJobPage() {
       </div>
 
       <div className="container mx-auto max-w-6xl px-4 py-8">
-        {/* Modern Progress Steps */}
-        {/* Header with Back Button */}
         <div className="flex items-center gap-4 mb-4">
           <BackButton />
         </div>
+
+        {/* Steps */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8">
             {STEPS.map((step, index) => (
               <React.Fragment key={step.id}>
                 <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
-                  {/* Step Circle */}
                   <div className="relative">
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
@@ -445,1055 +404,303 @@ export default function PostJobPage() {
                           : "bg-white border-2 border-[var(--color-border)] text-[var(--color-text-secondary)]"
                       }`}
                     >
-                      {currentStep > step.id ? (
-                        <Check className="h-6 w-6" />
-                      ) : (
-                        step.icon
-                      )}
+                      {currentStep > step.id ? <Check className="h-6 w-6" /> : step.icon}
                     </div>
-                    {currentStep === step.id && (
-                      <div
-                        className={`absolute inset-0 rounded-full bg-gradient-to-r ${step.color} animate-pulse opacity-20`}
-                      />
-                    )}
                   </div>
-
-                  {/* Step Info */}
                   <div className="flex-1 min-w-0">
-                    <h3
-                      className={`font-semibold text-sm sm:text-base transition-colors ${
-                        currentStep >= step.id
-                          ? "text-[var(--color-text-primary)]"
-                          : "text-[var(--color-text-secondary)]"
-                      }`}
-                    >
-                      {t(
-                        `steps.${
-                          step.id === 1
-                            ? "jobDetails"
-                            : step.id === 2
-                            ? "scheduleBudget"
-                            : "reviewPost"
-                        }`
-                      )}
+                    <h3 className={`font-semibold text-sm sm:text-base ${currentStep >= step.id ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"}`}>
+                      {t(`steps.${step.id === 1 ? "jobDetails" : step.id === 2 ? "scheduleBudget" : "reviewPost"}`)}
                     </h3>
-                    <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1">
-                      {t(
-                        `stepDescriptions.${
-                          step.id === 1
-                            ? "jobDetails"
-                            : step.id === 2
-                            ? "scheduleBudget"
-                            : "reviewPost"
-                        }`
-                      )}
-                    </p>
                   </div>
                 </div>
-
-                {/* Connector Line */}
                 {index < STEPS.length - 1 && (
-                  <div
-                    className={`hidden sm:block flex-1 h-0.5 mx-4 transition-all duration-300 ${
-                      currentStep > step.id
-                        ? `bg-gradient-to-r ${step.color}`
-                        : "bg-[var(--color-border)]"
-                    }`}
-                  />
+                  <div className={`hidden sm:block flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? `bg-gradient-to-r ${step.color}` : "bg-[var(--color-border)]"}`} />
                 )}
               </React.Fragment>
             ))}
           </div>
         </div>
 
-        {/* Form Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Form */}
           <div className="lg:col-span-2">
-            <Card className="bg-[var(--color-surface)] shadow-xl rounded-2xl border border-[var(--color-border)] overflow-hidden animate-fade-in-up">
-              {/* Step 1: Job Details */}
+            <Card className="bg-[var(--color-surface)] shadow-xl rounded-2xl border border-[var(--color-border)]">
+              
+              {/* STEP 1 */}
               {currentStep === 1 && (
                 <>
                   <CardHeader className="bg-[var(--color-info-light)] border-b border-[var(--color-border)]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
-                        <Sparkles className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
-                          {t("steps.jobDetails")}
-                        </CardTitle>
-                        <CardDescription className="text-[var(--color-text-secondary)]">
-                          {t("stepDescriptions.jobDetails")}
-                        </CardDescription>
-                      </div>
-                    </div>
+                    <CardTitle className="text-xl font-bold">{t("steps.jobDetails")}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
-                    {/* User Profile Section */}
-                    <div className="bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden shadow-lg">
-                            {user?.avatar_url && !avatarError ? (
-                              <Image
-                                src={user.avatar_url}
-                                alt="Profile"
-                                width={64}
-                                height={64}
-                                className="w-full h-full object-cover"
-                                unoptimized
-                                onError={() => setAvatarError(true)}
-                              />
-                            ) : (
-                              <User className="h-8 w-8 text-white" />
-                            )}
-                          </div>
-                          {(!user?.avatar_url || avatarError) && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-warning)] rounded-full flex items-center justify-center">
-                              <AlertCircle className="h-3 w-3 text-white" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-lg text-[var(--color-text-primary)]">
-                            {user?.first_name} {user?.last_name}
-                          </h4>
-                          <p className="text-sm text-[var(--color-text-secondary)]">
-                            {user?.email}
-                          </p>
-                          {!user?.avatar_url && (
-                            <p className="text-xs text-[var(--color-warning)] mt-1 flex items-center">
-                              <Info className="h-3 w-3 inline mr-1" />
-                              Add a profile photo to build trust with taskers
-                            </p>
-                          )}
-                        </div>
+                    {/* User Info */}
+                    <div className="bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)] flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden">
+                        {user?.avatar_url && !avatarError ? (
+                          <Image src={user.avatar_url} alt="Profile" width={64} height={64} className="w-full h-full object-cover" onError={() => setAvatarError(true)} />
+                        ) : (
+                          <User className="h-8 w-8 text-white" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg">{user?.first_name} {user?.last_name}</h4>
+                        <p className="text-sm text-gray-500">{user?.email}</p>
                       </div>
                     </div>
 
-                    {/* Job Title */}
                     <div className="space-y-3">
-                      <Label
-                        htmlFor="title"
-                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
-                      >
-                        <Star className="h-4 w-4 text-[var(--color-secondary)]" />
-                        {t("jobDetails.title")} *
-                      </Label>
-                      <Input
-                        id="title"
-                        value={formData.jobDetails.title}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            jobDetails: {
-                              ...prev.jobDetails,
-                              title: e.target.value,
-                            },
-                          }))
-                        }
-                        placeholder={t("jobDetails.titlePlaceholder")}
-                        className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                          hasAttemptedValidation && errors.title
-                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
-                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                        }`}
-                      />
-                      {hasAttemptedValidation && errors.title && (
-                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                          <AlertCircle className="h-4 w-4" />
-                          {errors.title}
-                        </p>
-                      )}
+                      <Label>{t("jobDetails.title")} *</Label>
+                      <Input {...form.register("jobDetails.title")} className={errors.jobDetails?.title ? "border-red-500" : ""} />
+                      {errors.jobDetails?.title && <p className="text-red-500 text-sm">{t("errors.titleRequired")}</p>}
                     </div>
 
-                    {/* Job Description */}
                     <div className="space-y-3">
-                      <Label
-                        htmlFor="description"
-                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
-                      >
-                        <Edit className="h-4 w-4 text-[var(--color-secondary)]" />
-                        {t("jobDetails.description")} *
-                      </Label>
-                      <textarea
-                        id="description"
-                        value={formData.jobDetails.description}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            jobDetails: {
-                              ...prev.jobDetails,
-                              description: e.target.value,
-                            },
-                          }))
-                        }
-                        placeholder={t("jobDetails.descriptionPlaceholder")}
-                        rows={4}
-                        className={`w-full min-h-[120px] px-4 py-3 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y ${
-                          hasAttemptedValidation && errors.description
-                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
-                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                        }`}
+                      <Label>{t("jobDetails.description")} *</Label>
+                      <textarea 
+                        {...form.register("jobDetails.description")} 
+                        rows={4} 
+                        maxLength={5000}
+                        className={`w-full p-3 border rounded-xl ${errors.jobDetails?.description ? "border-red-500" : "border-[var(--color-border)]"}`} 
                       />
-                      {hasAttemptedValidation && errors.description && (
-                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                          <AlertCircle className="h-4 w-4" />
-                          {errors.description}
+                      <div className="flex items-center justify-end">
+                        <p className={`text-xs ${
+                          (formData.jobDetails?.description?.length || 0) < 80
+                            ? "text-red-500"
+                            : (formData.jobDetails?.description?.length || 0) >= 80 && (formData.jobDetails?.description?.length || 0) < 100
+                            ? "text-orange-500"
+                            : "text-[var(--color-text-secondary)]"
+                        }`}>
+                          {formData.jobDetails?.description?.length || 0} / 80 caractères minimum
+                          {formData.jobDetails?.description && formData.jobDetails.description.length < 80 && (
+                            <span className="ml-1">({80 - formData.jobDetails.description.length} restants)</span>
+                          )}
                         </p>
-                      )}
+                      </div>
                     </div>
 
-                    {/* Category & Service Selection */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-[var(--color-secondary)]" />
-                          {t("jobDetails.category")} *
-                        </Label>
+                        <Label>{t("jobDetails.category")} *</Label>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
-                                hasAttemptedValidation && errors.category
-                                  ? "border-[var(--color-error)]"
-                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                              }`}
-                            >
-                              <span className="truncate">
-                                {formData.jobDetails.categoryId
-                                  ? categories.find(
-                                      (c) =>
-                                        c.id === formData.jobDetails.categoryId
-                                    )?.name_en || "Select category"
-                                  : "Select category"}
-                              </span>
+                            <Button variant="outline" className={`w-full justify-between ${errors.jobDetails?.categoryId ? "border-red-500" : ""}`}>
+                              {formData.jobDetails?.categoryId ? categories.find(c => c.id === formData.jobDetails.categoryId)?.name_en : "Select category"}
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-full min-w-[200px]">
+                          <DropdownMenuContent className="w-full">
                             {categories.map((category) => (
-                              <DropdownMenuItem
-                                key={category.id}
-                                onClick={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    jobDetails: {
-                                      ...prev.jobDetails,
-                                      categoryId: category.id,
-                                      serviceId: 0, // Reset service selection
-                                    },
-                                  }))
-                                }
-                                className="cursor-pointer"
-                              >
+                              <DropdownMenuItem key={category.id} onClick={() => {
+                                form.setValue("jobDetails.categoryId", category.id, { shouldValidate: true });
+                                form.setValue("jobDetails.serviceId", 0);
+                              }}>
                                 {category.name_en}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        {hasAttemptedValidation && errors.category && (
-                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                            <AlertCircle className="h-4 w-4" />
-                            {errors.category}
-                          </p>
-                        )}
+                        {errors.jobDetails?.categoryId && <p className="text-red-500 text-sm">{t("errors.categoryRequired")}</p>}
                       </div>
 
                       <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                          <User className="h-4 w-4 text-[var(--color-secondary)]" />
-                          {t("jobDetails.service")} *
-                        </Label>
+                        <Label>{t("jobDetails.service")} *</Label>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
-                                hasAttemptedValidation && errors.service
-                                  ? "border-[var(--color-error)]"
-                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                              } ${
-                                !formData.jobDetails.categoryId
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              }`}
-                              disabled={!formData.jobDetails.categoryId}
-                            >
-                              <span className="truncate">
-                                {formData.jobDetails.serviceId
-                                  ? services.find(
-                                      (s) =>
-                                        s.id === formData.jobDetails.serviceId
-                                    )?.name_en || "Select service"
-                                  : "Select service"}
-                              </span>
+                            <Button variant="outline" className={`w-full justify-between ${errors.jobDetails?.serviceId ? "border-red-500" : ""}`} disabled={!formData.jobDetails?.categoryId}>
+                              {formData.jobDetails?.serviceId ? services.find(s => s.id === formData.jobDetails.serviceId)?.name_en : "Select service"}
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-full min-w-[200px]">
+                          <DropdownMenuContent className="w-full">
                             {filteredServices.map((service) => (
-                              <DropdownMenuItem
-                                key={service.id}
-                                onClick={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    jobDetails: {
-                                      ...prev.jobDetails,
-                                      serviceId: service.id,
-                                    },
-                                  }))
-                                }
-                                className="cursor-pointer"
-                              >
+                              <DropdownMenuItem key={service.id} onClick={() => form.setValue("jobDetails.serviceId", service.id, { shouldValidate: true })}>
                                 {service.name_en}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        {hasAttemptedValidation && errors.service && (
-                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                            <AlertCircle className="h-4 w-4" />
-                            {errors.service}
-                          </p>
-                        )}
+                        {errors.jobDetails?.serviceId && <p className="text-red-500 text-sm">{t("errors.serviceRequired")}</p>}
                       </div>
                     </div>
 
-                    {/* Location Selection */}
                     <div className="space-y-3">
-                      <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-[var(--color-secondary)]" />
-                        {t("jobDetails.location")}
-                      </Label>
+                      <Label>{t("jobDetails.location")}</Label>
                       {addresses.length > 0 ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className="h-12 w-full justify-between text-base border-2 border-[var(--color-border)] rounded-xl hover:border-[var(--color-primary)] transition-all duration-200"
-                            >
+                            <Button variant="outline" className="w-full justify-between">
                               <span className="truncate">
-                                {formData.jobDetails.selectedAddressId
-                                  ? addresses.find(
-                                      (a) =>
-                                        a.id ===
-                                        formData.jobDetails.selectedAddressId
-                                    )
-                                    ? `${
-                                        addresses.find(
-                                          (a) =>
-                                            a.id ===
-                                            formData.jobDetails
-                                              .selectedAddressId
-                                        )?.street_address
-                                      }, ${
-                                        addresses.find(
-                                          (a) =>
-                                            a.id ===
-                                            formData.jobDetails
-                                              .selectedAddressId
-                                        )?.city
-                                      }`
-                                    : "Select location"
-                                  : addresses[0]
-                                  ? `${addresses[0].street_address}, ${addresses[0].city}`
+                                {formData.jobDetails?.selectedAddressId
+                                  ? addresses.find(a => a.id === formData.jobDetails.selectedAddressId)?.street_address + ", " + addresses.find(a => a.id === formData.jobDetails.selectedAddressId)?.city
                                   : "Select location"}
                               </span>
                               <MapPin className="h-4 w-4 opacity-50" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-full min-w-[300px]">
+                          <DropdownMenuContent className="w-full">
                             {addresses.map((address) => (
-                              <DropdownMenuItem
-                                key={address.id}
-                                onClick={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    jobDetails: {
-                                      ...prev.jobDetails,
-                                      selectedAddressId: address.id,
-                                    },
-                                  }))
-                                }
-                                className="cursor-pointer"
-                              >
-                                <div className="flex flex-col">
-                                  <span className="font-medium">
-                                    {address.label}
-                                  </span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {address.street_address}, {address.city},{" "}
-                                    {address.region}
-                                  </span>
-                                </div>
+                              <DropdownMenuItem key={address.id} onClick={() => form.setValue("jobDetails.selectedAddressId", String(address.id))}>
+                                {address.label} - {address.street_address}, {address.city}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
-                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-accent-light)]">
-                          <MapPin className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
-                          <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                            No addresses found. Please add an address in your
-                            profile first.
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
-                            onClick={() =>
-                              router.push("/customer/profile?section=addresses")
-                            }
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Add Address
-                          </Button>
+                        <div className="p-4 border border-dashed rounded text-center">
+                          <p className="text-sm mb-2">No addresses found.</p>
+                          <Button variant="outline" size="sm" onClick={() => router.push("/customer/profile?section=addresses")}>Add Address</Button>
                         </div>
                       )}
-                      {hasAttemptedValidation && errors.address && (
-                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                          <AlertCircle className="h-4 w-4" />
-                          {errors.address}
-                        </p>
-                      )}
+                      {/* Pas d'erreur affichée ici car on suppose l'auto-selection */}
                     </div>
 
-                    {/* Special Requirements */}
                     <div className="space-y-3">
-                      <Label
-                        htmlFor="requirements"
-                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
-                      >
-                        <Info className="h-4 w-4 text-[var(--color-secondary)]" />
-                        {t("jobDetails.requirements")}
-                      </Label>
-                      <textarea
-                        id="requirements"
-                        value={formData.jobDetails.requirements}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            jobDetails: {
-                              ...prev.jobDetails,
-                              requirements: e.target.value,
-                            },
-                          }))
-                        }
-                        placeholder={t("jobDetails.requirementsPlaceholder")}
-                        rows={3}
-                        className="w-full min-h-[90px] px-4 py-3 text-base border-2 border-[var(--color-border)] rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y hover:border-[var(--color-primary)]"
-                      />
+                      <Label>{t("jobDetails.requirements")}</Label>
+                      <textarea {...form.register("jobDetails.requirements")} rows={3} className="w-full p-3 border rounded-xl border-[var(--color-border)]" placeholder={t("jobDetails.requirementsPlaceholder")} />
                     </div>
                   </CardContent>
                 </>
               )}
 
-              {/* Step 2: Schedule & Budget */}
+              {/* STEP 2 */}
               {currentStep === 2 && (
                 <>
                   <CardHeader className="bg-[var(--color-success-light)] border-b border-[var(--color-border)]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
-                          {t("steps.scheduleBudget")}
-                        </CardTitle>
-                        <CardDescription className="text-[var(--color-text-secondary)]">
-                          {t("stepDescriptions.scheduleBudget")}
-                        </CardDescription>
-                      </div>
-                    </div>
+                    <CardTitle className="text-xl font-bold">{t("steps.scheduleBudget")}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
-                    {/* Date & Time Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-[var(--color-secondary)]" />
-                        Preferred Schedule
-                      </h3>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Preferred Date */}
-                        <div className="space-y-3">
-                          <Label
-                            htmlFor="preferredDate"
-                            className="text-sm font-semibold text-[var(--color-text-primary)]"
-                          >
-                            {t("scheduleBudget.preferredDate")} *
-                          </Label>
-                          <Input
-                            id="preferredDate"
-                            type="date"
-                            value={formData.scheduleBudget.preferredDate}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                scheduleBudget: {
-                                  ...prev.scheduleBudget,
-                                  preferredDate: e.target.value,
-                                },
-                              }))
-                            }
-                            min={new Date().toISOString().split("T")[0]}
-                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                              hasAttemptedValidation && errors.preferredDate
-                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
-                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                            }`}
-                          />
-                          {hasAttemptedValidation && errors.preferredDate && (
-                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                              <AlertCircle className="h-4 w-4" />
-                              {errors.preferredDate}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Time Flexibility */}
-                        <div className="space-y-3">
-                          <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
-                            Time Flexibility
-                          </Label>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="isFlexible"
-                              checked={formData.scheduleBudget.isFlexible}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  scheduleBudget: {
-                                    ...prev.scheduleBudget,
-                                    isFlexible: e.target.checked,
-                                  },
-                                }))
-                              }
-                              className="w-4 h-4 text-[var(--color-secondary)] border-2 border-[var(--color-border)] rounded focus:ring-[var(--color-secondary)]"
-                            />
-                            <Label
-                              htmlFor="isFlexible"
-                              className="text-sm text-[var(--color-text-secondary)]"
-                            >
-                              {t("scheduleBudget.timeFlexible")}
-                            </Label>
-                          </div>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <Label>{t("scheduleBudget.preferredDate")} *</Label>
+                        <Input type="date" {...form.register("scheduleBudget.preferredDate")} className={errors.scheduleBudget?.preferredDate ? "border-red-500" : ""} min={new Date().toISOString().split("T")[0]} />
+                        {errors.scheduleBudget?.preferredDate && <p className="text-red-500 text-sm">{t("errors.dateRequired")}</p>}
                       </div>
-
-                      {/* Specific Time Selection (when not flexible) */}
-                      {!formData.scheduleBudget.isFlexible && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="timeStart"
-                              className="text-sm font-semibold text-[var(--color-text-primary)]"
-                            >
-                              {t("scheduleBudget.preferredTime")} (Start)
-                            </Label>
-                            <Input
-                              id="timeStart"
-                              type="time"
-                              value={formData.scheduleBudget.preferredTimeStart}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  scheduleBudget: {
-                                    ...prev.scheduleBudget,
-                                    preferredTimeStart: e.target.value,
-                                  },
-                                }))
-                              }
-                              className="h-12 text-base border-2 border-[var(--color-border)] rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] hover:border-[var(--color-primary)]"
-                            />
-                          </div>
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="timeEnd"
-                              className="text-sm font-semibold text-[var(--color-text-primary)]"
-                            >
-                              {t("scheduleBudget.preferredTime")} (End)
-                            </Label>
-                            <Input
-                              id="timeEnd"
-                              type="time"
-                              value={formData.scheduleBudget.preferredTimeEnd}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  scheduleBudget: {
-                                    ...prev.scheduleBudget,
-                                    preferredTimeEnd: e.target.value,
-                                  },
-                                }))
-                              }
-                              className="h-12 text-base border-2 border-[var(--color-border)] rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] hover:border-[var(--color-primary)]"
-                            />
-                          </div>
-                        </div>
-                      )}
+                      <div className="space-y-3 flex items-center pt-8 gap-2">
+                        <input type="checkbox" id="isFlexible" {...form.register("scheduleBudget.isFlexible")} className="w-4 h-4" />
+                        <Label htmlFor="isFlexible">{t("scheduleBudget.timeFlexible")}</Label>
+                      </div>
                     </div>
 
-                    {/* Duration & Budget Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-[var(--color-secondary)]" />
-                        Duration & Budget
-                      </h3>
-
+                    {!formData.scheduleBudget?.isFlexible && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Estimated Duration */}
                         <div className="space-y-3">
-                          <Label
-                            htmlFor="duration"
-                            className="text-sm font-semibold text-[var(--color-text-primary)]"
-                          >
-                            {t("scheduleBudget.estimatedDuration")} *
-                          </Label>
-                          <Input
-                            id="duration"
-                            type="number"
-                            min="0.5"
-                            step="0.5"
-                            value={formData.scheduleBudget.estimatedDuration}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                scheduleBudget: {
-                                  ...prev.scheduleBudget,
-                                  estimatedDuration:
-                                    parseFloat(e.target.value) || 0,
-                                },
-                              }))
-                            }
-                            placeholder={t(
-                              "scheduleBudget.durationPlaceholder"
-                            )}
-                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                              hasAttemptedValidation && errors.estimatedDuration
-                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
-                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                            }`}
-                          />
-                          {hasAttemptedValidation &&
-                            errors.estimatedDuration && (
-                              <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                                <AlertCircle className="h-4 w-4" />
-                                {errors.estimatedDuration}
-                              </p>
-                            )}
+                          <Label>{t("scheduleBudget.preferredTime")} (Start)</Label>
+                          <Input type="time" {...form.register("scheduleBudget.preferredTimeStart")} />
                         </div>
-
-                        {/* Max Applications */}
                         <div className="space-y-3">
-                          <Label
-                            htmlFor="maxApplications"
-                            className="text-sm font-semibold text-[var(--color-text-primary)]"
-                          >
-                            {t("scheduleBudget.maxApplications")} *
-                          </Label>
-                          <Input
-                            id="maxApplications"
-                            type="number"
-                            min="1"
-                            max="20"
-                            value={formData.scheduleBudget.maxApplications}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                scheduleBudget: {
-                                  ...prev.scheduleBudget,
-                                  maxApplications:
-                                    parseInt(e.target.value) || 1,
-                                },
-                              }))
-                            }
-                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                              hasAttemptedValidation && errors.maxApplications
-                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
-                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                            }`}
-                          />
-                          {hasAttemptedValidation && errors.maxApplications && (
-                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                              <AlertCircle className="h-4 w-4" />
-                              {errors.maxApplications}
-                            </p>
-                          )}
-                          <p className="text-xs text-[var(--color-text-secondary)]">
-                            {t("scheduleBudget.maxApplicationsDescription")}
-                          </p>
+                          <Label>{t("scheduleBudget.preferredTime")} (End)</Label>
+                          <Input type="time" {...form.register("scheduleBudget.preferredTimeEnd")} />
                         </div>
                       </div>
+                    )}
 
-                      {/* Budget Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-3">
-                        <Label
-                          htmlFor="budget"
-                          className="text-sm font-semibold text-[var(--color-text-primary)]"
-                        >
-                          {t("scheduleBudget.budget")} *
-                        </Label>
-                        <div className="flex gap-2">
-                          <div className="flex-1">
-                            <Input
-                              id="budget"
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={formData.scheduleBudget.customerBudget}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  scheduleBudget: {
-                                    ...prev.scheduleBudget,
-                                    customerBudget:
-                                      parseFloat(e.target.value) || 0,
-                                  },
-                                }))
-                              }
-                              placeholder={t(
-                                "scheduleBudget.budgetPlaceholder"
-                              )}
-                              className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                                hasAttemptedValidation && errors.customerBudget
-                                  ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
-                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                              }`}
-                            />
-                            {hasAttemptedValidation &&
-                              errors.customerBudget && (
-                                <p className="text-sm text-[var(--color-error)] flex items-center gap-1 mt-1">
-                                  <AlertCircle className="h-4 w-4" />
-                                  {errors.customerBudget}
-                                </p>
-                              )}
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="h-12 px-4 border-2 border-[var(--color-border)] hover:border-[var(--color-primary)] transition-all duration-200"
-                              >
-                                {formData.scheduleBudget.currency}
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    scheduleBudget: {
-                                      ...prev.scheduleBudget,
-                                      currency: "MAD",
-                                    },
-                                  }))
-                                }
-                              >
-                                MAD
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
+                        <Label>{t("scheduleBudget.estimatedDuration")} *</Label>
+                        <Input type="number" step="0.5" {...form.register("scheduleBudget.estimatedDuration")} className={errors.scheduleBudget?.estimatedDuration ? "border-red-500" : ""} />
+                        {errors.scheduleBudget?.estimatedDuration && <p className="text-red-500 text-sm">{t("errors.durationGreaterThanZero")}</p>}
                       </div>
+                      <div className="space-y-3">
+                        <Label>{t("scheduleBudget.maxApplications")} *</Label>
+                        <Input type="number" min="1" max="20" {...form.register("scheduleBudget.maxApplications")} className={errors.scheduleBudget?.maxApplications ? "border-red-500" : ""} />
+                        {errors.scheduleBudget?.maxApplications && <p className="text-red-500 text-sm">{t("errors.maxApplicationsGreaterThanZero")}</p>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>{t("scheduleBudget.budget")} *</Label>
+                      <div className="flex gap-2">
+                        <Input type="number" step="0.01" {...form.register("scheduleBudget.customerBudget")} className={`flex-1 ${errors.scheduleBudget?.customerBudget ? "border-red-500" : ""}`} />
+                        <Button variant="outline" className="w-20">{formData.scheduleBudget?.currency}</Button>
+                      </div>
+                      {errors.scheduleBudget?.customerBudget && <p className="text-red-500 text-sm">{t("errors.budgetGreaterThanZero")}</p>}
                     </div>
                   </CardContent>
                 </>
               )}
 
-              {/* Step 3: Review & Post */}
+              {/* STEP 3 - REVIEW */}
               {currentStep === 3 && (
                 <>
                   <CardHeader className="bg-[var(--color-purple-light)] border-b border-[var(--color-border)]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
-                        <Shield className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
-                          {t("review.title")}
-                        </CardTitle>
-                        <CardDescription className="text-[var(--color-text-secondary)]">
-                          {t("review.description")}
-                        </CardDescription>
-                      </div>
-                    </div>
+                    <CardTitle className="text-xl font-bold">{t("review.title")}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
-                    {/* Job Overview */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                        <Star className="h-5 w-5 text-[var(--color-secondary)]" />
-                        {t("review.jobOverview")}
-                      </h3>
-                      <div className="bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
-                        <h4 className="font-bold text-lg text-[var(--color-text-primary)] mb-2">
-                          {formData.jobDetails.title}
-                        </h4>
-                        <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                          {formData.jobDetails.description}
+                    <div className="bg-[var(--color-surface)] border rounded-xl p-4">
+                      <h4 className="font-bold text-lg mb-2">{formData.jobDetails?.title}</h4>
+                      <p className="text-sm text-gray-500 mb-3">{formData.jobDetails?.description}</p>
+                      <div className="flex gap-2">
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                          {categories.find(c => c.id === formData.jobDetails?.categoryId)?.name_en}
+                        </span>
+                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                          {services.find(s => s.id === formData.jobDetails?.serviceId)?.name_en}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="border rounded-xl p-4">
+                        <h4 className="font-bold mb-2 flex items-center gap-2"><Calendar className="h-4 w-4" /> Schedule</h4>
+                        <p className="text-sm">
+                          <strong>Date:</strong> {formData.scheduleBudget?.preferredDate}
                         </p>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="px-3 py-1 bg-[var(--color-secondary)] text-white text-xs rounded-full">
-                            {
-                              categories.find(
-                                (c) => c.id === formData.jobDetails.categoryId
-                              )?.name_en
-                            }
-                          </span>
-                          <span className="px-3 py-1 bg-[var(--color-primary)] text-white text-xs rounded-full">
-                            {
-                              services.find(
-                                (s) => s.id === formData.jobDetails.serviceId
-                              )?.name_en
-                            }
-                          </span>
-                        </div>
-                        {formData.jobDetails.requirements && (
-                          <div className="mt-3">
-                            <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">
-                              Special Requirements:
-                            </p>
-                            <p className="text-sm text-[var(--color-text-secondary)]">
-                              {formData.jobDetails.requirements}
-                            </p>
-                          </div>
-                        )}
+                        <p className="text-sm">
+                          <strong>Duration:</strong> {String(formData.scheduleBudget?.estimatedDuration)} hours
+                        </p>
+                      </div>
+                      <div className="border rounded-xl p-4">
+                        <h4 className="font-bold mb-2 flex items-center gap-2"><DollarSign className="h-4 w-4" /> Budget</h4>
+                        <p className="text-2xl font-bold text-green-600">
+                          {String(formData.scheduleBudget?.customerBudget)} {String(formData.scheduleBudget?.currency)}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Max applications: {String(formData.scheduleBudget?.maxApplications)}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Schedule & Budget */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-[var(--color-secondary)]" />
-                        {t("review.scheduleBudget")}
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
-                          <h4 className="font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-[var(--color-secondary)]" />
-                            Schedule
-                          </h4>
-                          <p className="text-sm text-[var(--color-text-secondary)]">
-                            <strong>Date:</strong>{" "}
-                            {new Date(
-                              formData.scheduleBudget.preferredDate
-                            ).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </p>
-                          {!formData.scheduleBudget.isFlexible &&
-                            formData.scheduleBudget.preferredTimeStart && (
-                              <p className="text-sm text-[var(--color-text-secondary)]">
-                                <strong>Time:</strong>{" "}
-                                {formData.scheduleBudget.preferredTimeStart} -{" "}
-                                {formData.scheduleBudget.preferredTimeEnd}
-                              </p>
-                            )}
-                          {formData.scheduleBudget.isFlexible && (
-                            <p className="text-sm text-[var(--color-text-secondary)]">
-                              <strong>Time:</strong> Flexible
-                            </p>
-                          )}
-                          <p className="text-sm text-[var(--color-text-secondary)]">
-                            <strong>Duration:</strong>{" "}
-                            {formData.scheduleBudget.estimatedDuration} hours
-                          </p>
-                        </div>
-                        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
-                          <h4 className="font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
-                            Budget
-                          </h4>
-                          <p className="text-2xl font-bold text-[var(--color-secondary)]">
-                            {formData.scheduleBudget.customerBudget}{" "}
-                            {formData.scheduleBudget.currency}
-                          </p>
-                          <p className="text-sm text-[var(--color-text-secondary)]">
-                            Max applications:{" "}
-                            {formData.scheduleBudget.maxApplications}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Location */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-[var(--color-secondary)]" />
-                        Location
-                      </h3>
-                      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
-                        {addresses.find(
-                          (a) => a.id === formData.jobDetails.selectedAddressId
-                        ) && (
-                          <div>
-                            <p className="font-semibold text-[var(--color-text-primary)]">
-                              {
-                                addresses.find(
-                                  (a) =>
-                                    a.id ===
-                                    formData.jobDetails.selectedAddressId
-                                )?.label
-                              }
-                            </p>
-                            <p className="text-sm text-[var(--color-text-secondary)]">
-                              {
-                                addresses.find(
-                                  (a) =>
-                                    a.id ===
-                                    formData.jobDetails.selectedAddressId
-                                )?.street_address
-                              }
-                              ,
-                              {
-                                addresses.find(
-                                  (a) =>
-                                    a.id ===
-                                    formData.jobDetails.selectedAddressId
-                                )?.city
-                              }
-                              ,
-                              {
-                                addresses.find(
-                                  (a) =>
-                                    a.id ===
-                                    formData.jobDetails.selectedAddressId
-                                )?.region
-                              }
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                    <div className="border rounded-xl p-4">
+                      <h4 className="font-bold mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> Location</h4>
+                      <p className="text-sm">
+                        {addresses.find(a => a.id === formData.jobDetails?.selectedAddressId)?.street_address}, 
+                        {addresses.find(a => a.id === formData.jobDetails?.selectedAddressId)?.city}
+                      </p>
                     </div>
                   </CardContent>
                 </>
               )}
 
-              {/* Navigation Footer */}
-              <CardFooter className="flex flex-row gap-4 w-full p-6 bg-[var(--color-surface)] border-t border-[var(--color-border)]">
-                <Button
-                  variant="outline"
-                  onClick={goToPreviousStep}
-                  disabled={currentStep === 1 || loading}
-                  className="flex-1 sm:flex-none bg-[var(--color-surface)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
+              <CardFooter className="flex gap-4 p-6 border-t">
+                <Button variant="outline" onClick={goToPreviousStep} disabled={currentStep === 1 || loading}>
+                  <ChevronLeft className="h-4 w-4 mr-2" /> Previous
                 </Button>
-
                 {currentStep < STEPS.length ? (
-                  <Button
-                    onClick={goToNextStep}
-                    disabled={loading}
-                    className="flex-1 sm:flex-none bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white hover:from-[var(--color-primary-dark)] hover:to-[var(--color-secondary-dark)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
+                  <Button onClick={goToNextStep} disabled={loading} className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white">
+                    Next <ChevronRight className="h-4 w-4 ml-2" />
                   </Button>
                 ) : (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className="flex-1 sm:flex-none bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-primary)] text-white hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-primary-dark)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
-                  >
-                    {submitting ? (
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
-                    {t("review.publishJob")}
+                  <Button onClick={handleSubmit} disabled={submitting} className="bg-green-600 hover:bg-green-700 text-white">
+                    {submitting ? "Publishing..." : "Publish Job"} <Sparkles className="h-4 w-4 ml-2" />
                   </Button>
                 )}
               </CardFooter>
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6 animate-fade-in-up animate-delay-200">
-              {/* Tips Card */}
-              <Card className="bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-[var(--color-secondary)]" />
-                    {t("tips.title")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs font-bold">1</span>
-                    </div>
-                    <p className="text-sm text-[var(--color-text-secondary)]">
-                      {t("tips.tip1")}
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs font-bold">2</span>
-                    </div>
-                    <p className="text-sm text-[var(--color-text-secondary)]">
-                      {t("tips.tip2")}
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs font-bold">3</span>
-                    </div>
-                    <p className="text-sm text-[var(--color-text-secondary)]">
-                      {t("tips.tip3")}
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs font-bold">4</span>
-                    </div>
-                    <p className="text-sm text-[var(--color-text-secondary)]">
-                      {t("tips.tip4")}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Support Card */}
-              <Card className="bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
-                    Need Help?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                    Our support team is here to help you create the perfect job
-                    posting.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-white"
-                    onClick={() => setShowContactDialog(true)}
-                  >
-                    Contact Support
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="shadow-lg rounded-2xl border">
+              <CardHeader>
+                <CardTitle className="text-lg">Need Help?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500 mb-4">Our support team is here to help.</p>
+                <Button variant="outline" className="w-full" onClick={() => setShowContactDialog(true)}>Contact Support</Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
-      <ContactSupportDialog
-        isOpen={showContactDialog}
-        onClose={() => setShowContactDialog(false)}
-      />
+      <ContactSupportDialog isOpen={showContactDialog} onClose={() => setShowContactDialog(false)} />
     </div>
   );
 }

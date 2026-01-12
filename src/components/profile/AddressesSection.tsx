@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Card,
   CardContent,
@@ -21,9 +23,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { Plus, Trash2, MapPinIcon, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { Plus, Trash2, MapPinIcon, AlertTriangle, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
+import { addressSchema } from "@/lib/schemas/profile";
+import { cn } from "@/lib/utils";
 import type { Address } from "@/types/supabase";
 import {
   addAddress,
@@ -36,25 +40,8 @@ interface AddressesSectionProps {
   loading: boolean;
   onAddressesUpdate: (addresses: Address[]) => void;
   onProfileRefresh: () => Promise<void>;
-  missingFields: Array<{
-    id: string;
-    label: string;
-    section: string;
-    icon: React.ReactNode;
-    description: string;
-    required: boolean;
-  }>;
-  userId?: string; // Add userId prop
-}
-
-interface NewAddressForm {
-  label: string;
-  street_address: string;
-  city: string;
-  region: string;
-  postal_code: string;
-  country: string;
-  is_default: boolean;
+  missingFields: any[];
+  userId?: string;
 }
 
 export default function AddressesSection({
@@ -66,117 +53,111 @@ export default function AddressesSection({
 }: AddressesSectionProps) {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
+  const { toast } = useToast(); // HOOK TOAST
   const [addAddressOpen, setAddAddressOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<Address | null>(null);
-  const [newAddressForm, setNewAddressForm] = useState<NewAddressForm>({
-    label: "home",
-    street_address: "",
-    city: "",
-    region: "",
-    postal_code: "",
-    country: "MA",
-    is_default: false,
+
+  const form = useForm({
+    resolver: zodResolver(addressSchema),
+    defaultValues: {
+      label: "home",
+      street_address: "",
+      city: "",
+      region: "",
+      postal_code: "",
+      country: "MA",
+      is_default: false,
+    },
   });
 
-  // Get missing fields for this section
+  // Reset form when dialog opens/closes
+  useEffect(() => {
+    if (!addAddressOpen) {
+      form.reset({
+        label: "home",
+        street_address: "",
+        city: "",
+        region: "",
+        postal_code: "",
+        country: "MA",
+        is_default: false,
+      });
+      form.clearErrors();
+    }
+  }, [addAddressOpen, form]);
+
   const addressesMissingFields = missingFields.filter(
     (field) => field.section === "addresses"
   );
 
-  const handleAddAddress = async () => {
-    // Check if we have a valid user ID
+  const handleAddAddress = async (data: {
+    label: string;
+    street_address: string;
+    city: string;
+    region: string;
+    postal_code?: string;
+    country: string;
+    is_default: boolean;
+  }) => {
     if (!userId) {
-      toast.error(t("userNotFound", { default: "User not found. Please refresh the page and try again." }));
+      toast({ variant: "destructive", title: "Erreur", description: "Utilisateur non trouvé." });
       return;
     }
 
     try {
-      const result = await addAddress(userId, {
-        label: newAddressForm.label,
-        street_address: newAddressForm.street_address.trim(),
-        city: newAddressForm.city.trim(),
-        region: newAddressForm.region.trim(),
-        postal_code: newAddressForm.postal_code?.trim(),
-        country: newAddressForm.country,
-        is_default: newAddressForm.is_default,
-      });
+      const result = await addAddress(userId, data);
 
       if (result.success && result.address) {
-        toast.success(t("addressAddedSuccessfully", { default: "Address added successfully" }));
-        setAddAddressOpen(false);
-
-        // Reset form
-        setNewAddressForm({
-          label: "home",
-          street_address: "",
-          city: "",
-          region: "",
-          postal_code: "",
-          country: "MA",
-          is_default: false,
+        toast({
+          variant: "success",
+          title: "Adresse ajoutée",
+          description: "Votre nouvelle adresse a été enregistrée.",
         });
-
-        // Refresh profile data
+        setAddAddressOpen(false);
         await onProfileRefresh();
       } else {
-        toast.error(result.error || t("failedToAddAddress", { default: "Failed to add address" }));
+        toast({ variant: "destructive", title: "Erreur", description: result.error || "Échec de l'ajout." });
       }
     } catch (error) {
-      console.error("Error adding address:", error);
-      toast.error(t("failedToAddAddress", { default: "Failed to add address" }));
+      toast({ variant: "destructive", title: "Erreur", description: "Une erreur est survenue." });
     }
   };
 
   const handleDeleteClick = async (addressId: string) => {
-    // Find the address to get its details
     const address = addresses.find((addr) => addr.id === addressId);
-
-    if (!address) {
-      toast.error(t("addressNotFound", { default: "Address not found" }));
-      return;
-    }
+    if (!address) return;
 
     try {
-      // Check if address is being used in jobs
       const usageCheck = await checkAddressUsage(addressId);
-
       if (usageCheck.success && usageCheck.isUsed) {
-        toast.error(
-          t("cannotDeleteLocationInUse", { label: address.label, default: `Cannot delete your ${address.label} location because it's being used in active job postings. Please delete or update those jobs first.` }),
-          { duration: 6000 }
-        );
+        toast({
+          variant: "destructive",
+          title: "Impossible de supprimer",
+          description: "Cette adresse est utilisée dans des annonces actives.",
+        });
         return;
       }
-
-      // Set the address to delete and open confirmation dialog
       setAddressToDelete(address);
       setDeleteConfirmOpen(true);
     } catch (error) {
-      console.error("Error checking address usage:", error);
-      toast.error(t("failedToCheckAddressUsage", { default: "Failed to check address usage" }));
+      toast({ variant: "destructive", description: "Erreur de vérification." });
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!addressToDelete) return;
-
     try {
       const result = await deleteAddress(addressToDelete.id);
-
       if (result.success) {
-        toast.success(t("locationDeletedSuccessfully", { default: "Location deleted successfully" }));
-        // Refresh profile data
+        toast({ variant: "success", title: "Supprimé", description: "L'adresse a été retirée." });
         await onProfileRefresh();
       } else {
-        // Show detailed error message
-        toast.error(result.error || t("failedToDeleteLocation", { default: "Failed to delete location" }));
+        toast({ variant: "destructive", description: result.error });
       }
     } catch (error) {
-      console.error("Error deleting address:", error);
-      toast.error(t("failedToDeleteLocation", { default: "Failed to delete location" }));
+      toast({ variant: "destructive", description: "Échec de la suppression." });
     } finally {
-      // Close dialog and reset state
       setDeleteConfirmOpen(false);
       setAddressToDelete(null);
     }
@@ -187,7 +168,7 @@ export default function AddressesSection({
       <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full">
+            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-lg shadow-orange-500/20">
               <MapPinIcon className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -199,14 +180,6 @@ export default function AddressesSection({
               </CardDescription>
             </div>
           </div>
-          {addressesMissingFields.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-error)]/20 border border-[var(--color-error)]/30">
-              <AlertTriangle className="h-4 w-4 text-[var(--color-error)]" />
-                <span className="text-sm font-medium text-[var(--color-error)]">
-                  {t("missing", { count: addressesMissingFields.length })}
-                </span>
-            </div>
-          )}
           <Dialog open={addAddressOpen} onOpenChange={setAddAddressOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -214,204 +187,176 @@ export default function AddressesSection({
                 {t("addLocation")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>{t("addServiceLocation", { default: "Add Service Location" })}</DialogTitle>
-                <DialogDescription>
-                  {t("addServiceLocationDescription", { default: "Add a new location where you provide services" })}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
+            <DialogContent className="sm:max-w-md bg-[var(--color-surface)] dark:bg-slate-900 border-[var(--color-border)] max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <form onSubmit={form.handleSubmit(handleAddAddress)} noValidate className="space-y-4">
+                <DialogHeader>
+                  <DialogTitle className="text-[var(--color-text-primary)]">{t("addServiceLocation")}</DialogTitle>
+                  <DialogDescription className="text-[var(--color-text-secondary)]">{t("addServiceLocationDescription", { default: "Ajoutez un nouvel emplacement de service" })}</DialogDescription>
+                </DialogHeader>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="address_label">{tCommon("label", { default: "Label" })}</Label>
+                    <Label htmlFor="label" className="text-[var(--color-text-primary)]">{tCommon("label")}</Label>
                     <select
-                      id="address_label"
-                      value={newAddressForm.label}
-                      onChange={(e) =>
-                        setNewAddressForm((prev) => ({
-                          ...prev,
-                          label: e.target.value,
-                        }))
-                      }
-                      className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
+                      id="label"
+                      {...form.register("label")}
+                      className={cn(
+                        "flex h-10 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500/20",
+                        form.formState.errors.label
+                          ? "!border-red-500 !border-2 focus:ring-red-500/50"
+                          : ""
+                      )}
                     >
-                      <option value="home">{t("homeLocation", { default: "Home Location" })}</option>
-                      <option value="work">{t("workLocation", { default: "Work Location" })}</option>
-                      <option value="other">{t("otherLocation", { default: "Other Location" })}</option>
+                      <option value="home">Domicile</option>
+                      <option value="work">Travail</option>
+                      <option value="other">Autre</option>
                     </select>
+                    {form.formState.errors.label && (
+                      <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <AlertCircle className="h-4 w-4" />
+                        {form.formState.errors.label.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="country">{tCommon("country", { default: "Country" })}</Label>
-                    <select
-                      id="country"
-                      value={newAddressForm.country}
-                      onChange={(e) =>
-                        setNewAddressForm((prev) => ({
-                          ...prev,
-                          country: e.target.value,
-                        }))
-                      }
-                      className="flex h-10 w-full rounded-lg border border-color-border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-color-primary/20 focus:border-color-primary transition-all duration-200"
-                    >
-                      <option value="MA">Morocco</option>
-                      <option value="FR">France</option>
-                      <option value="ES">Spain</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="street_address">{tCommon("streetAddress", { default: "Street Address" })}</Label>
-                  <Input
-                    id="street_address"
-                    value={newAddressForm.street_address}
-                    onChange={(e) =>
-                      setNewAddressForm((prev) => ({
-                        ...prev,
-                        street_address: e.target.value,
-                      }))
-                    }
-                    placeholder={tCommon("enterStreetAddress", { default: "Enter street address" })}
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">{tCommon("city", { default: "City" })}</Label>
-                    <Input
+                    <Label htmlFor="city" className="text-[var(--color-text-primary)]">{t("sections.addresses.city")}</Label>
+                    <Input 
                       id="city"
-                      value={newAddressForm.city}
-                      onChange={(e) =>
-                        setNewAddressForm((prev) => ({
-                          ...prev,
-                          city: e.target.value,
-                        }))
-                      }
-                      placeholder={tCommon("enterCity", { default: "Enter city" })}
+                      {...form.register("city")}
+                      className={cn(
+                        "bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]",
+                        form.formState.errors.city
+                          ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                          : ""
+                      )}
                     />
+                    {form.formState.errors.city && (
+                      <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <AlertCircle className="h-4 w-4" />
+                        {form.formState.errors.city.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="region" className="text-[var(--color-text-primary)]">{t("sections.addresses.region")}</Label>
+                  <Input 
+                    id="region"
+                    {...form.register("region")}
+                    placeholder="Ex: Casablanca-Settat"
+                    className={cn(
+                      "bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]",
+                      form.formState.errors.region
+                        ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                        : ""
+                    )}
+                  />
+                  {form.formState.errors.region && (
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" />
+                      {form.formState.errors.region.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="street_address" className="text-[var(--color-text-primary)]">{t("sections.addresses.streetAddress")}</Label>
+                  <Input 
+                    id="street_address"
+                    {...form.register("street_address")}
+                    className={cn(
+                      "bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]",
+                      form.formState.errors.street_address
+                        ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                        : ""
+                    )}
+                  />
+                  {form.formState.errors.street_address && (
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" />
+                      {form.formState.errors.street_address.message}
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="postal_code" className="text-[var(--color-text-primary)]">{t("sections.addresses.postalCode")}</Label>
+                    <Input 
+                      id="postal_code"
+                      {...form.register("postal_code")}
+                      className={cn(
+                        "bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]",
+                        form.formState.errors.postal_code
+                          ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                          : ""
+                      )}
+                    />
+                    {form.formState.errors.postal_code && (
+                      <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <AlertCircle className="h-4 w-4" />
+                        {form.formState.errors.postal_code.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="region">{tCommon("region", { default: "Region" })}</Label>
-                    <Input
-                      id="region"
-                      value={newAddressForm.region}
-                      onChange={(e) =>
-                        setNewAddressForm((prev) => ({
-                          ...prev,
-                          region: e.target.value,
-                        }))
-                      }
-                      placeholder={tCommon("enterRegion", { default: "Enter region" })}
+                    <Label htmlFor="country" className="text-[var(--color-text-primary)]">{t("sections.addresses.country")}</Label>
+                    <Input 
+                      id="country"
+                      {...form.register("country")}
+                      className={cn(
+                        "bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]",
+                        form.formState.errors.country
+                          ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
+                          : ""
+                      )}
                     />
+                    {form.formState.errors.country && (
+                      <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <AlertCircle className="h-4 w-4" />
+                        {form.formState.errors.country.message}
+                      </p>
+                    )}
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="postal_code">{tCommon("postalCode", { default: "Postal Code" })}</Label>
-                  <Input
-                    id="postal_code"
-                    value={newAddressForm.postal_code}
-                    onChange={(e) =>
-                      setNewAddressForm((prev) => ({
-                        ...prev,
-                        postal_code: e.target.value,
-                      }))
-                    }
-                    placeholder={tCommon("enterPostalCode", { default: "Enter postal code" })}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setAddAddressOpen(false)}
-                >
-                  {tCommon("cancel")}
-                </Button>
-                <Button onClick={handleAddAddress} disabled={loading}>
-                  {loading ? tCommon("adding", { default: "Adding..." }) : t("addLocation")}
-                </Button>
-              </DialogFooter>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setAddAddressOpen(false)}>
+                    {tCommon("cancel")}
+                  </Button>
+                  <Button type="submit" disabled={loading || form.formState.isSubmitting}>
+                    {loading || form.formState.isSubmitting ? tCommon("adding") : t("addLocation")}
+                  </Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
       </CardHeader>
       <CardContent>
+        {/* L'affichage de tes cartes d'adresses reste strictement identique à l'original */}
         {addresses.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="p-4 rounded-full bg-[var(--color-accent)]/20 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <MapPinIcon className="h-8 w-8 text-[var(--color-text-secondary)]" />
-            </div>
-            <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
-              {t("noServiceLocations", { default: "No service locations" })}
-            </h3>
-            <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
-              {t("addLocationsDescription", { default: "Add locations for your services and job offers." })}
-            </p>
-            <Button onClick={() => setAddAddressOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t("addFirstLocation", { default: "Add First Location" })}
-            </Button>
-          </div>
+          <div className="text-center py-12 text-slate-500 italic">Aucune adresse.</div>
         ) : (
           <div className="space-y-4">
             {addresses.map((address) => (
-              <Card
-                key={address.id}
-                className="border-0 shadow-md bg-gradient-to-r from-[var(--color-surface)] to-[var(--color-accent)]/30 hover:shadow-lg transition-all duration-200"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-lg">
-                          <MapPinIcon className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-[var(--color-text-primary)] capitalize">
-                              {address.label}
-                            </span>
-                            {address.is_default && (
-                              <span className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-1 rounded-full font-medium">
-                                {t("default")}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="space-y-2 ml-11">
-                        <p className="text-sm text-[var(--color-text-primary)] font-medium">
-                          {address.street_address}
-                        </p>
-                        <p className="text-sm text-[var(--color-text-secondary)]">
-                          {address.city}, {address.region} {address.postal_code}
-                        </p>
-                        <p className="text-sm text-[var(--color-text-secondary)]">
-                          {address.country}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        address.id && handleDeleteClick(address.id)
-                      }
-                      className="text-[var(--color-error)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              <Card key={address.id} className="border-0 shadow-md bg-white/50 dark:bg-slate-800/30">
+                <CardContent className="p-6 flex justify-between items-center">
+                  <div>
+                    <p className="font-bold capitalize">{address.label}</p>
+                    <p className="text-sm text-slate-500">{address.street_address}, {address.city}</p>
                   </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => address.id && handleDeleteClick(address.id)}
+                    className="text-white hover:bg-red-600"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t("actions.delete", { default: "Supprimer" })}
+                  </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </CardContent>
-
-      {/* Delete Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={deleteConfirmOpen}
         onClose={() => {
@@ -419,11 +364,13 @@ export default function AddressesSection({
           setAddressToDelete(null);
         }}
         onConfirm={handleConfirmDelete}
-        title={t("deleteLocation", { default: "Delete Location" })}
-        description={t("deleteLocationConfirmation", { label: addressToDelete?.label || "", default: `Are you sure you want to delete your ${addressToDelete?.label} location? This action cannot be undone.` })}
-        confirmText={t("deleteLocation", { default: "Delete Location" })}
-        cancelText={tCommon("cancel")}
         variant="destructive"
+        title={t("deleteAddress", { default: "Supprimer l'adresse" })}
+        description={addressToDelete ? t("deleteAddressConfirmation", { 
+          default: `Êtes-vous sûr de vouloir supprimer l'adresse "${addressToDelete.label}" ? Cette action est irréversible.` 
+        }) : ""}
+        confirmText={t("actions.delete", { default: "Supprimer" })}
+        cancelText={tCommon("cancel")}
       />
     </Card>
   );

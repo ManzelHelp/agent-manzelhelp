@@ -340,7 +340,7 @@ export async function updateTaskerAvailability(
     if (!Array.isArray(operationHours)) {
       return {
         success: false,
-        error: "Invalid availability data format",
+        error: "errors.invalidDataFormat",
       };
     }
 
@@ -349,7 +349,7 @@ export async function updateTaskerAvailability(
     if (enabledDays.length === 0) {
       return {
         success: false,
-        error: "Please enable at least one day of availability",
+        error: "errors.enableAtLeastOneDay",
       };
     }
 
@@ -358,7 +358,7 @@ export async function updateTaskerAvailability(
       if (!slot || !slot.startTime || !slot.endTime) {
         return {
           success: false,
-          error: "Please set start and end times for all enabled days",
+          error: "errors.setStartEndTimes",
         };
       }
 
@@ -368,14 +368,14 @@ export async function updateTaskerAvailability(
       ) {
         return {
           success: false,
-          error: "Invalid time format. Please use HH:MM format (e.g., 09:00)",
+          error: "errors.invalidTimeFormat",
         };
       }
 
       if (!isValidTimeRange(slot.startTime, slot.endTime)) {
         return {
           success: false,
-          error: "End time must be after start time",
+          error: "errors.endTimeAfterStart",
         };
       }
     }
@@ -387,7 +387,7 @@ export async function updateTaskerAvailability(
     if (!isValidOperationHours(operationHoursObject)) {
       return {
         success: false,
-        error: "Invalid availability data format",
+        error: "errors.invalidDataFormat",
       };
     }
 
@@ -403,14 +403,14 @@ export async function updateTaskerAvailability(
 
     if (error) {
       console.error("Error updating tasker availability:", error);
-      return { success: false, error: "Failed to update availability" };
+      return { success: false, error: "errors.updateFailed" };
     }
 
     revalidatePath("/[locale]/(profile)/tasker/profile", "layout");
     return { success: true, taskerProfile: data };
   } catch (error) {
     console.error("Error in updateTaskerAvailability:", error);
-    return { success: false, error: "An unexpected error occurred" };
+    return { success: false, error: "errors.updateFailed" };
   }
 }
 

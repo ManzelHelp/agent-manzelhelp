@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { BookingCard } from "@/components/bookings/BookingCard";
 import { JobApplicationCard } from "@/components/bookings/JobApplicationCard";
@@ -18,7 +18,7 @@ import {
   getTaskerAsCustomerBookings,
   updateBookingStatus,
   type BookingWithDetails,
-  type JobApplicationWithDetails,
+  type TaskerJobApplicationWithDetails,
   type TaskerBookingWithDetails,
 } from "@/actions/bookings";
 import { BookingStatus } from "@/types/supabase";
@@ -118,6 +118,7 @@ const getCustomerName = (booking: BookingWithDetails) => {
 export default function BookingsPage() {
   const { user } = useUserStore();
   const t = useTranslations("bookings");
+  const { toast } = useToast();
   // Note: "booked-taskers" tab is hidden from UI but code is kept for future use
   const [activeTab, setActiveTab] = useState<TaskerBookingTab>("my-bookings");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
@@ -135,7 +136,7 @@ export default function BookingsPage() {
     TaskerBookingWithDetails[]
   >([]);
   const [myApplications, setMyApplications] = useState<
-    JobApplicationWithDetails[]
+    TaskerJobApplicationWithDetails[]
   >([]);
 
   // State for total counts (loaded separately for all tabs)
@@ -193,7 +194,7 @@ export default function BookingsPage() {
 
         let result: {
           bookings?: BookingWithDetails[] | TaskerBookingWithDetails[];
-          applications?: JobApplicationWithDetails[];
+          applications?: TaskerJobApplicationWithDetails[];
           hasMore: boolean;
         };
         switch (targetTab) {
@@ -224,11 +225,11 @@ export default function BookingsPage() {
             if (append) {
               setMyApplications((prev) => [
                 ...prev,
-                ...(result.applications as JobApplicationWithDetails[]),
+                ...(result.applications as TaskerJobApplicationWithDetails[]),
               ]);
             } else {
               setMyApplications(
-                result.applications as JobApplicationWithDetails[]
+                result.applications as TaskerJobApplicationWithDetails[]
               );
             }
             break;
@@ -252,7 +253,11 @@ export default function BookingsPage() {
 
         // Only show toast for initial load errors, not for load more errors
         if (!append) {
-          toast.error(errorMessage);
+          toast({
+            variant: "destructive",
+            title: t("error"),
+            description: errorMessage,
+          });
           // Clear the appropriate state
           switch (targetTab) {
             case "my-bookings":
@@ -304,15 +309,27 @@ export default function BookingsPage() {
         if (prev.some((a) => a.id === application.id)) {
           return prev;
         }
-        return [application as JobApplicationWithDetails, ...prev];
+        // Add new application at the beginning and sort by created_at descending
+        const updated = [application as TaskerJobApplicationWithDetails, ...prev];
+        return updated.sort((a, b) => {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return dateB - dateA; // Descending order (newest first)
+        });
       });
     },
     onApplicationUpdate: (applicationId, updates) => {
-      setMyApplications((prev) =>
-        prev.map((app) =>
+      setMyApplications((prev) => {
+        const updated = prev.map((app) =>
           app.id === applicationId ? { ...app, ...updates } : app
-        )
-      );
+        );
+        // Re-sort after update to maintain chronological order
+        return updated.sort((a, b) => {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return dateB - dateA; // Descending order (newest first)
+        });
+      });
     },
   });
 
@@ -381,7 +398,7 @@ export default function BookingsPage() {
       item:
         | BookingWithDetails
         | TaskerBookingWithDetails
-        | JobApplicationWithDetails
+        | TaskerJobApplicationWithDetails
     ) => {
       // Only handle actions for my bookings (BookingWithDetails)
       if (
@@ -486,14 +503,26 @@ export default function BookingsPage() {
             )
           );
         }
-        toast.success("Booking status updated successfully");
+        toast({
+          variant: "success",
+          title: t("success"),
+          description: t("bookingStatusUpdated"),
+        });
       } else {
         console.error("Failed to update booking:", result.error);
-        toast.error(result.error || "Failed to update booking status");
+        toast({
+          variant: "destructive",
+          title: t("error"),
+          description: result.error || t("failedToUpdateBookingStatus"),
+        });
       }
     } catch (error) {
       console.error("Error updating booking:", error);
-      toast.error("An unexpected error occurred");
+      toast({
+        variant: "destructive",
+        title: t("error"),
+        description: t("unexpectedError"),
+      });
     } finally {
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
@@ -640,7 +669,7 @@ export default function BookingsPage() {
                 </div>
               );
             } else if (activeTab === "my-applications") {
-              const application = item as JobApplicationWithDetails;
+              const application = item as TaskerJobApplicationWithDetails;
               return (
                 <div
                   key={application.id}

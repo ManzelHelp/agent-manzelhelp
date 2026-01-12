@@ -28,8 +28,7 @@ import {
 import { getTaskerRefundRequests, type WalletRefundRequest } from "@/actions/wallet-refunds";
 import { formatDateShort } from "@/lib/date-utils";
 import { useTranslations, useLocale } from "next-intl";
-import { toast } from "sonner";
-import { useRouter } from "@/i18n/navigation";
+import { useToast } from "@/hooks/use-toast";
 import { ConfirmPaymentDialog } from "@/components/wallet/ConfirmPaymentDialog";
 
 interface PendingRefundRequestsDrawerProps {
@@ -43,7 +42,7 @@ export function PendingRefundRequestsDrawer({
 }: PendingRefundRequestsDrawerProps) {
   const t = useTranslations("finance.walletRefund");
   const locale = useLocale();
-  const router = useRouter();
+  const { toast } = useToast();
   const [requests, setRequests] = useState<WalletRefundRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -68,11 +67,19 @@ export function PendingRefundRequestsDrawer({
         );
         setRequests(pendingRequests);
       } else {
-        toast.error(result.error || t("errors.loadFailed", { default: "Failed to load requests" }));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("errors.loadFailed", { default: "Failed to load requests" }),
+        });
       }
     } catch (error) {
       console.error("Error loading pending refund requests:", error);
-      toast.error(t("errors.loadFailed", { default: "Failed to load requests" }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadFailed", { default: "Failed to load requests" }),
+      });
     } finally {
       setLoading(false);
     }
@@ -119,11 +126,19 @@ export function PendingRefundRequestsDrawer({
     try {
       await navigator.clipboard.writeText(text);
       setCopiedCode(code);
-      toast.success(t("codeCopied", { default: "Code copied!" }));
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: t("codeCopied", { default: "Code copied!" }),
+      });
       setTimeout(() => setCopiedCode(null), 2000);
     } catch (error) {
       console.error("Failed to copy:", error);
-      toast.error(t("errors.copyFailed", { default: "Failed to copy code" }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.copyFailed", { default: "Failed to copy code" }),
+      });
     }
   };
 
@@ -294,16 +309,6 @@ export function PendingRefundRequestsDrawer({
         </div>
 
         <DrawerFooter className="border-t shrink-0 bg-background">
-          <Button
-            variant="outline"
-            onClick={() => {
-              router.push("/tasker/finance/refunds");
-              onClose();
-            }}
-            className="w-full"
-          >
-            {t("viewAllRequests", { default: "View All Requests" })}
-          </Button>
           <DrawerClose asChild>
             <Button variant="default" className="w-full">
               {t("close", { default: "Close" })}

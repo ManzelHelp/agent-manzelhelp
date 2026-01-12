@@ -271,7 +271,7 @@ export function ServiceDetailDrawer({
                         {serviceData.minimum_duration && (
                           <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 mt-1">
                             <ClockIcon className="h-3 w-3" />
-                            <span>Min. {serviceData.minimum_duration}h</span>
+                            <span>{t("minDuration", { hours: serviceData.minimum_duration })}</span>
                           </div>
                         )}
                       </div>
@@ -294,7 +294,7 @@ export function ServiceDetailDrawer({
                   </h3>
                   <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                     <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                      {serviceData.description || "No description available"}
+                      {serviceData.description || t("noDescriptionAvailable")}
                     </p>
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export function ServiceDetailDrawer({
                               ? serviceData.service_area
                               : serviceData.service_area
                               ? JSON.stringify(serviceData.service_area)
-                              : "N/A"}
+                              : t("notAvailable")}
                           </p>
                         </div>
                       </div>
@@ -329,7 +329,13 @@ export function ServiceDetailDrawer({
                           {t("pricingType")}
                         </h4>
                         <p className="text-sm text-slate-600 dark:text-slate-400 capitalize">
-                          {serviceData.pricing_type || "Fixed"}
+                          {serviceData.pricing_type === "hourly"
+                            ? t("pricingTypes.hourly")
+                            : serviceData.pricing_type === "per_item"
+                            ? t("pricingTypes.perItem")
+                            : serviceData.pricing_type === "fixed"
+                            ? t("pricingTypes.fixed")
+                            : t("pricingTypes.fixed")}
                         </p>
                       </div>
                     </div>
@@ -509,7 +515,7 @@ export function ServiceDetailDrawer({
                     <div className="mb-6">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                         <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
-                        About
+                        {t("about")}
                       </h3>
                       <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 border border-slate-200/50 dark:border-slate-600/50">
                         <p className="text-slate-700 dark:text-slate-300 leading-relaxed">

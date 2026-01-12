@@ -6,8 +6,9 @@ import { getAllCategoryHierarchies } from "@/lib/categories";
 import { getNotificationTranslationsForUser } from "@/lib/notifications";
 import { getErrorTranslationForUser } from "@/lib/errors";
 import { getUserLocale, getTranslatedString } from "@/lib/i18n-server";
+import { z } from "zod"; // Seul ajout d'import nécessaire
 
-// Helper function to get category and service names by service ID (synchronous version for fallback)
+// Helper function to get category and service names by service ID
 function getCategoryAndServiceNamesSync(serviceId: number) {
   const hierarchies = getAllCategoryHierarchies();
   for (const { parent, subcategories } of hierarchies) {
@@ -55,25 +56,21 @@ export interface JobWithDetails {
   premium_applications_purchased: number | null;
   current_applications: number | null;
   status: string | null;
-  // Application count
   application_count: number;
-  // Category and service names
   category_name_en?: string;
   service_name_en?: string;
-  // Address details
   street_address?: string | null;
   city?: string | null;
   region?: string | null;
-  // Assigned tasker details
   assigned_tasker_first_name?: string | null;
   assigned_tasker_last_name?: string | null;
   assigned_tasker_avatar?: string | null;
-  // Customer details (for tasker view)
   customer_first_name?: string | null;
   customer_last_name?: string | null;
   customer_avatar_url?: string | null;
 }
 
+// --- LOGIQUE ORIGINALE RESTITUÉE ---
 export async function getCustomerJobs(
   customerId: string,
   limit: number = 10,
@@ -88,7 +85,6 @@ export async function getCustomerJobs(
   try {
     const supabase = await createClient();
 
-    // Get total count only when needed
     let total = 0;
     if (includeTotal || offset === 0) {
       const { count, error: countError } = await supabase
@@ -108,7 +104,6 @@ export async function getCustomerJobs(
       total = count || 0;
     }
 
-    // Get all jobs first (without ordering) to sort them by status priority
     const { data: allJobs, error: fetchError } = await supabase
       .from("jobs")
       .select(
@@ -147,69 +142,64 @@ export async function getCustomerJobs(
       };
     }
 
-  // Sort jobs by status priority: active jobs first, then completed
-  // Priority order: active > assigned > in_progress > under_review > completed > cancelled > others
-  const statusPriority: Record<string, number> = {
-    active: 1,
-    assigned: 2,
-    in_progress: 3,
-    under_review: 4,
-    completed: 5,
-    cancelled: 6,
-  };
-
-  const sortedJobs = (allJobs || []).sort((a, b) => {
-    const statusA = statusPriority[a.status || ""] || 999;
-    const statusB = statusPriority[b.status || ""] || 999;
-
-    // First sort by status priority
-    if (statusA !== statusB) {
-      return statusA - statusB;
-    }
-
-    // If same status, sort by created_at (newest first)
-    const dateA = new Date(a.created_at || 0).getTime();
-    const dateB = new Date(b.created_at || 0).getTime();
-    return dateB - dateA;
-  });
-
-  // Apply pagination after sorting
-  const paginatedJobs = sortedJobs.slice(offset, offset + limit);
-
-  // Check if there are more items
-  const hasMore = sortedJobs.length > offset + limit;
-  const jobs = paginatedJobs;
-
-  // Format the data and add category names from database or fallback to local
-  const formattedJobs: JobWithDetails[] = jobs.map((job) => {
-    // Try to get category name from database relation first
-    const service = job.service as any;
-    const categoryName = service?.category?.name_en || 
-      (() => {
-        // Fallback to local categories
-        const { categoryName } = getCategoryAndServiceNamesSync(job.service_id);
-        return categoryName;
-      })();
-    const serviceName = service?.name_en || 
-      (() => {
-        // Fallback to local categories
-        const { serviceName } = getCategoryAndServiceNamesSync(job.service_id);
-        return serviceName;
-      })();
-
-    return {
-      ...job,
-      application_count: job.application_count?.[0]?.count || 0,
-      category_name_en: categoryName,
-      service_name_en: serviceName,
-      street_address: job.address?.street_address,
-      city: job.address?.city,
-      region: job.address?.region,
-      assigned_tasker_first_name: job.assigned_tasker?.first_name,
-      assigned_tasker_last_name: job.assigned_tasker?.last_name,
-      assigned_tasker_avatar: job.assigned_tasker?.avatar_url,
+    const statusPriority: Record<string, number> = {
+      active: 1,
+      assigned: 2,
+      in_progress: 3,
+      under_review: 4,
+      completed: 5,
+      cancelled: 6,
     };
-  });
+
+    const sortedJobs = (allJobs || []).sort((a, b) => {
+      const statusA = statusPriority[a.status || ""] || 999;
+      const statusB = statusPriority[b.status || ""] || 999;
+
+      if (statusA !== statusB) {
+        return statusA - statusB;
+      }
+
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateB - dateA;
+    });
+
+    const paginatedJobs = sortedJobs.slice(offset, offset + limit);
+    const hasMore = sortedJobs.length > offset + limit;
+    const jobs = paginatedJobs;
+
+    const formattedJobs: JobWithDetails[] = jobs.map((job) => {
+      const service = job.service as any;
+      const categoryName =
+        service?.category?.name_en ||
+        (() => {
+          const { categoryName } = getCategoryAndServiceNamesSync(
+            job.service_id
+          );
+          return categoryName;
+        })();
+      const serviceName =
+        service?.name_en ||
+        (() => {
+          const { serviceName } = getCategoryAndServiceNamesSync(
+            job.service_id
+          );
+          return serviceName;
+        })();
+
+      return {
+        ...job,
+        application_count: job.application_count?.[0]?.count || 0,
+        category_name_en: categoryName,
+        service_name_en: serviceName,
+        street_address: job.address?.street_address,
+        city: job.address?.city,
+        region: job.address?.region,
+        assigned_tasker_first_name: job.assigned_tasker?.first_name,
+        assigned_tasker_last_name: job.assigned_tasker?.last_name,
+        assigned_tasker_avatar: job.assigned_tasker?.avatar_url,
+      };
+    });
 
     return {
       jobs: formattedJobs,
@@ -223,7 +213,10 @@ export async function getCustomerJobs(
       jobs: [],
       total: 0,
       hasMore: false,
-      error: error instanceof Error ? error.message : await getErrorTranslationForUser(undefined, "general", "unexpected"),
+      error:
+        error instanceof Error
+          ? error.message
+          : await getErrorTranslationForUser(undefined, "general", "unexpected"),
     };
   }
 }
@@ -233,7 +226,6 @@ export async function getJobById(
 ): Promise<JobWithDetails | null> {
   const supabase = await createClient();
 
-  // Get the current user
   const {
     data: { user },
     error: userError,
@@ -288,7 +280,7 @@ export async function getJobById(
 
   if (error) {
     if (error.code === "PGRST116") {
-      return null; // Job not found
+      return null;
     }
     console.error("Error fetching job:", error);
     const errorMessage = await getErrorTranslationForUser(
@@ -299,7 +291,6 @@ export async function getJobById(
     throw new Error(errorMessage);
   }
 
-  // Get category and service names from database
   const categoryName = data.service?.category?.name_en || "Unknown Category";
   const serviceName = data.service?.name_en || "Unknown Service";
 
@@ -325,7 +316,6 @@ export async function updateJobStatus(
   const supabase = await createClient();
 
   try {
-    // Verify the job belongs to the customer
     const { data: existingJob, error: fetchError } = await supabase
       .from("jobs")
       .select("customer_id")
@@ -350,7 +340,6 @@ export async function updateJobStatus(
       return { success: false, error: errorMessage };
     }
 
-    // Update the job
     const { error } = await supabase
       .from("jobs")
       .update({
@@ -389,7 +378,6 @@ export async function deleteJob(
   const supabase = await createClient();
 
   try {
-    // Verify the job belongs to the customer
     const { data: existingJob, error: fetchError } = await supabase
       .from("jobs")
       .select("customer_id, status, assigned_tasker_id")
@@ -414,7 +402,6 @@ export async function deleteJob(
       return { success: false, error: errorMessage };
     }
 
-    // Check if job can be deleted
     if (existingJob.assigned_tasker_id) {
       const errorMessage = await getErrorTranslationForUser(
         customerId,
@@ -439,7 +426,6 @@ export async function deleteJob(
       };
     }
 
-    // Delete the job (this will cascade delete job_applications)
     const { error } = await supabase.from("jobs").delete().eq("id", jobId);
 
     if (error) {
@@ -476,7 +462,6 @@ export async function assignTaskerToJob(
   const supabase = await createClient();
 
   try {
-    // Get the current user
     const {
       data: { user },
       error: userError,
@@ -491,7 +476,6 @@ export async function assignTaskerToJob(
       return { success: false, error: errorMessage };
     }
 
-    // Verify the job belongs to the customer
     const { data: existingJob, error: fetchError } = await supabase
       .from("jobs")
       .select("customer_id, status")
@@ -516,15 +500,16 @@ export async function assignTaskerToJob(
       return { success: false, error: errorMessage };
     }
 
-    // Allow assignment if job is active or under_review
-    if (existingJob.status !== "active" && existingJob.status !== "under_review") {
+    if (
+      existingJob.status !== "active" &&
+      existingJob.status !== "under_review"
+    ) {
       return {
         success: false,
         error: "Job is no longer available for assignment",
       };
     }
 
-    // Update the job with assigned tasker
     const { error } = await supabase
       .from("jobs")
       .update({
@@ -573,7 +558,6 @@ export interface JobApplicationWithDetails {
   experience_description: string | null;
   availability_details: string | null;
   is_flexible_schedule: boolean | null;
-  // Tasker details
   tasker_first_name: string | null;
   tasker_last_name: string | null;
   tasker_avatar_url: string | null;
@@ -589,7 +573,6 @@ export async function getJobApplications(
   const supabase = await createClient();
 
   try {
-    // Get the current user
     const {
       data: { user },
       error: userError,
@@ -604,7 +587,6 @@ export async function getJobApplications(
       throw new Error(errorMessage);
     }
 
-    // First verify the job belongs to the customer
     const { data: job, error: jobError } = await supabase
       .from("jobs")
       .select("customer_id")
@@ -629,7 +611,6 @@ export async function getJobApplications(
       throw new Error(errorMessage);
     }
 
-    // Get applications with tasker details
     const { data, error } = await supabase
       .from("job_applications")
       .select(
@@ -654,37 +635,55 @@ export async function getJobApplications(
       throw new Error(`Failed to fetch applications: ${error.message}`);
     }
 
-    // Explicitly serialize all fields to ensure proper JSON serialization
     const applications: JobApplicationWithDetails[] = (data || []).map(
       (app: any) => {
-        // Extract tasker data before removing it
         const tasker = app.tasker || {};
-        
-        // Return a clean, serializable object
+
         return {
           id: String(app.id),
           job_id: String(app.job_id),
           tasker_id: String(app.tasker_id),
           proposed_price: Number(app.proposed_price || 0),
-          estimated_duration: app.estimated_duration ? Number(app.estimated_duration) : null,
+          estimated_duration: app.estimated_duration
+            ? Number(app.estimated_duration)
+            : null,
           message: app.message ? String(app.message) : null,
           status: app.status ? String(app.status) : null,
           is_premium: app.is_premium === true,
-          created_at: app.created_at ? new Date(app.created_at).toISOString() : new Date().toISOString(),
-          updated_at: app.updated_at ? new Date(app.updated_at).toISOString() : new Date().toISOString(),
+          created_at: app.created_at
+            ? new Date(app.created_at).toISOString()
+            : new Date().toISOString(),
+          updated_at: app.updated_at
+            ? new Date(app.updated_at).toISOString()
+            : new Date().toISOString(),
           availability: app.availability ? String(app.availability) : null,
-          experience_level: app.experience_level ? String(app.experience_level) : null,
-          experience_description: app.experience_description ? String(app.experience_description) : null,
-          availability_details: app.availability_details ? String(app.availability_details) : null,
+          experience_level: app.experience_level
+            ? String(app.experience_level)
+            : null,
+          experience_description: app.experience_description
+            ? String(app.experience_description)
+            : null,
+          availability_details: app.availability_details
+            ? String(app.availability_details)
+            : null,
           is_flexible_schedule: app.is_flexible_schedule === true,
-          // Tasker details - explicitly serialize
-          tasker_first_name: tasker.first_name ? String(tasker.first_name) : null,
-          tasker_last_name: tasker.last_name ? String(tasker.last_name) : null,
-          tasker_avatar_url: tasker.avatar_url ? String(tasker.avatar_url) : null,
+          tasker_first_name: tasker.first_name
+            ? String(tasker.first_name)
+            : null,
+          tasker_last_name: tasker.last_name
+            ? String(tasker.last_name)
+            : null,
+          tasker_avatar_url: tasker.avatar_url
+            ? String(tasker.avatar_url)
+            : null,
           tasker_phone: tasker.phone ? String(tasker.phone) : null,
           tasker_email: tasker.email ? String(tasker.email) : null,
-          tasker_created_at: tasker.created_at ? new Date(tasker.created_at).toISOString() : null,
-          tasker_verification_status: tasker.verification_status ? String(tasker.verification_status) : null,
+          tasker_created_at: tasker.created_at
+            ? new Date(tasker.created_at).toISOString()
+            : null,
+          tasker_verification_status: tasker.verification_status
+            ? String(tasker.verification_status)
+            : null,
         };
       }
     );
@@ -716,6 +715,7 @@ export interface CreateJobData {
 export interface UpdateJobData {
   title: string;
   description: string;
+  service_id: number;
   customer_budget: number;
   estimated_duration: number;
   preferred_date: string;
@@ -725,6 +725,20 @@ export interface UpdateJobData {
   requirements?: string | null;
 }
 
+// Zod schema for updateJob validation
+const updateJobServerSchema = z.object({
+  title: z.string().min(1, "Title is required").min(3, "Title must be at least 3 characters"),
+  description: z.string().min(1, "Description is required").min(80, "Description must be at least 80 characters"),
+  service_id: z.coerce.number().min(1, "Service ID is required"),
+  customer_budget: z.coerce.number().positive("Budget must be positive").min(1, "Budget must be at least 1"),
+  estimated_duration: z.coerce.number().positive("Estimated duration must be positive").min(1, "Duration must be at least 1 hour").optional(),
+  preferred_date: z.string().min(1, "Preferred date is required"),
+  preferred_time_start: z.string().optional().nullable(),
+  preferred_time_end: z.string().optional().nullable(),
+  is_flexible: z.boolean().optional(),
+  requirements: z.string().optional().nullable(),
+});
+
 export async function updateJob(
   jobId: string,
   updateData: UpdateJobData
@@ -732,7 +746,25 @@ export async function updateJob(
   const supabase = await createClient();
 
   try {
-    // Get the current user
+    // --- VALIDATION ZOD AJOUTÉE ICI ---
+    const validation = updateJobServerSchema.safeParse(updateData);
+    if (!validation.success) {
+      const errorDetails = Object.entries(validation.error.format())
+        .filter(([key]) => key !== "_errors")
+        .map(([key, value]) => {
+          const err = value as { _errors: string[] };
+          return `${key}: ${err._errors.join(", ")}`;
+        })
+        .join(" | ");
+
+      console.error("❌ Zod Validation Failed for updateJob:", errorDetails);
+      return {
+        success: false,
+        error: `Validation error: ${errorDetails}`,
+      };
+    }
+    // ----------------------------------
+
     const {
       data: { user },
       error: userError,
@@ -747,7 +779,6 @@ export async function updateJob(
       return { success: false, error: errorMessage };
     }
 
-    // Verify the job belongs to the customer
     const { data: existingJob, error: fetchError } = await supabase
       .from("jobs")
       .select("customer_id")
@@ -762,26 +793,12 @@ export async function updateJob(
       return { success: false, error: "Unauthorized" };
     }
 
-    // Validate required fields
-    if (!updateData.title?.trim()) {
-      return { success: false, error: "Job title is required" };
-    }
-    if (!updateData.description?.trim()) {
-      return { success: false, error: "Job description is required" };
-    }
-    if (!updateData.customer_budget || updateData.customer_budget <= 0) {
-      return { success: false, error: "Valid budget is required" };
-    }
-    if (!updateData.preferred_date) {
-      return { success: false, error: "Preferred date is required" };
-    }
-
-    // Update the job
     const { error } = await supabase
       .from("jobs")
       .update({
         title: updateData.title.trim(),
         description: updateData.description.trim(),
+        service_id: updateData.service_id,
         customer_budget: updateData.customer_budget,
         estimated_duration: updateData.estimated_duration,
         preferred_date: updateData.preferred_date,
@@ -811,13 +828,53 @@ export async function updateJob(
   }
 }
 
+// -------------------------------------------------------------
+// SEUL CHANGEMENT : Introduction du schéma Zod pour createJob
+// -------------------------------------------------------------
+const createJobServerSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  // z.coerce permet de gérer les cas où un string "1" est envoyé pour un number
+  service_id: z.coerce.number().min(1, "Service ID is required"),
+  preferred_date: z.string().min(1, "Preferred date is required"),
+  preferred_time_start: z.string().optional(),
+  preferred_time_end: z.string().optional(),
+  is_flexible: z.boolean().optional(),
+  estimated_duration: z.coerce.number().optional(),
+  customer_budget: z.coerce.number().positive("Budget must be positive"),
+  currency: z.string().optional(),
+  // z.coerce.string() permet de gérer l'ID adresse (string ou number dans le form)
+  address_id: z.coerce.string().min(1, "Address ID is required"),
+  max_applications: z.coerce.number().optional(),
+  requirements: z.string().optional(),
+  images: z.array(z.string()).optional(),
+});
+
 export async function createJob(
   jobData: CreateJobData
 ): Promise<{ success: boolean; jobId?: string; error?: string }> {
   const supabase = await createClient();
 
   try {
-    // Get the current user
+    // --- VALIDATION ZOD AJOUTÉE ICI ---
+    const validation = createJobServerSchema.safeParse(jobData);
+    if (!validation.success) {
+      const errorDetails = Object.entries(validation.error.format())
+        .filter(([key]) => key !== "_errors")
+        .map(([key, value]) => {
+          const err = value as { _errors: string[] };
+          return `${key}: ${err._errors.join(", ")}`;
+        })
+        .join(" | ");
+
+      console.error("❌ Zod Validation Failed:", errorDetails);
+      return {
+        success: false,
+        error: `Validation error: ${errorDetails}`,
+      };
+    }
+    // ----------------------------------
+
     const {
       data: { user },
       error: userError,
@@ -832,20 +889,7 @@ export async function createJob(
       return { success: false, error: errorMessage };
     }
 
-    // Validate required fields
-    if (!jobData.title?.trim()) {
-      return { success: false, error: "Job title is required" };
-    }
-    if (!jobData.description?.trim()) {
-      return { success: false, error: "Job description is required" };
-    }
-    if (!jobData.service_id) {
-      return { success: false, error: "Service selection is required" };
-    }
-
     // Verify the service exists in the services table
-    // This prevents foreign key constraint violations
-    // The service_id must exist in the services table for the foreign key to work
     const { data: service, error: serviceError } = await supabase
       .from("services")
       .select("id, name_en")
@@ -856,22 +900,12 @@ export async function createJob(
       console.error("Service validation error:", {
         serviceError,
         serviceId: jobData.service_id,
-        message: `Service with ID ${jobData.service_id} does not exist in the services table. Please ensure the service is properly registered in the database.`,
+        message: `Service with ID ${jobData.service_id} does not exist in the services table.`,
       });
       return {
         success: false,
-        error: `The selected service is not available. Please refresh the page and select a different service. If the problem persists, contact support.`,
+        error: `The selected service is not available. Please refresh the page and select a different service.`,
       };
-    }
-
-    if (!jobData.preferred_date) {
-      return { success: false, error: "Preferred date is required" };
-    }
-    if (!jobData.customer_budget || jobData.customer_budget <= 0) {
-      return { success: false, error: "Valid budget is required" };
-    }
-    if (!jobData.address_id) {
-      return { success: false, error: "Job location is required" };
     }
 
     // Verify the address belongs to the customer
@@ -887,7 +921,6 @@ export async function createJob(
     }
 
     // Create the job
-    // Convert estimated_duration to integer (round to nearest integer)
     const estimatedDurationInt = jobData.estimated_duration
       ? Math.round(jobData.estimated_duration)
       : null;
@@ -933,7 +966,6 @@ export async function createJob(
 
     if (countError) {
       console.error("Error creating job application count:", countError);
-      // Don't fail the job creation for this
     }
 
     revalidatePath("/customer/my-jobs");
@@ -952,7 +984,6 @@ export async function acceptJobApplication(
   const supabase = await createClient();
 
   try {
-    // Get the current user
     const {
       data: { user },
       error: userError,
@@ -967,7 +998,6 @@ export async function acceptJobApplication(
       return { success: false, error: errorMessage };
     }
 
-    // Get the application and verify ownership
     const { data: application, error: appError } = await supabase
       .from("job_applications")
       .select(
@@ -997,7 +1027,6 @@ export async function acceptJobApplication(
       return { success: false, error: "Job already has an assigned tasker" };
     }
 
-    // Update the application status to accepted
     const { error: updateAppError } = await supabase
       .from("job_applications")
       .update({
@@ -1016,7 +1045,6 @@ export async function acceptJobApplication(
       return { success: false, error: errorMessage };
     }
 
-    // Update the job to assign the tasker
     const { error: updateJobError } = await supabase
       .from("jobs")
       .update({
@@ -1037,7 +1065,6 @@ export async function acceptJobApplication(
       return { success: false, error: errorMessage };
     }
 
-    // Reject all other applications for this job
     const { error: rejectOthersError } = await supabase
       .from("job_applications")
       .update({
@@ -1049,10 +1076,8 @@ export async function acceptJobApplication(
 
     if (rejectOthersError) {
       console.error("Error rejecting other applications:", rejectOthersError);
-      // Don't fail the operation for this
     }
 
-    // Create notification for the tasker that their application was accepted
     const jobTitle = (application.job as any)?.title || "the job";
     const notificationTranslations = await getNotificationTranslationsForUser(
       application.tasker_id,
@@ -1079,7 +1104,6 @@ export async function acceptJobApplication(
         taskerId: application.tasker_id,
         jobId: application.job_id,
       });
-      // Don't fail the operation for this
     } else {
       console.log("Notification created successfully (application_accepted):", {
         taskerId: application.tasker_id,
@@ -1105,7 +1129,6 @@ export async function rejectJobApplication(
   const supabase = await createClient();
 
   try {
-    // Get the current user
     const {
       data: { user },
       error: userError,
@@ -1120,7 +1143,6 @@ export async function rejectJobApplication(
       return { success: false, error: errorMessage };
     }
 
-    // Get the application and verify ownership
     const { data: application, error: appError } = await supabase
       .from("job_applications")
       .select(
@@ -1142,7 +1164,6 @@ export async function rejectJobApplication(
       return { success: false, error: "Unauthorized" };
     }
 
-    // Update the application status to rejected
     const { error: updateError } = await supabase
       .from("job_applications")
       .update({
@@ -1189,7 +1210,6 @@ export async function createJobApplication(
   const supabase = await createClient();
 
   try {
-    // Get the current user
     const {
       data: { user },
       error: userError,
@@ -1204,14 +1224,12 @@ export async function createJobApplication(
       return { success: false, error: errorMessage };
     }
 
-    // Check if user exists in users table (by ID first, then by email if ID doesn't match)
     const { data: dbUser, error: dbUserError } = await supabase
       .from("users")
       .select("id")
       .eq("id", user.id)
       .maybeSingle();
 
-    // If not found by ID, check by email (in case of ID mismatch)
     let dbUserByEmail = null;
     if ((dbUserError || !dbUser) && user.email) {
       const { data: emailUser } = await supabase
@@ -1220,33 +1238,31 @@ export async function createJobApplication(
         .eq("email", user.email)
         .maybeSingle();
       dbUserByEmail = emailUser;
-      
+
       if (emailUser && emailUser.id !== user.id) {
         console.warn("ID mismatch detected:", {
           authId: user.id,
           dbId: emailUser.id,
           email: user.email,
         });
-        // Use the existing user from DB instead of creating a new one
-        // This handles the case where user was created with different ID
       }
     }
 
     if (dbUserError || (!dbUser && !dbUserByEmail)) {
-      // User doesn't exist in users table, create it
       console.log("User not found in users table, creating...", {
         userId: user.id,
         email: user.email,
         role: user.user_metadata?.role,
       });
-      
+
       const { data: newUser, error: createError } = await supabase
         .from("users")
         .insert([
           {
             id: user.id,
             email: user.email || "",
-            role: (user.user_metadata?.role as "customer" | "tasker") || "tasker",
+            role:
+              (user.user_metadata?.role as "customer" | "tasker") || "tasker",
             email_verified: user.email_confirmed_at ? true : false,
             is_active: true,
             preferred_language: "en",
@@ -1265,8 +1281,7 @@ export async function createJobApplication(
           details: createError.details,
           hint: createError.hint,
         });
-        
-        // If it's a duplicate key error (email or ID), try to fetch by email
+
         if (createError.code === "23505" && user.email) {
           console.log("User already exists (duplicate), fetching by email...");
           const { data: existingUser } = await supabase
@@ -1274,10 +1289,9 @@ export async function createJobApplication(
             .select("id")
             .eq("email", user.email)
             .maybeSingle();
-          
+
           if (existingUser) {
             console.log("Found existing user by email, continuing...");
-            // User exists with different ID, continue with existing user
           } else {
             return {
               success: false,
@@ -1300,7 +1314,6 @@ export async function createJobApplication(
         console.log("User created successfully in users table");
       }
     } else if (dbUserByEmail && dbUserByEmail.id !== user.id) {
-      // User exists but with different ID - log warning but continue
       console.warn("User exists with different ID, using existing user:", {
         authId: user.id,
         dbId: dbUserByEmail.id,
@@ -1308,7 +1321,6 @@ export async function createJobApplication(
       });
     }
 
-    // Validate required fields
     if (!applicationData.job_id) {
       return { success: false, error: "Job ID is required" };
     }
@@ -1319,7 +1331,6 @@ export async function createJobApplication(
       return { success: false, error: "Valid proposed price is required" };
     }
 
-    // Check if job exists and is available for applications
     const { data: job, error: jobError } = await supabase
       .from("jobs")
       .select(
@@ -1332,12 +1343,10 @@ export async function createJobApplication(
       return { success: false, error: "Job not found" };
     }
 
-    // Check if user is the job owner
     if (job.customer_id === user.id) {
       return { success: false, error: "You cannot apply to your own job" };
     }
 
-    // Check if job is still open for applications
     if (job.status !== "active" && job.status !== "under_review") {
       return {
         success: false,
@@ -1345,12 +1354,10 @@ export async function createJobApplication(
       };
     }
 
-    // Check if job already has an assigned tasker
     if (job.assigned_tasker_id) {
       return { success: false, error: "Job already has an assigned tasker" };
     }
 
-    // Check if user has already applied to this job
     const { data: existingApplication, error: existingError } = await supabase
       .from("job_applications")
       .select("id")
@@ -1362,7 +1369,6 @@ export async function createJobApplication(
       return { success: false, error: "You have already applied to this job" };
     }
 
-    // Check application limit
     if (
       job.max_applications &&
       job.current_applications >= job.max_applications
@@ -1373,7 +1379,6 @@ export async function createJobApplication(
       };
     }
 
-    // Final verification: ensure user exists in users table before creating application
     const { data: finalUserCheck, error: finalUserCheckError } = await supabase
       .from("users")
       .select("id")
@@ -1387,23 +1392,25 @@ export async function createJobApplication(
       });
       return {
         success: false,
-        error: "Error verifying your account. Please try again or contact support.",
+        error:
+          "Error verifying your account. Please try again or contact support.",
       };
     }
 
     if (!finalUserCheck) {
-      console.error("User does not exist in users table before application creation:", {
-        userId: user.id,
-        email: user.email,
-      });
+      console.error(
+        "User does not exist in users table before application creation:",
+        {
+          userId: user.id,
+          email: user.email,
+        }
+      );
       return {
         success: false,
         error: "Your account is not properly set up. Please contact support.",
       };
     }
 
-    // Create the job application
-    // Convert estimated_duration to integer (round to nearest integer)
     const estimatedDurationInt = applicationData.estimated_duration
       ? Math.round(applicationData.estimated_duration)
       : null;
@@ -1444,22 +1451,21 @@ export async function createJobApplication(
         userId: user.id,
         userExists: !!finalUserCheck,
       });
-      
-      // Check if it's a foreign key constraint error
+
       if (applicationError.code === "23503") {
         return {
           success: false,
-          error: "Your account is not properly set up. The system cannot verify your user account. Please contact support.",
+          error:
+            "Your account is not properly set up. The system cannot verify your user account. Please contact support.",
         };
       }
-      
+
       return {
         success: false,
         error: `Failed to create application: ${applicationError.message}`,
       };
     }
 
-    // Update job application count
     const { error: updateCountError } = await supabase
       .from("jobs")
       .update({
@@ -1470,10 +1476,8 @@ export async function createJobApplication(
 
     if (updateCountError) {
       console.error("Error updating job application count:", updateCountError);
-      // Don't fail the application creation for this
     }
 
-    // Create notification for the customer that a new application was received
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
       const notificationTranslations = await getNotificationTranslationsForUser(
@@ -1501,7 +1505,6 @@ export async function createJobApplication(
           customerId: job.customer_id,
           jobId: applicationData.job_id,
         });
-        // Don't fail the operation for this
       } else {
         console.log("Notification created successfully (application_received):", {
           customerId: job.customer_id,
@@ -1522,20 +1525,12 @@ export async function createJobApplication(
   }
 }
 
-/**
- * Get jobs assigned to a tasker
- */
-/**
- * Start a job - Change status from 'assigned' to 'in_progress' and set started_at
- * Only the assigned tasker can start the job
- */
 export async function startJob(
   jobId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
   try {
-    // Get the current user (tasker)
     const {
       data: { user },
       error: userError,
@@ -1552,7 +1547,6 @@ export async function startJob(
 
     const taskerId = user.id;
 
-    // Get the job and verify it's assigned to this tasker
     const { data: job, error: fetchError } = await supabase
       .from("jobs")
       .select("id, assigned_tasker_id, status, customer_id, title")
@@ -1563,7 +1557,6 @@ export async function startJob(
       return { success: false, error: "Job not found" };
     }
 
-    // Verify the job is assigned to this tasker
     if (job.assigned_tasker_id !== taskerId) {
       return {
         success: false,
@@ -1571,7 +1564,6 @@ export async function startJob(
       };
     }
 
-    // Verify the job status is 'assigned'
     if (job.status !== "assigned") {
       return {
         success: false,
@@ -1579,7 +1571,6 @@ export async function startJob(
       };
     }
 
-    // Update the job: change status to 'in_progress' and set started_at
     const { error: updateError } = await supabase
       .from("jobs")
       .update({
@@ -1598,11 +1589,12 @@ export async function startJob(
       });
       return {
         success: false,
-        error: `Failed to start job: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+        error: `Failed to start job: ${updateError.message}${
+          updateError.hint ? ` (${updateError.hint})` : ""
+        }`,
       };
     }
 
-    // Create notification for the customer that the tasker has started the job
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
       const notificationTranslations = await getNotificationTranslationsForUser(
@@ -1630,7 +1622,6 @@ export async function startJob(
           customerId: job.customer_id,
           jobId: jobId,
         });
-        // Don't fail the operation for this
       } else {
         console.log("Notification created successfully (job_started):", {
           customerId: job.customer_id,
@@ -1639,7 +1630,6 @@ export async function startJob(
       }
     }
 
-    // Revalidate relevant paths
     revalidatePath("/tasker/my-jobs");
     revalidatePath(`/tasker/my-jobs/${jobId}`);
     revalidatePath("/customer/my-jobs");
@@ -1657,17 +1647,12 @@ export async function startJob(
   }
 }
 
-/**
- * Complete a job - Change status from 'in_progress' to 'completed' and set completed_at
- * Only the assigned tasker can complete the job
- */
 export async function completeJob(
   jobId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
   try {
-    // Get the current user (tasker)
     const {
       data: { user },
       error: userError,
@@ -1684,7 +1669,6 @@ export async function completeJob(
 
     const taskerId = user.id;
 
-    // Get the job and verify it's assigned to this tasker
     const { data: job, error: fetchError } = await supabase
       .from("jobs")
       .select("id, assigned_tasker_id, status, customer_id, title")
@@ -1695,7 +1679,6 @@ export async function completeJob(
       return { success: false, error: "Job not found" };
     }
 
-    // Verify the job is assigned to this tasker
     if (job.assigned_tasker_id !== taskerId) {
       return {
         success: false,
@@ -1703,7 +1686,6 @@ export async function completeJob(
       };
     }
 
-    // Verify the job status is 'in_progress'
     if (job.status !== "in_progress") {
       return {
         success: false,
@@ -1711,7 +1693,6 @@ export async function completeJob(
       };
     }
 
-    // Update the job: change status to 'completed' and set completed_at
     const { error: updateError } = await supabase
       .from("jobs")
       .update({
@@ -1735,11 +1716,12 @@ export async function completeJob(
       );
       return {
         success: false,
-        error: `${errorMessage}: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+        error: `${errorMessage}: ${updateError.message}${
+          updateError.hint ? ` (${updateError.hint})` : ""
+        }`,
       };
     }
 
-    // Create notification for the customer that the tasker has completed the job
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
       const notificationTranslations = await getNotificationTranslationsForUser(
@@ -1767,7 +1749,6 @@ export async function completeJob(
           customerId: job.customer_id,
           jobId: jobId,
         });
-        // Don't fail the operation for this
       } else {
         console.log("Notification created successfully (job_completed):", {
           customerId: job.customer_id,
@@ -1776,7 +1757,6 @@ export async function completeJob(
       }
     }
 
-    // Revalidate relevant paths
     revalidatePath("/tasker/my-jobs");
     revalidatePath(`/tasker/my-jobs/${jobId}`);
     revalidatePath("/customer/my-jobs");
@@ -1794,17 +1774,12 @@ export async function completeJob(
   }
 }
 
-/**
- * Confirm job completion - Customer confirms that the tasker has completed the job
- * Only the customer who owns the job can confirm completion
- */
 export async function confirmJobCompletion(
   jobId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
   try {
-    // Get the current user (customer)
     const {
       data: { user },
       error: userError,
@@ -1821,10 +1796,11 @@ export async function confirmJobCompletion(
 
     const customerId = user.id;
 
-    // Get the job and verify it belongs to this customer
     const { data: job, error: fetchError } = await supabase
       .from("jobs")
-      .select("id, customer_id, status, completed_at, customer_confirmed_at, title, assigned_tasker_id, final_price, customer_budget, currency")
+      .select(
+        "id, customer_id, status, completed_at, customer_confirmed_at, title, assigned_tasker_id, final_price, customer_budget, currency"
+      )
       .eq("id", jobId)
       .single();
 
@@ -1832,7 +1808,6 @@ export async function confirmJobCompletion(
       return { success: false, error: "Job not found" };
     }
 
-    // Verify the job belongs to this customer
     if (job.customer_id !== customerId) {
       return {
         success: false,
@@ -1840,7 +1815,6 @@ export async function confirmJobCompletion(
       };
     }
 
-    // Verify the job status is 'completed'
     if (job.status !== "completed") {
       return {
         success: false,
@@ -1848,7 +1822,6 @@ export async function confirmJobCompletion(
       };
     }
 
-    // Verify the job has been completed by the tasker
     if (!job.completed_at) {
       return {
         success: false,
@@ -1856,7 +1829,6 @@ export async function confirmJobCompletion(
       };
     }
 
-    // Verify the job hasn't already been confirmed
     if (job.customer_confirmed_at) {
       return {
         success: false,
@@ -1864,7 +1836,6 @@ export async function confirmJobCompletion(
       };
     }
 
-    // Extract values to avoid serialization issues
     const taskerId = String(job.assigned_tasker_id || "");
     const finalPrice = Number(job.final_price || job.customer_budget || 0);
     const currency = String(job.currency || "MAD");
@@ -1880,7 +1851,6 @@ export async function confirmJobCompletion(
       hasPrice: finalPrice > 0,
     });
 
-    // Get tasker's current wallet balance for payment processing
     let taskerWalletBalance = 0;
     if (taskerId) {
       const { data: taskerData, error: taskerError } = await supabase
@@ -1896,7 +1866,6 @@ export async function confirmJobCompletion(
       }
     }
 
-    // Update the job: set customer_confirmed_at
     const { error: updateError } = await supabase
       .from("jobs")
       .update({
@@ -1914,15 +1883,16 @@ export async function confirmJobCompletion(
       });
       return {
         success: false,
-        error: `Failed to confirm job completion: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+        error: `Failed to confirm job completion: ${updateError.message}${
+          updateError.hint ? ` (${updateError.hint})` : ""
+        }`,
       };
     }
 
     console.log("✅ Job confirmed: customer_confirmed_at set");
 
-    // --- Payment Processing ---
     if (taskerId && finalPrice > 0) {
-      const platformFeeRate = 0.10; // 10% platform fee
+      const platformFeeRate = 0.1;
       const totalAmount = finalPrice;
       const platformFee = totalAmount * platformFeeRate;
       const netAmount = totalAmount - platformFee;
@@ -1937,7 +1907,6 @@ export async function confirmJobCompletion(
         currentWalletBalance: taskerWalletBalance,
       });
 
-      // 1. Create a transaction record
       console.log("💳 Attempting to create transaction:", {
         job_id: jobId,
         booking_id: null,
@@ -1953,7 +1922,7 @@ export async function confirmJobCompletion(
         .from("transactions")
         .insert({
           job_id: jobId,
-          booking_id: null, // No booking_id for jobs
+          booking_id: null,
           payer_id: customerId,
           payee_id: taskerId,
           transaction_type: "job_payment",
@@ -1966,19 +1935,20 @@ export async function confirmJobCompletion(
         .single();
 
       if (transactionError) {
-        console.error("❌ CRITICAL: Error creating transaction for job completion:", {
-          message: transactionError.message,
-          code: transactionError.code,
-          details: transactionError.details,
-          hint: transactionError.hint,
-          jobId,
-          taskerId,
-          customerId,
-          totalAmount,
-          platformFee,
-        });
-        // Continue with wallet and stats updates even if transaction creation fails
-        // But log this as a critical error
+        console.error(
+          "❌ CRITICAL: Error creating transaction for job completion:",
+          {
+            message: transactionError.message,
+            code: transactionError.code,
+            details: transactionError.details,
+            hint: transactionError.hint,
+            jobId,
+            taskerId,
+            customerId,
+            totalAmount,
+            platformFee,
+          }
+        );
       } else {
         console.log("✅ Transaction created successfully:", {
           transactionId: transaction?.id,
@@ -1988,10 +1958,8 @@ export async function confirmJobCompletion(
         });
       }
 
-      // 2. Update tasker's wallet balance - DÉDUIRE les frais de plateforme
-      // Le wallet est un crédit donné par l'admin, on déduit les frais à chaque transaction
       const newWalletBalance = taskerWalletBalance - platformFee;
-      
+
       console.log(`[confirmJobCompletion] Wallet update calculation:`, {
         taskerId,
         currentBalance: taskerWalletBalance,
@@ -2000,7 +1968,7 @@ export async function confirmJobCompletion(
         jobId,
         transactionId: transaction?.id,
       });
-      
+
       if (newWalletBalance < 0) {
         console.error("❌ CRITICAL: Wallet balance would be negative:", {
           taskerId,
@@ -2014,16 +1982,15 @@ export async function confirmJobCompletion(
         };
       }
 
-      // Use service role client to bypass RLS for wallet updates
-      // Fallback to regular client if service role is not available
       let walletUpdateError;
       let walletUpdateSuccess = false;
-      
+
       const serviceSupabase = createServiceRoleClient();
       if (serviceSupabase) {
-        // Service role client is available - use it (bypasses RLS)
         try {
-          console.log(`[confirmJobCompletion] Attempting wallet update with service role client for tasker ${taskerId}`);
+          console.log(
+            `[confirmJobCompletion] Attempting wallet update with service role client for tasker ${taskerId}`
+          );
           const result = await serviceSupabase
             .from("users")
             .update({ wallet_balance: newWalletBalance })
@@ -2032,17 +1999,23 @@ export async function confirmJobCompletion(
           walletUpdateError = result.error;
           if (!walletUpdateError && result.data && result.data.length > 0) {
             walletUpdateSuccess = true;
-            console.log(`[confirmJobCompletion] ✅ Wallet updated successfully. New balance: ${result.data[0].wallet_balance}`);
+            console.log(
+              `[confirmJobCompletion] ✅ Wallet updated successfully. New balance: ${result.data[0].wallet_balance}`
+            );
           }
         } catch (serviceRoleError) {
           console.error("❌ Error using service role client:", serviceRoleError);
-          walletUpdateError = serviceRoleError instanceof Error ? serviceRoleError : new Error(String(serviceRoleError));
+          walletUpdateError =
+            serviceRoleError instanceof Error
+              ? serviceRoleError
+              : new Error(String(serviceRoleError));
         }
       }
-      
-      // If service role client is not available or failed, try with regular client (RLS must allow it)
+
       if (!walletUpdateSuccess && !serviceSupabase) {
-        console.warn("⚠️ Service role client not available, attempting with regular client (RLS must allow wallet_balance updates)");
+        console.warn(
+          "⚠️ Service role client not available, attempting with regular client (RLS must allow wallet_balance updates)"
+        );
         const { error, data } = await supabase
           .from("users")
           .update({ wallet_balance: newWalletBalance })
@@ -2051,9 +2024,14 @@ export async function confirmJobCompletion(
         walletUpdateError = error;
         if (!walletUpdateError && data && data.length > 0) {
           walletUpdateSuccess = true;
-          console.log(`[confirmJobCompletion] ✅ Wallet updated successfully with regular client. New balance: ${data[0].wallet_balance}`);
+          console.log(
+            `[confirmJobCompletion] ✅ Wallet updated successfully with regular client. New balance: ${data[0].wallet_balance}`
+          );
         } else if (walletUpdateError) {
-          console.error("❌ Regular client also failed to update wallet:", walletUpdateError);
+          console.error(
+            "❌ Regular client also failed to update wallet:",
+            walletUpdateError
+          );
         }
       }
 
@@ -2073,16 +2051,18 @@ export async function confirmJobCompletion(
           error: `Failed to update wallet: ${walletUpdateError.message}`,
         };
       }
-      
+
       if (!walletUpdateSuccess) {
-        console.error("❌ CRITICAL: Wallet update appeared to succeed but no data returned:", {
-          taskerId,
-          currentBalance: taskerWalletBalance,
-          platformFee,
-          newBalance: newWalletBalance,
-          walletUpdateError,
-        });
-        // Verify the wallet was actually updated by fetching it
+        console.error(
+          "❌ CRITICAL: Wallet update appeared to succeed but no data returned:",
+          {
+            taskerId,
+            currentBalance: taskerWalletBalance,
+            platformFee,
+            newBalance: newWalletBalance,
+            walletUpdateError,
+          }
+        );
         try {
           const verifySupabase = createServiceRoleClient();
           const { data: verifyData, error: verifyError } = await verifySupabase
@@ -2090,16 +2070,22 @@ export async function confirmJobCompletion(
             .select("wallet_balance")
             .eq("id", taskerId)
             .single();
-          
+
           if (verifyError) {
-            console.error("❌ CRITICAL: Could not verify wallet update:", verifyError);
+            console.error(
+              "❌ CRITICAL: Could not verify wallet update:",
+              verifyError
+            );
             return {
               success: false,
               error: `Wallet update verification failed: ${verifyError.message}`,
             };
           }
-          
-          if (verifyData && parseFloat(String(verifyData.wallet_balance)) !== newWalletBalance) {
+
+          if (
+            verifyData &&
+            parseFloat(String(verifyData.wallet_balance)) !== newWalletBalance
+          ) {
             console.error("❌ CRITICAL: Wallet was NOT updated correctly!", {
               expected: newWalletBalance,
               actual: verifyData.wallet_balance,
@@ -2110,61 +2096,85 @@ export async function confirmJobCompletion(
               error: `Wallet update failed: Expected ${newWalletBalance} but got ${verifyData.wallet_balance}`,
             };
           } else {
-            console.log(`✅ Wallet update verified: ${verifyData.wallet_balance}`);
+            console.log(
+              `✅ Wallet update verified: ${verifyData.wallet_balance}`
+            );
             walletUpdateSuccess = true;
           }
         } catch (verifyException) {
-          console.error("❌ CRITICAL: Exception verifying wallet update:", verifyException);
+          console.error(
+            "❌ CRITICAL: Exception verifying wallet update:",
+            verifyException
+          );
           return {
             success: false,
-            error: `Wallet update verification exception: ${verifyException instanceof Error ? verifyException.message : 'Unknown error'}`,
+            error: `Wallet update verification exception: ${
+              verifyException instanceof Error
+                ? verifyException.message
+                : "Unknown error"
+            }`,
           };
         }
       }
-      
+
       if (walletUpdateSuccess) {
-        console.log(`✅ Tasker ${taskerId} wallet updated: ${taskerWalletBalance} - ${platformFee} (fees) = ${newWalletBalance}`);
-        
-        // Log wallet transaction for audit trail
+        console.log(
+          `✅ Tasker ${taskerId} wallet updated: ${taskerWalletBalance} - ${platformFee} (fees) = ${newWalletBalance}`
+        );
+
         try {
-          console.log(`[confirmJobCompletion] Attempting to insert wallet_transaction for tasker ${taskerId}, amount: -${platformFee}`);
+          console.log(
+            `[confirmJobCompletion] Attempting to insert wallet_transaction for tasker ${taskerId}, amount: -${platformFee}`
+          );
           const serviceSupabase = createServiceRoleClient();
           if (!serviceSupabase) {
-            console.warn("⚠️ Service role client not available, skipping wallet_transaction logging");
+            console.warn(
+              "⚠️ Service role client not available, skipping wallet_transaction logging"
+            );
           } else {
-            const { data: walletTxData, error: walletTxError } = await serviceSupabase
-              .from("wallet_transactions")
-              .insert({
-                user_id: taskerId,
-                amount: -platformFee, // Negative because it's a deduction
-                type: "fee_deduction",
-                related_job_id: jobId,
-                notes: `Platform fee (10%) deducted for job payment. Transaction ID: ${transaction?.id || 'N/A'}`,
-              })
-              .select()
-              .single();
-            
+            const { data: walletTxData, error: walletTxError } =
+              await serviceSupabase
+                .from("wallet_transactions")
+                .insert({
+                  user_id: taskerId,
+                  amount: -platformFee,
+                  type: "fee_deduction",
+                  related_job_id: jobId,
+                  notes: `Platform fee (10%) deducted for job payment. Transaction ID: ${
+                    transaction?.id || "N/A"
+                  }`,
+                })
+                .select()
+                .single();
+
             if (walletTxError) {
-              console.error("❌ CRITICAL: Failed to insert wallet_transaction:", {
-                error: walletTxError,
-                errorMessage: walletTxError.message,
-                errorCode: walletTxError.code,
-                errorDetails: walletTxError.details,
-                errorHint: walletTxError.hint,
-                taskerId,
-                platformFee,
-                jobId,
-                transactionId: transaction?.id,
-              });
+              console.error(
+                "❌ CRITICAL: Failed to insert wallet_transaction:",
+                {
+                  error: walletTxError,
+                  errorMessage: walletTxError.message,
+                  errorCode: walletTxError.code,
+                  errorDetails: walletTxError.details,
+                  errorHint: walletTxError.hint,
+                  taskerId,
+                  platformFee,
+                  jobId,
+                  transactionId: transaction?.id,
+                }
+              );
             } else {
-              console.log(`✅ Wallet transaction logged successfully: ID ${walletTxData?.id} for tasker ${taskerId}, amount: -${platformFee}`);
+              console.log(
+                `✅ Wallet transaction logged successfully: ID ${walletTxData?.id} for tasker ${taskerId}, amount: -${platformFee}`
+              );
             }
           }
         } catch (walletTransactionError) {
-          // Don't fail the whole operation if wallet_transactions insert fails
           console.error("❌ CRITICAL: Exception inserting wallet_transaction:", {
             error: walletTransactionError,
-            errorMessage: walletTransactionError instanceof Error ? walletTransactionError.message : String(walletTransactionError),
+            errorMessage:
+              walletTransactionError instanceof Error
+                ? walletTransactionError.message
+                : String(walletTransactionError),
             taskerId,
             platformFee,
             jobId,
@@ -2172,67 +2182,92 @@ export async function confirmJobCompletion(
         }
       }
 
-      // 3. Update tasker's user_stats
       const { data: taskerStats, error: taskerStatsFetchError } = await supabase
         .from("user_stats")
         .select("completed_jobs, total_earnings")
         .eq("id", taskerId)
         .maybeSingle();
 
-      if (taskerStatsFetchError && taskerStatsFetchError.code !== "PGRST116") {
+      if (
+        taskerStatsFetchError &&
+        taskerStatsFetchError.code !== "PGRST116"
+      ) {
         console.error("Error fetching tasker stats:", taskerStatsFetchError);
       } else {
         const currentCompletedJobs = taskerStats?.completed_jobs || 0;
-        const currentTotalEarnings = parseFloat(String(taskerStats?.total_earnings || 0));
+        const currentTotalEarnings = parseFloat(
+          String(taskerStats?.total_earnings || 0)
+        );
 
         const { error: taskerStatsUpdateError } = await supabase
           .from("user_stats")
-          .upsert({
-            id: taskerId,
-            completed_jobs: currentCompletedJobs + 1,
-            total_earnings: currentTotalEarnings + netAmount,
-            updated_at: new Date().toISOString(),
-          }, {
-            onConflict: "id"
-          });
+          .upsert(
+            {
+              id: taskerId,
+              completed_jobs: currentCompletedJobs + 1,
+              total_earnings: currentTotalEarnings + netAmount,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "id",
+            }
+          );
 
         if (taskerStatsUpdateError) {
           console.error("Error updating tasker stats:", taskerStatsUpdateError);
         } else {
-          console.log(`✅ Tasker ${taskerId} stats updated: completed_jobs=${currentCompletedJobs + 1}, total_earnings=${currentTotalEarnings + netAmount}`);
+          console.log(
+            `✅ Tasker ${taskerId} stats updated: completed_jobs=${
+              currentCompletedJobs + 1
+            }, total_earnings=${currentTotalEarnings + netAmount}`
+          );
         }
       }
 
-      // 4. Update customer's user_stats
-      const { data: customerStats, error: customerStatsFetchError } = await supabase
-        .from("user_stats")
-        .select("total_spent")
-        .eq("id", customerId)
-        .maybeSingle();
+      const { data: customerStats, error: customerStatsFetchError } =
+        await supabase
+          .from("user_stats")
+          .select("total_spent")
+          .eq("id", customerId)
+          .maybeSingle();
 
-      if (customerStatsFetchError && customerStatsFetchError.code !== "PGRST116") {
+      if (
+        customerStatsFetchError &&
+        customerStatsFetchError.code !== "PGRST116"
+      ) {
         console.error("Error fetching customer stats:", customerStatsFetchError);
       } else {
-        const currentTotalSpent = parseFloat(String(customerStats?.total_spent || 0));
+        const currentTotalSpent = parseFloat(
+          String(customerStats?.total_spent || 0)
+        );
 
         const { error: customerStatsUpdateError } = await supabase
           .from("user_stats")
-          .upsert({
-            id: customerId,
-            total_spent: currentTotalSpent + totalAmount,
-            updated_at: new Date().toISOString(),
-          }, {
-            onConflict: "id"
-          });
+          .upsert(
+            {
+              id: customerId,
+              total_spent: currentTotalSpent + totalAmount,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "id",
+            }
+          );
 
         if (customerStatsUpdateError) {
-          console.error("Error updating customer stats:", customerStatsUpdateError);
+          console.error(
+            "Error updating customer stats:",
+            customerStatsUpdateError
+          );
         } else {
-          console.log(`✅ Customer ${customerId} stats updated: total_spent=${currentTotalSpent + totalAmount}`);
+          console.log(
+            `✅ Customer ${customerId} stats updated: total_spent=${
+              currentTotalSpent + totalAmount
+            }`
+          );
         }
       }
 
-      // 5. Create notification for customer about payment processed
       const customerPaymentTranslations = await getNotificationTranslationsForUser(
         customerId,
         "payment_received",
@@ -2249,10 +2284,12 @@ export async function confirmJobCompletion(
           is_read: false,
         });
       if (customerPaymentNotificationError) {
-        console.error("Error creating customer payment notification:", customerPaymentNotificationError);
+        console.error(
+          "Error creating customer payment notification:",
+          customerPaymentNotificationError
+        );
       }
 
-      // 6. Create notification for tasker - Job Confirmed by Customer (special case)
       const taskerLocale = await getUserLocale(taskerId);
       const taskerConfirmedTitle = await getTranslatedString(
         taskerLocale,
@@ -2275,7 +2312,10 @@ export async function confirmJobCompletion(
           is_read: false,
         });
       if (taskerNotificationError) {
-        console.error("Error creating tasker notification:", taskerNotificationError);
+        console.error(
+          "Error creating tasker notification:",
+          taskerNotificationError
+        );
       }
     } else {
       console.warn("⚠️ Payment processing skipped:", {
@@ -2284,7 +2324,6 @@ export async function confirmJobCompletion(
       });
     }
 
-    // Revalidate relevant paths
     revalidatePath("/customer/my-jobs");
     revalidatePath(`/customer/my-jobs/${jobId}`);
     revalidatePath("/tasker/my-jobs");
@@ -2305,18 +2344,12 @@ export async function confirmJobCompletion(
   }
 }
 
-/**
- * Approve a job by admin - Changes job status from "under_review" to "active"
- * and sends a notification to the customer
- * Only admins can call this function
- */
 export async function approveJobByAdmin(
   jobId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
   try {
-    // Get the current user
     const {
       data: { user },
       error: userError,
@@ -2331,7 +2364,6 @@ export async function approveJobByAdmin(
       return { success: false, error: errorMessage };
     }
 
-    // Verify the user is an admin
     const { data: userData, error: userDataError } = await supabase
       .from("users")
       .select("role")
@@ -2346,7 +2378,6 @@ export async function approveJobByAdmin(
       return { success: false, error: "Only admins can approve jobs" };
     }
 
-    // Get the job and verify it exists and is in "under_review" status
     const { data: job, error: fetchError } = await supabase
       .from("jobs")
       .select("id, customer_id, status, title")
@@ -2357,7 +2388,6 @@ export async function approveJobByAdmin(
       return { success: false, error: "Job not found" };
     }
 
-    // Verify the job is in "under_review" status
     if (job.status !== "under_review") {
       return {
         success: false,
@@ -2365,7 +2395,6 @@ export async function approveJobByAdmin(
       };
     }
 
-    // Update the job status to "active"
     const { error: updateError } = await supabase
       .from("jobs")
       .update({
@@ -2383,11 +2412,12 @@ export async function approveJobByAdmin(
       });
       return {
         success: false,
-        error: `Failed to approve job: ${updateError.message}${updateError.hint ? ` (${updateError.hint})` : ""}`,
+        error: `Failed to approve job: ${updateError.message}${
+          updateError.hint ? ` (${updateError.hint})` : ""
+        }`,
       };
     }
 
-    // Create notification for the customer that their job has been approved
     if (job.customer_id) {
       const jobTitle = job.title || "your job";
       const notificationTranslations = await getNotificationTranslationsForUser(
@@ -2415,7 +2445,6 @@ export async function approveJobByAdmin(
           customerId: job.customer_id,
           jobId: jobId,
         });
-        // Don't fail the operation for this, but log the error
       } else {
         console.log("Notification created successfully (job_approved):", {
           customerId: job.customer_id,
@@ -2424,7 +2453,6 @@ export async function approveJobByAdmin(
       }
     }
 
-    // Revalidate relevant paths
     revalidatePath("/customer/my-jobs");
     revalidatePath(`/customer/my-jobs/${jobId}`);
     revalidatePath("/customer/dashboard");
@@ -2448,18 +2476,19 @@ export async function getTaskerJobs(
 }> {
   const supabase = await createClient();
 
-  // Get job IDs where tasker has accepted application
-  const { data: acceptedApplications, error: acceptedAppsError } = await supabase
-    .from("job_applications")
-    .select("job_id")
-    .eq("tasker_id", taskerId)
-    .eq("status", "accepted");
+  const { data: acceptedApplications, error: acceptedAppsError } =
+    await supabase
+      .from("job_applications")
+      .select("job_id")
+      .eq("tasker_id", taskerId)
+      .eq("status", "accepted");
 
   const acceptedJobIds = acceptedAppsError
     ? []
-    : (acceptedApplications || []).map((app) => app.job_id).filter((id) => id !== null);
+    : (acceptedApplications || [])
+        .map((app) => app.job_id)
+        .filter((id) => id !== null);
 
-  // Get job IDs assigned to this tasker
   const { data: assignedJobs, error: assignedError } = await supabase
     .from("jobs")
     .select("id")
@@ -2471,10 +2500,8 @@ export async function getTaskerJobs(
 
   const assignedJobIds = (assignedJobs || []).map((job) => job.id);
 
-  // Combine both lists (remove duplicates)
   const allJobIds = [...new Set([...assignedJobIds, ...acceptedJobIds])];
 
-  // Get total count
   let total = 0;
   if (includeTotal || offset === 0) {
     if (allJobIds.length > 0) {
@@ -2485,7 +2512,9 @@ export async function getTaskerJobs(
 
       if (countError) {
         console.error("Error fetching tasker jobs count:", countError);
-        throw new Error(`Failed to fetch tasker jobs count: ${countError.message}`);
+        throw new Error(
+          `Failed to fetch tasker jobs count: ${countError.message}`
+        );
       }
       total = count || 0;
     } else {
@@ -2493,11 +2522,8 @@ export async function getTaskerJobs(
     }
   }
 
-  // Build the query: jobs assigned to this tasker OR jobs where tasker has accepted application
-  let query = supabase
-    .from("jobs")
-    .select(
-      `
+  let query = supabase.from("jobs").select(
+    `
       *,
       application_count:job_applications(count),
       address:addresses(
@@ -2522,16 +2548,14 @@ export async function getTaskerJobs(
         )
       )
     `
-    );
+  );
 
   if (allJobIds.length > 0) {
     query = query.in("id", allJobIds);
   } else {
-    // Fallback: if no jobs found, return empty result
-    query = query.eq("id", "00000000-0000-0000-0000-000000000000"); // Non-existent ID
+    query = query.eq("id", "00000000-0000-0000-0000-000000000000");
   }
 
-  // First, get all jobs without ordering to sort them by status priority
   const { data: allJobs, error: fetchError } = await query;
 
   if (fetchError) {
@@ -2539,8 +2563,6 @@ export async function getTaskerJobs(
     throw new Error(`Failed to fetch tasker jobs: ${fetchError.message}`);
   }
 
-  // Sort jobs by status priority: active jobs first, then completed
-  // Priority order: assigned > in_progress > completed > others
   const statusPriority: Record<string, number> = {
     assigned: 1,
     in_progress: 2,
@@ -2551,38 +2573,35 @@ export async function getTaskerJobs(
     const statusA = statusPriority[a.status || ""] || 999;
     const statusB = statusPriority[b.status || ""] || 999;
 
-    // First sort by status priority
     if (statusA !== statusB) {
       return statusA - statusB;
     }
 
-    // If same status, sort by created_at (newest first)
     const dateA = new Date(a.created_at || 0).getTime();
     const dateB = new Date(b.created_at || 0).getTime();
     return dateB - dateA;
   });
 
-  // Apply pagination after sorting
   const paginatedJobs = sortedJobs.slice(offset, offset + limit);
-
-  // Check if there are more items
   const hasMore = sortedJobs.length > offset + limit;
   const jobs = paginatedJobs;
 
-  // Format the data and add category names from database or fallback to local
   const formattedJobs: JobWithDetails[] = jobs.map((job) => {
-    // Try to get category name from database relation first
     const service = job.service as any;
-    const categoryName = service?.category?.name_en || 
+    const categoryName =
+      service?.category?.name_en ||
       (() => {
-        // Fallback to local categories
-        const { categoryName } = getCategoryAndServiceNamesSync(job.service_id);
+        const { categoryName } = getCategoryAndServiceNamesSync(
+          job.service_id
+        );
         return categoryName;
       })();
-    const serviceName = service?.name_en || 
+    const serviceName =
+      service?.name_en ||
       (() => {
-        // Fallback to local categories
-        const { serviceName } = getCategoryAndServiceNamesSync(job.service_id);
+        const { serviceName } = getCategoryAndServiceNamesSync(
+          job.service_id
+        );
         return serviceName;
       })();
 
@@ -2594,11 +2613,9 @@ export async function getTaskerJobs(
       street_address: job.address?.street_address,
       city: job.address?.city,
       region: job.address?.region,
-      // For tasker view, we don't need assigned_tasker info (it's the tasker themselves)
       assigned_tasker_first_name: null,
       assigned_tasker_last_name: null,
       assigned_tasker_avatar: null,
-      // Add customer info for tasker view
       customer_first_name: (job.customer as any)?.first_name || null,
       customer_last_name: (job.customer as any)?.last_name || null,
       customer_avatar_url: (job.customer as any)?.avatar_url || null,
@@ -2708,13 +2725,12 @@ export async function getJobWithCustomerDetails(
 
     if (error) {
       if (error.code === "PGRST116") {
-        return null; // Job not found
+        return null;
       }
       console.error("Error fetching job:", error);
       throw new Error(`Failed to fetch job: ${error.message}`);
     }
 
-    // Get category and service names from database
     const categoryName = data.service?.category?.name_en || "Unknown Category";
     const serviceName = data.service?.name_en || "Unknown Service";
 

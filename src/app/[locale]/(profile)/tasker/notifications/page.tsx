@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { formatDateShort } from "@/lib/date-utils";
 import { useUserStore } from "@/stores/userStore";
 import type { Notification, NotificationType } from "@/types/supabase";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -195,6 +195,7 @@ export default function NotificationsPage() {
   const { user } = useUserStore();
   const t = useTranslations("notifications");
   const router = useRouter();
+  const { toast } = useToast();
 
   // Check user role and redirect if needed
   useEffect(() => {
@@ -221,6 +222,97 @@ export default function NotificationsPage() {
   const [total, setTotal] = useState(0);
   const [totalRead, setTotalRead] = useState(0);
   const [totalUnread, setTotalUnread] = useState(0);
+
+  // Function to get redirect URL based on notification type and related fields
+  const getNotificationRedirectUrl = useCallback((notification: Notification): string | null => {
+    // Priority 1: Use action_url if available
+    if (notification.action_url) {
+      return notification.action_url;
+    }
+
+    // Priority 2: Booking-related notifications
+    if (notification.related_booking_id) {
+      return `/tasker/bookings/${notification.related_booking_id}`;
+    }
+
+    // Priority 3: Job-related notifications
+    if (notification.related_job_id) {
+      // For tasker's assigned jobs
+      if (
+        notification.type === "application_accepted" ||
+        notification.type === "job_started" ||
+        notification.type === "job_completed" ||
+        notification.type === "payment_received"
+      ) {
+        return `/tasker/my-jobs/${notification.related_job_id}`;
+      }
+      // For job offers visible to taskers
+      return `/job-offer/${notification.related_job_id}`;
+    }
+
+    // Priority 4: Service-related notifications
+    if (notification.related_service_id) {
+      // For tasker's own services
+      if (
+        notification.type === "service_created" ||
+        notification.type === "service_updated"
+      ) {
+        return `/tasker/my-services/${notification.related_service_id}`;
+      }
+      // For public service offers
+      return `/service-offer/${notification.related_service_id}`;
+    }
+
+    // Priority 5: Message-related notifications (redirect to messages page)
+    if (notification.type === "message_received") {
+      // If related to a job, try to find the conversation
+      if (notification.related_job_id) {
+        return `/tasker/messages`; // Will need to find conversation by job_id
+      }
+      return `/tasker/messages`;
+    }
+
+    // Priority 6: User profile
+    if (notification.related_user_id) {
+      return `/profile/${notification.related_user_id}`;
+    }
+
+    // Default: no redirect
+    return null;
+  }, []);
+
+  // Handle notification click
+  const handleNotificationClick = useCallback(
+    async (notification: Notification) => {
+      const redirectUrl = getNotificationRedirectUrl(notification);
+      
+      if (redirectUrl) {
+        // Mark as read if not already read
+        if (!notification.is_read && user?.id) {
+          try {
+            await markNotificationAsRead(notification.id, user.id);
+            // Update local state
+            setNotifications((prev) =>
+              prev.map((n) =>
+                n.id === notification.id ? { ...n, is_read: true } : n
+              )
+            );
+            // Update counts
+            if (totalUnread > 0) {
+              setTotalUnread((prev) => Math.max(0, prev - 1));
+              setTotalRead((prev) => prev + 1);
+            }
+          } catch (error) {
+            console.error("Error marking notification as read:", error);
+          }
+        }
+        
+        // Navigate to the redirect URL
+        router.push(redirectUrl);
+      }
+    },
+    [getNotificationRedirectUrl, router, totalUnread]
+  );
 
   // Fetch notifications with pagination (10 per page)
   const fetchNotifications = useCallback(
@@ -256,7 +348,10 @@ export default function NotificationsPage() {
           console.error("Error fetching notifications:", result.error);
           setError(t("errors.fetchFailed"));
           if (!append) {
-            toast.error(t("errors.fetchFailed"));
+            toast({
+              variant: "destructive",
+              title: t("errors.fetchFailed"),
+            });
           }
         } else {
           if (append) {
@@ -299,7 +394,10 @@ export default function NotificationsPage() {
         console.error("Unexpected error:", err);
         setError(t("errors.fetchFailed"));
         if (!append) {
-          toast.error(t("errors.fetchFailed"));
+          toast({
+            variant: "destructive",
+            title: t("errors.fetchFailed"),
+          });
         }
       } finally {
         setLoading(false);
@@ -409,13 +507,23 @@ export default function NotificationsPage() {
           )
         );
         setUnreadCount((prev) => Math.max(0, prev - 1));
-        toast.success(t("success.markedAsRead"));
+        toast({
+          variant: "success",
+          title: t("success.markedAsRead"),
+        });
       } else {
-        toast.error(result.error || t("errors.markReadFailed"));
+        toast({
+          variant: "destructive",
+          title: t("errors.markReadFailed"),
+          description: result.error,
+        });
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      toast.error(t("errors.markReadFailed"));
+      toast({
+        variant: "destructive",
+        title: t("errors.markReadFailed"),
+      });
     }
   };
 
@@ -432,13 +540,23 @@ export default function NotificationsPage() {
         if (notification && !notification.is_read) {
           setUnreadCount((prev) => Math.max(0, prev - 1));
         }
-        toast.success(t("success.deleted"));
+        toast({
+          variant: "success",
+          title: t("success.deleted"),
+        });
       } else {
-        toast.error(result.error || t("errors.deleteFailed"));
+        toast({
+          variant: "destructive",
+          title: t("errors.deleteFailed"),
+          description: result.error,
+        });
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      toast.error(t("errors.deleteFailed"));
+      toast({
+        variant: "destructive",
+        title: t("errors.deleteFailed"),
+      });
     }
   };
 
@@ -452,13 +570,23 @@ export default function NotificationsPage() {
       if (result.success) {
         setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
         setUnreadCount(0);
-        toast.success(t("success.allMarkedAsRead"));
+        toast({
+          variant: "success",
+          title: t("success.allMarkedAsRead"),
+        });
       } else {
-        toast.error(result.error || t("errors.markAllReadFailed"));
+        toast({
+          variant: "destructive",
+          title: t("errors.markAllReadFailed"),
+          description: result.error,
+        });
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      toast.error(t("errors.markAllReadFailed"));
+      toast({
+        variant: "destructive",
+        title: t("errors.markAllReadFailed"),
+      });
     }
   };
 
@@ -484,11 +612,12 @@ export default function NotificationsPage() {
             (n) => selectedNotifications.has(n.id) && !n.is_read
           ).length;
           setUnreadCount((prev) => Math.max(0, prev - deletedUnreadCount));
-          toast.success(
-            t("success.bulkDeleted", {
+          toast({
+            variant: "success",
+            title: t("success.bulkDeleted", {
               count: result.count || notificationIds.length,
-            })
-          );
+            }),
+          });
         } else {
           setNotifications((prev) =>
             prev.map((n) =>
@@ -508,21 +637,29 @@ export default function NotificationsPage() {
             setUnreadCount((prev) => prev + affectedUnreadCount);
           }
 
-          toast.success(
-            t(`success.bulkMarked${action}`, {
+          toast({
+            variant: "success",
+            title: t(`success.bulkMarked${action}`, {
               count: result.count || notificationIds.length,
-            })
-          );
+            }),
+          });
         }
 
         setSelectedNotifications(new Set());
         setBulkActionMode(false);
       } else {
-        toast.error(result.error || t("errors.bulkActionFailed"));
+        toast({
+          variant: "destructive",
+          title: t("errors.bulkActionFailed"),
+          description: result.error,
+        });
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      toast.error(t("errors.bulkActionFailed"));
+      toast({
+        variant: "destructive",
+        title: t("errors.bulkActionFailed"),
+      });
     }
   };
 
@@ -969,7 +1106,11 @@ export default function NotificationsPage() {
                   </div>
 
                   <div className="space-y-3">
-                    {notifications.map((notification, index) => (
+                    {notifications.map((notification, index) => {
+                      const redirectUrl = getNotificationRedirectUrl(notification);
+                      const isClickable = !!redirectUrl;
+                      
+                      return (
                       <Card
                         key={notification.id}
                         id={`notification-${notification.id}`}
@@ -981,9 +1122,18 @@ export default function NotificationsPage() {
                           selectedNotifications.has(notification.id)
                             ? "ring-2 ring-primary/50 bg-primary/5"
                             : ""
+                        } ${
+                          isClickable && !bulkActionMode
+                            ? "cursor-pointer"
+                            : ""
                         }`}
                         style={{
                           animationDelay: `${index * 50}ms`,
+                        }}
+                        onClick={() => {
+                          if (isClickable && !bulkActionMode) {
+                            handleNotificationClick(notification);
+                          }
                         }}
                       >
                         <CardContent className="p-4 sm:p-6">
@@ -1164,7 +1314,8 @@ export default function NotificationsPage() {
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                    );
+                    })}
                   </div>
                 </div>
               )

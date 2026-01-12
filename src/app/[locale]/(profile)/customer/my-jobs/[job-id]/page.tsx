@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/BackButton";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   Edit,
@@ -24,9 +24,11 @@ import {
   User,
   UserCheck,
   Copy,
+  DollarSign,
+  Play,
 } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 import {
   getJobById,
@@ -40,6 +42,16 @@ import {
 import { checkReviewExists } from "@/actions/reviews";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
 import ReviewForm from "@/components/reviews/ReviewForm";
+import { updateJobSchema, type UpdateJobSchema } from "@/lib/schemas/jobs";
+import { getServiceCategories, getServices } from "@/actions/services";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+import type { ServiceCategory, Service } from "@/types/supabase";
 
 interface JobDetailsData {
   id: string;
@@ -89,13 +101,16 @@ interface JobDetailsData {
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const { toast } = useToast();
   const [data, setData] = useState<JobDetailsData | null>(null);
   const [applications, setApplications] = useState<JobApplicationWithDetails[]>(
     []
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  // Activate edit mode if we're on the /edit route
+  const [isEditing, setIsEditing] = useState(pathname?.endsWith('/edit') || false);
   const [isAssigning, setIsAssigning] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [reviewExists, setReviewExists] = useState(false);
@@ -103,6 +118,8 @@ export default function JobDetailPage() {
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
+    categoryId: 0,
+    service_id: 0,
     customer_budget: 0,
     estimated_duration: 0,
     preferred_date: "",
@@ -111,6 +128,9 @@ export default function JobDetailPage() {
     is_flexible: false,
     requirements: "",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
     const fetchJobData = async () => {
@@ -121,6 +141,45 @@ export default function JobDetailPage() {
       }
 
       try {
+        // Fetch categories and services
+        const [categoriesResult, servicesResult] = await Promise.all([
+          getServiceCategories(),
+          getServices(),
+        ]);
+
+        if (categoriesResult.success && categoriesResult.categories) {
+          setCategories(categoriesResult.categories as ServiceCategory[]);
+        } else {
+          // Fallback to local categories
+          const hierarchies = getAllCategoryHierarchies();
+          const localCategories = hierarchies.map(({ parent }) => ({
+            ...parent,
+            id: parent.id,
+            is_active: true,
+            sort_order: parent.id,
+          })) as unknown as ServiceCategory[];
+          setCategories(localCategories);
+        }
+
+        if (servicesResult.success && servicesResult.services) {
+          setServices(servicesResult.services as Service[]);
+        } else {
+          // Fallback to local services
+          const hierarchies = getAllCategoryHierarchies();
+          const allServices: Service[] = [];
+          hierarchies.forEach(({ parent, subcategories }) => {
+            subcategories.forEach((service) => {
+              allServices.push({
+                ...service,
+                category_id: parent.id,
+                is_active: true,
+                sort_order: service.id,
+              } as unknown as Service);
+            });
+          });
+          setServices(allServices);
+        }
+
         // Fetch job details
         const jobData = await getJobById(params["job-id"]);
         if (!jobData) {
@@ -137,10 +196,18 @@ export default function JobDetailPage() {
           setReviewExists(reviewCheck.exists);
         }
 
+        // Find category for the current service
+        const currentService = servicesResult.success && servicesResult.services
+          ? servicesResult.services.find((s) => s.id === jobData.service_id)
+          : null;
+        const categoryId = currentService?.category_id || 0;
+
         // Initialize edit form
         setEditForm({
           title: jobData.title || "",
           description: jobData.description || "",
+          categoryId: categoryId,
+          service_id: jobData.service_id || 0,
           customer_budget: jobData.customer_budget || 0,
           estimated_duration: jobData.estimated_duration || 0,
           preferred_date: jobData.preferred_date || "",
@@ -178,18 +245,48 @@ export default function JobDetailPage() {
   const handleSave = async () => {
     if (!data) return;
 
-    try {
-      const result = await updateJob(data.id, {
-        title: editForm.title,
-        description: editForm.description,
-        customer_budget: editForm.customer_budget,
-        estimated_duration: editForm.estimated_duration,
-        preferred_date: editForm.preferred_date,
-        preferred_time_start: editForm.preferred_time_start || null,
-        preferred_time_end: editForm.preferred_time_end || null,
-        is_flexible: editForm.is_flexible,
-        requirements: editForm.requirements,
+    // Reset errors
+    setFormErrors({});
+
+    // Prepare form data for validation
+    const formData = {
+      title: editForm.title.trim(),
+      description: editForm.description.trim(),
+      service_id: editForm.service_id,
+      customer_budget: editForm.customer_budget,
+      estimated_duration: editForm.estimated_duration,
+      preferred_date: editForm.preferred_date,
+      preferred_time_start: editForm.preferred_time_start || null,
+      preferred_time_end: editForm.preferred_time_end || null,
+      is_flexible: editForm.is_flexible,
+      requirements: editForm.requirements?.trim() || null,
+    };
+
+    // Validate with Zod
+    const validation = updateJobSchema.safeParse(formData);
+    
+    if (!validation.success) {
+      const errors: Record<string, string> = {};
+      validation.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        errors[field] = issue.message;
       });
+      setFormErrors(errors);
+      
+      // Show toast with first error
+      const firstError = Object.values(errors)[0];
+      if (firstError) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de validation",
+          description: firstError,
+        });
+      }
+      return;
+    }
+
+    try {
+      const result = await updateJob(data.id, validation.data);
 
       if (result.success) {
         // Refresh data
@@ -198,24 +295,47 @@ export default function JobDetailPage() {
           setData(updatedData);
         }
         setIsEditing(false);
+        setFormErrors({});
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: "Job mis à jour avec succès!",
+        });
+        // If we're on the /edit route, redirect to the details page
+        if (pathname?.endsWith('/edit')) {
+          router.push(`/customer/my-jobs/${data.id}`);
+        }
       } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || "Échec de la mise à jour du job",
+        });
         setError(result.error || "Failed to update job");
       }
     } catch (err) {
       console.error("Error updating job:", err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to update job. Please try again.");
-      }
+      const errorMessage = err instanceof Error ? err.message : "Failed to update job. Please try again.";
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: errorMessage,
+      });
+      setError(errorMessage);
     }
   };
 
   const handleCancel = () => {
     if (data) {
+      // Find category for the current service
+      const currentService = services.find((s) => s.id === data.service_id);
+      const categoryId = currentService?.category_id || 0;
+
       setEditForm({
         title: data.title || "",
         description: data.description || "",
+        categoryId: categoryId,
+        service_id: data.service_id || 0,
         customer_budget: data.customer_budget || 0,
         estimated_duration: data.estimated_duration || 0,
         preferred_date: data.preferred_date || "",
@@ -225,8 +345,21 @@ export default function JobDetailPage() {
         requirements: data.requirements || "",
       });
     }
+    setFormErrors({});
     setIsEditing(false);
+    // If we're on the /edit route, redirect to the details page
+    if (pathname?.endsWith('/edit')) {
+      router.push(`/customer/my-jobs/${data?.id}`);
+    }
   };
+
+  // Filter services by selected category
+  const filteredServices = React.useMemo(() => {
+    if (!editForm.categoryId) return [];
+    return services.filter(
+      (service) => service.category_id === editForm.categoryId
+    );
+  }, [services, editForm.categoryId]);
 
   const handleAssignTasker = async (taskerId: string) => {
     if (!data) return;
@@ -382,11 +515,13 @@ export default function JobDetailPage() {
     );
   }
 
-  // Get category information from local data
+  // Get category and service information
   const hierarchies = getAllCategoryHierarchies();
-  const category = hierarchies.find(
-    ({ parent }) => parent.id.toString() === data.service_id.toString()
-  )?.parent;
+  const serviceInfo = hierarchies.find(({ subcategories }) =>
+    subcategories.some((s) => s.id === data.service_id)
+  );
+  const category = serviceInfo?.parent;
+  const service = serviceInfo?.subcategories.find((s) => s.id === data.service_id);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
@@ -440,14 +575,26 @@ export default function JobDetailPage() {
                         });
                         
                         if (result.success && result.jobId) {
-                          toast.success("Job cloned successfully!");
+                          toast({
+                            variant: "success",
+                            title: "Succès",
+                            description: "Job cloné avec succès!",
+                          });
                           router.push(`/customer/my-jobs/${result.jobId}`);
                         } else {
-                          toast.error(result.error || "Failed to clone job");
+                          toast({
+                            variant: "destructive",
+                            title: "Erreur",
+                            description: result.error || "Échec du clonage du job",
+                          });
                         }
                       } catch (error) {
                         console.error("Error cloning job:", error);
-                        toast.error("Failed to clone job");
+                        toast({
+                          variant: "destructive",
+                          title: "Erreur",
+                          description: "Échec du clonage du job",
+                        });
                       }
                     }}
                     className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
@@ -532,93 +679,273 @@ export default function JobDetailPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Job Title
+                        Titre du job *
                       </label>
                       <input
                         type="text"
                         value={editForm.title}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, title: e.target.value })
-                        }
-                        className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
+                        onChange={(e) => {
+                          setEditForm({ ...editForm, title: e.target.value });
+                          // Clear error when user starts typing
+                          if (formErrors.title) {
+                            setFormErrors({ ...formErrors, title: "" });
+                          }
+                        }}
+                        className={`w-full p-3 border rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 resize-none ${
+                          formErrors.title
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-[var(--color-border)] focus:ring-[var(--color-secondary)]"
+                        }`}
                       />
+                      {formErrors.title && (
+                        <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {formErrors.title}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                          Catégorie *
+                        </label>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`w-full justify-between ${
+                                formErrors.service_id
+                                  ? "border-red-500"
+                                  : "border-[var(--color-border)]"
+                              }`}
+                            >
+                              {editForm.categoryId
+                                ? categories.find((c) => c.id === editForm.categoryId)?.name_en ||
+                                  "Sélectionner une catégorie"
+                                : "Sélectionner une catégorie"}
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full">
+                            {categories.map((category) => (
+                              <DropdownMenuItem
+                                key={category.id}
+                                onClick={() => {
+                                  setEditForm({
+                                    ...editForm,
+                                    categoryId: category.id,
+                                    service_id: 0, // Reset service when category changes
+                                  });
+                                  if (formErrors.service_id) {
+                                    setFormErrors({ ...formErrors, service_id: "" });
+                                  }
+                                }}
+                              >
+                                {category.name_en}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                          Service *
+                        </label>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`w-full justify-between ${
+                                formErrors.service_id
+                                  ? "border-red-500"
+                                  : "border-[var(--color-border)]"
+                              }`}
+                              disabled={!editForm.categoryId}
+                            >
+                              {editForm.service_id
+                                ? filteredServices.find((s) => s.id === editForm.service_id)?.name_en ||
+                                  "Sélectionner un service"
+                                : "Sélectionner un service"}
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full">
+                            {filteredServices.map((service) => (
+                              <DropdownMenuItem
+                                key={service.id}
+                                onClick={() => {
+                                  setEditForm({ ...editForm, service_id: service.id });
+                                  if (formErrors.service_id) {
+                                    setFormErrors({ ...formErrors, service_id: "" });
+                                  }
+                                }}
+                              >
+                                {service.name_en}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {formErrors.service_id && (
+                          <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {formErrors.service_id}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Description
+                        Description *
                       </label>
                       <textarea
                         value={editForm.description}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setEditForm({
                             ...editForm,
                             description: e.target.value,
-                          })
-                        }
+                          });
+                          // Clear error when user starts typing
+                          if (formErrors.description) {
+                            setFormErrors({ ...formErrors, description: "" });
+                          }
+                        }}
                         rows={4}
-                        className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] resize-none"
+                        maxLength={5000}
+                        className={`w-full p-3 border rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 resize-none ${
+                          formErrors.description
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-[var(--color-border)] focus:ring-[var(--color-secondary)]"
+                        }`}
                       />
+                      <div className="flex items-center justify-between mt-1">
+                        <div>
+                          {formErrors.description && (
+                            <p className="text-sm text-red-500 flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" />
+                              {formErrors.description}
+                            </p>
+                          )}
+                        </div>
+                        <p className={`text-xs ${
+                          editForm.description.length < 80
+                            ? "text-red-500"
+                            : editForm.description.length >= 80 && editForm.description.length < 100
+                            ? "text-orange-500"
+                            : "text-[var(--color-text-secondary)]"
+                        }`}>
+                          {editForm.description.length} / 80 caractères minimum
+                          {editForm.description.length > 0 && editForm.description.length < 80 && (
+                            <span className="ml-1">({80 - editForm.description.length} restants)</span>
+                          )}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Budget (MAD)
+                          Budget (MAD) *
                         </label>
                         <input
                           type="number"
                           step="0.01"
+                          min="1"
                           value={editForm.customer_budget}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setEditForm({
                               ...editForm,
                               customer_budget: parseFloat(e.target.value) || 0,
-                            })
-                          }
-                          className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
+                            });
+                            // Clear error when user starts typing
+                            if (formErrors.customer_budget) {
+                              setFormErrors({ ...formErrors, customer_budget: "" });
+                            }
+                          }}
+                          className={`w-full p-3 border rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 ${
+                            formErrors.customer_budget
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-[var(--color-border)] focus:ring-[var(--color-secondary)]"
+                          }`}
                         />
+                        {formErrors.customer_budget && (
+                          <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {formErrors.customer_budget}
+                          </p>
+                        )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Estimated Duration (hours)
+                          Durée estimée (heures) *
                         </label>
                         <input
                           type="number"
+                          min="1"
                           value={editForm.estimated_duration}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setEditForm({
                               ...editForm,
                               estimated_duration: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
+                            });
+                            // Clear error when user starts typing
+                            if (formErrors.estimated_duration) {
+                              setFormErrors({ ...formErrors, estimated_duration: "" });
+                            }
+                          }}
+                          className={`w-full p-3 border rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 ${
+                            formErrors.estimated_duration
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-[var(--color-border)] focus:ring-[var(--color-secondary)]"
+                          }`}
                         />
+                        {formErrors.estimated_duration && (
+                          <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {formErrors.estimated_duration}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Preferred Date
+                          Date préférée *
                         </label>
                         <input
                           type="date"
                           value={editForm.preferred_date}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setEditForm({
                               ...editForm,
                               preferred_date: e.target.value,
-                            })
-                          }
-                          className="w-full p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
+                            });
+                            // Clear error when user starts typing
+                            if (formErrors.preferred_date) {
+                              setFormErrors({ ...formErrors, preferred_date: "" });
+                            }
+                          }}
+                          className={`w-full p-3 border rounded-lg bg-[var(--color-bg)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 ${
+                            formErrors.preferred_date
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-[var(--color-border)] focus:ring-[var(--color-secondary)]"
+                          }`}
                         />
+                        {formErrors.preferred_date && (
+                          <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {formErrors.preferred_date}
+                          </p>
+                        )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Preferred Time
+                          Heure préférée
                         </label>
                         <div className="flex gap-2">
                           <input
@@ -649,7 +976,7 @@ export default function JobDetailPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Requirements
+                        Exigences
                       </label>
                       <textarea
                         value={editForm.requirements}
@@ -725,10 +1052,10 @@ export default function JobDetailPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {category?.name_en || "Service"}
+                          {category?.name_en || "Category"}
                         </p>
                         <p className="text-sm text-[var(--color-text-secondary)]">
-                          {category?.name_en || "Category"}
+                          {service?.name_en || data.service_name_en || "Service"}
                         </p>
                       </div>
                     </div>
@@ -801,7 +1128,7 @@ export default function JobDetailPage() {
                         </div>
                       )}
 
-                      {(data.city || data.region) && (
+                      {(data.city || data.region || data.street_address) && (
                         <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
                           <MapPin className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
@@ -809,15 +1136,127 @@ export default function JobDetailPage() {
                               Location
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
+                              {data.street_address && (
+                                <span className="block">{data.street_address}</span>
+                              )}
                               {data.city && data.region
                                 ? `${data.city}, ${data.region}`
-                                : data.street_address ||
-                                  "Location not specified"}
+                                : data.city || data.region || "Location not specified"}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {data.max_applications && (
+                        <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
+                          <Users className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                              Applications Limit
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {data.current_applications || data.application_count || 0} / {data.max_applications} applications
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {data.final_price && (
+                        <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
+                          <DollarSign className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                              Final Price
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {data.currency || "MAD"} {data.final_price}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {data.started_at && (
+                        <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
+                          <Play className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                              Started At
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {format(new Date(data.started_at), "PPP 'at' p")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {data.completed_at && (
+                        <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
+                          <CheckCircle className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                              Completed At
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {format(new Date(data.completed_at), "PPP 'at' p")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {data.updated_at && (
+                        <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
+                          <Calendar className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                              Last Updated
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {format(new Date(data.updated_at), "PPP 'at' p")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {data.is_promoted && (
+                        <div className="flex items-center gap-3 p-3 bg-[var(--color-accent)]/20 rounded-lg">
+                          <Star className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                              Promoted Job
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {data.promotion_expires_at
+                                ? `Expires: ${format(new Date(data.promotion_expires_at), "PPP")}`
+                                : "This job is promoted"}
                             </p>
                           </div>
                         </div>
                       )}
                     </div>
+
+                    {/* Job Images Gallery */}
+                    {data.images && Array.isArray(data.images) && data.images.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
+                          Images ({data.images.length})
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {data.images.map((image, index) => (
+                            <div
+                              key={index}
+                              className="relative aspect-square rounded-lg overflow-hidden border border-[var(--color-border)]"
+                            >
+                              <Image
+                                src={image || "/placeholder-job.jpg"}
+                                alt={`${data.title} - Image ${index + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

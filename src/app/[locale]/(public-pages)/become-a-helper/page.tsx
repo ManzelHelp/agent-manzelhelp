@@ -10,68 +10,77 @@ import {
   Heart,
   Zap,
 } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
-export default function BecomeAHelperPage() {
+interface BecomeAHelperPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function BecomeAHelperPage({
+  params,
+}: BecomeAHelperPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "becomeAHelper" });
+
+  // Get currency symbol based on locale
+  const getCurrencySymbol = () => {
+    return locale === "ar" ? "د.م." : "MAD";
+  };
+
   const benefits = [
     {
       icon: DollarSign,
-      title: "Earn Money",
-      description: "Set your own rates and get paid for your skills and time",
+      title: t("benefits.earnMoney.title"),
+      description: t("benefits.earnMoney.description"),
     },
     {
       icon: Users,
-      title: "Help Your Community",
-      description:
-        "Make a real difference in people's lives while building your reputation",
+      title: t("benefits.helpCommunity.title"),
+      description: t("benefits.helpCommunity.description"),
     },
     {
       icon: Star,
-      title: "Build Your Reputation",
-      description: "Earn reviews and ratings that showcase your expertise",
+      title: t("benefits.buildReputation.title"),
+      description: t("benefits.buildReputation.description"),
     },
     {
       icon: Clock,
-      title: "Flexible Schedule",
-      description:
-        "Work when you want, where you want - complete control over your time",
+      title: t("benefits.flexibleSchedule.title"),
+      description: t("benefits.flexibleSchedule.description"),
     },
     {
       icon: Shield,
-      title: "Secure Payments",
-      description: "Get paid safely through our protected payment system",
+      title: t("benefits.securePayments.title"),
+      description: t("benefits.securePayments.description"),
     },
     {
       icon: Heart,
-      title: "Make Connections",
-      description:
-        "Build lasting relationships with clients who value your work",
+      title: t("benefits.makeConnections.title"),
+      description: t("benefits.makeConnections.description"),
     },
   ];
 
   const steps = [
     {
       number: "01",
-      title: "Create Your Account",
-      description:
-        "Sign up in minutes with just your email and basic information",
+      title: t("steps.createAccount.title"),
+      description: t("steps.createAccount.description"),
     },
     {
       number: "02",
-      title: "Build Your Profile",
-      description:
-        "Add your skills, experience, and showcase what makes you unique",
+      title: t("steps.buildProfile.title"),
+      description: t("steps.buildProfile.description"),
     },
     {
       number: "03",
-      title: "List Your Services",
-      description:
-        "Describe what you offer, set your rates, and define your service area",
+      title: t("steps.listServices.title"),
+      description: t("steps.listServices.description"),
     },
     {
       number: "04",
-      title: "Start Earning",
-      description:
-        "Connect with clients, complete tasks, and get paid for your expertise",
+      title: t("steps.startEarning.title"),
+      description: t("steps.startEarning.description"),
     },
   ];
 
@@ -84,22 +93,20 @@ export default function BecomeAHelperPage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-6 animate-fade-in-up">
               <Sparkles className="h-4 w-4" />
-              Join thousands of successful helpers
+              {t("hero.badge")}
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in-up animate-delay-100">
-              <span className="gradient-text">Turn Your Skills</span>
+              <span className="gradient-text">{t("hero.titlePart1")}</span>
               <br />
-              Into Income
+              {t("hero.titlePart2")}
             </h1>
 
             <p className="text-xl sm:text-2xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animate-delay-200">
-              Ready to earn money doing what you love? Join ManzelHelp as a
-              helper and connect with people who need your expertise.
+              {t("hero.description")}
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 {" "}
-                Whether you clean, fix, tutor, or assist in any way, you can
-                make a difference and get paid for it!
+                {t("hero.descriptionBold")}
               </span>
             </p>
 
@@ -111,26 +118,26 @@ export default function BecomeAHelperPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto animate-fade-in-up animate-delay-400">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  10K+
+                  {t("stats.activeHelpers.value")}
                 </div>
                 <div className="text-slate-600 dark:text-slate-400">
-                  Active Helpers
+                  {t("stats.activeHelpers.label")}
                 </div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-teal-600 dark:text-teal-400">
-                  $2M+
+                  2M+ {getCurrencySymbol()}
                 </div>
                 <div className="text-slate-600 dark:text-slate-400">
-                  Earned by Helpers
+                  {t("stats.earned.label")}
                 </div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                  4.9★
+                  {t("stats.averageRating.value")}
                 </div>
                 <div className="text-slate-600 dark:text-slate-400">
-                  Average Rating
+                  {t("stats.averageRating.label")}
                 </div>
               </div>
             </div>
@@ -143,11 +150,10 @@ export default function BecomeAHelperPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Why Choose <span className="gradient-text">ManzelHelp?</span>
+              {t("benefitsSection.title")} <span className="gradient-text">{t("benefitsSection.titleHighlight")}</span>
             </h2>
             <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Join a platform designed to help you succeed and grow your
-              business
+              {t("benefitsSection.description")}
             </p>
           </div>
 
@@ -177,10 +183,10 @@ export default function BecomeAHelperPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              How to <span className="gradient-text">Get Started</span>
+              {t("howItWorks.title")} <span className="gradient-text">{t("howItWorks.titleHighlight")}</span>
             </h2>
             <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Start earning in just 4 simple steps
+              {t("howItWorks.description")}
             </p>
           </div>
 
@@ -215,25 +221,23 @@ export default function BecomeAHelperPage() {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Zap className="h-4 w-4" />
-            Ready to start earning?
+            {t("cta.badge")}
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-            Join Our Community of
+            {t("cta.title")}
             <br />
-            <span className="text-yellow-300">Successful Helpers</span>
+            <span className="text-yellow-300">{t("cta.titleHighlight")}</span>
           </h2>
 
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Don't wait - start your journey today and begin earning money doing
-            what you love. Join thousands of helpers who are already making a
-            difference in their communities.
+            {t("cta.description")}
           </p>
 
           <BecomeTaskerButton variant="white" />
 
           <p className="text-blue-100 text-sm mt-4">
-            ✓ Free to join ✓ No monthly fees ✓ Start earning immediately
+            {t("cta.features")}
           </p>
         </div>
       </div>

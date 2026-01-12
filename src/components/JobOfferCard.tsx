@@ -73,12 +73,9 @@ function JobOfferCard({ job, customer }: JobOfferCardProps) {
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+    // Get currency symbol based on locale
+    const currencySymbol = locale === "ar" ? "د.م." : "MAD";
+    return `${amount} ${currencySymbol}`;
   };
 
   // Get initials for avatar fallback

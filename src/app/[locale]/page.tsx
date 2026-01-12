@@ -241,7 +241,7 @@ export default async function HomePage({
                 500+
               </div>
               <div className="text-sm sm:text-base text-white/80 leading-tight">
-                Verified Taskers
+                {t("stats.verifiedTaskers")}
               </div>
             </div>
 
@@ -253,7 +253,7 @@ export default async function HomePage({
                 50+
               </div>
               <div className="text-sm sm:text-base text-white/80 leading-tight">
-                Service Categories
+                {t("stats.serviceCategories")}
               </div>
             </div>
 
@@ -265,7 +265,7 @@ export default async function HomePage({
                 1000+
               </div>
               <div className="text-sm sm:text-base text-white/80 leading-tight">
-                Happy Customers
+                {t("stats.happyCustomers")}
               </div>
             </div>
 
@@ -277,7 +277,7 @@ export default async function HomePage({
                 4.8★
               </div>
               <div className="text-sm sm:text-base text-white/80 leading-tight">
-                Average Rating
+                {t("stats.averageRating")}
               </div>
             </div>
           </div>
@@ -300,7 +300,7 @@ export default async function HomePage({
                 <Star className="h-4 w-4 text-white" />
               </div>
               <span className="text-sm font-semibold text-[var(--color-secondary)]">
-                Featured Services
+                {t("featuredServices.badge")}
               </span>
             </div>
 
@@ -308,8 +308,7 @@ export default async function HomePage({
               {t("servicesOffered")}
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl text-[var(--color-text-secondary)] max-w-3xl mx-auto px-2 leading-relaxed font-light">
-              Discover top-rated taskers offering professional services in your
-              area
+              {t("featuredServices.description")}
             </p>
           </div>
 
@@ -337,10 +336,10 @@ export default async function HomePage({
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--color-secondary)] rounded-full animate-ping"></div>
               </div>
               <h3 className="text-xl sm:text-2xl font-semibold text-[var(--color-text-primary)] mb-3">
-                No services available at the moment
+                {t("featuredServices.noServices")}
               </h3>
               <p className="text-[var(--color-text-secondary)] px-2 max-w-md mx-auto">
-                Check back soon for amazing services from our verified taskers!
+                {t("featuredServices.noServicesDescription")}
               </p>
             </div>
           )}
@@ -353,7 +352,7 @@ export default async function HomePage({
                 className="group bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-secondary)] text-white shadow-xl hover:shadow-2xl transition-all duration-300 px-8 py-4 text-lg font-semibold min-h-[56px] sm:min-h-[64px] rounded-2xl border-0"
               >
                 <span className="flex items-center gap-3">
-                  View All Services
+                  {t("featuredServices.viewAll")}
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
@@ -381,7 +380,7 @@ export default async function HomePage({
                 <Award className="h-4 w-4 text-white" />
               </div>
               <span className="text-sm font-semibold text-[var(--color-primary)]">
-                Why Choose Us
+                {t("whyChooseUs.badge")}
               </span>
             </div>
 
@@ -389,8 +388,7 @@ export default async function HomePage({
               {t("whyTitle")}
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl text-[var(--color-text-secondary)] max-w-3xl mx-auto px-2 leading-relaxed font-light">
-              We connect you with verified, skilled professionals for all your
-              home and business needs
+              {t("whyChooseUs.description")}
             </p>
           </div>
 
@@ -403,11 +401,10 @@ export default async function HomePage({
                   <Shield className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-primary-light)]">
-                  Verified Professionals
+                  {t("whyChooseUs.verifiedProfessionals.title")}
                 </h3>
                 <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed">
-                  All our taskers are thoroughly vetted and background-checked
-                  for your safety and peace of mind
+                  {t("whyChooseUs.verifiedProfessionals.description")}
                 </p>
               </div>
             </Card>
@@ -419,11 +416,10 @@ export default async function HomePage({
                   <Clock className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-primary-light)]">
-                  Quick & Reliable
+                  {t("whyChooseUs.quickReliable.title")}
                 </h3>
                 <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed">
-                  Get matched with available taskers in your area within
-                  minutes, 24/7 availability
+                  {t("whyChooseUs.quickReliable.description")}
                 </p>
               </div>
             </Card>
@@ -435,11 +431,10 @@ export default async function HomePage({
                   <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-white dark:text-[var(--color-primary)]" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[var(--color-primary)] dark:text-[var(--color-primary-light)]">
-                  Quality Guaranteed
+                  {t("whyChooseUs.qualityGuaranteed.title")}
                 </h3>
                 <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed">
-                  Satisfaction guaranteed with our quality assurance and
-                  dedicated customer support team
+                  {t("whyChooseUs.qualityGuaranteed.description")}
                 </p>
               </div>
             </Card>
@@ -452,10 +447,10 @@ export default async function HomePage({
                 <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-primary)]" />
               </div>
               <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-                Best Prices
+                {t("whyChooseUs.bestPrices.title")}
               </h4>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Competitive rates for quality services
+                {t("whyChooseUs.bestPrices.description")}
               </p>
             </div>
 
@@ -464,10 +459,10 @@ export default async function HomePage({
                 <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-secondary)]" />
               </div>
               <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-                Trusted Platform
+                {t("whyChooseUs.trustedPlatform.title")}
               </h4>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Secure payments and reviews
+                {t("whyChooseUs.trustedPlatform.description")}
               </p>
             </div>
 
@@ -476,10 +471,10 @@ export default async function HomePage({
                 <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-accent)]" />
               </div>
               <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-                Instant Booking
+                {t("whyChooseUs.instantBooking.title")}
               </h4>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Book services in seconds
+                {t("whyChooseUs.instantBooking.description")}
               </p>
             </div>
 
@@ -488,10 +483,10 @@ export default async function HomePage({
                 <Star className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-primary)]" />
               </div>
               <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-                Top Rated
+                {t("whyChooseUs.topRated.title")}
               </h4>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                4.8★ average rating
+                {t("whyChooseUs.topRated.description")}
               </p>
             </div>
           </div>
@@ -522,16 +517,15 @@ export default async function HomePage({
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-6 py-3 mb-8 border border-white/20">
                 <Sparkles className="h-5 w-5 text-[var(--color-secondary)]" />
                 <span className="text-sm font-semibold text-white/90">
-                  Join Our Community
+                  {t("cta.badge")}
                 </span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 sm:mb-8 px-2 leading-tight">
-                Ready to Get Started?
+                {t("cta.title")}
               </h2>
               <p className="text-xl sm:text-2xl md:text-3xl mb-8 sm:mb-12 text-white/90 px-2 leading-relaxed font-light max-w-4xl mx-auto">
-                Join thousands of satisfied customers who trust us for their
-                service needs
+                {t("cta.description")}
               </p>
 
               {/* Enhanced Buttons */}
@@ -543,7 +537,7 @@ export default async function HomePage({
                   >
                     <span className="flex items-center justify-center gap-3">
                       <Users className="h-5 w-5" />
-                      Find a Tasker
+                      {t("cta.findTasker")}
                       <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
                   </Button>
@@ -555,7 +549,7 @@ export default async function HomePage({
                   >
                     <span className="flex items-center justify-center gap-3">
                       <Briefcase className="h-5 w-5" />
-                      Find Jobs
+                      {t("cta.findJobs")}
                       <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
                   </Button>
@@ -566,15 +560,15 @@ export default async function HomePage({
               <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 mt-12 sm:mt-16 text-white/70">
                 <div className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  <span className="text-sm font-medium">Secure Platform</span>
+                  <span className="text-sm font-medium">{t("cta.securePlatform")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5" />
-                  <span className="text-sm font-medium">Verified Taskers</span>
+                  <span className="text-sm font-medium">{t("cta.verifiedTaskers")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Heart className="h-5 w-5" />
-                  <span className="text-sm font-medium">24/7 Support</span>
+                  <span className="text-sm font-medium">{t("cta.support24_7")}</span>
                 </div>
               </div>
             </div>

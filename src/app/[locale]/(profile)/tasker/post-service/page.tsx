@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { serviceStep1Schema, serviceStep2Schema } from "@/lib/schemas/services";
+import { cn } from "@/lib/utils";
 import { hasTaskerCompletedProfileAction } from "@/actions/auth";
 import Image from "next/image";
 import {
@@ -108,6 +112,7 @@ const INITIAL_PRICING_DATA: PricingData = {
 export default function CreateOfferPage() {
   const router = useRouter();
   const { user } = useUserStore();
+  const { toast } = useToast();
   const t = useTranslations("postService");
   const [showContactDialog, setShowContactDialog] = useState(false);
 
@@ -155,9 +160,37 @@ export default function CreateOfferPage() {
   const [newExtra, setNewExtra] = useState({ name: "", price: 0 });
   const [avatarError, setAvatarError] = useState(false);
 
-  // Validation errors - only show when user tries to continue
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false);
+  // React Hook Form for Step 1
+  const step1Form = useForm<BasicInfoData>({
+    resolver: zodResolver(serviceStep1Schema),
+    defaultValues: INITIAL_BASIC_INFO,
+    mode: "onChange",
+  });
+
+  // React Hook Form for Step 2
+  const step2Form = useForm<PricingData>({
+    resolver: zodResolver(serviceStep2Schema),
+    defaultValues: INITIAL_PRICING_DATA,
+    mode: "onChange",
+  });
+
+  // Initialize forms only once when addresses are loaded
+  useEffect(() => {
+    if (addresses.length > 0 && !step1Form.formState.isDirty) {
+      const initialAddressId = formData.basicInfo.selectedAddressId || String(addresses[0].id);
+      step1Form.reset({
+        ...formData.basicInfo,
+        selectedAddressId: initialAddressId,
+      });
+      setFormData((prev) => ({
+        ...prev,
+        basicInfo: {
+          ...prev.basicInfo,
+          selectedAddressId: initialAddressId,
+        },
+      }));
+    }
+  }, [addresses.length]);
 
   // Fetch initial data
   const fetchInitialData = React.useCallback(async () => {
@@ -257,7 +290,11 @@ export default function CreateOfferPage() {
         }
       } else {
         console.error("Error fetching addresses:", addressesResult.error);
-        toast.error("Failed to load addresses. Please try again.");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Failed to load addresses. Please try again.",
+        });
       }
 
       // Fetch user availability from tasker profile using server action
@@ -277,7 +314,11 @@ export default function CreateOfferPage() {
       }
     } catch (error) {
       console.error("Error fetching initial data:", error);
-      toast.error(t("errors.loadFormDataFailed", { default: "Failed to load form data. Please try again." }));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.loadFormDataFailed", { default: "Failed to load form data. Please try again." }),
+      });
     } finally {
       setLoading(false);
     }
@@ -293,76 +334,58 @@ export default function CreateOfferPage() {
       try {
         const profileCheck = await hasTaskerCompletedProfileAction();
         if (!profileCheck.hasCompleted) {
-          toast.info("Please complete your profile setup to continue");
+          toast({
+            variant: "default",
+            title: "Profil incomplet",
+            description: "Please complete your profile setup to continue",
+          });
           router.replace("/finish-signUp");
           return;
         }
       } catch (error) {
         console.error("Error checking profile completion:", error);
-        toast.error("Failed to verify profile status");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Failed to verify profile status",
+        });
       }
     };
 
     checkProfile();
   }, [router]);
 
-  // Validation functions
-  const validateStep1 = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.basicInfo.title.trim()) {
-      newErrors.title = t("errors.titleRequired");
-    }
-    if (!formData.basicInfo.description.trim()) {
-      newErrors.description = t("errors.descriptionRequired");
-    }
-    if (!formData.basicInfo.categoryId) {
-      newErrors.category = t("errors.categoryRequired");
-    }
-    if (!formData.basicInfo.serviceId) {
-      newErrors.service = t("errors.serviceRequired");
-    }
-    if (!formData.basicInfo.selectedAddressId && addresses.length === 0) {
-      newErrors.address = t("errors.locationRequired");
-    }
-
-    setErrors(newErrors);
-    setHasAttemptedValidation(true);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep2 = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (
-      (formData.pricing.pricingType === "fixed" ||
-        formData.pricing.pricingType === "per_item") &&
-      formData.pricing.basePrice <= 0
-    ) {
-      newErrors.basePrice = t("errors.priceGreaterThanZero");
-    }
-    if (
-      formData.pricing.pricingType === "hourly" &&
-      formData.pricing.hourlyRate <= 0
-    ) {
-      newErrors.hourlyRate = t("errors.priceGreaterThanZero");
-    }
-    if (
-      formData.pricing.minimumBookingHours !== undefined &&
-      formData.pricing.minimumBookingHours < 0.5
-    ) {
-      newErrors.minimumBookingHours = t("errors.minimumBookingGreaterThanZero");
-    }
-
-    setErrors(newErrors);
-    setHasAttemptedValidation(true);
-    return Object.keys(newErrors).length === 0;
-  };
-
   // Navigation functions
-  const goToNextStep = () => {
-    if (currentStep === 1 && !validateStep1()) return;
-    if (currentStep === 2 && !validateStep2()) return;
+  const goToNextStep = async () => {
+    if (currentStep === 1) {
+      // Validate Step 1 with Zod
+      const isValid = await step1Form.trigger();
+      if (!isValid) {
+        return;
+      }
+      // Update formData with validated values
+      const step1Data = step1Form.getValues();
+      setFormData((prev) => ({
+        ...prev,
+        basicInfo: step1Data,
+      }));
+    }
+    
+    if (currentStep === 2) {
+      // Validate Step 2 with Zod
+      const isValid = await step2Form.trigger();
+      if (!isValid) {
+        // Log errors for debugging
+        console.log("Step 2 validation errors:", step2Form.formState.errors);
+        return;
+      }
+      // Update formData with validated values
+      const step2Data = step2Form.getValues();
+      setFormData((prev) => ({
+        ...prev,
+        pricing: step2Data,
+      }));
+    }
 
     if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1);
@@ -405,7 +428,13 @@ export default function CreateOfferPage() {
 
   // Submit function
   const handleSubmit = async () => {
-    if (!user?.id || !validateStep2()) return;
+    if (!user?.id) return;
+
+    // Validate Step 2 before submitting
+    const isValid = await step2Form.trigger();
+    if (!isValid) {
+      return;
+    }
 
     setSubmitting(true);
 
@@ -437,14 +466,26 @@ export default function CreateOfferPage() {
       const result = await createTaskerService(serviceData);
 
       if (result.success) {
-        toast.success(t("success.servicePosted"));
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: t("success.servicePosted"),
+        });
         router.push("/tasker/my-services");
       } else {
-        toast.error(result.error || t("errors.serviceCreationFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("errors.serviceCreationFailed"),
+        });
       }
     } catch (error) {
       console.error("Error creating offer:", error);
-      toast.error(t("errors.serviceCreationFailed"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.serviceCreationFailed"),
+      });
     } finally {
       setSubmitting(false);
     }
@@ -631,27 +672,30 @@ export default function CreateOfferPage() {
                       </Label>
                       <Input
                         id="title"
-                        value={formData.basicInfo.title}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            basicInfo: {
-                              ...prev.basicInfo,
-                              title: e.target.value,
-                            },
-                          }))
-                        }
+                        {...step1Form.register("title", {
+                          onChange: (e) => {
+                            step1Form.setValue("title", e.target.value);
+                            setFormData((prev) => ({
+                              ...prev,
+                              basicInfo: {
+                                ...prev.basicInfo,
+                                title: e.target.value,
+                              },
+                            }));
+                          },
+                        })}
                         placeholder="e.g., Professional House Cleaning Service"
-                        className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                          hasAttemptedValidation && errors.title
-                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                        className={cn(
+                          "h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]",
+                          step1Form.formState.errors.title
+                            ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
                             : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                        }`}
+                        )}
                       />
-                      {hasAttemptedValidation && errors.title && (
-                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                      {step1Form.formState.errors.title && (
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
-                          {errors.title}
+                          {step1Form.formState.errors.title.message}
                         </p>
                       )}
                     </div>
@@ -667,28 +711,36 @@ export default function CreateOfferPage() {
                       </Label>
                       <textarea
                         id="description"
-                        value={formData.basicInfo.description}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            basicInfo: {
-                              ...prev.basicInfo,
-                              description: e.target.value,
-                            },
-                          }))
-                        }
+                        {...step1Form.register("description", {
+                          onChange: (e) => {
+                            step1Form.setValue("description", e.target.value);
+                            setFormData((prev) => ({
+                              ...prev,
+                              basicInfo: {
+                                ...prev.basicInfo,
+                                description: e.target.value,
+                              },
+                            }));
+                          },
+                        })}
                         placeholder="Describe what you'll do, what's included, and any special expertise you have..."
                         rows={4}
-                        className={`w-full min-h-[120px] px-4 py-3 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y ${
-                          hasAttemptedValidation && errors.description
-                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                        className={cn(
+                          "w-full min-h-[120px] px-4 py-3 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y",
+                          step1Form.formState.errors.description
+                            ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
                             : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                        }`}
+                        )}
                       />
-                      {hasAttemptedValidation && errors.description && (
-                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                      {step1Form.formState.errors.description && (
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
-                          {errors.description}
+                          {step1Form.formState.errors.description.message}
+                        </p>
+                      )}
+                      {!step1Form.formState.errors.description && step1Form.watch("description") && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {step1Form.watch("description").length} caractères
                         </p>
                       )}
                     </div>
@@ -704,17 +756,19 @@ export default function CreateOfferPage() {
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="outline"
-                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
-                                hasAttemptedValidation && errors.category
-                                  ? "border-[var(--color-error)]"
+                              type="button"
+                              className={cn(
+                                "h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200",
+                                step1Form.formState.errors.categoryId
+                                  ? "!border-red-500 !border-2"
                                   : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                              }`}
+                              )}
                             >
                               <span className="truncate">
-                                {formData.basicInfo.categoryId
+                                {step1Form.watch("categoryId")
                                   ? categories.find(
                                       (c) =>
-                                        c.id === formData.basicInfo.categoryId
+                                        c.id === step1Form.watch("categoryId")
                                     )?.name_en || "Select category"
                                   : "Select category"}
                               </span>
@@ -725,16 +779,18 @@ export default function CreateOfferPage() {
                             {categories.map((category) => (
                               <DropdownMenuItem
                                 key={category.id}
-                                onClick={() =>
+                                onClick={() => {
+                                  step1Form.setValue("categoryId", category.id);
+                                  step1Form.setValue("serviceId", 0); // Reset service selection
                                   setFormData((prev) => ({
                                     ...prev,
                                     basicInfo: {
                                       ...prev.basicInfo,
                                       categoryId: category.id,
-                                      serviceId: 0, // Reset service selection
+                                      serviceId: 0,
                                     },
-                                  }))
-                                }
+                                  }));
+                                }}
                                 className="cursor-pointer"
                               >
                                 {category.name_en}
@@ -742,10 +798,10 @@ export default function CreateOfferPage() {
                             ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        {hasAttemptedValidation && errors.category && (
-                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                        {step1Form.formState.errors.categoryId && (
+                          <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                             <AlertCircle className="h-4 w-4" />
-                            {errors.category}
+                            {step1Form.formState.errors.categoryId.message}
                           </p>
                         )}
                       </div>
@@ -759,22 +815,23 @@ export default function CreateOfferPage() {
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="outline"
-                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
-                                hasAttemptedValidation && errors.service
-                                  ? "border-[var(--color-error)]"
-                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                              } ${
-                                !formData.basicInfo.categoryId
+                              type="button"
+                              className={cn(
+                                "h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200",
+                                step1Form.formState.errors.serviceId
+                                  ? "!border-red-500 !border-2"
+                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]",
+                                !step1Form.watch("categoryId")
                                   ? "opacity-50 cursor-not-allowed"
                                   : ""
-                              }`}
-                              disabled={!formData.basicInfo.categoryId}
+                              )}
+                              disabled={!step1Form.watch("categoryId")}
                             >
                               <span className="truncate">
-                                {formData.basicInfo.serviceId
+                                {step1Form.watch("serviceId")
                                   ? services.find(
                                       (s) =>
-                                        s.id === formData.basicInfo.serviceId
+                                        s.id === step1Form.watch("serviceId")
                                     )?.name_en || "Select service"
                                   : "Select service"}
                               </span>
@@ -785,15 +842,16 @@ export default function CreateOfferPage() {
                             {filteredServices.map((service) => (
                               <DropdownMenuItem
                                 key={service.id}
-                                onClick={() =>
+                                onClick={() => {
+                                  step1Form.setValue("serviceId", service.id);
                                   setFormData((prev) => ({
                                     ...prev,
                                     basicInfo: {
                                       ...prev.basicInfo,
                                       serviceId: service.id,
                                     },
-                                  }))
-                                }
+                                  }));
+                                }}
                                 className="cursor-pointer"
                               >
                                 {service.name_en}
@@ -801,10 +859,10 @@ export default function CreateOfferPage() {
                             ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        {hasAttemptedValidation && errors.service && (
-                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                        {step1Form.formState.errors.serviceId && (
+                          <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                             <AlertCircle className="h-4 w-4" />
-                            {errors.service}
+                            {step1Form.formState.errors.serviceId.message}
                           </p>
                         )}
                       </div>
@@ -821,26 +879,29 @@ export default function CreateOfferPage() {
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="outline"
-                              className="h-12 w-full justify-between text-base border-2 border-[var(--color-border)] rounded-xl hover:border-[var(--color-primary)] transition-all duration-200"
+                              type="button"
+                              className={cn(
+                                "h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200",
+                                step1Form.formState.errors.selectedAddressId
+                                  ? "!border-red-500 !border-2"
+                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                              )}
                             >
                               <span className="truncate">
-                                {formData.basicInfo.selectedAddressId
+                                {step1Form.watch("selectedAddressId")
                                   ? addresses.find(
                                       (a) =>
-                                        a.id ===
-                                        formData.basicInfo.selectedAddressId
+                                        String(a.id) === String(step1Form.watch("selectedAddressId"))
                                     )
                                     ? `${
                                         addresses.find(
                                           (a) =>
-                                            a.id ===
-                                            formData.basicInfo.selectedAddressId
+                                            String(a.id) === String(step1Form.watch("selectedAddressId"))
                                         )?.street_address
                                       }, ${
                                         addresses.find(
                                           (a) =>
-                                            a.id ===
-                                            formData.basicInfo.selectedAddressId
+                                            String(a.id) === String(step1Form.watch("selectedAddressId"))
                                         )?.city
                                       }`
                                     : "Select location"
@@ -855,15 +916,16 @@ export default function CreateOfferPage() {
                             {addresses.map((address) => (
                               <DropdownMenuItem
                                 key={address.id}
-                                onClick={() =>
+                                onClick={() => {
+                                  step1Form.setValue("selectedAddressId", String(address.id));
                                   setFormData((prev) => ({
                                     ...prev,
                                     basicInfo: {
                                       ...prev.basicInfo,
-                                      selectedAddressId: address.id,
+                                      selectedAddressId: String(address.id),
                                     },
-                                  }))
-                                }
+                                  }));
+                                }}
                                 className="cursor-pointer"
                               >
                                 <div className="flex flex-col">
@@ -899,10 +961,10 @@ export default function CreateOfferPage() {
                           </Button>
                         </div>
                       )}
-                      {hasAttemptedValidation && errors.address && (
-                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                      {step1Form.formState.errors.selectedAddressId && (
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
-                          {errors.address}
+                          {step1Form.formState.errors.selectedAddressId.message}
                         </p>
                       )}
                     </div>
@@ -1021,17 +1083,20 @@ export default function CreateOfferPage() {
                                 type="radio"
                                 name="pricingType"
                                 value={type}
-                                checked={formData.pricing.pricingType === type}
-                                onChange={(e) =>
+                                checked={step2Form.watch("pricingType") === type}
+                                onChange={(e) => {
+                                  const value = e.target.value as PricingType;
+                                  step2Form.setValue("pricingType", value, { shouldValidate: false });
+                                  // Clear errors when changing pricing type
+                                  step2Form.clearErrors();
                                   setFormData((prev) => ({
                                     ...prev,
                                     pricing: {
                                       ...prev.pricing,
-                                      pricingType: e.target
-                                        .value as PricingType,
+                                      pricingType: value,
                                     },
-                                  }))
-                                }
+                                  }));
+                                }}
                                 className="w-4 h-4 text-[var(--color-secondary)]"
                               />
                               <div>
@@ -1054,7 +1119,7 @@ export default function CreateOfferPage() {
 
                     {/* Price Inputs */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {formData.pricing.pricingType === "fixed" && (
+                      {step2Form.watch("pricingType") === "fixed" && (
                         <div className="space-y-3">
                           <Label
                             htmlFor="basePrice"
@@ -1068,33 +1133,38 @@ export default function CreateOfferPage() {
                             type="number"
                             min="0"
                             step="0.01"
-                            value={formData.pricing.basePrice || ""}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                pricing: {
-                                  ...prev.pricing,
-                                  basePrice: parseFloat(e.target.value) || 0,
-                                },
-                              }))
-                            }
+                            {...step2Form.register("basePrice", {
+                              valueAsNumber: true,
+                              onChange: (e) => {
+                                const value = parseFloat(e.target.value) || 0;
+                                step2Form.setValue("basePrice", value);
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  pricing: {
+                                    ...prev.pricing,
+                                    basePrice: value,
+                                  },
+                                }));
+                              },
+                            })}
                             placeholder="e.g., 50.00"
-                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                              hasAttemptedValidation && errors.basePrice
-                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                            className={cn(
+                              "h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]",
+                              step2Form.formState.errors.basePrice
+                                ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
                                 : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                            }`}
+                            )}
                           />
-                          {hasAttemptedValidation && errors.basePrice && (
-                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          {step2Form.formState.errors.basePrice && (
+                            <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                               <AlertCircle className="h-4 w-4" />
-                              {errors.basePrice}
+                              {step2Form.formState.errors.basePrice.message}
                             </p>
                           )}
                         </div>
                       )}
 
-                      {formData.pricing.pricingType === "hourly" && (
+                      {step2Form.watch("pricingType") === "hourly" && (
                         <div className="space-y-3">
                           <Label
                             htmlFor="hourlyRate"
@@ -1108,67 +1178,81 @@ export default function CreateOfferPage() {
                             type="number"
                             min="0"
                             step="0.01"
-                            value={formData.pricing.hourlyRate || ""}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                pricing: {
-                                  ...prev.pricing,
-                                  hourlyRate: parseFloat(e.target.value) || 0,
-                                },
-                              }))
-                            }
+                            {...step2Form.register("hourlyRate", {
+                              valueAsNumber: true,
+                              onChange: (e) => {
+                                const value = parseFloat(e.target.value) || 0;
+                                step2Form.setValue("hourlyRate", value, { shouldValidate: true });
+                                // Clear error when user starts typing a valid value
+                                if (value > 0) {
+                                  step2Form.clearErrors("hourlyRate");
+                                }
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  pricing: {
+                                    ...prev.pricing,
+                                    hourlyRate: value,
+                                  },
+                                }));
+                              },
+                            })}
                             placeholder="e.g., 25.00"
-                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                              hasAttemptedValidation && errors.hourlyRate
-                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                            className={cn(
+                              "h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]",
+                              step2Form.formState.errors.hourlyRate
+                                ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
                                 : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                            }`}
+                            )}
                           />
-                          {hasAttemptedValidation && errors.hourlyRate && (
-                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          {step2Form.formState.errors.hourlyRate && (
+                            <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                               <AlertCircle className="h-4 w-4" />
-                              {errors.hourlyRate}
+                              {step2Form.formState.errors.hourlyRate.message}
                             </p>
                           )}
                         </div>
                       )}
 
-                      {formData.pricing.pricingType === "per_item" && (
+                      {step2Form.watch("pricingType") === "per_item" && (
                         <div className="space-y-3">
                           <Label
-                            htmlFor="basePrice"
+                            htmlFor="basePricePerItem"
                             className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
                           >
                             <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
                             Price Per Item (€) *
                           </Label>
                           <Input
-                            id="basePrice"
+                            id="basePricePerItem"
                             type="number"
                             min="0"
                             step="0.01"
-                            value={formData.pricing.basePrice || ""}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                pricing: {
-                                  ...prev.pricing,
-                                  basePrice: parseFloat(e.target.value) || 0,
-                                },
-                              }))
-                            }
+                            {...step2Form.register("basePrice", {
+                              valueAsNumber: true,
+                              onChange: (e) => {
+                                const value = parseFloat(e.target.value) || 0;
+                                step2Form.setValue("basePrice", value);
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  pricing: {
+                                    ...prev.pricing,
+                                    basePrice: value,
+                                  },
+                                }));
+                              },
+                            })}
                             placeholder="e.g., 5.00"
-                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                              hasAttemptedValidation && errors.basePrice
-                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                            className={cn(
+                              "h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]",
+                              step2Form.formState.errors.basePrice
+                                ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
                                 : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                            }`}
+                            )}
                           />
-                          {hasAttemptedValidation && errors.basePrice && (
-                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          {step2Form.formState.errors.basePrice && (
+                            <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                               <AlertCircle className="h-4 w-4" />
-                              {errors.basePrice}
+                              {step2Form.formState.errors.basePrice.message}
                             </p>
                           )}
                         </div>
@@ -1187,32 +1271,34 @@ export default function CreateOfferPage() {
                           type="number"
                           min="0.5"
                           step="0.5"
-                          value={formData.pricing.minimumBookingHours || ""}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              pricing: {
-                                ...prev.pricing,
-                                minimumBookingHours: e.target.value
-                                  ? parseFloat(e.target.value)
-                                  : undefined,
-                              },
-                            }))
-                          }
+                          {...step2Form.register("minimumBookingHours", {
+                            valueAsNumber: true,
+                            onChange: (e) => {
+                              const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                              step2Form.setValue("minimumBookingHours", value);
+                              setFormData((prev) => ({
+                                ...prev,
+                                pricing: {
+                                  ...prev.pricing,
+                                  minimumBookingHours: value,
+                                },
+                              }));
+                            },
+                          })}
                           placeholder="e.g., 1.0 (optional)"
-                          className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
-                            hasAttemptedValidation && errors.minimumBookingHours
-                              ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                          className={cn(
+                            "h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]",
+                            step2Form.formState.errors.minimumBookingHours
+                              ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50"
                               : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-                          }`}
-                        />
-                        {hasAttemptedValidation &&
-                          errors.minimumBookingHours && (
-                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
-                              <AlertCircle className="h-4 w-4" />
-                              {errors.minimumBookingHours}
-                            </p>
                           )}
+                        />
+                        {step2Form.formState.errors.minimumBookingHours && (
+                          <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {step2Form.formState.errors.minimumBookingHours.message}
+                          </p>
+                        )}
                         <p className="text-sm text-muted-foreground">
                           Leave empty if no minimum booking time required
                         </p>

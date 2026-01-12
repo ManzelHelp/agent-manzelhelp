@@ -34,6 +34,9 @@ import { useUserStore } from "@/stores/userStore";
 import { usePathname } from "next/navigation";
 import { formatDateShort } from "@/lib/date-utils";
 import { useMessagesRealtime } from "@/hooks/useMessagesRealtime";
+import { useToast } from "@/hooks/use-toast";
+import { messageSchema } from "@/lib/schemas/messages";
+import { cn } from "@/lib/utils";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -42,6 +45,7 @@ export default function ChatPage() {
   const t = useTranslations("chat");
   const chatId = params["chat-id"] as string;
   const { user } = useUserStore();
+  const { toast } = useToast();
 
   const [messages, setMessages] = useState<MessageWithDetails[]>([]);
   const [conversation, setConversation] =
@@ -54,6 +58,7 @@ export default function ChatPage() {
   const [hasMore, setHasMore] = useState(false);
   const [currentOffset, setCurrentOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [messageError, setMessageError] = useState<string>("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -164,8 +169,29 @@ export default function ChatPage() {
     enabled: !!chatId,
     onNewMessage: (message) => {
       setMessages((prev) => {
-        // Avoid duplicates
-        if (prev.some((m) => m.id === message.id)) {
+        // Avoid duplicates - vérifier par ID ET par contenu + timestamp pour plus de sécurité
+        const isDuplicate = prev.some((m) => {
+          // Vérifier par ID d'abord (le plus fiable)
+          if (m.id && message.id && m.id === message.id) {
+            return true;
+          }
+          // Vérifier par contenu, sender et timestamp si l'ID n'est pas encore disponible
+          // (pour éviter les doublons lors de l'envoi immédiat)
+          if (m.content === message.content && 
+              m.sender_id === message.sender_id &&
+              m.conversation_id === message.conversation_id) {
+            const timeDiff = Math.abs(
+              new Date(m.created_at || 0).getTime() - 
+              new Date(message.created_at || 0).getTime()
+            );
+            // Si les messages sont identiques et envoyés dans les 2 secondes, c'est un doublon
+            if (timeDiff < 2000) {
+              return true;
+            }
+          }
+          return false;
+        });
+        if (isDuplicate) {
           return prev;
         }
         return [...prev, message];
@@ -181,29 +207,55 @@ export default function ChatPage() {
 
   // Send a new message
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || isSending || !chatId) return;
+    if (isSending || !chatId) return;
+
+    // 1. Validation Zod (Front-end) - Messages inline sous le champ
+    // Valider AVANT de trim() pour capturer les messages vides
+    const validation = messageSchema.safeParse({ content: newMessage });
+    if (!validation.success) {
+      const firstError = validation.error.issues[0];
+      setMessageError(firstError.message);
+      // Pas de toast pour les erreurs de validation front-end
+      return;
+    }
 
     const messageContent = newMessage.trim();
+
+    // Clear error if validation passes
+    setMessageError("");
+    const messageToSend = messageContent;
     setNewMessage("");
     setIsSending(true);
 
     try {
       const { message, errorMessage } = await sendMessageAction(
         chatId,
-        messageContent
+        messageToSend
       );
 
       if (errorMessage) {
-        setError(errorMessage);
-        setNewMessage(messageContent); // Restore message on error
+        // Erreur serveur (back-end) - Toast uniquement
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: errorMessage,
+        });
+        setNewMessage(messageToSend); // Restore message on error
       } else if (message) {
-        setMessages((prev) => [...prev, message]);
+        // Ne pas ajouter manuellement le message ici
+        // Le hook realtime va l'ajouter automatiquement
+        // Cela évite le double affichage
         scrollToBottom();
       }
     } catch (err) {
       console.error("Error sending message:", err);
-      setError("Failed to send message");
-      setNewMessage(messageContent); // Restore message on error
+      // Erreur serveur (back-end) - Toast uniquement
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Échec de l'envoi du message",
+      });
+      setNewMessage(messageToSend); // Restore message on error
     } finally {
       setIsSending(false);
     }
@@ -589,12 +641,25 @@ export default function ChatPage() {
               <Input
                 ref={inputRef}
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setNewMessage(value);
+                  // Clear error immediately when user types (dès qu'il y a du contenu)
+                  if (messageError) {
+                    setMessageError("");
+                  }
+                }}
                 onKeyPress={handleKeyPress}
                 placeholder={t("input.placeholder")}
                 disabled={isSending}
-                className="pr-12 border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] mobile-focus touch-target rounded-2xl"
-                maxLength={500}
+                aria-invalid={messageError ? "true" : "false"}
+                className={cn(
+                  "pr-12 bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] mobile-focus touch-target rounded-2xl",
+                  messageError 
+                    ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50" 
+                    : "border-[var(--color-border)]"
+                )}
+                maxLength={5000}
               />
               <Button
                 variant="ghost"
@@ -604,12 +669,17 @@ export default function ChatPage() {
               >
                 <Smile className="h-4 w-4" />
               </Button>
+              {messageError && (
+                <p className="absolute -bottom-6 left-0 text-xs text-red-600 dark:text-red-400 mt-1 whitespace-nowrap">
+                  {messageError}
+                </p>
+              )}
             </div>
 
             <Button
               onClick={handleSendMessage}
-              disabled={!newMessage.trim() || isSending}
-              className="touch-target bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white rounded-2xl px-4"
+              disabled={isSending}
+              className="touch-target bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white rounded-2xl px-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

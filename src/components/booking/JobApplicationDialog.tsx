@@ -20,7 +20,8 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { jobApplicationSchema } from "@/lib/schemas/jobs";
 import { useTranslations } from "next-intl";
 import {
   createJobApplication,
@@ -73,6 +74,7 @@ export function JobApplicationDialog({
   jobData,
 }: JobApplicationDialogProps) {
   const t = useTranslations("jobOffer.applicationDialog");
+  const { toast } = useToast();
   const [formData, setFormData] =
     useState<ApplicationFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,34 +91,30 @@ export function JobApplicationDialog({
   }, [jobData]);
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    // Use Zod validation
+    const validation = jobApplicationSchema.safeParse({
+      proposed_price: formData.proposed_price,
+      estimated_duration: formData.estimated_duration,
+      message: formData.message.trim(),
+      availability: formData.availability.trim(),
+      experience_level: formData.experience_level,
+      experience_description: formData.experience_description.trim() || undefined,
+      availability_details: formData.availability_details.trim() || undefined,
+      is_flexible_schedule: formData.is_flexible_schedule,
+    });
 
-    if (!formData.proposed_price || formData.proposed_price <= 0) {
-      newErrors.proposed_price = t("errors.priceRequired");
+    if (!validation.success) {
+      const newErrors: Record<string, string> = {};
+      validation.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        newErrors[field] = issue.message;
+      });
+      setErrors(newErrors);
+      return false;
     }
 
-    if (!formData.estimated_duration || formData.estimated_duration <= 0) {
-      newErrors.estimated_duration = t("errors.durationRequired");
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = t("errors.messageRequired");
-    } else if (formData.message.trim().length < 20) {
-      newErrors.message = t("errors.messageTooShort");
-    } else if (formData.message.trim().length > 500) {
-      newErrors.message = t("errors.messageTooLong");
-    }
-
-    if (!formData.availability.trim()) {
-      newErrors.availability = t("errors.availabilityRequired");
-    }
-
-    if (!formData.experience_level) {
-      newErrors.experience_level = t("errors.experienceRequired");
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async () => {
@@ -143,15 +141,27 @@ export function JobApplicationDialog({
       const result = await createJobApplication(applicationData);
 
       if (result.success && result.applicationId) {
-        toast.success(t("toasts.applicationSubmittedSuccess"));
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: t("toasts.applicationSubmittedSuccess"),
+        });
         onSuccess(result.applicationId);
         onClose();
       } else {
-        toast.error(result.error || t("toasts.failedToSubmitApplication"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("toasts.failedToSubmitApplication"),
+        });
       }
     } catch (error) {
       console.error("Error submitting job application:", error);
-      toast.error(t("toasts.failedToSubmitApplication"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("toasts.failedToSubmitApplication"),
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 // UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +58,7 @@ import { useTranslations } from "next-intl";
  */
 export default function CustomerDashboardPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const t = useTranslations("dashboard.customer");
   const tCommon = useTranslations("common");
   
@@ -100,7 +101,11 @@ export default function CustomerDashboardPage() {
         if (data.error) {
           console.error("Error fetching dashboard data:", data.error);
           setError(data.error);
-          toast.error(data.error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: data.error,
+          });
           return;
         }
 
@@ -113,7 +118,11 @@ export default function CustomerDashboardPage() {
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setError("Failed to load dashboard data");
-        toast.error("Failed to load dashboard data");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Failed to load dashboard data",
+        });
       } finally {
         setLoading(false);
         setStatsLoading(false);

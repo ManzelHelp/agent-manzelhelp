@@ -1,47 +1,61 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import GetStartedButton from "./GetStartedButton";
 
-const ADVANTAGES = [
-  {
-    title: "Verified & Trusted Helpers",
-    description:
-      "All our service agents are background-checked and reviewed by the community.",
-    icon: "✅",
-  },
-  {
-    title: "Flexible & Fast Booking",
-    description:
-      "Book a helper for the time and service you need, with instant confirmation.",
-    icon: "⚡",
-  },
-  {
-    title: "Wide Range of Services",
-    description:
-      "From cleaning to repairs, find the right expert for any task.",
-    icon: "🛠️",
-  },
-];
+interface FindAHelperPageProps {
+  params: Promise<{ locale: string }>;
+}
 
-const PRICING_ESTIMATES = [
-  {
-    service: "Cleaning",
-    range: "€15 - €25 / hour",
-    note: "Depends on experience & task complexity",
-  },
-  {
-    service: "Handyman",
-    range: "€20 - €40 / hour",
-    note: "Varies by skill & project size",
-  },
-  {
-    service: "Gardening",
-    range: "€18 - €30 / hour",
-    note: "Based on expertise & garden size",
-  },
-];
+export default async function FindAHelperPage({
+  params,
+}: FindAHelperPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "findAHelper" });
 
-export default function FindAHelperPage() {
+  const ADVANTAGES = [
+    {
+      title: t("advantages.verifiedTrusted.title"),
+      description: t("advantages.verifiedTrusted.description"),
+      icon: "✅",
+    },
+    {
+      title: t("advantages.flexibleFast.title"),
+      description: t("advantages.flexibleFast.description"),
+      icon: "⚡",
+    },
+    {
+      title: t("advantages.wideRange.title"),
+      description: t("advantages.wideRange.description"),
+      icon: "🛠️",
+    },
+  ];
+
+  // Get currency symbol based on locale
+  const getCurrencySymbol = () => {
+    return locale === "ar" ? "د.م." : "MAD";
+  };
+
+  const PRICING_ESTIMATES = [
+    {
+      service: t("pricing.cleaning.service"),
+      range: `15 - 25 ${getCurrencySymbol()} / ${t("pricing.perHour")}`,
+      note: t("pricing.cleaning.note"),
+    },
+    {
+      service: t("pricing.handyman.service"),
+      range: `20 - 40 ${getCurrencySymbol()} / ${t("pricing.perHour")}`,
+      note: t("pricing.handyman.note"),
+    },
+    {
+      service: t("pricing.gardening.service"),
+      range: `18 - 30 ${getCurrencySymbol()} / ${t("pricing.perHour")}`,
+      note: t("pricing.gardening.note"),
+    },
+  ];
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col items-center px-4 py-8">
       {/* Hero Section */}
@@ -50,14 +64,16 @@ export default function FindAHelperPage() {
           className="text-4xl md:text-5xl font-bold mb-4"
           style={{ color: "var(--primary)" }}
         >
-          Find Trusted Helpers for Any Task
+          {t("hero.title")}
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mb-6">
-          Book reliable service agents in your area – fast, easy, and secure.
+          {t("hero.description")}
         </p>
-        <Button size="lg" className="rounded-full px-8 py-4 text-lg">
-          Start Searching
-        </Button>
+        <Link href="/search/services">
+          <Button size="lg" className="rounded-full px-8 py-4 text-lg">
+            {t("hero.startSearching")}
+          </Button>
+        </Link>
       </section>
 
       {/* Advantages Section */}
@@ -88,25 +104,35 @@ export default function FindAHelperPage() {
             className="text-2xl font-bold mb-4"
             style={{ color: "var(--primary)" }}
           >
-            Estimated Prices
+            {t("pricing.title")}
           </h2>
           <p className="mb-6 text-muted-foreground">
-            Prices depend on the type of service and the experience of the
-            worker. Here are some typical ranges:
+            {t("pricing.description")}
           </p>
-          <div className="grid gap-4">
+          <div className="space-y-4">
             {PRICING_ESTIMATES.map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-col md:flex-row md:items-center md:justify-between bg-accent/30 rounded-lg p-4"
+                className="bg-accent/30 rounded-lg p-5 sm:p-6 border border-border/50"
               >
-                <span className="font-medium text-lg">{item.service}</span>
-                <span className="text-primary font-semibold text-lg">
-                  {item.range}
-                </span>
-                <span className="text-sm text-muted-foreground md:text-right">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3">
+                  {/* Service Name */}
+                  <h3 className="font-semibold text-lg sm:text-xl text-foreground">
+                    {item.service}
+                  </h3>
+                  
+                  {/* Price Range */}
+                  <div className="flex-shrink-0">
+                    <span className="text-primary font-bold text-lg sm:text-xl">
+                      {item.range}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Note */}
+                <p className="text-sm text-muted-foreground leading-relaxed pt-2 border-t border-border/30">
                   {item.note}
-                </span>
+                </p>
               </div>
             ))}
           </div>
@@ -116,11 +142,9 @@ export default function FindAHelperPage() {
       {/* Call to Action */}
       <section className="w-full max-w-2xl text-center">
         <h3 className="text-xl font-semibold mb-4">
-          Ready to find your perfect helper?
+          {t("cta.title")}
         </h3>
-        <Button size="lg" className="rounded-full px-8 py-4 text-lg">
-          Get Started
-        </Button>
+        <GetStartedButton locale={locale} />
       </section>
     </main>
   );

@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { cancellationReasonSchema } from "@/lib/schemas/messages";
+import { useToast } from "@/hooks/use-toast";
 
 interface CancellationReasonDialogProps {
   isOpen: boolean;
@@ -39,22 +41,32 @@ export function CancellationReasonDialog({
   isLoading = false,
 }: CancellationReasonDialogProps) {
   const t = useTranslations("bookingDetails.cancellation");
+  const { toast } = useToast();
   const [selectedReason, setSelectedReason] = useState<string>("");
   const [customComment, setCustomComment] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const handleConfirm = () => {
-    if (!selectedReason) {
-      setError(t("errors.reasonRequired") || "Please select a reason");
+    // 1. Validation Zod (Front-end) - Messages inline sous les champs
+    const validation = cancellationReasonSchema.safeParse({
+      reason: selectedReason,
+      customComment: customComment.trim() || undefined,
+    });
+
+    if (!validation.success) {
+      const errors: Record<string, string> = {};
+      validation.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        errors[field] = issue.message;
+      });
+      setFormErrors(errors);
+      // Pas de toast pour les erreurs de validation front-end
       return;
     }
 
-    if (selectedReason === "other" && !customComment.trim()) {
-      setError(t("errors.customCommentRequired") || "Please provide a custom comment");
-      return;
-    }
-
-    setError("");
+    // Clear errors if validation passes
+    setFormErrors({});
+    
     const reasonText = selectedReason === "other" 
       ? customComment.trim()
       : t(`reasons.${selectedReason}`) || selectedReason;
@@ -65,7 +77,7 @@ export function CancellationReasonDialog({
   const handleClose = () => {
     setSelectedReason("");
     setCustomComment("");
-    setError("");
+    setFormErrors({});
     onClose();
   };
 
@@ -93,9 +105,24 @@ export function CancellationReasonDialog({
               value={selectedReason}
               onValueChange={(value) => {
                 setSelectedReason(value);
-                setError("");
+                // Clear error when user selects a reason
+                if (formErrors.reason) {
+                  setFormErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.reason;
+                    return newErrors;
+                  });
+                }
                 if (value !== "other") {
                   setCustomComment("");
+                  // Clear custom comment error if switching away from "other"
+                  if (formErrors.customComment) {
+                    setFormErrors(prev => {
+                      const newErrors = { ...prev };
+                      delete newErrors.customComment;
+                      return newErrors;
+                    });
+                  }
                 }
               }}
               className="space-y-3"
@@ -116,6 +143,9 @@ export function CancellationReasonDialog({
                 </div>
               ))}
             </RadioGroup>
+            {formErrors.reason && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1">{formErrors.reason}</p>
+            )}
           </div>
 
           {selectedReason === "other" && (
@@ -128,17 +158,25 @@ export function CancellationReasonDialog({
                 value={customComment}
                 onChange={(e) => {
                   setCustomComment(e.target.value);
-                  setError("");
+                  // Clear error when user types
+                  if (formErrors.customComment) {
+                    setFormErrors(prev => {
+                      const newErrors = { ...prev };
+                      delete newErrors.customComment;
+                      return newErrors;
+                    });
+                  }
                 }}
                 placeholder={t("customCommentPlaceholder") || "Tell us why you're canceling..."}
-                className="min-h-[100px]"
+                className={`min-h-[100px] ${formErrors.customComment ? "border-red-500" : ""}`}
+                maxLength={500}
               />
-            </div>
-          )}
-
-          {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              {formErrors.customComment && (
+                <p className="text-sm text-red-600 dark:text-red-400">{formErrors.customComment}</p>
+              )}
+              {!formErrors.customComment && customComment.length > 0 && (
+                <p className="text-xs text-gray-500">{customComment.length}/500 caractères</p>
+              )}
             </div>
           )}
         </div>

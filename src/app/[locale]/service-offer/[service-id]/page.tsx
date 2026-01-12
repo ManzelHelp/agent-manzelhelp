@@ -1,694 +1,1511 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import Image from "next/image";
 import {
-  MessageSquare,
-  MapPin,
-  Star,
-  Clock,
-  Calendar,
-  AlertCircle,
-  User as UserIcon,
-  Award,
-  Clock as ClockIcon,
-  Loader2,
-  CheckCircle,
-} from "lucide-react";
-import { format } from "date-fns";
-import { useUserStore } from "@/stores/userStore";
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
-  getTaskerServiceOffer,
-  getServiceInteractionStatus,
-  type TaskerServiceOffer,
-} from "@/actions/services";
-import { BookingConfirmationDialog } from "@/components/booking/BookingConfirmationDialog";
-import { ContactConfirmationDialog } from "@/components/booking/ContactConfirmationDialog";
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  User,
+  MapPin,
+  DollarSign,
+  ChevronDown,
+  AlertCircle,
+  Edit,
+  Clock,
+  Star,
+  Shield,
+  Sparkles,
+  Info,
+  Calendar,
+  Plus,
+} from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
+import { getAllCategoryHierarchies } from "@/lib/categories";
+import { createJob, type CreateJobData } from "@/actions/jobs";
+import { getUserAddresses } from "@/actions/profile";
+import { getServices, getServiceCategories } from "@/actions/services";
+import type { ServiceCategory, Service, Address } from "@/types/supabase";
+import { BackButton } from "@/components/ui/BackButton";
+import { ContactSupportDialog } from "@/components/ContactSupportDialog";
 
-export default function TaskerOfferPage() {
+// Form data interfaces
+interface JobDetailsData {
+  title: string;
+  description: string;
+  categoryId: number;
+  serviceId: number;
+  selectedAddressId: string;
+  requirements: string;
+  images: string[];
+}
+
+interface ScheduleBudgetData {
+  preferredDate: string;
+  preferredTimeStart: string;
+  preferredTimeEnd: string;
+  isFlexible: boolean;
+  estimatedDuration: number;
+  customerBudget: number;
+  currency: string;
+  maxApplications: number;
+}
+
+interface JobFormData {
+  jobDetails: JobDetailsData;
+  scheduleBudget: ScheduleBudgetData;
+}
+
+const INITIAL_JOB_DETAILS: JobDetailsData = {
+  title: "",
+  description: "",
+  categoryId: 0,
+  serviceId: 0,
+  selectedAddressId: "",
+  requirements: "",
+  images: [],
+};
+
+const INITIAL_SCHEDULE_BUDGET: ScheduleBudgetData = {
+  preferredDate: "",
+  preferredTimeStart: "",
+  preferredTimeEnd: "",
+  isFlexible: false,
+  estimatedDuration: 1,
+  customerBudget: 0,
+  currency: "MAD",
+  maxApplications: 3,
+};
+
+const STEPS = [
+  {
+    id: 1,
+    title: "Job Details",
+    description: "Tell us about the job you need done",
+    icon: <Sparkles className="h-5 w-5" />,
+    color: "from-blue-500 to-blue-600",
+  },
+  {
+    id: 2,
+    title: "Schedule & Budget",
+    description: "Set your schedule and budget",
+    icon: <DollarSign className="h-5 w-5" />,
+    color: "from-green-500 to-green-600",
+  },
+  {
+    id: 3,
+    title: "Review & Post",
+    description: "Review and publish your job",
+    icon: <Shield className="h-5 w-5" />,
+    color: "from-purple-500 to-purple-600",
+  },
+];
+
+export default function PostJobPage() {
   const router = useRouter();
-  const params = useParams();
-  const t = useTranslations("taskerOffer");
-  const { user } = useUserStore();
-  const [serviceData, setServiceData] = useState<TaskerServiceOffer | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showBookingDialog, setShowBookingDialog] = useState(false);
   const [showContactDialog, setShowContactDialog] = useState(false);
-  const [interactionStatus, setInteractionStatus] = useState<{
-    isOwner: boolean;
-    hasBooking: boolean;
-    hasConversation: boolean;
-    bookingId?: string;
-    conversationId?: string;
-  } | null>(null);
-  const [avatarError, setAvatarError] = useState(false);
+  const t = useTranslations("postJob");
+  const { user } = useUserStore();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState<JobFormData>({
+    jobDetails: INITIAL_JOB_DETAILS,
+    scheduleBudget: INITIAL_SCHEDULE_BUDGET,
+  });
 
-  const serviceId = params["service-id"] as string;
+  // Data from database
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
 
-  // Fetch service data and interaction status
-  useEffect(() => {
-    const fetchServiceData = async () => {
-      if (!serviceId) return;
+  // Validation errors - only show when user tries to continue
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false);
 
-      try {
-        setIsLoading(true);
-        setError(null);
-        const result = await getTaskerServiceOffer(serviceId);
+  // Fetch initial data
+  const fetchInitialData = React.useCallback(async () => {
+    setLoading(true);
 
-        if (result.success && result.data) {
-          console.log("[TaskerOfferPage] Service data loaded:", {
-            taskerId: result.data.tasker.id,
-            avatar_url: result.data.tasker.avatar_url,
-            first_name: result.data.tasker.first_name,
-            last_name: result.data.tasker.last_name,
-          });
-          setServiceData(result.data);
-          // Reset avatar error when new data is loaded
-          setAvatarError(false);
-
-          // Check interaction status if user is logged in
-          if (user) {
-            try {
-              const interactionResult = await getServiceInteractionStatus(
-                serviceId,
-                user.id
-              );
-              if (interactionResult.success && interactionResult.data) {
-                setInteractionStatus(interactionResult.data);
-              } else {
-                console.warn(
-                  "Failed to get interaction status:",
-                  interactionResult.error
-                );
-              }
-            } catch (err) {
-              console.error("Error checking interaction status:", err);
-            }
-          }
-        } else {
-          setError(result.error || t("serviceNotFound"));
-        }
-      } catch (err) {
-        console.error("Error fetching service data:", err);
-        setError(t("failedToLoad"));
-      } finally {
-        setIsLoading(false);
+    try {
+      // Get categories from database to ensure they match with services
+      const categoriesResult = await getServiceCategories();
+      if (categoriesResult.success && categoriesResult.categories) {
+        const dbCategories = categoriesResult.categories.map((category) => ({
+          id: category.id,
+          name_en: category.name_en,
+          name_fr: category.name_fr,
+          name_ar: category.name_ar,
+          description_en: category.description_en || undefined,
+          description_fr: category.description_fr || undefined,
+          description_ar: category.description_ar || undefined,
+          icon_url: category.icon_url || undefined,
+          is_active: category.is_active,
+          sort_order: category.sort_order,
+        }));
+        setCategories(dbCategories);
+      } else {
+        // Fallback to local categories if database fetch fails
+        console.warn("Failed to load categories from database, using local categories:", categoriesResult.error);
+        const hierarchies = getAllCategoryHierarchies();
+        const localCategories = hierarchies.map(({ parent }) => ({
+          id: parent.id,
+          name_en: parent.name_en,
+          name_fr: parent.name_fr,
+          name_ar: parent.name_ar,
+          description_en: parent.description_en,
+          description_fr: parent.description_fr,
+          description_ar: parent.description_ar,
+          icon_url: undefined,
+          is_active: true,
+          sort_order: parent.id,
+        }));
+        setCategories(localCategories);
       }
-    };
 
-    fetchServiceData();
-  }, [serviceId, t, user]);
+      // Get all services from the database to ensure we use correct IDs
+      // This prevents foreign key constraint errors when creating jobs
+      const servicesResult = await getServices();
+      if (servicesResult.success && servicesResult.services) {
+        // Map database services to the Service type expected by the component
+        // Services from DB already have category_id that matches service_categories.id
+        const dbServices: Service[] = servicesResult.services.map((service) => ({
+          id: service.id,
+          category_id: service.category_id, // This already matches the category ID from DB
+          name_en: service.name_en,
+          name_fr: service.name_fr,
+          name_ar: service.name_ar,
+          description_en: service.description_en || undefined,
+          description_fr: service.description_fr || undefined,
+          description_ar: service.description_ar || undefined,
+          is_active: service.is_active,
+          sort_order: service.sort_order,
+        }));
+        setServices(dbServices);
+      } else {
+        // Fallback to local services if database fetch fails
+        console.warn("Failed to load services from database, using local services:", servicesResult.error);
+        const hierarchies = getAllCategoryHierarchies();
+        const allServices: Service[] = [];
+        hierarchies.forEach(({ parent, subcategories }) => {
+          subcategories.forEach((service) => {
+            allServices.push({
+              id: service.id,
+              category_id: parent.id,
+              name_en: service.name_en,
+              name_fr: service.name_fr,
+              name_ar: service.name_ar,
+              description_en: service.description_en,
+              description_fr: service.description_fr,
+              description_ar: service.description_ar,
+              is_active: true,
+              sort_order: service.id,
+            });
+          });
+        });
+        setServices(allServices);
+      }
 
-  const getPricingDisplay = (price: number, pricingType: string) => {
-    if (pricingType === "hourly") {
-      return `MAD ${price}/hr`;
-    } else if (pricingType === "per_item") {
-      return `MAD ${price}/item`;
-    } else {
-      return `MAD ${price}`;
+      // Fetch user addresses using server action
+      const addressesResult = await getUserAddresses();
+      if (addressesResult.success && addressesResult.addresses) {
+        setAddresses(addressesResult.addresses);
+
+        // Auto-select the first address if available
+        if (addressesResult.addresses.length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            jobDetails: {
+              ...prev.jobDetails,
+              selectedAddressId: addressesResult.addresses![0].id || "",
+            },
+          }));
+        }
+      } else {
+        console.error("Error fetching addresses:", addressesResult.error);
+        toast.error("Failed to load addresses. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+      toast.error("Failed to load form data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  // Validation functions
+  const validateStep1 = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.jobDetails.title.trim()) {
+      newErrors.title = t("errors.titleRequired");
+    }
+    if (!formData.jobDetails.description.trim()) {
+      newErrors.description = t("errors.descriptionRequired");
+    }
+    if (!formData.jobDetails.categoryId) {
+      newErrors.category = t("errors.categoryRequired");
+    }
+    if (!formData.jobDetails.serviceId) {
+      newErrors.service = t("errors.serviceRequired");
+    }
+    if (!formData.jobDetails.selectedAddressId && addresses.length === 0) {
+      newErrors.address = t("errors.locationRequired");
+    }
+
+    setErrors(newErrors);
+    setHasAttemptedValidation(true);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep2 = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.scheduleBudget.preferredDate) {
+      newErrors.preferredDate = t("errors.dateRequired");
+    }
+    if (
+      !formData.scheduleBudget.customerBudget ||
+      formData.scheduleBudget.customerBudget <= 0
+    ) {
+      newErrors.customerBudget = t("errors.budgetGreaterThanZero");
+    }
+    if (
+      !formData.scheduleBudget.estimatedDuration ||
+      formData.scheduleBudget.estimatedDuration <= 0
+    ) {
+      newErrors.estimatedDuration = t("errors.durationGreaterThanZero");
+    }
+    if (
+      !formData.scheduleBudget.maxApplications ||
+      formData.scheduleBudget.maxApplications <= 0
+    ) {
+      newErrors.maxApplications = t("errors.maxApplicationsGreaterThanZero");
+    }
+
+    setErrors(newErrors);
+    setHasAttemptedValidation(true);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Navigation functions
+  const goToNextStep = () => {
+    if (currentStep === 1 && !validateStep1()) return;
+    if (currentStep === 2 && !validateStep2()) return;
+
+    if (currentStep < STEPS.length) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  const getExperienceLevelColor = (level?: string) => {
-    switch (level) {
-      case "expert":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "intermediate":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "beginner":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+  const goToPreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
-  const handleBookService = () => {
-    if (!user) {
-      router.push("/login");
-      return;
+  const filteredServices = services.filter(
+    (service) => service.category_id === formData.jobDetails.categoryId
+  );
+
+  // Submit function
+  const handleSubmit = async () => {
+    if (!validateStep2()) return;
+
+    setSubmitting(true);
+
+    try {
+      // Prepare job data
+      const jobData: CreateJobData = {
+        title: formData.jobDetails.title,
+        description: formData.jobDetails.description,
+        service_id: formData.jobDetails.serviceId,
+        preferred_date: formData.scheduleBudget.preferredDate,
+        preferred_time_start:
+          formData.scheduleBudget.preferredTimeStart || undefined,
+        preferred_time_end:
+          formData.scheduleBudget.preferredTimeEnd || undefined,
+        is_flexible: formData.scheduleBudget.isFlexible,
+        estimated_duration: formData.scheduleBudget.estimatedDuration,
+        customer_budget: formData.scheduleBudget.customerBudget,
+        currency: formData.scheduleBudget.currency,
+        address_id: formData.jobDetails.selectedAddressId,
+        max_applications: formData.scheduleBudget.maxApplications,
+        requirements: formData.jobDetails.requirements || undefined,
+        images:
+          formData.jobDetails.images.length > 0
+            ? formData.jobDetails.images
+            : undefined,
+      };
+
+      // Create the job using server action
+      const result = await createJob(jobData);
+
+      if (result.success) {
+        toast.success(t("success.jobPosted"));
+        router.push("/tasker/my-jobs");
+      } else {
+        toast.error(result.error || t("errors.jobCreationFailed"));
+      }
+    } catch (error) {
+      console.error("Error creating job:", error);
+      toast.error(t("errors.jobCreationFailed"));
+    } finally {
+      setSubmitting(false);
     }
-    if (!serviceData) return;
-    setShowBookingDialog(true);
   };
 
-  const handleBookingSuccess = (bookingId: string) => {
-    router.push(`/customer/bookings/${bookingId}`);
-  };
-
-  const handleContactTasker = () => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    if (!serviceData) return;
-    setShowContactDialog(true);
-  };
-
-  const handleContactSuccess = (conversationId: string) => {
-    router.push(`/customer/messages/${conversationId}`);
-  };
-
-  const handleGoToBooking = () => {
-    if (interactionStatus?.bookingId) {
-      router.push(`/customer/bookings/${interactionStatus.bookingId}`);
-    } else {
-      console.error("No booking ID available");
-    }
-  };
-
-  const handleGoToChat = () => {
-    if (interactionStatus?.conversationId) {
-      router.push(`/customer/messages/${interactionStatus.conversationId}`);
-    } else {
-      console.error("No conversation ID available");
-    }
-  };
-
-  if (isLoading) {
+  if (loading && categories.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 text-blue-600 dark:text-blue-400 animate-spin mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
-            {t("loading")}
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-[var(--color-border)] border-t-[var(--color-secondary)] rounded-full animate-spin mx-auto mb-6"></div>
+            <div
+              className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[var(--color-primary)] rounded-full animate-spin mx-auto"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
+          </div>
+          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
+            Loading Job Creator
+          </h3>
+          <p className="text-[var(--color-text-secondary)]">
+            Preparing everything you need to create an amazing job posting...
           </p>
         </div>
       </div>
     );
   }
 
-  if (error || !serviceData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20 flex items-center justify-center">
-        <div className="container mx-auto px-4 max-w-md">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 text-center p-12">
-            <div className="space-y-8">
-              <div className="flex justify-center">
-                <div className="w-24 h-24 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                  <AlertCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
-                </div>
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {t("error")}
-                </h2>
-                <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
-                  {error || t("serviceNotFound")}
-                </p>
-              </div>
-              <Button
-                onClick={() => window.location.reload()}
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {t("tryAgain")}
-              </Button>
-            </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[var(--color-bg)] via-white to-[var(--color-accent-light)]">
+      {/* Back Button */}
+      <div className="absolute top-4 left-4 z-10">
+        <BackButton className="bg-transparent hover:bg-transparent" />
+      </div>
+      {/* Header Section */}
+      <div className="bg-white shadow-sm border-b border-[var(--color-border)]">
+        <div className="container mx-auto max-w-6xl px-4 py-6">
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+              {t("title")}
+            </h1>
+            <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+              {t("subtitle")}
+            </p>
           </div>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <div className="space-y-8">
-          {/* Hero Section */}
-          <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50">
-            {/* Service Image with Modern Overlay */}
-            {serviceData.portfolio_images &&
-            Array.isArray(serviceData.portfolio_images) &&
-            serviceData.portfolio_images.length > 0 ? (
-              <div className="relative h-80 md:h-96 w-full">
-                <Image
-                  src={
-                    serviceData.portfolio_images[0] ||
-                    "/placeholder-service.jpg"
-                  }
-                  alt={serviceData.title || "Service image"}
-                  fill
-                  className="object-cover transition-transform duration-700 hover:scale-105"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-transparent"></div>
-
-                {/* Floating Price Badge */}
-                <div className="absolute top-6 right-6">
-                  <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-xl border border-white/20">
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl font-bold text-slate-900 dark:text-white">
-                        {getPricingDisplay(
-                          serviceData.price,
-                          serviceData.pricing_type
-                        )}
-                      </span>
-                    </div>
-                    {serviceData.minimum_duration && (
-                      <div className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400 mt-1">
-                        <ClockIcon className="h-4 w-4" />
-                        <span>Min. {serviceData.minimum_duration}h</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Service Title Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <div className="max-w-3xl">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-                      {serviceData.title}
-                    </h1>
-                    <div className="flex items-center gap-3 text-white/90">
-                      <Calendar className="h-5 w-5" />
-                      <span className="text-lg">
-                        Listed on{" "}
-                        {format(
-                          new Date(serviceData.created_at),
-                          "MMMM d, yyyy"
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="relative h-80 md:h-96 w-full bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center">
-                <div className="text-center">
-                  <h1 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-white mb-2">
-                    {serviceData.title}
-                  </h1>
-                  <div className="flex items-center justify-center gap-3 text-slate-600 dark:text-slate-300">
-                    <Calendar className="h-5 w-5" />
-                    <span className="text-lg">
-                      Listed on{" "}
-                      {format(new Date(serviceData.created_at), "MMMM d, yyyy")}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Service Details Section */}
-            <div className="p-8 md:p-12">
-              {/* Description */}
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                  {t("aboutService")}
-                </h3>
-                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-600/50">
-                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
-                    {serviceData.description || "No description available"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Service Details Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {serviceData.service_area && (
-                  <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-blue-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <MapPin className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                          {t("serviceArea")}
-                        </h4>
-                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                          {typeof serviceData.service_area === "string"
-                            ? serviceData.service_area
-                            : serviceData.service_area
-                            ? JSON.stringify(serviceData.service_area)
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-emerald-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Clock className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                        {t("pricingType")}
-                      </h4>
-                      <p className="text-slate-600 dark:text-slate-400 capitalize">
-                        {serviceData.pricing_type || "Fixed"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tasker Profile Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                  <UserIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                {t("aboutTasker")}
-              </h2>
-            </div>
-
-            <div className="p-8">
-              {/* Tasker Header */}
-              <div className="flex flex-col lg:flex-row lg:items-start gap-8 mb-8">
-                {/* Profile Picture */}
-                <div className="relative group">
-                  <div className="relative h-32 w-32 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]">
-                    {serviceData.tasker.avatar_url && !avatarError ? (
-                      <Image
-                        src={serviceData.tasker.avatar_url}
-                        alt={`${serviceData.tasker.first_name || "Tasker"} ${
-                          serviceData.tasker.last_name || ""
-                        }`}
-                        width={128}
-                        height={128}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        unoptimized
-                        onError={(e) => {
-                          console.error("[TaskerOfferPage] Avatar image error:", {
-                            src: serviceData.tasker.avatar_url,
-                            error: e,
-                          });
-                          setAvatarError(true);
-                        }}
-                        onLoad={() => {
-                          console.log("[TaskerOfferPage] Avatar image loaded successfully:", serviceData.tasker.avatar_url);
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <UserIcon className="h-16 w-16 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  {serviceData.tasker.profile?.experience_level && (
-                    <div className="absolute -bottom-2 -right-2">
-                      <Badge
-                        className={`px-4 py-2 text-sm font-semibold shadow-lg ${getExperienceLevelColor(
-                          serviceData.tasker.profile.experience_level
-                        )}`}
-                      >
-                        <Award className="h-4 w-4 mr-2" />
-                        {serviceData.tasker.profile.experience_level
-                          .charAt(0)
-                          .toUpperCase() +
-                          serviceData.tasker.profile.experience_level.slice(1)}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tasker Info */}
-                <div className="flex-1 space-y-6">
-                  <div>
-                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                      {`${serviceData.tasker.first_name || "Tasker"} ${
-                        serviceData.tasker.last_name || ""
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        {/* Modern Progress Steps */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8">
+            {STEPS.map((step, index) => (
+              <React.Fragment key={step.id}>
+                <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
+                  {/* Step Circle */}
+                  <div className="relative">
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+                        currentStep >= step.id
+                          ? `bg-gradient-to-r ${step.color} text-white scale-110`
+                          : "bg-white border-2 border-[var(--color-border)] text-[var(--color-text-secondary)]"
                       }`}
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-lg">
-                      {t("professionalServiceProvider")}
-                    </p>
-                  </div>
-
-                  {/* Rating and Stats */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-4 border border-yellow-200/50 dark:border-yellow-700/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
-                          <Star className="h-5 w-5 text-yellow-600 dark:text-yellow-400 fill-current" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {serviceData.stats?.tasker_rating
-                              ? serviceData.stats.tasker_rating.toFixed(1)
-                              : "New"}
-                          </p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            {t("rating")}
-                          </p>
-                        </div>
-                      </div>
+                    >
+                      {currentStep > step.id ? (
+                        <Check className="h-6 w-6" />
+                      ) : (
+                        step.icon
+                      )}
                     </div>
-
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-4 border border-blue-200/50 dark:border-blue-700/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                          <Award className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {serviceData.stats?.completed_jobs || 0}
-                          </p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            {t("jobsCompleted")}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {serviceData.stats?.response_time_hours && (
-                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-4 border border-emerald-200/50 dark:border-emerald-700/50">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                            <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                              {serviceData.stats.response_time_hours}h
-                            </p>
-                            <p className="text-sm text-slate-600 dark:text-slate-400">
-                              {t("avgResponse")}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    {currentStep === step.id && (
+                      <div
+                        className={`absolute inset-0 rounded-full bg-gradient-to-r ${step.color} animate-pulse opacity-20`}
+                      />
                     )}
                   </div>
-                </div>
-              </div>
 
-              {/* Bio */}
-              {serviceData.tasker.profile?.bio && (
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                    <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
-                    About
-                  </h3>
-                  <div className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-600/50">
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
-                      {serviceData.tasker.profile.bio}
+                  {/* Step Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`font-semibold text-sm sm:text-base transition-colors ${
+                        currentStep >= step.id
+                          ? "text-[var(--color-text-primary)]"
+                          : "text-[var(--color-text-secondary)]"
+                      }`}
+                    >
+                      {t(
+                        `steps.${
+                          step.id === 1
+                            ? "jobDetails"
+                            : step.id === 2
+                            ? "scheduleBudget"
+                            : "reviewPost"
+                        }`
+                      )}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1">
+                      {t(
+                        `stepDescriptions.${
+                          step.id === 1
+                            ? "jobDetails"
+                            : step.id === 2
+                            ? "scheduleBudget"
+                            : "reviewPost"
+                        }`
+                      )}
                     </p>
                   </div>
                 </div>
+
+                {/* Connector Line */}
+                {index < STEPS.length - 1 && (
+                  <div
+                    className={`hidden sm:block flex-1 h-0.5 mx-4 transition-all duration-300 ${
+                      currentStep > step.id
+                        ? `bg-gradient-to-r ${step.color}`
+                        : "bg-[var(--color-border)]"
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2">
+            <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden animate-fade-in-up">
+              {/* Step 1: Job Details */}
+              {currentStep === 1 && (
+                <>
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                        <Sparkles className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
+                          {t("steps.jobDetails")}
+                        </CardTitle>
+                        <CardDescription className="text-[var(--color-text-secondary)]">
+                          {t("stepDescriptions.jobDetails")}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* User Profile Section */}
+                    <div className="bg-gradient-to-r from-[var(--color-accent-light)] to-blue-50 rounded-xl p-4 border border-[var(--color-border)]">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center overflow-hidden shadow-lg">
+                            {user?.avatar_url ? (
+                              <Image
+                                src={user.avatar_url}
+                                alt="Profile"
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <User className="h-8 w-8 text-white" />
+                            )}
+                          </div>
+                          {!user?.avatar_url && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--color-warning)] rounded-full flex items-center justify-center">
+                              <AlertCircle className="h-3 w-3 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg text-[var(--color-text-primary)]">
+                            {user?.first_name} {user?.last_name}
+                          </h4>
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            {user?.email}
+                          </p>
+                          {!user?.avatar_url && (
+                            <p className="text-xs text-[var(--color-warning)] mt-1 flex items-center">
+                              <Info className="h-3 w-3 inline mr-1" />
+                              Add a profile photo to build trust with other
+                              taskers
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Job Title */}
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="title"
+                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                      >
+                        <Star className="h-4 w-4 text-[var(--color-secondary)]" />
+                        {t("jobDetails.title")} *
+                      </Label>
+                      <Input
+                        id="title"
+                        value={formData.jobDetails.title}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            jobDetails: {
+                              ...prev.jobDetails,
+                              title: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder={t("jobDetails.titlePlaceholder")}
+                        className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                          hasAttemptedValidation && errors.title
+                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                        }`}
+                      />
+                      {hasAttemptedValidation && errors.title && (
+                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.title}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Job Description */}
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="description"
+                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4 text-[var(--color-secondary)]" />
+                        {t("jobDetails.description")} *
+                      </Label>
+                      <textarea
+                        id="description"
+                        value={formData.jobDetails.description}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            jobDetails: {
+                              ...prev.jobDetails,
+                              description: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder={t("jobDetails.descriptionPlaceholder")}
+                        rows={4}
+                        className={`w-full min-h-[120px] px-4 py-3 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y ${
+                          hasAttemptedValidation && errors.description
+                            ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                        }`}
+                      />
+                      {hasAttemptedValidation && errors.description && (
+                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Category & Service Selection */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-[var(--color-secondary)]" />
+                          {t("jobDetails.category")} *
+                        </Label>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
+                                hasAttemptedValidation && errors.category
+                                  ? "border-[var(--color-error)]"
+                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                              }`}
+                            >
+                              <span className="truncate">
+                                {formData.jobDetails.categoryId
+                                  ? categories.find(
+                                      (c) =>
+                                        c.id === formData.jobDetails.categoryId
+                                    )?.name_en || "Select category"
+                                  : "Select category"}
+                              </span>
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full min-w-[200px]">
+                            {categories.map((category) => (
+                              <DropdownMenuItem
+                                key={category.id}
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    jobDetails: {
+                                      ...prev.jobDetails,
+                                      categoryId: category.id,
+                                      serviceId: 0, // Reset service selection
+                                    },
+                                  }))
+                                }
+                                className="cursor-pointer"
+                              >
+                                {category.name_en}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {hasAttemptedValidation && errors.category && (
+                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {errors.category}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                          <User className="h-4 w-4 text-[var(--color-secondary)]" />
+                          {t("jobDetails.service")} *
+                        </Label>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`h-12 w-full justify-between text-base border-2 rounded-xl transition-all duration-200 ${
+                                hasAttemptedValidation && errors.service
+                                  ? "border-[var(--color-error)]"
+                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                              } ${
+                                !formData.jobDetails.categoryId
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              disabled={!formData.jobDetails.categoryId}
+                            >
+                              <span className="truncate">
+                                {formData.jobDetails.serviceId
+                                  ? services.find(
+                                      (s) =>
+                                        s.id === formData.jobDetails.serviceId
+                                    )?.name_en || "Select service"
+                                  : "Select service"}
+                              </span>
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full min-w-[200px]">
+                            {filteredServices.map((service) => (
+                              <DropdownMenuItem
+                                key={service.id}
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    jobDetails: {
+                                      ...prev.jobDetails,
+                                      serviceId: service.id,
+                                    },
+                                  }))
+                                }
+                                className="cursor-pointer"
+                              >
+                                {service.name_en}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {hasAttemptedValidation && errors.service && (
+                          <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                            <AlertCircle className="h-4 w-4" />
+                            {errors.service}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Location Selection */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-[var(--color-secondary)]" />
+                        Job Location
+                      </Label>
+                      {addresses.length > 0 ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="h-12 w-full justify-between text-base border-2 border-[var(--color-border)] rounded-xl hover:border-[var(--color-primary)] transition-all duration-200"
+                            >
+                              <span className="truncate">
+                                {formData.jobDetails.selectedAddressId
+                                  ? addresses.find(
+                                      (a) =>
+                                        a.id ===
+                                        formData.jobDetails.selectedAddressId
+                                    )
+                                    ? `${
+                                        addresses.find(
+                                          (a) =>
+                                            a.id ===
+                                            formData.jobDetails
+                                              .selectedAddressId
+                                        )?.street_address
+                                      }, ${
+                                        addresses.find(
+                                          (a) =>
+                                            a.id ===
+                                            formData.jobDetails
+                                              .selectedAddressId
+                                        )?.city
+                                      }`
+                                    : "Select location"
+                                  : addresses[0]
+                                  ? `${addresses[0].street_address}, ${addresses[0].city}`
+                                  : "Select location"}
+                              </span>
+                              <MapPin className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full min-w-[300px]">
+                            {addresses.map((address) => (
+                              <DropdownMenuItem
+                                key={address.id}
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    jobDetails: {
+                                      ...prev.jobDetails,
+                                      selectedAddressId: address.id,
+                                    },
+                                  }))
+                                }
+                                className="cursor-pointer"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium capitalize">
+                                    {address.label} Location
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {address.street_address}, {address.city},{" "}
+                                    {address.region}
+                                  </span>
+                                </div>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-accent-light)]">
+                          <MapPin className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
+                          <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                            No locations found. Please add your home or work
+                            location in your profile first.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                            onClick={() =>
+                              router.push("/tasker/profile?section=addresses")
+                            }
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Add Location
+                          </Button>
+                        </div>
+                      )}
+                      {hasAttemptedValidation && errors.address && (
+                        <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.address}
+                        </p>
+                      )}
+
+                      {/* Add More Location Button - Always visible when addresses exist */}
+                      {addresses.length > 0 && (
+                        <div className="flex justify-center pt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all duration-200"
+                            onClick={() =>
+                              router.push("/tasker/profile?section=addresses")
+                            }
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add More Location
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Special Requirements */}
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="requirements"
+                        className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+                      >
+                        <Info className="h-4 w-4 text-[var(--color-secondary)]" />
+                        {t("jobDetails.requirements")}
+                      </Label>
+                      <textarea
+                        id="requirements"
+                        value={formData.jobDetails.requirements}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            jobDetails: {
+                              ...prev.jobDetails,
+                              requirements: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder={t("jobDetails.requirementsPlaceholder")}
+                        rows={3}
+                        className="w-full min-h-[90px] px-4 py-3 text-base border-2 border-[var(--color-border)] rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y hover:border-[var(--color-primary)]"
+                      />
+                    </div>
+                  </CardContent>
+                </>
               )}
 
-              {/* Tasker Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                <div className="text-center group">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200/50 dark:border-blue-700/50 group-hover:shadow-lg transition-all duration-300">
-                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                      {serviceData.stats?.completed_jobs || 0}
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                      {t("jobs")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-center group">
-                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-6 border border-emerald-200/50 dark:border-emerald-700/50 group-hover:shadow-lg transition-all duration-300">
-                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
-                      {serviceData.stats?.total_reviews || 0}
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                      {t("reviews")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-center group">
-                  <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-yellow-200/50 dark:border-yellow-700/50 group-hover:shadow-lg transition-all duration-300">
-                    <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">
-                      {serviceData.stats?.tasker_rating
-                        ? `${serviceData.stats.tasker_rating.toFixed(1)}★`
-                        : "New"}
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                      {t("rating")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-center group">
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200/50 dark:border-purple-700/50 group-hover:shadow-lg transition-all duration-300">
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                      {serviceData.tasker.created_at
-                        ? format(
-                            new Date(serviceData.tasker.created_at),
-                            "MMM yy"
-                          )
-                        : "N/A"}
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                      {t("memberSince")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-6 border-t border-slate-200/50 dark:border-slate-600/50">
-                {interactionStatus?.isOwner ? (
-                  <div className="text-center">
-                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-amber-200/50 dark:border-amber-700/50">
-                      <div className="flex items-center justify-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-                          <UserIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-                          {t("ownService")}
-                        </h3>
+              {/* Step 2: Schedule & Budget */}
+              {currentStep === 2 && (
+                <>
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-white" />
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400 text-lg">
-                        {t("ownServiceDescription")}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Primary Actions */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Booking Button */}
-                      {interactionStatus?.hasBooking ? (
-                        <Button
-                          onClick={handleGoToBooking}
-                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                          size="lg"
-                        >
-                          <CheckCircle className="h-6 w-6 mr-3" />
-                          {t("goToBooking")}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={handleBookService}
-                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                          size="lg"
-                        >
-                          <CheckCircle className="h-6 w-6 mr-3" />
-                          {t("bookService")}
-                        </Button>
-                      )}
-
-                      {/* Chat/Contact Button */}
-                      {interactionStatus?.hasConversation ? (
-                        <Button
-                          onClick={handleGoToChat}
-                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                          size="lg"
-                        >
-                          <MessageSquare className="h-6 w-6 mr-3" />
-                          {t("goToChat")}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={handleContactTasker}
-                          className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                          size="lg"
-                        >
-                          <MessageSquare className="h-6 w-6 mr-3" />
-                          {t("contactTasker")}
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Status Messages */}
-                    {interactionStatus?.hasBooking && (
-                      <div className="text-center">
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 border border-green-200/50 dark:border-green-700/50">
-                          <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                            {t("bookingExists")}
-                          </p>
-                        </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
+                          {t("steps.scheduleBudget")}
+                        </CardTitle>
+                        <CardDescription className="text-[var(--color-text-secondary)]">
+                          {t("stepDescriptions.scheduleBudget")}
+                        </CardDescription>
                       </div>
-                    )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* Date & Time Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-[var(--color-secondary)]" />
+                        Preferred Schedule
+                      </h3>
 
-                    {interactionStatus?.hasConversation &&
-                      !interactionStatus?.hasBooking && (
-                        <div className="text-center">
-                          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-4 border border-blue-200/50 dark:border-blue-700/50">
-                            <p className="text-blue-700 dark:text-blue-300 text-sm font-medium">
-                              {t("conversationExists")}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Preferred Date */}
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="preferredDate"
+                            className="text-sm font-semibold text-[var(--color-text-primary)]"
+                          >
+                            {t("scheduleBudget.preferredDate")} *
+                          </Label>
+                          <Input
+                            id="preferredDate"
+                            type="date"
+                            value={formData.scheduleBudget.preferredDate}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                scheduleBudget: {
+                                  ...prev.scheduleBudget,
+                                  preferredDate: e.target.value,
+                                },
+                              }))
+                            }
+                            min={new Date().toISOString().split("T")[0]}
+                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                              hasAttemptedValidation && errors.preferredDate
+                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            }`}
+                          />
+                          {hasAttemptedValidation && errors.preferredDate && (
+                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" />
+                              {errors.preferredDate}
                             </p>
+                          )}
+                        </div>
+
+                        {/* Time Flexibility */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
+                            Time Flexibility
+                          </Label>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="isFlexible"
+                              checked={formData.scheduleBudget.isFlexible}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  scheduleBudget: {
+                                    ...prev.scheduleBudget,
+                                    isFlexible: e.target.checked,
+                                  },
+                                }))
+                              }
+                              className="w-4 h-4 text-[var(--color-secondary)] border-2 border-[var(--color-border)] rounded focus:ring-[var(--color-secondary)]"
+                            />
+                            <Label
+                              htmlFor="isFlexible"
+                              className="text-sm text-[var(--color-text-secondary)]"
+                            >
+                              {t("scheduleBudget.timeFlexible")}
+                            </Label>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Specific Time Selection (when not flexible) */}
+                      {!formData.scheduleBudget.isFlexible && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <Label
+                              htmlFor="timeStart"
+                              className="text-sm font-semibold text-[var(--color-text-primary)]"
+                            >
+                              {t("scheduleBudget.preferredTime")} (Start)
+                            </Label>
+                            <Input
+                              id="timeStart"
+                              type="time"
+                              value={formData.scheduleBudget.preferredTimeStart}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  scheduleBudget: {
+                                    ...prev.scheduleBudget,
+                                    preferredTimeStart: e.target.value,
+                                  },
+                                }))
+                              }
+                              className="h-12 text-base border-2 border-[var(--color-border)] rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] hover:border-[var(--color-primary)]"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <Label
+                              htmlFor="timeEnd"
+                              className="text-sm font-semibold text-[var(--color-text-primary)]"
+                            >
+                              {t("scheduleBudget.preferredTime")} (End)
+                            </Label>
+                            <Input
+                              id="timeEnd"
+                              type="time"
+                              value={formData.scheduleBudget.preferredTimeEnd}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  scheduleBudget: {
+                                    ...prev.scheduleBudget,
+                                    preferredTimeEnd: e.target.value,
+                                  },
+                                }))
+                              }
+                              className="h-12 text-base border-2 border-[var(--color-border)] rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] hover:border-[var(--color-primary)]"
+                            />
                           </div>
                         </div>
                       )}
-                  </div>
+                    </div>
+
+                    {/* Duration & Budget Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-[var(--color-secondary)]" />
+                        Duration & Budget
+                      </h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Estimated Duration */}
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="duration"
+                            className="text-sm font-semibold text-[var(--color-text-primary)]"
+                          >
+                            {t("scheduleBudget.estimatedDuration")} *
+                          </Label>
+                          <Input
+                            id="duration"
+                            type="number"
+                            min="0.5"
+                            step="0.5"
+                            value={formData.scheduleBudget.estimatedDuration}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                scheduleBudget: {
+                                  ...prev.scheduleBudget,
+                                  estimatedDuration:
+                                    parseFloat(e.target.value) || 0,
+                                },
+                              }))
+                            }
+                            placeholder={t(
+                              "scheduleBudget.durationPlaceholder"
+                            )}
+                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                              hasAttemptedValidation && errors.estimatedDuration
+                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            }`}
+                          />
+                          {hasAttemptedValidation &&
+                            errors.estimatedDuration && (
+                              <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                                <AlertCircle className="h-4 w-4" />
+                                {errors.estimatedDuration}
+                              </p>
+                            )}
+                        </div>
+
+                        {/* Max Applications */}
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="maxApplications"
+                            className="text-sm font-semibold text-[var(--color-text-primary)]"
+                          >
+                            {t("scheduleBudget.maxApplications")} *
+                          </Label>
+                          <Input
+                            id="maxApplications"
+                            type="number"
+                            min="1"
+                            max="20"
+                            value={formData.scheduleBudget.maxApplications}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                scheduleBudget: {
+                                  ...prev.scheduleBudget,
+                                  maxApplications:
+                                    parseInt(e.target.value) || 1,
+                                },
+                              }))
+                            }
+                            className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                              hasAttemptedValidation && errors.maxApplications
+                                ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                                : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            }`}
+                          />
+                          {hasAttemptedValidation && errors.maxApplications && (
+                            <p className="text-sm text-[var(--color-error)] flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" />
+                              {errors.maxApplications}
+                            </p>
+                          )}
+                          <p className="text-xs text-[var(--color-text-secondary)]">
+                            {t("scheduleBudget.maxApplicationsDescription")}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Budget Section */}
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor="budget"
+                          className="text-sm font-semibold text-[var(--color-text-primary)]"
+                        >
+                          {t("scheduleBudget.budget")} *
+                        </Label>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <Input
+                              id="budget"
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={formData.scheduleBudget.customerBudget}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  scheduleBudget: {
+                                    ...prev.scheduleBudget,
+                                    customerBudget:
+                                      parseFloat(e.target.value) || 0,
+                                  },
+                                }))
+                              }
+                              placeholder={t(
+                                "scheduleBudget.budgetPlaceholder"
+                              )}
+                              className={`h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] ${
+                                hasAttemptedValidation && errors.customerBudget
+                                  ? "border-[var(--color-error)] focus:ring-[var(--color-error)]"
+                                  : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                              }`}
+                            />
+                            {hasAttemptedValidation &&
+                              errors.customerBudget && (
+                                <p className="text-sm text-[var(--color-error)] flex items-center gap-1 mt-1">
+                                  <AlertCircle className="h-4 w-4" />
+                                  {errors.customerBudget}
+                                </p>
+                              )}
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="h-12 px-4 border-2 border-[var(--color-border)] hover:border-[var(--color-primary)] transition-all duration-200"
+                              >
+                                {formData.scheduleBudget.currency}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    scheduleBudget: {
+                                      ...prev.scheduleBudget,
+                                      currency: "MAD",
+                                    },
+                                  }))
+                                }
+                              >
+                                MAD
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </>
+              )}
+
+              {/* Step 3: Review & Post */}
+              {currentStep === 3 && (
+                <>
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
+                        <Shield className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
+                          {t("review.title")}
+                        </CardTitle>
+                        <CardDescription className="text-[var(--color-text-secondary)]">
+                          {t("review.description")}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* Job Overview */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <Star className="h-5 w-5 text-[var(--color-secondary)]" />
+                        {t("review.jobOverview")}
+                      </h3>
+                      <div className="bg-gradient-to-r from-[var(--color-accent-light)] to-blue-50 rounded-xl p-4 border border-[var(--color-border)]">
+                        <h4 className="font-bold text-lg text-[var(--color-text-primary)] mb-2">
+                          {formData.jobDetails.title}
+                        </h4>
+                        <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                          {formData.jobDetails.description}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-3 py-1 bg-[var(--color-secondary)] text-white text-xs rounded-full">
+                            {
+                              categories.find(
+                                (c) => c.id === formData.jobDetails.categoryId
+                              )?.name_en
+                            }
+                          </span>
+                          <span className="px-3 py-1 bg-[var(--color-primary)] text-white text-xs rounded-full">
+                            {
+                              services.find(
+                                (s) => s.id === formData.jobDetails.serviceId
+                              )?.name_en
+                            }
+                          </span>
+                        </div>
+                        {formData.jobDetails.requirements && (
+                          <div className="mt-3">
+                            <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">
+                              Special Requirements:
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {formData.jobDetails.requirements}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Schedule & Budget */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-[var(--color-secondary)]" />
+                        {t("review.scheduleBudget")}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white border border-[var(--color-border)] rounded-xl p-4">
+                          <h4 className="font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-[var(--color-secondary)]" />
+                            Schedule
+                          </h4>
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            <strong>Date:</strong>{" "}
+                            {new Date(
+                              formData.scheduleBudget.preferredDate
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                          {!formData.scheduleBudget.isFlexible &&
+                            formData.scheduleBudget.preferredTimeStart && (
+                              <p className="text-sm text-[var(--color-text-secondary)]">
+                                <strong>Time:</strong>{" "}
+                                {formData.scheduleBudget.preferredTimeStart} -{" "}
+                                {formData.scheduleBudget.preferredTimeEnd}
+                              </p>
+                            )}
+                          {formData.scheduleBudget.isFlexible && (
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              <strong>Time:</strong> Flexible
+                            </p>
+                          )}
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            <strong>Duration:</strong>{" "}
+                            {formData.scheduleBudget.estimatedDuration} hours
+                          </p>
+                        </div>
+                        <div className="bg-white border border-[var(--color-border)] rounded-xl p-4">
+                          <h4 className="font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
+                            Budget
+                          </h4>
+                          <p className="text-2xl font-bold text-[var(--color-secondary)]">
+                            {formData.scheduleBudget.customerBudget}{" "}
+                            {formData.scheduleBudget.currency}
+                          </p>
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            Max applications:{" "}
+                            {formData.scheduleBudget.maxApplications}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Location */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-[var(--color-secondary)]" />
+                        Location
+                      </h3>
+                      <div className="bg-white border border-[var(--color-border)] rounded-xl p-4">
+                        {addresses.find(
+                          (a) => a.id === formData.jobDetails.selectedAddressId
+                        ) && (
+                          <div>
+                            <p className="font-semibold text-[var(--color-text-primary)] capitalize">
+                              {
+                                addresses.find(
+                                  (a) =>
+                                    a.id ===
+                                    formData.jobDetails.selectedAddressId
+                                )?.label
+                              }{" "}
+                              Location
+                            </p>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {
+                                addresses.find(
+                                  (a) =>
+                                    a.id ===
+                                    formData.jobDetails.selectedAddressId
+                                )?.street_address
+                              }
+                              ,
+                              {
+                                addresses.find(
+                                  (a) =>
+                                    a.id ===
+                                    formData.jobDetails.selectedAddressId
+                                )?.city
+                              }
+                              ,
+                              {
+                                addresses.find(
+                                  (a) =>
+                                    a.id ===
+                                    formData.jobDetails.selectedAddressId
+                                )?.region
+                              }
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </>
+              )}
+
+              {/* Navigation Footer */}
+              <CardFooter className="flex flex-row gap-4 w-full p-6 bg-gradient-to-r from-[var(--color-accent-light)] to-white border-t border-[var(--color-border)]">
+                <Button
+                  variant="outline"
+                  onClick={goToPreviousStep}
+                  disabled={currentStep === 1 || loading}
+                  className="flex-1 sm:flex-none bg-white text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+
+                {currentStep < STEPS.length ? (
+                  <Button
+                    onClick={goToNextStep}
+                    disabled={loading}
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white hover:from-[var(--color-primary-dark)] hover:to-[var(--color-secondary-dark)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-primary)] text-white hover:from-[var(--color-secondary-dark)] hover:to-[var(--color-primary-dark)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    {submitting ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    {t("review.publishJob")}
+                  </Button>
                 )}
-              </div>
+              </CardFooter>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8 space-y-6 animate-fade-in-up animate-delay-200">
+              {/* Tips Card */}
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-[var(--color-secondary)]" />
+                    {t("tips.title")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">1</span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      {t("tips.tip1")}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">2</span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      {t("tips.tip2")}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">3</span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      {t("tips.tip3")}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">4</span>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      {t("tips.tip4")}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Support Card */}
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
+                    Need Help?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+                    Our support team is here to help you create the perfect job
+                    posting.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-white"
+                    onClick={() => setShowContactDialog(true)}
+                  >
+                    Contact Support
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Booking Confirmation Dialog */}
-      {serviceData && user && (
-        <BookingConfirmationDialog
-          isOpen={showBookingDialog}
-          onClose={() => setShowBookingDialog(false)}
-          onSuccess={handleBookingSuccess}
-          serviceData={{
-            id: serviceData.id,
-            title: serviceData.title,
-            price: serviceData.price,
-            pricing_type: serviceData.pricing_type,
-            minimum_duration: serviceData.minimum_duration || undefined,
-            tasker: {
-              id: serviceData.tasker.id,
-              first_name: serviceData.tasker.first_name || "",
-              last_name: serviceData.tasker.last_name || "",
-              avatar_url: serviceData.tasker.avatar_url || undefined,
-            },
-          }}
-        />
-      )}
-
-      {/* Contact Confirmation Dialog */}
-      {serviceData && user && (
-        <ContactConfirmationDialog
-          isOpen={showContactDialog}
-          onClose={() => setShowContactDialog(false)}
-          onSuccess={handleContactSuccess}
-          serviceData={{
-            id: serviceData.id,
-            title: serviceData.title,
-            tasker: {
-              id: serviceData.tasker.id,
-              first_name: serviceData.tasker.first_name || "",
-              last_name: serviceData.tasker.last_name || "",
-              avatar_url: serviceData.tasker.avatar_url || undefined,
-            },
-          }}
-        />
-      )}
+      <ContactSupportDialog
+        isOpen={showContactDialog}
+        onClose={() => setShowContactDialog(false)}
+      />
     </div>
   );
 }

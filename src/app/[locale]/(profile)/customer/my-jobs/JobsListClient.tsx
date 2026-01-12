@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import JobDeleteButton from "@/components/jobs/JobDeleteButton";
 import ConfirmJobCompletionButton from "@/components/jobs/ConfirmJobCompletionButton";
 import JobCloneButton from "@/components/jobs/JobCloneButton";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 // Job card component
 function JobCard({
@@ -191,7 +191,11 @@ export default function JobsListClient({ customerId }: { customerId: string }) {
 
         if (result.error) {
           console.error("Error fetching jobs:", result.error);
-          toast.error(result.error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: result.error,
+          });
           setHasMore(false);
           return;
         }
@@ -206,7 +210,11 @@ export default function JobsListClient({ customerId }: { customerId: string }) {
         setHasMore(result.hasMore);
       } catch (error) {
         console.error("Error loading jobs:", error);
-        toast.error(t("errorLoading"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: t("errorLoading"),
+        });
         setHasMore(false);
       } finally {
         setLoading(false);

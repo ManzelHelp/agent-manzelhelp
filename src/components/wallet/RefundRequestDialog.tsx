@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { refundRequestSchema } from "@/lib/schemas/wallet";
+import type { RefundRequestFormData } from "@/lib/schemas/wallet";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, DollarSign, Copy, Check } from "lucide-react";
+import { Loader2, DollarSign, Copy, Check, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   createWalletRefundRequest,
   type WalletRefundRequest,
@@ -34,6 +39,7 @@ export function RefundRequestDialog({
   onSuccess,
 }: RefundRequestDialogProps) {
   const t = useTranslations("finance.walletRefund");
+  const { toast } = useToast();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -41,6 +47,14 @@ export function RefundRequestDialog({
     useState<WalletRefundRequest | null>(null);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [amountError, setAmountError] = useState<string | null>(null);
+
+  const form = useForm<RefundRequestFormData>({
+    resolver: zodResolver(refundRequestSchema),
+    defaultValues: {
+      amount: 0,
+    },
+  });
 
   // Load wallet balance when dialog opens
   useEffect(() => {
@@ -63,38 +77,80 @@ export function RefundRequestDialog({
   const handleCustomAmountChange = (value: string) => {
     setCustomAmount(value);
     setSelectedAmount(null);
+    setAmountError(null);
+    // Validate on change
+    const numValue = parseFloat(value);
+    if (value && !isNaN(numValue)) {
+      const validation = refundRequestSchema.safeParse({ amount: numValue });
+      if (!validation.success) {
+        setAmountError(validation.error.errors[0]?.message || null);
+      } else if (walletBalance !== null && numValue > walletBalance) {
+        setAmountError(t("errors.insufficientBalance"));
+      } else {
+        setAmountError(null);
+      }
+    } else {
+      setAmountError(null);
+    }
   };
 
   const handleCreateRequest = async () => {
     const amount = selectedAmount || parseFloat(customAmount);
 
-    if (!amount || amount <= 0) {
-      toast.error(t("errors.invalidAmount"));
+    // Validate with Zod
+    const validation = refundRequestSchema.safeParse({ amount });
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || t("errors.invalidAmount");
+      setAmountError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: errorMessage,
+      });
       return;
     }
 
     if (walletBalance !== null && amount > walletBalance) {
-      toast.error(t("errors.insufficientBalance"));
+      const errorMessage = t("errors.insufficientBalance");
+      setAmountError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: errorMessage,
+      });
       return;
     }
 
     setIsCreating(true);
+    setAmountError(null);
 
     try {
       const result = await createWalletRefundRequest(amount);
 
       if (result.success && result.request) {
         setCreatedRequest(result.request);
-        toast.success(t("success.requestCreated"));
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: t("success.requestCreated"),
+        });
         if (onSuccess) {
           onSuccess(result.request);
         }
       } else {
-        toast.error(result.error || t("errors.createFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: result.error || t("errors.createFailed"),
+        });
       }
     } catch (error) {
       console.error("Error creating refund request:", error);
-      toast.error(t("errors.createFailed"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.createFailed"),
+      });
     } finally {
       setIsCreating(false);
     }
@@ -104,7 +160,11 @@ export function RefundRequestDialog({
     if (createdRequest?.reference_code) {
       navigator.clipboard.writeText(createdRequest.reference_code);
       setCodeCopied(true);
-      toast.success(t("codeCopied"));
+      toast({
+        variant: "success",
+        title: "Succès",
+        description: t("codeCopied"),
+      });
       setTimeout(() => setCodeCopied(false), 2000);
     }
   };
@@ -114,6 +174,8 @@ export function RefundRequestDialog({
     setCustomAmount("");
     setCreatedRequest(null);
     setCodeCopied(false);
+    setAmountError(null);
+    form.reset();
     onClose();
   };
 
@@ -198,8 +260,18 @@ export function RefundRequestDialog({
                 disabled={isCreating}
                 min="1"
                 max={walletBalance || undefined}
-                className="h-12"
+                className={cn(
+                  "h-12",
+                  amountError ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50" : ""
+                )}
+                aria-invalid={!!amountError}
               />
+              {amountError && (
+                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
+                  <AlertCircle className="h-4 w-4" />
+                  {amountError}
+                </p>
+              )}
             </div>
 
             {/* Create Button */}

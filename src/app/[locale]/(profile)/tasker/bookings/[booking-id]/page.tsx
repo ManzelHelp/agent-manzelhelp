@@ -25,7 +25,7 @@ import {
   Shield,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import {
   getBookingById,
   updateBookingStatus,
@@ -73,13 +73,17 @@ export default function TaskerBookingDetailPage({
     });
   const router = useRouter();
   const t = useTranslations("bookingDetails");
+  const { toast } = useToast();
 
   const fetchBookingData = useCallback(async () => {
     try {
       setIsLoading(true);
       const bookingData = await getBookingById(bookingId);
       if (!bookingData) {
-        toast.error(t("bookingNotFound"));
+        toast({
+          variant: "destructive",
+          title: t("bookingNotFound"),
+        });
         router.push("/tasker/bookings");
         return;
       }
@@ -89,7 +93,11 @@ export default function TaskerBookingDetailPage({
       console.error("Error fetching booking:", error);
       const errorMessage =
         error instanceof Error ? error.message : t("errors.unexpectedError");
-      toast.error(errorMessage);
+      toast({
+        variant: "destructive",
+        title: t("error"),
+        description: errorMessage,
+      });
       router.push("/tasker/bookings");
     } finally {
       setIsLoading(false);
@@ -328,14 +336,24 @@ export default function TaskerBookingDetailPage({
 
       if (result.success) {
         setBooking((prev) => (prev ? { ...prev, status: newStatus } : null));
-        toast.success(t("success.statusUpdated"));
+        toast({
+          variant: "success",
+          title: t("success.statusUpdated"),
+        });
       } else {
         console.error("Failed to update booking:", result.error);
-        toast.error(result.error || t("errors.updateFailed"));
+        toast({
+          variant: "destructive",
+          title: t("errors.updateFailed"),
+          description: result.error,
+        });
       }
     } catch (error) {
       console.error("Error updating booking:", error);
-      toast.error(t("errors.unexpectedError"));
+      toast({
+        variant: "destructive",
+        title: t("errors.unexpectedError"),
+      });
     } finally {
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
@@ -877,7 +895,11 @@ export default function TaskerBookingDetailPage({
                 variant="outline"
                 onClick={async () => {
                   if (!booking || !booking.customer_id) {
-                    toast.error("Customer information not available");
+                    toast({
+                      variant: "destructive",
+                      title: t("error"),
+                      description: "Customer information not available",
+                    });
                     return;
                   }
                   
@@ -893,11 +915,19 @@ export default function TaskerBookingDetailPage({
                     if (result.conversation) {
                       router.push(`/tasker/messages/${result.conversation.id}`);
                     } else {
-                      toast.error(result.errorMessage || "Failed to start conversation");
+                      toast({
+                        variant: "destructive",
+                        title: t("error"),
+                        description: result.errorMessage || "Failed to start conversation",
+                      });
                     }
                   } catch (error) {
                     console.error("Error starting conversation:", error);
-                    toast.error("Failed to start conversation");
+                    toast({
+                      variant: "destructive",
+                      title: t("error"),
+                      description: "Failed to start conversation",
+                    });
                   }
                 }}
                 className="h-14 text-lg font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { hasTaskerCompletedProfileAction } from "@/actions/auth";
 
 // UI Components
@@ -51,6 +51,7 @@ export default function DashboardPage() {
   const locale = params.locale as string;
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
+  const { toast } = useToast();
 
   // State management for dashboard data
   const [stats, setStats] = useState<DashboardStats>({
@@ -99,7 +100,10 @@ export default function DashboardPage() {
 
         // Check profile completion (non-blocking)
         if (!profileCheck.hasCompleted) {
-          toast.info(t("completeProfileSetup"));
+          toast({
+            variant: "info",
+            title: t("completeProfileSetup"),
+          });
           router.replace("/finish-signUp");
           return;
         }
@@ -108,7 +112,11 @@ export default function DashboardPage() {
         if (data.error) {
           console.error("Error fetching dashboard data:", data.error);
           setError(data.error);
-          toast.error(data.error);
+          toast({
+            variant: "destructive",
+            title: t("error"),
+            description: data.error,
+          });
           return;
         }
 
@@ -122,7 +130,11 @@ export default function DashboardPage() {
         console.error("Error fetching dashboard data:", error);
         const errorMessage = t("failedToLoadData");
         setError(errorMessage);
-        toast.error(errorMessage);
+        toast({
+          variant: "destructive",
+          title: t("error"),
+          description: errorMessage,
+        });
       } finally {
         setLoading(false);
         setStatsLoading(false);

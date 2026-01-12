@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import {
   getUserProfileAction,
   hasTaskerCompletedProfileAction,
@@ -319,7 +319,10 @@ function ServicesList({ taskerId }: { taskerId: string }) {
         setTotal(result.total);
       } catch (error) {
         console.error("Error fetching services:", error);
-        toast.error(t("errors.loadFailed", { default: "Failed to load services" }));
+        toast({
+          variant: "destructive",
+          title: t("errors.loadFailed", { default: "Failed to load services" }),
+        });
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -532,6 +535,7 @@ function ServicesList({ taskerId }: { taskerId: string }) {
 export default function MyServicesPage() {
   const router = useRouter();
   const t = useTranslations("services");
+  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -546,7 +550,10 @@ export default function MyServicesPage() {
 
         // Check profile completion (non-blocking)
         if (!profileCheck.hasCompleted) {
-          toast.info(t("pleaseCompleteProfile"));
+          toast({
+            variant: "info",
+            title: t("pleaseCompleteProfile"),
+          });
           router.replace("/finish-signUp");
           return;
         }
@@ -554,7 +561,10 @@ export default function MyServicesPage() {
         setUser(userData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error(t("failedToLoadData"));
+        toast({
+          variant: "destructive",
+          title: t("failedToLoadData"),
+        });
       } finally {
         setLoading(false);
       }

@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { receiptFileSchema } from "@/lib/schemas/wallet";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, FileText, X, Send } from "lucide-react";
+import { Loader2, Upload, FileText, X, Send, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   confirmRefundPayment,
   type WalletRefundRequest,
@@ -35,39 +37,48 @@ export function ConfirmPaymentDialog({
   adminWhatsAppPhone: propAdminWhatsAppPhone,
 }: ConfirmPaymentDialogProps) {
   const t = useTranslations("finance.walletRefund");
+  const { toast } = useToast();
   // Try to get admin WhatsApp phone from prop first, then from env
   const adminWhatsAppPhone = propAdminWhatsAppPhone || process.env.NEXT_PUBLIC_ADMIN_WHATSAPP_PHONE;
+  
+  // Debug: Log WhatsApp phone configuration
+  if (isOpen) {
+    console.log("🔍 WhatsApp Config:", {
+      hasProp: !!propAdminWhatsAppPhone,
+      propValue: propAdminWhatsAppPhone,
+      hasEnv: !!process.env.NEXT_PUBLIC_ADMIN_WHATSAPP_PHONE,
+      envValue: process.env.NEXT_PUBLIC_ADMIN_WHATSAPP_PHONE,
+      finalValue: adminWhatsAppPhone,
+    });
+  }
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/webp",
-      "application/pdf",
-    ];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error(
-        "Please upload a valid file (JPG, PNG, WebP, or PDF)"
-      );
+    // Validate with Zod
+    const validation = receiptFileSchema.safeParse(file);
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || "Fichier invalide";
+      setFileError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: errorMessage,
+      });
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error(t("errors.fileSizeExceeded"));
-      return;
-    }
-
+    setFileError(null);
     setReceiptFile(file);
 
     // Create preview for images
@@ -85,6 +96,7 @@ export function ConfirmPaymentDialog({
   const handleRemoveFile = () => {
     setReceiptFile(null);
     setReceiptPreview(null);
+    setFileError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -92,7 +104,25 @@ export function ConfirmPaymentDialog({
 
   const handleConfirmPayment = async () => {
     if (!receiptFile) {
-      toast.error(t("receiptRequired"));
+      setFileError(t("receiptRequired"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("receiptRequired"),
+      });
+      return;
+    }
+
+    // Validate file again before submission
+    const validation = receiptFileSchema.safeParse(receiptFile);
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || "Fichier invalide";
+      setFileError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: errorMessage,
+      });
       return;
     }
 
@@ -103,7 +133,11 @@ export function ConfirmPaymentDialog({
       const uploadResult = await uploadRefundReceipt(request.id, receiptFile);
 
       if (!uploadResult.success || !uploadResult.url) {
-        toast.error(uploadResult.errorMessage || t("errors.uploadFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: uploadResult.errorMessage || t("errors.uploadFailed"),
+        });
         setIsUploading(false);
         return;
       }
@@ -115,53 +149,50 @@ export function ConfirmPaymentDialog({
       );
 
       if (confirmResult.success) {
-        toast.success(t("success.paymentConfirmed"));
-
-        // Close dialog first
-        handleClose();
-
-        // Redirect to WhatsApp if admin phone is provided (after closing dialog)
-        console.log("🔍 Checking WhatsApp redirect:", {
-          adminWhatsAppPhone,
-          hasProp: !!propAdminWhatsAppPhone,
-          hasEnv: !!process.env.NEXT_PUBLIC_ADMIN_WHATSAPP_PHONE,
-          envValue: process.env.NEXT_PUBLIC_ADMIN_WHATSAPP_PHONE,
-        });
-
+        // Prepare WhatsApp URL BEFORE closing dialog (while user interaction context is valid)
+        let whatsappUrl: string | null = null;
         if (adminWhatsAppPhone && adminWhatsAppPhone.trim()) {
           const message = t("whatsapp.message", {
             referenceCode: request.reference_code,
             amount: request.amount,
           });
           const cleanPhone = adminWhatsAppPhone.replace(/[^0-9]/g, "");
-          console.log("📱 WhatsApp redirect:", { cleanPhone, message });
           
           if (cleanPhone) {
-            const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-            console.log("🔗 Opening WhatsApp URL:", whatsappUrl);
-            
-            // Small delay to ensure dialog is closed before opening WhatsApp
-            setTimeout(() => {
-              const newWindow = window.open(whatsappUrl, "_blank");
-              if (newWindow) {
-                toast.info(t("success.redirectingWhatsApp", { default: "Redirecting to WhatsApp..." }));
-              } else {
-                console.error("❌ Failed to open WhatsApp - popup blocked?");
-                toast.error(t("errors.whatsappOpenFailed"));
-                // Fallback: copy link to clipboard
-                navigator.clipboard.writeText(whatsappUrl).catch(() => {});
-              }
-            }, 300);
+            whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
           } else {
-            console.warn("⚠️ Admin WhatsApp phone number is invalid:", adminWhatsAppPhone);
-            toast.error(t("errors.whatsappInvalidPhone"));
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: t("errors.whatsappInvalidPhone"),
+            });
           }
         } else {
-          console.warn("⚠️ Admin WhatsApp phone number not configured:", {
-            propAdminWhatsAppPhone,
-            envValue: process.env.NEXT_PUBLIC_ADMIN_WHATSAPP_PHONE,
+          toast({
+            variant: "default",
+            title: "Avertissement",
+            description: t("errors.whatsappNotConfigured"),
           });
-          toast.warning(t("errors.whatsappNotConfigured"));
+        }
+
+        toast({
+          variant: "success",
+          title: "Succès",
+          description: t("success.paymentConfirmed"),
+        });
+
+        // Close dialog
+        handleClose();
+
+        // Open WhatsApp - use direct navigation which always works
+        if (whatsappUrl) {
+          console.log("📱 Opening WhatsApp:", whatsappUrl);
+          
+          // Small delay to ensure dialog is closed first, then redirect
+          setTimeout(() => {
+            // Direct navigation always works, even if popup is blocked
+            window.location.href = whatsappUrl;
+          }, 300);
         }
 
         if (onSuccess) {
@@ -171,11 +202,19 @@ export function ConfirmPaymentDialog({
           }, 200);
         }
       } else {
-        toast.error(confirmResult.error || t("errors.confirmFailed"));
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: confirmResult.error || t("errors.confirmFailed"),
+        });
       }
     } catch (error) {
       console.error("Error confirming payment:", error);
-      toast.error(t("errors.confirmFailed"));
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: t("errors.confirmFailed"),
+      });
     } finally {
       setIsUploading(false);
     }
@@ -184,6 +223,7 @@ export function ConfirmPaymentDialog({
   const handleClose = () => {
     setReceiptFile(null);
     setReceiptPreview(null);
+    setFileError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -238,7 +278,12 @@ export function ConfirmPaymentDialog({
             {!receiptFile ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-[var(--color-border)] rounded-lg p-8 text-center cursor-pointer hover:border-[var(--color-primary)] transition-colors"
+                className={cn(
+                  "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
+                  fileError
+                    ? "border-red-500 bg-red-50 dark:bg-red-950/20"
+                    : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                )}
               >
                 <Upload className="h-8 w-8 mx-auto mb-2 text-[var(--color-text-secondary)]" />
                 <div className="text-sm text-[var(--color-text-secondary)]">
@@ -289,7 +334,14 @@ export function ConfirmPaymentDialog({
               onChange={handleFileSelect}
               className="hidden"
               disabled={isUploading}
+              aria-invalid={!!fileError}
             />
+            {fileError && (
+              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 mt-2">
+                <AlertCircle className="h-4 w-4" />
+                {fileError}
+              </p>
+            )}
           </div>
 
           {/* Info Message */}
