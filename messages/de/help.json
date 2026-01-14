@@ -1,0 +1,104 @@
+{
+  "help": {
+    "hero": {
+      "title": "Hilfezentrum",
+      "description": "Finden Sie Antworten auf Ihre Fragen und erhalten Sie die Unterstützung, die Sie benötigen.",
+      "searchPlaceholder": "Nach Hilfe suchen..."
+    },
+    "contact": {
+      "title": "Kontakt aufnehmen",
+      "whatsapp": {
+        "title": "Live-Chat WhatsApp",
+        "description": "Kontaktieren Sie uns direkt über WhatsApp",
+        "action": "WhatsApp öffnen",
+        "available": "24/7 verfügbar"
+      },
+      "email": {
+        "title": "E-Mail-Support",
+        "description": "Senden Sie uns eine detaillierte Nachricht",
+        "action": "E-Mail senden",
+        "available": "Antwort innerhalb von 24 Stunden"
+      }
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "noResults": "Keine Ergebnisse gefunden für \"{query}\"",
+      "categories": {
+        "gettingStarted": {
+          "title": "Erste Schritte",
+          "questions": {
+            "createAccount": {
+              "question": "Wie erstelle ich ein Konto?",
+              "answer": "Klicken Sie auf die Schaltfläche 'Registrieren' oben rechts, füllen Sie Ihre Daten aus und bestätigen Sie Ihre E-Mail-Adresse."
+            },
+            "helperVsCustomer": {
+              "question": "Was ist der Unterschied zwischen einem Helfer und einem Kunden?",
+              "answer": "Helfer bieten anderen Dienstleistungen an, während Kunden Dienstleistungen buchen. Sie können beides auf demselben Konto sein."
+            },
+            "completeProfile": {
+              "question": "Wie vervollständige ich mein Profil?",
+              "answer": "Gehen Sie zu Ihrer Profilseite und fügen Sie Ihre Fähigkeiten, Erfahrung, Fotos und Verfügbarkeit hinzu, um mehr Kunden anzuziehen."
+            }
+          }
+        },
+        "payments": {
+          "title": "Zahlungen & Abrechnung",
+          "questions": {
+            "howPaymentsWork": {
+              "question": "Wie funktionieren Zahlungen?",
+              "answer": "Zahlungen werden sicher über unsere Plattform abgewickelt. Kunden zahlen im Voraus, und Helfer erhalten die Zahlung nach Abschluss der Dienstleistung."
+            },
+            "paymentMethods": {
+              "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+              "answer": "Wir akzeptieren alle gängigen Kreditkarten, PayPal und Banküberweisungen in unterstützten Regionen."
+            },
+            "whenGetPaid": {
+              "question": "Wann werde ich bezahlt?",
+              "answer": "Helfer erhalten die Zahlung innerhalb von 2-3 Werktagen, nachdem der Kunde die Dienstleistung bestätigt hat."
+            }
+          }
+        },
+        "safety": {
+          "title": "Sicherheit & Schutz",
+          "questions": {
+            "verifyHelpers": {
+              "question": "Wie verifizieren Sie Helfer?",
+              "answer": "Alle Helfer durchlaufen Hintergrundprüfungen, Identitätsverifizierung und Kompetenzbewertungen, bevor sie unserer Plattform beitreten."
+            },
+            "notSatisfied": {
+              "question": "Was ist, wenn ich mit einer Dienstleistung nicht zufrieden bin?",
+              "answer": "Kontaktieren Sie unser Support-Team innerhalb von 24 Stunden. Wir arbeiten mit Ihnen zusammen, um das Problem zu lösen oder eine Rückerstattung zu gewähren."
+            },
+            "personalInfoSafe": {
+              "question": "Sind meine persönlichen Daten sicher?",
+              "answer": "Ja, wir verwenden branchenübliche Verschlüsselung und Sicherheitsmaßnahmen zum Schutz Ihrer Daten. Lesen Sie unsere Datenschutzrichtlinie für Details."
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "title": "Zusätzliche Ressourcen",
+      "userGuide": {
+        "title": "Benutzerhandbuch",
+        "description": "Vollständiger Leitfaden zur Verwendung von ManzelHelp",
+        "action": "Handbuch lesen"
+      },
+      "communityForum": {
+        "title": "Community-Forum",
+        "description": "Verbinden Sie sich mit anderen Benutzern",
+        "action": "Forum beitreten"
+      },
+      "safetyTips": {
+        "title": "Sicherheitstipps",
+        "description": "Bleiben Sie sicher bei der Nutzung unserer Plattform",
+        "action": "Mehr erfahren"
+      },
+      "videoTutorials": {
+        "title": "Video-Tutorials",
+        "description": "Schauen Sie sich Schritt-für-Schritt-Tutorials an",
+        "action": "Jetzt ansehen"
+      }
+    }
+  }
+}

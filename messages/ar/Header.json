@@ -1,0 +1,28 @@
+{
+  "Header": {
+    "services": "الخدمات",
+    "about_us": "من نحن",
+    "become_helper": "كن مساعداً",
+    "find_helper": "ابحث عن مساعد",
+    "sign_up": "التسجيل",
+    "login": "تسجيل الدخول",
+    "create_offer": "إنشاء عرض",
+    "close_menu": "إغلاق القائمة",
+    "open_menu": "فتح القائمة",
+    "jobs": "الوظائف",
+    "bookings": "الحجوزات",
+    "finance": "المالية",
+    "messages": "الرسائل",
+    "reviews": "التقييمات",
+    "myServices": "خدماتي",
+    "myJobs": "وظائفي",
+    "browseServices": "تصفح الخدمات",
+    "profile": "الملف الشخصي",
+    "dashboard": "لوحة التحكم",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "tasker": "المساعد",
+    "customer": "العميل",
+    "contactSupport": "اتصل بالدعم"
+  }
+}

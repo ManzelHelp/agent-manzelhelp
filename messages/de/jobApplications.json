@@ -1,0 +1,41 @@
+{
+  "jobApplications": {
+    "title": "Stellenbewerbungen",
+    "description": "Verfolgen Sie Ihre Stellenbewerbungen und deren Status",
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "rejected": "Abgelehnt",
+      "withdrawn": "Zurückgezogen"
+    },
+    "jobStatus": {
+      "under_review": "In Prüfung",
+      "active": "Aktiv",
+      "assigned": "Zugewiesen",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "disputed": "Bestritten",
+      "draft": "Entwurf",
+      "open": "Offen"
+    },
+    "labels": {
+      "jobPoster": "Stellenausschreiber",
+      "proposedPrice": "Vorgeschlagener Preis",
+      "estimatedDuration": "Geschätzte Dauer",
+      "preferredDate": "Bevorzugtes Datum",
+      "customerBudget": "Kundenbudget",
+      "message": "Nachricht",
+      "appliedOn": "Beworben am",
+      "flexible": "Flexibel",
+      "notSpecified": "Nicht angegeben",
+      "jobCompletedMessage": "Dieser Job wurde abgeschlossen. Ihre Bewerbung ist nicht mehr relevant.",
+      "jobCancelledMessage": "Dieser Job wurde storniert. Ihre Bewerbung ist nicht mehr relevant."
+    },
+    "actions": {
+      "viewDetails": "Details anzeigen",
+      "withdrawApplication": "Bewerbung zurückziehen",
+      "contactCustomer": "Kunde kontaktieren"
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "profile": {
+    "navigation": { "title": "إعدادات الملف الشخصي" },
+    "subtitle": "إدارة معلومات حسابك وتفضيلاتك",
+    "completion": {
+      "title": "إكمال الملف الشخصي",
+      "complete": "ملفك الشخصي مكتمل!",
+      "requiredFieldsRemaining": "يتبقى {count} حقول مطلوبة",
+      "percentageComplete": "تم إكمال {percentage}%",
+      "emailVerified": "البريد الإلكتروني موثق"
+    },
+    "sections": {
+      "personal": {
+        "title": "المعلومات الشخصية",
+        "description": "بياناتك الأساسية وصورة الملف الشخصي",
+        "editProfile": "تعديل الملف الشخصي",
+        "firstName": "الاسم الأول",
+        "lastName": "الاسم العائلي",
+        "email": "البريد الإلكتروني",
+        "phoneNumber": "رقم الهاتف",
+        "dateOfBirth": "تاريخ الميلاد",
+        "emailReadOnly": "لا يمكن تغيير البريد الإلكتروني هنا",
+        "phonePlaceholder": "+212 6XX XXX XXX",
+        "profilePhoto": "صورة الملف الشخصي",
+        "profilePhotoDescription": "أضف صورة ملف شخصي لتخصيص حسابك"
+      },
+      "addresses": {
+        "title": "العناوين",
+        "description": "إدارة مواقع تقديم خدماتك",
+        "addAddress": "إضافة عنوان",
+        "noAddressesAdded": "لا توجد عناوين مسجلة",
+        "addFirstAddress": "إضافة العنوان الأول",
+        "addFirstAddressDescription": "أضف عنواناً للبدء",
+        "addNewAddress": "إضافة عنوان جديد",
+        "label": "التسمية",
+        "country": "الدولة",
+        "streetAddress": "عنوان الشارع",
+        "city": "المدينة",
+        "region": "المنطقة",
+        "postalCode": "الرمز البريدي",
+        "enterStreetAddress": "أدخل عنوان الشارع",
+        "enterCity": "أدخل المدينة",
+        "enterRegion": "أدخل المنطقة",
+        "enterPostalCode": "أدخل الرمز البريدي"
+      },
+      "payment": {
+        "title": "طرق الدفع",
+        "description": "إدارة معلومات الدفع الخاصة بك",
+        "addPaymentMethod": "إضافة طريقة دفع",
+        "noPaymentMethods": "لا توجد طرق دفع",
+        "addPaymentMethodDescription": "أضف طريقة دفع لتسهيل المعاملات",
+        "addFirstPaymentMethod": "إضافة أول طريقة دفع",
+        "comingSoon": "قريباً",
+        "comingSoonDescription": "ستكون ميزة الدفع متاحة قريباً جداً"
+      }
+    },
+    "dialog": {
+      "editPersonalInfo": {
+        "title": "تعديل المعلومات الشخصية",
+        "description": "قم بتحديث بياناتك لسهولة التواصل",
+        "firstName": "الاسم الأول",
+        "lastName": "الاسم العائلي",
+        "email": "البريد الإلكتروني",
+        "phoneNumber": "رقم الهاتف",
+        "dateOfBirth": "تاريخ الميلاد",
+        "emailCannotBeChanged": "لا يمكن تغيير البريد الإلكتروني هنا",
+        "enterFirstName": "أدخل الاسم الأول",
+        "enterLastName": "أدخل الاسم العائلي",
+        "enterPhoneNumber": "أدخل رقم هاتفك"
+      }
+    },
+    "personalInformation": "المعلومات الشخصية",
+    "yourBasicProfileInformation": "معلومات ملفك الشخصي الأساسية",
+    "verificationStatus": "حالة التوثيق",
+    "serviceLocations": "مواقع الخدمة",
+    "manageYourLocations": "إدارة مواقعك",
+    "addLocation": "إضافة موقع",
+    "addServiceLocation": "إضافة موقع جديد",
+    "addServiceLocationDescription": "أدخل تفاصيل موقعك الجديد",
+    "noAddresses": "لا توجد عناوين مسجلة",
+    "deleteAddress": "حذف العنوان",
+    "deleteAddressConfirmation": "هل أنت متأكد من حذف العنوان \"{label}\"؟",
+    "missing": "يتبقى {count}",
+    "edit": "تعديل",
+    "editPersonalInformation": "تعديل المعلومات الشخصية",
+    "updatePersonalInformation": "قم بتحديث معلوماتك وصورة ملفك الشخصي",
+    "available": "موثق",
+    "role": "الدور"
+  }
+}

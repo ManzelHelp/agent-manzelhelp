@@ -1,0 +1,46 @@
+{
+  "bookings": {
+    "allBookings": "Alle Buchungen",
+    "pendingRequests": "Ausstehende Anfragen",
+    "accepted": "Akzeptiert",
+    "confirmed": "Bestätigt",
+    "inProgress": "In Bearbeitung",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert",
+    "taskerBookings": "Tasker-Buchungen",
+    "manageBookings": "Verwalten Sie Ihre Buchungen, Bewerbungen und gebuchten Dienstleistungen",
+    "noBookingsFound": "Keine Buchungen gefunden",
+    "noBookingsYet": "Sie haben noch keine Buchungen.",
+    "emptyStates": {
+      "all": {
+        "title": "Keine Buchungen gefunden",
+        "description": "Sie haben noch keine Buchungen."
+      },
+      "pending": {
+        "title": "Keine ausstehenden Anfragen",
+        "description": "Sie haben derzeit keine neuen Buchungsanfragen."
+      },
+      "completed": {
+        "title": "Keine abgeschlossenen Buchungen",
+        "description": "Sie haben noch keine abgeschlossenen Buchungen."
+      },
+      "accepted": {
+        "title": "Keine angenommenen Buchungen",
+        "description": "Sie haben derzeit keine angenommenen Buchungen."
+      },
+      "confirmed": {
+        "title": "Keine bestätigten Buchungen",
+        "description": "Sie haben derzeit keine bestätigten Buchungen."
+      },
+      "in_progress": {
+        "title": "Keine aktiven Aufgaben",
+        "description": "Sie haben derzeit keine Aufgaben in Bearbeitung."
+      },
+      "cancelled": {
+        "title": "Keine stornierten Buchungen",
+        "description": "Sie haben keine stornierten Buchungen."
+      }
+    },
+    "tryAgain": "Erneut versuchen"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "bookings": {
+    "taskerBookings": "Tasker Bookings",
+    "manageBookings": "Manage your bookings, applications, and hired services",
+    "noBookingsFound": "No bookings found",
+    "noBookingsYet": "You have no bookings yet.",
+    "emptyStates": {
+      "all": {
+        "title": "No bookings found",
+        "description": "You have no bookings yet."
+      },
+      "pending": {
+        "title": "No pending requests",
+        "description": "You have no new booking requests at the moment."
+      },
+      "completed": {
+        "title": "No completed bookings",
+        "description": "You have no completed bookings yet."
+      },
+      "accepted": {
+        "title": "No accepted bookings",
+        "description": "You have no accepted bookings at the moment."
+      },
+      "confirmed": {
+        "title": "No confirmed bookings",
+        "description": "You have no confirmed bookings at the moment."
+      },
+      "in_progress": {
+        "title": "No active tasks",
+        "description": "You have no tasks in progress at the moment."
+      },
+      "cancelled": {
+        "title": "No cancelled bookings",
+        "description": "You have no cancelled bookings."
+      }
+    },
+    "tryAgain": "Try again"
+  }
+}

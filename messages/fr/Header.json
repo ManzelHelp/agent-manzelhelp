@@ -1,0 +1,28 @@
+{
+  "Header": {
+    "services": "Services",
+    "about_us": "À propos",
+    "become_helper": "Devenir assistant",
+    "find_helper": "Trouver un assistant",
+    "sign_up": "S'inscrire",
+    "login": "Se connecter",
+    "create_offer": "Créer une offre",
+    "close_menu": "Fermer le menu",
+    "open_menu": "Ouvrir le menu",
+    "jobs": "Emplois",
+    "bookings": "Réservations",
+    "finance": "Finance",
+    "messages": "Messages",
+    "reviews": "Avis",
+    "myServices": "Mes Services",
+    "myJobs": "Mes Emplois",
+    "browseServices": "Parcourir les Services",
+    "profile": "Profil",
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "notifications": "Notifications",
+    "tasker": "Assistant",
+    "customer": "Client",
+    "contactSupport": "Contacter le Support"
+  }
+}

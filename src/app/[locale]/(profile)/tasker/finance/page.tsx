@@ -148,7 +148,7 @@ export default function TaskerFinancePage() {
       console.error("Error fetching finance data:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("errors.error", { default: "Error" }),
         description: t("errors.loadFailed", { default: "Failed to load finance data. Please try again." }),
       });
     } finally {
@@ -175,7 +175,7 @@ export default function TaskerFinancePage() {
         console.error("Error loading more transactions:", error);
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: t("errors.error", { default: "Error" }),
           description: t("errors.loadMoreFailed", { default: "Failed to load more transactions" }),
         });
       } finally {
@@ -301,11 +301,11 @@ export default function TaskerFinancePage() {
       setChartData(newChartData);
     } catch (err) {
       console.error("Error fetching chart data:", err);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: t("errors.loadChartFailed", { default: "Failed to load chart data" }),
-      });
+        toast({
+          variant: "destructive",
+          title: t("errors.error", { default: "Error" }),
+          description: t("errors.loadChartFailed", { default: "Failed to load chart data" }),
+        });
     }
   };
 
@@ -313,7 +313,7 @@ export default function TaskerFinancePage() {
     if (transactions.length === 0) {
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("errors.error", { default: "Error" }),
         description: t("errors.noTransactionsToExport", { default: "No transactions to export" }),
       });
       return;
@@ -335,7 +335,7 @@ export default function TaskerFinancePage() {
       const rows = transactions.map((transaction) => [
         transaction.id,
         formatDate(transaction.createdAt),
-        transaction.serviceTitle || t("export.servicePayment", { default: "Service Payment" }),
+        transaction.serviceTitle || t("exportColumns.servicePayment", { default: "Service Payment" }),
         formatCurrency(transaction.amount, transaction.currency),
         formatCurrency(transaction.netAmount, transaction.currency),
         formatCurrency(transaction.platformFee, transaction.currency),
@@ -362,14 +362,14 @@ export default function TaskerFinancePage() {
 
       toast({
         variant: "success",
-        title: "Succès",
-        description: t("export.success", { default: "Transactions exported successfully" }),
+        title: t("exportMessages.successTitle", { default: "Success" }),
+        description: t("exportMessages.success", { default: "Transactions exported successfully" }),
       });
     } catch (error) {
       console.error("Error exporting transactions:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("errors.error", { default: "Error" }),
         description: t("errors.exportFailed", { default: "Failed to export transactions" }),
       });
     }

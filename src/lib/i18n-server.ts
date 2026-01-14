@@ -3,6 +3,9 @@
 import { createClient } from "@/supabase/server";
 import { getLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { namespaces } from "@/i18n/namespaces";
 
 export type Locale = (typeof routing.locales)[number];
 
@@ -74,14 +77,33 @@ export async function getUserLocale(userId?: string): Promise<Locale> {
  */
 async function loadMessages(locale: Locale): Promise<TranslationMessages> {
   try {
-    const messages = await import(`../../messages/${locale}.json`);
-    return messages.default || messages;
+    // Load all namespace files and merge them
+    const messages: Record<string, any> = {};
+    const messagesDir = join(process.cwd(), "messages", locale);
+
+    for (const namespace of namespaces) {
+      try {
+        const filePath = join(messagesDir, `${namespace}.json`);
+        const fileContent = readFileSync(filePath, "utf-8");
+        const namespaceData = JSON.parse(fileContent);
+        
+        // Each file has the structure { "NamespaceName": {...} }
+        // We merge it into the messages object
+        Object.assign(messages, namespaceData);
+      } catch (error) {
+        // If a namespace file doesn't exist, log a warning but continue
+        console.warn(
+          `Translation namespace "${namespace}" not found for locale "${locale}": ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
+
+    return messages;
   } catch (error) {
     console.error(`Error loading messages for locale ${locale}:`, error);
-    // Fallback to English if locale file doesn't exist
+    // Fallback to English if locale directory doesn't exist
     if (locale !== "en") {
-      const messages = await import(`../../messages/en.json`);
-      return messages.default || messages;
+      return loadMessages("en");
     }
     return {};
   }

@@ -1,0 +1,44 @@
+{
+  "contact": {
+    "form": {
+      "fields": {
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "email": "E-Mail",
+        "subject": "Betreff",
+        "subjectPlaceholder": "Betreff auswählen",
+        "message": "Nachricht",
+        "messagePlaceholder": "Teilen Sie uns mit, wie wir Ihnen helfen können...",
+        "characters": "Zeichen"
+      },
+      "subjects": {
+        "general": "Allgemeine Anfrage",
+        "support": "Technischer Support",
+        "billing": "Rechnungsfrage",
+        "feedback": "Feedback",
+        "partnership": "Partnerschaft"
+      },
+      "submit": "Nachricht senden",
+      "submitting": "Wird gesendet...",
+      "success": {
+        "title": "Nachricht erfolgreich gesendet",
+        "description": "Wir werden uns so schnell wie möglich bei Ihnen melden."
+      },
+      "errors": {
+        "firstNameRequired": "Vorname ist erforderlich",
+        "lastNameRequired": "Nachname ist erforderlich",
+        "emailRequired": "E-Mail ist erforderlich",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+        "subjectRequired": "Betreff ist erforderlich",
+        "messageRequired": "Nachricht ist erforderlich",
+        "messageTooShort": "Nachricht muss mindestens 10 Zeichen enthalten",
+        "messageTooLong": "Nachricht darf 5000 Zeichen nicht überschreiten",
+        "submitFailed": "Fehler beim Senden der Nachricht"
+      }
+    },
+    "support": {
+      "title": "Support kontaktieren",
+      "description": "Senden Sie uns eine Nachricht und wir werden uns so schnell wie möglich bei Ihnen melden."
+    }
+  }
+}

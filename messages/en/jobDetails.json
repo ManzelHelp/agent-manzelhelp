@@ -1,0 +1,39 @@
+{
+  "jobDetails": {
+    "jobDetails": "Job Details",
+    "manageJobPost": "Manage your job post",
+    "jobStatus": "Job Status",
+    "completed": "Completed",
+    "postedOn": "Posted on {date}",
+    "description": "Description",
+    "preferredDate": "Preferred Date",
+    "preferredTime": "Preferred Time",
+    "location": "Location",
+    "locationNotSpecified": "Location not specified",
+    "customerInformation": "Customer Information",
+    "jobPostedByCustomer": "Job posted by this customer",
+    "jobProgress": "Job Progress",
+    "currentStatus": "Current Status",
+    "startedAt": "Started At",
+    "completedAt": "Completed At",
+    "noDescription": "No description available",
+    "requirements": "Requirements",
+    "flexibleTiming": "Flexible Timing",
+    "openToScheduleAdjustments": "Open to schedule adjustments",
+    "actions": {
+      "jobCompleted": "Job Completed",
+      "waitingConfirmation": "Waiting for customer confirmation",
+      "jobConfirmed": "Job Confirmed",
+      "customerConfirmed": "Confirmed by customer on {date}"
+    },
+    "status": {
+      "active": "Open",
+      "underReview": "Under Review",
+      "assigned": "Assigned",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    }
+  }
+}

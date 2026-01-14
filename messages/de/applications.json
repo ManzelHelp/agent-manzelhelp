@@ -1,0 +1,49 @@
+{
+  "applications": {
+    "title": "Job-Bewerbungen",
+    "subtitle": "Bewerbungen von Taskern für Ihren Job überprüfen",
+    "noApplications": "Noch keine Bewerbungen",
+    "noApplicationsDescription": "Tasker haben sich noch nicht für Ihren Job beworben. Ihr Job ist live und für qualifizierte Tasker sichtbar.",
+    "applicationCard": {
+      "appliedOn": "Beworben am",
+      "proposedPrice": "Vorgeschlagener Preis",
+      "estimatedDuration": "Geschätzte Dauer",
+      "availability": "Verfügbarkeitszeiten",
+      "experience": "Erfahrung",
+      "message": "Nachricht",
+      "contactInfo": "Kontaktinformationen",
+      "viewProfile": "Profil anzeigen",
+      "acceptApplication": "Bewerbung annehmen",
+      "rejectApplication": "Bewerbung ablehnen",
+      "contactTasker": "Tasker kontaktieren",
+      "premiumApplication": "Premium-Bewerbung",
+      "verifiedTasker": "Verifizierter Tasker"
+    },
+    "actions": {
+      "accept": "Annehmen",
+      "reject": "Ablehnen",
+      "contact": "Kontaktieren",
+      "viewProfile": "Profil anzeigen"
+    },
+    "confirmations": {
+      "acceptTitle": "Bewerbung annehmen",
+      "acceptDescription": "Sind Sie sicher, dass Sie diese Bewerbung annehmen möchten? Dies weist den Tasker Ihrem Job zu und benachrichtigt ihn.",
+      "rejectTitle": "Bewerbung ablehnen",
+      "rejectDescription": "Sind Sie sicher, dass Sie diese Bewerbung ablehnen möchten? Der Tasker wird benachrichtigt und kann sich nicht erneut bewerben.",
+      "confirmAccept": "Ja, annehmen",
+      "confirmReject": "Ja, ablehnen",
+      "cancel": "Abbrechen"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "rejected": "Abgelehnt"
+    },
+    "errors": {
+      "loadFailed": "Bewerbungen konnten nicht geladen werden",
+      "acceptFailed": "Bewerbung konnte nicht angenommen werden",
+      "rejectFailed": "Bewerbung konnte nicht abgelehnt werden",
+      "unauthorized": "Sie haben keine Berechtigung, diese Bewerbungen anzuzeigen"
+    }
+  }
+}

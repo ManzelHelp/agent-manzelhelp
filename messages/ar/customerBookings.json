@@ -1,0 +1,47 @@
+{
+  "customerBookings": {
+    "cancelled": "تم إلغاء هذا الحجز",
+    "service": "الخدمة",
+    "tasker": "الحرفي",
+    "locationNotSpecified": "الموقع غير محدد",
+    "viewDetails": "عرض التفاصيل",
+    "title": "حجوزاتي",
+    "description": "تتبع وإدارة جميع حجوزات الخدمات الخاصة بك في مكان واحد",
+    "status": {
+      "pending": "معلق",
+      "accepted": "مقبول",
+      "confirmed": "مؤكد",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "cancelled": "ملغي",
+      "disputed": "متنازع عليه",
+      "refunded": "مسترد"
+    },
+    "actions": {
+      "cancelBooking": "إلغاء الحجز",
+      "loadMoreBookings": "تحميل المزيد",
+      "tryAgain": "حاول مرة أخرى"
+    },
+    "confirmations": {
+      "cancel": {
+        "title": "إلغاء الحجز",
+        "description": "هل أنت متأكد من إلغاء هذا الحجز مع {taskerName}؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirmText": "نعم، إلغاء الحجز"
+      }
+    },
+    "success": {
+      "bookingCancelled": "تم إلغاء الحجز بنجاح"
+    },
+    "errors": {
+      "cancelFailed": "فشل إلغاء الحجز",
+      "unexpectedError": "حدث خطأ غير متوقع",
+      "loadFailed": "فشل تحميل الحجوزات"
+    },
+    "loading": {
+      "loadingMore": "جاري التحميل..."
+    },
+    "results": {
+      "showing": "عرض {current} من {total} حجز"
+    }
+  }
+}

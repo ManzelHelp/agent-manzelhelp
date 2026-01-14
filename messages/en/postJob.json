@@ -1,0 +1,77 @@
+{
+  "postJob": {
+    "title": "Post a Job",
+    "subtitle": "Describe what you need and find the perfect helper",
+    "steps": {
+      "jobDetails": "Job Details",
+      "scheduleBudget": "Schedule & Budget",
+      "reviewPost": "Review & Post"
+    },
+    "stepDescriptions": {
+      "jobDetails": "Tell us about the job you need done",
+      "scheduleBudget": "Set your schedule and budget",
+      "reviewPost": "Review and publish your job"
+    },
+    "jobDetails": {
+      "title": "Job Title",
+      "titlePlaceholder": "e.g., Need house cleaning for 3-bedroom apartment",
+      "description": "Job Description",
+      "descriptionPlaceholder": "Describe what needs to be done, any specific requirements, and what's included...",
+      "category": "Service Category",
+      "service": "Specific Service",
+      "location": "Job Location",
+      "requirements": "Special Requirements (Optional)",
+      "requirementsPlaceholder": "Any special instructions, materials needed, or specific requirements...",
+      "images": "Add Photos (Optional)",
+      "imagesDescription": "Upload photos to help taskers understand the job better"
+    },
+    "scheduleBudget": {
+      "preferredDate": "Preferred Date",
+      "preferredTime": "Preferred Time",
+      "timeFlexible": "Time is flexible",
+      "estimatedDuration": "Estimated Duration (hours)",
+      "durationPlaceholder": "How long do you think this will take?",
+      "budget": "Your Budget",
+      "budgetPlaceholder": "What's your budget for this job?",
+      "currency": "Currency",
+      "maxApplications": "Maximum Applications",
+      "maxApplicationsDescription": "How many tasker applications do you want to receive?"
+    },
+    "review": {
+      "title": "Review Your Job Post",
+      "description": "Please review all details before publishing your job",
+      "jobOverview": "Job Overview",
+      "scheduleBudget": "Schedule & Budget",
+      "publishJob": "Publish Job",
+      "publishingJob": "Publishing Job..."
+    },
+    "success": {
+      "jobPosted": "Job posted successfully!",
+      "jobPostedDescription": "Your job has been published and taskers can now apply."
+    },
+    "errors": {
+      "titleRequired": "Job title is required",
+      "descriptionRequired": "Job description is required",
+      "categoryRequired": "Please select a service category",
+      "serviceRequired": "Please select a specific service",
+      "locationRequired": "Please select a job location",
+      "dateRequired": "Please select a preferred date",
+      "budgetRequired": "Please enter your budget",
+      "budgetGreaterThanZero": "Budget must be greater than 0",
+      "durationGreaterThanZero": "Duration must be greater than 0",
+      "maxApplicationsRequired": "Please set maximum applications",
+      "maxApplicationsGreaterThanZero": "Maximum applications must be greater than 0",
+      "jobCreationFailed": "Failed to create job",
+      "notLoggedIn": "Please log in to post a job",
+      "onlyCustomersCanPost": "Only customers can post jobs",
+      "taskersCannotPost": "Taskers cannot post jobs. Please switch to customer account."
+    },
+    "tips": {
+      "title": "Tips for a Great Job Post",
+      "tip1": "Be specific about what you need and any requirements",
+      "tip2": "Include photos to help taskers understand the job better",
+      "tip3": "Set a realistic budget based on market rates",
+      "tip4": "Be flexible with timing to get more applications"
+    }
+  }
+}

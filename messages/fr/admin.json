@@ -1,0 +1,97 @@
+{
+  "admin": {
+    "contactMessages": {
+      "title": "Messages de Contact",
+      "description": "Gérez les messages de contact des utilisateurs",
+      "loading": "Chargement des messages...",
+      "noMessages": "Aucun message trouvé",
+      "statusUpdated": "Statut mis à jour avec succès",
+      "filters": {
+        "status": "Statut",
+        "all": "Tous",
+        "new": "Nouveaux",
+        "read": "Lus",
+        "replied": "Répondu",
+        "archived": "Archivés"
+      },
+      "status": {
+        "new": "Nouveau",
+        "read": "Lu",
+        "replied": "Répondu",
+        "archived": "Archivé"
+      },
+      "actions": {
+        "view": "Voir",
+        "markRead": "Marquer comme lu",
+        "markReplied": "Marquer comme répondu",
+        "archive": "Archiver"
+      },
+      "detail": {
+        "subject": "Sujet",
+        "message": "Message",
+        "adminNotes": "Notes administrateur"
+      },
+      "errors": {
+        "loadFailed": "Erreur lors du chargement des messages",
+        "updateFailed": "Erreur lors de la mise à jour"
+      }
+    },
+    "walletRefunds": {
+      "title": "Demandes de Remboursement du Portefeuille",
+      "description": "Gérer les demandes de remboursement du portefeuille des taskers",
+      "loading": "Chargement des demandes...",
+      "noRequests": "Aucune demande de remboursement trouvée",
+      "filters": {
+        "status": "Statut",
+        "all": "Tous",
+        "pending": "En Attente",
+        "payment_confirmed": "Paiement Confirmé",
+        "admin_verifying": "En Cours de Vérification",
+        "approved": "Approuvé",
+        "rejected": "Rejeté"
+      },
+      "status": {
+        "pending": "En Attente",
+        "payment_confirmed": "Paiement Confirmé",
+        "admin_verifying": "En Cours de Vérification",
+        "approved": "Approuvé",
+        "rejected": "Rejeté"
+      },
+      "actions": {
+        "view": "Voir les Détails",
+        "approve": "Approuver",
+        "reject": "Rejeter",
+        "viewReceipt": "Voir le Reçu"
+      },
+      "detail": {
+        "tasker": "Tasker",
+        "amount": "Montant",
+        "referenceCode": "Code de Référence",
+        "status": "Statut",
+        "createdAt": "Créé le",
+        "confirmedAt": "Confirmé le",
+        "approvedAt": "Approuvé le",
+        "receipt": "Reçu",
+        "adminNotes": "Notes Administrateur",
+        "enterNotes": "Entrer des notes (requis pour le rejet)",
+        "rejectionReason": "Raison du Rejet"
+      },
+      "confirm": {
+        "approveTitle": "Approuver la Demande de Remboursement",
+        "approveMessage": "Êtes-vous sûr de vouloir approuver cette demande de remboursement ? Le montant sera débité du portefeuille du tasker.",
+        "rejectTitle": "Rejeter la Demande de Remboursement",
+        "rejectMessage": "Veuillez fournir une raison pour le rejet de cette demande. Cela sera envoyé au tasker.",
+        "rejectReasonRequired": "La raison du rejet est requise"
+      },
+      "success": {
+        "approved": "Demande de remboursement approuvée avec succès",
+        "rejected": "Demande de remboursement rejetée avec succès"
+      },
+      "errors": {
+        "loadFailed": "Erreur lors du chargement des demandes de remboursement",
+        "approveFailed": "Erreur lors de l'approbation de la demande de remboursement",
+        "rejectFailed": "Erreur lors du rejet de la demande de remboursement"
+      }
+    }
+  }
+}

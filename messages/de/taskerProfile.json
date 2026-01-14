@@ -1,0 +1,227 @@
+{
+  "taskerProfile": {
+    "title": "Tasker-Profil",
+    "subtitle": "Erstellen Sie Ihr professionelles Profil, um mehr Kunden anzuziehen",
+    "navigation": {
+      "title": "Profil-Einstellungen"
+    },
+    "sections": {
+      "personal": "Persönliche Informationen",
+      "bio": "Biografie & Erfahrung",
+      "skills": "Fähigkeiten & Dienste",
+      "availability": "Verfügbarkeit",
+      "verification": "Verifizierung",
+      "addresses": "Servicegebiete",
+      "security": "Sicherheit",
+      "payment": "Zahlungsmethoden",
+      "notifications": "Benachrichtigungen",
+      "preferences": "Einstellungen",
+      "serviceLocations": "Service-Standorte"
+    },
+    "completion": {
+      "title": "Vervollständigen Sie Ihr Tasker-Profil",
+      "description": "Vervollständigen Sie Ihr Profil, um Jobanfragen zu erhalten und Vertrauen bei Kunden aufzubauen.",
+      "complete": "Profil Vollständig",
+      "basicInfo": "Grundinformationen",
+      "profilePhoto": "Profilbild",
+      "bioExperience": "Biografie & Erfahrung",
+      "servicesSkills": "Dienste & Fähigkeiten",
+      "availability": "Verfügbarkeitsplan",
+      "address": "Servicegebiete",
+      "identityVerified": "Identität Verifiziert",
+      "emailVerified": "E-Mail Verifiziert",
+      "required": "Erforderlich"
+    },
+    "personal": {
+      "description": "Aktualisieren Sie Ihre Grundinformationen und Ihr professionelles Foto",
+      "avatar": "Profilbild",
+      "avatarDescription": "Laden Sie ein professionelles Foto hoch, um Vertrauen bei Kunden aufzubauen",
+      "uploadPhoto": "Foto Hochladen",
+      "firstName": "Vorname",
+      "firstNamePlaceholder": "Geben Sie Ihren Vornamen ein",
+      "lastName": "Nachname",
+      "lastNamePlaceholder": "Geben Sie Ihren Nachnamen ein",
+      "email": "E-Mail-Adresse",
+      "emailNote": "Kontaktieren Sie den Support, um Ihre E-Mail-Adresse zu ändern",
+      "phone": "Telefonnummer",
+      "phonePlaceholder": "+49 (555) 123-4567",
+      "birthDate": "Geburtsdatum"
+    },
+    "bio": {
+      "description": "Erzählen Sie Kunden von Ihrer Erfahrung und Expertise",
+      "bioTitle": "Über Sie",
+      "bioPlaceholder": "Beschreiben Sie Ihre Fähigkeiten, Erfahrungen und was Sie in dem, was Sie tun, großartig macht...",
+      "bioHint": "Teilen Sie Ihren Hintergrund, Ihre Spezialitäten und warum Kunden Sie wählen sollten",
+      "experienceLevel": "Erfahrungslevel",
+      "serviceRadius": "Service-Radius",
+      "serviceRadiusHint": "Wie weit sind Sie bereit, für Jobs zu reisen?",
+      "experienceLevels": {
+        "beginner": "Anfänger (0-1 Jahre)",
+        "intermediate": "Fortgeschritten (1-3 Jahre)",
+        "experienced": "Erfahren (3-5 Jahre)",
+        "expert": "Experte (5+ Jahre)"
+      }
+    },
+    "skills": {
+      "description": "Verwalten Sie die Dienste, die Sie Kunden anbieten",
+      "addService": "Service Hinzufügen",
+      "noServices": "Noch keine Services angeboten",
+      "noServicesDescription": "Fügen Sie Services hinzu, um Jobanfragen von Kunden zu erhalten",
+      "addFirstService": "Ihren Ersten Service Hinzufügen",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "availability": {
+      "description": "Legen Sie Ihre wöchentliche Verfügbarkeit für neue Jobs fest",
+      "unavailable": "Nicht verfügbar",
+      "quickBookingTitle": "Schnellbuchung",
+      "quickBookingDescription": "Kunden können Sie während Ihrer verfügbaren Stunden sofort für schnellere Jobs buchen",
+      "success": {
+        "updated": "Verfügbarkeit erfolgreich aktualisiert"
+      },
+      "errors": {
+        "enableAtLeastOneDay": "Bitte aktivieren Sie mindestens einen Tag der Verfügbarkeit",
+        "setStartEndTimes": "Bitte legen Sie Start- und Endzeiten für alle aktivierten Tage fest",
+        "endTimeAfterStart": "Die Endzeit muss nach der Startzeit liegen",
+        "profileNotFound": "Profil nicht gefunden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+        "updateFailed": "Fehler beim Aktualisieren der Verfügbarkeit",
+        "invalidDataFormat": "Ungültiges Verfügbarkeitsdatenformat",
+        "invalidTimeFormat": "Ungültiges Zeitformat. Bitte verwenden Sie das Format HH:MM (z.B. 09:00)"
+      }
+    },
+    "verification": {
+      "description": "Verifizieren Sie Ihre Identität, um Vertrauen aufzubauen und alle Funktionen freizuschalten",
+      "identity": "Identitätsüberprüfung",
+      "email": "E-Mail-Adresse",
+      "phone": "Telefonnummer",
+      "phoneNotAdded": "Keine Telefonnummer hinzugefügt",
+      "verified": "Verifiziert",
+      "verify": "Verifizieren",
+      "identityRequired": "Identitätsverifizierung Erforderlich",
+      "mandatory": "Pflicht",
+      "identityVerified": "Identität Verifiziert",
+      "identityPending": "Verifizierung Ausstehend",
+      "identityDescription": "Laden Sie einen amtlichen Ausweis hoch, um Ihre Identität zu verifizieren und Services anzubieten",
+      "uploadDocument": "Dokument Hochladen",
+      "acceptedDocuments": "Akzeptiert: Führerschein, Reisepass, Personalausweis",
+      "benefitsTitle": "Verifizierungsvorteile",
+      "benefit1": "Alle Tasker-Funktionen und Jobbewerbungen freischalten",
+      "benefit2": "Vertrauen bei Kunden durch verifizierten Status aufbauen",
+      "benefit3": "Priorität in Suchergebnissen erhalten",
+      "benefit4": "Zugang zu höherwertigen Jobmöglichkeiten"
+    },
+    "addresses": {
+      "description": "Fügen Sie die Gebiete hinzu, in denen Sie Services anbieten",
+      "add": "Servicegebiet Hinzufügen",
+      "empty": "Keine Servicegebiete hinzugefügt",
+      "emptyDescription": "Fügen Sie Servicegebiete hinzu, damit Kunden wissen, wo Sie arbeiten",
+      "addFirst": "Ihr Erstes Servicegebiet Hinzufügen",
+      "newAddress": "Neues Servicegebiet",
+      "label": "Bezeichnung",
+      "home": "Heimatbasis",
+      "work": "Arbeitsgebiet",
+      "other": "Andere",
+      "country": "Land",
+      "street": "Straßenadresse",
+      "streetPlaceholder": "Musterstraße 123",
+      "city": "Stadt",
+      "cityPlaceholder": "Berlin",
+      "region": "Bundesland/Region",
+      "regionPlaceholder": "BE",
+      "postalCode": "Postleitzahl",
+      "postalCodePlaceholder": "10001",
+      "default": "Primär"
+    },
+    "serviceLocations": {
+      "description": "Verwalten Sie, wo Sie Ihre Services anbieten.",
+      "addLocation": "Service-Standort Hinzufügen"
+    },
+    "security": {
+      "description": "Verwalten Sie Ihre Kontosicherheit und Anmeldeeinstellungen",
+      "signInMethods": "Anmeldemethoden",
+      "emailPassword": "E-Mail",
+      "change": "Ändern",
+      "password": "Passwort",
+      "passwordTitle": "Passwort",
+      "passwordDescription": "Verwenden Sie ein starkes Passwort zum Schutz Ihres Kontos",
+      "changePassword": "Passwort Ändern",
+      "dangerZone": "Gefahrenbereich",
+      "deactivateAccount": "Konto Deaktivieren",
+      "deactivateDescription": "Dies wird Ihr Tasker-Konto dauerhaft deaktivieren",
+      "deactivate": "Deaktivieren"
+    },
+    "payment": {
+      "description": "Verwalten Sie Ihre Zahlungsmethoden für den Erhalt von Einnahmen",
+      "addMethod": "Zahlungsmethode Hinzufügen",
+      "noMethods": "Keine Zahlungsmethoden",
+      "noMethodsDescription": "Fügen Sie eine Zahlungsmethode hinzu, um Einnahmen aus abgeschlossenen Jobs zu erhalten",
+      "addFirst": "Zahlungsmethode Hinzufügen"
+    },
+    "notifications": {
+      "description": "Wählen Sie, wie Sie über Jobs benachrichtigt werden möchten",
+      "email": "E-Mail-Benachrichtigungen",
+      "emailDescription": "Job-Benachrichtigungen und Updates per E-Mail erhalten",
+      "push": "Push-Benachrichtigungen",
+      "pushDescription": "Sofortige Benachrichtigungen auf Ihrem Gerät erhalten",
+      "sms": "SMS-Benachrichtigungen",
+      "smsDescription": "Dringende Job-Benachrichtigungen per SMS erhalten",
+      "marketing": "Marketing-E-Mails",
+      "marketingDescription": "Werbeaktionen und Plattform-Updates erhalten",
+      "jobAlerts": "Job-Benachrichtigungen",
+      "jobAlertsDescription": "Benachrichtigt werden, wenn neue Jobs Ihren Fähigkeiten entsprechen",
+      "unread": "Ungelesen",
+      "seen": "Gesehen",
+      "empty": "Keine Benachrichtigungen",
+      "emptyDescription": "Sie haben derzeit keine Benachrichtigungen."
+    },
+    "preferences": {
+      "description": "Passen Sie Ihr Tasker-Erlebnis an",
+      "language": "Sprache",
+      "timezone": "Zeitzone",
+      "currency": "Währung",
+      "languages": {
+        "en": "Englisch",
+        "de": "Deutsch",
+        "fr": "Französisch"
+      },
+      "timezones": {
+        "GMT": "GMT (Greenwich Mean Time)",
+        "CET": "CET (Mitteleuropäische Zeit)",
+        "EST": "EST (Eastern Standard Time)"
+      },
+      "currencies": {
+        "EUR": "EUR (Euro)",
+        "USD": "USD (US-Dollar)",
+        "MAD": "MAD (Marokkanischer Dirham)"
+      }
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "cancel": "Abbrechen",
+      "save": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "uploading": "Hochladen..."
+    },
+    "success": {
+      "profileUpdated": "Profil erfolgreich aktualisiert!",
+      "bioUpdated": "Biografie erfolgreich aktualisiert!",
+      "serviceRemoved": "Service erfolgreich entfernt!",
+      "addressAdded": "Servicegebiet erfolgreich hinzugefügt!",
+      "addressDeleted": "Servicegebiet erfolgreich gelöscht!",
+      "availabilityUpdated": "Verfügbarkeit erfolgreich aktualisiert!",
+      "profilePhotoUpdated": "Profilbild erfolgreich aktualisiert!"
+    },
+    "errors": {
+      "notLoggedIn": "Nicht Angemeldet",
+      "loginRequired": "Bitte melden Sie sich an, um Ihr Tasker-Profil anzuzeigen",
+      "updateProfile": "Profil konnte nicht aktualisiert werden",
+      "updateBio": "Biografie konnte nicht aktualisiert werden",
+      "removeService": "Service konnte nicht entfernt werden",
+      "fetchAddresses": "Servicegebiete konnten nicht geladen werden",
+      "addAddress": "Servicegebiet konnte nicht hinzugefügt werden",
+      "deleteAddress": "Servicegebiet konnte nicht gelöscht werden",
+      "profilePhotoUpload": "Profilbild konnte nicht hochgeladen werden",
+      "requiredFields": "Bitte füllen Sie alle erforderlichen Felder aus"
+    }
+  }
+}

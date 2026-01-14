@@ -1,0 +1,154 @@
+{
+  "bookingDetails": {
+    "title": "Booking Details",
+    "loading": "Loading booking details...",
+    "notFound": "Booking not found",
+    "backToBookings": "Back to Bookings",
+    "service": "Service",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "statusDescriptions": {
+      "pending": "Waiting for response",
+      "accepted": "Booking has been accepted",
+      "confirmed": "Booking is confirmed and ready",
+      "in_progress": "Task is currently being performed",
+      "completed": "Task has been completed",
+      "cancelled": "Booking has been cancelled",
+      "unknown": "Status unknown"
+    },
+    "bookingType": {
+      "instant": "Instant",
+      "scheduled": "Scheduled",
+      "recurring": "Recurring"
+    },
+    "sections": {
+      "customerInfo": "Customer Information",
+      "taskerInfo": "Tasker Information",
+      "serviceDetails": "Service Details",
+      "bookingInfo": "Booking Information",
+      "location": "Location",
+      "requirements": "Requirements",
+      "actions": "Actions",
+      "timeline": "Booking Timeline"
+    },
+    "customer": "Customer",
+    "tasker": "Tasker",
+    "agreedPrice": "Agreed Price",
+    "price": "Price",
+    "duration": "Duration",
+    "date": "Date",
+    "time": "Time",
+    "type": "Type",
+    "payment": "Payment",
+    "addressNotSpecified": "Address not specified",
+    "noRequirements": "No specific requirements provided.",
+    "actions": {
+      "acceptRequest": "Accept Request",
+      "declineRequest": "Decline Request",
+      "confirmBooking": "Confirm Booking",
+      "cancelBooking": "Cancel Booking",
+      "startTask": "Start Task",
+      "completeTask": "Complete Task",
+      "messageCustomer": "Message Customer",
+      "messageTasker": "Message Tasker",
+      "callCustomer": "Call Customer",
+      "callTasker": "Call Tasker",
+      "copyBookingId": "Copy Booking ID",
+      "share": "Share"
+    },
+    "timeline": {
+      "bookingCreated": "Booking Created",
+      "bookingAccepted": "Booking Accepted",
+      "bookingConfirmed": "Booking Confirmed",
+      "taskStarted": "Task Started",
+      "taskCompleted": "Task Completed"
+    },
+    "completed": "This booking has been completed successfully.",
+    "cancelled": "This booking has been cancelled.",
+    "messagingComingSoon": "Messaging feature coming soon!",
+    "phoneNotAvailable": "Phone number not available",
+    "timeNotSpecified": "Time not specified",
+    "waitingForTasker": "Waiting for the tasker to respond to your booking request.",
+    "taskerAccepted": "Great! The tasker has accepted your booking request.",
+    "bookingConfirmed": "Your booking is confirmed! The tasker will start the service at the scheduled time.",
+    "taskerWorking": "The tasker is currently working on your service.",
+    "unauthorizedAccess": "Unauthorized access",
+    "pleaseWait": "Please wait while we fetch your booking details...",
+    "bookingNotFound": "The booking you're looking for doesn't exist or you don't have permission to view it.",
+    "success": {
+      "statusUpdated": "Booking status updated successfully",
+      "copiedToClipboard": "Booking ID copied to clipboard",
+      "linkCopied": "Link copied to clipboard"
+    },
+    "errors": {
+      "updateFailed": "Failed to update booking status",
+      "unexpectedError": "An unexpected error occurred"
+    },
+    "cancellation": {
+      "title": "Cancel Booking",
+      "description": "Please tell us why you're canceling this booking",
+      "reasonLabel": "Reason for cancellation",
+      "customCommentLabel": "Please provide details",
+      "customCommentPlaceholder": "Tell us why you're canceling...",
+      "cancel": "Cancel",
+      "confirm": "Confirm Cancellation",
+      "confirming": "Confirming...",
+      "reasons": {
+        "changed_my_mind": "I changed my mind",
+        "found_another_tasker": "I found another tasker",
+        "no_longer_needed": "I no longer need this service",
+        "scheduling_conflict": "Scheduling conflict",
+        "price_too_high": "Price is too high",
+        "other": "Other reason"
+      },
+      "errors": {
+        "reasonRequired": "Please select a reason for cancellation",
+        "customCommentRequired": "Please provide a custom comment"
+      }
+    },
+    "confirmations": {
+      "accept": {
+        "title": "Accept Booking Request",
+        "description": "Are you sure you want to accept this booking request? This will notify the customer that you're available to perform the service.",
+        "confirmText": "Accept Request"
+      },
+      "decline": {
+        "title": "Decline Booking Request",
+        "description": "Are you sure you want to decline this booking request? This action cannot be undone and the customer will be notified.",
+        "confirmText": "Decline Request"
+      },
+      "confirm": {
+        "title": "Confirm Booking",
+        "description": "Are you sure you want to confirm this booking? This will finalize the arrangement and notify the customer.",
+        "confirmText": "Confirm Booking"
+      },
+      "start": {
+        "title": "Start Task",
+        "description": "Are you ready to start the task? This will notify the customer that work has begun.",
+        "confirmText": "Start Task"
+      },
+      "complete": {
+        "title": "Complete Task",
+        "description": "Are you sure you want to mark this task as completed? This will finalize the booking and notify the customer.",
+        "confirmText": "Complete Task"
+      },
+      "cancel": {
+        "title": "Cancel Booking",
+        "description": "Are you sure you want to cancel this booking? This action cannot be undone and may affect your rating.",
+        "confirmText": "Cancel Booking"
+      },
+      "cancelCustomer": {
+        "title": "Cancel Booking",
+        "description": "Are you sure you want to cancel this booking? This action cannot be undone and may affect your booking history.",
+        "confirmText": "Cancel Booking"
+      }
+    }
+  }
+}

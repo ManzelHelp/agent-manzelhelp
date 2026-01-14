@@ -1,0 +1,91 @@
+{
+  "privacyPolicy": {
+    "hero": {
+      "title": "Politique de Confidentialité",
+      "description": "Votre vie privée est importante pour nous. Cette politique explique comment nous collectons, utilisons et protégeons vos informations.",
+      "lastUpdated": "Dernière mise à jour :"
+    },
+    "sections": {
+      "informationWeCollect": {
+        "title": "1. Informations que nous collectons",
+        "personalInformation": {
+          "title": "Informations personnelles",
+          "description": "Nous collectons les informations que vous nous fournissez directement, par exemple lorsque vous créez un compte, utilisez nos services ou nous contactez pour obtenir de l'aide. Cela peut inclure :",
+          "items": {
+            "nameContact": "Nom et informations de contact (e-mail, numéro de téléphone)",
+            "profilePreferences": "Informations de profil et préférences",
+            "paymentBilling": "Informations de paiement et de facturation",
+            "communications": "Communications avec nous et d'autres utilisateurs"
+          }
+        },
+        "usageInformation": {
+          "title": "Informations d'utilisation",
+          "description": "Nous collectons automatiquement certaines informations sur votre utilisation de nos services, notamment :",
+          "items": {
+            "deviceInfo": "Informations sur l'appareil et identifiants",
+            "logData": "Données de journal et analyses",
+            "locationInfo": "Informations de localisation (avec votre permission)",
+            "cookies": "Cookies et technologies similaires"
+          }
+        }
+      },
+      "howWeUse": {
+        "title": "2. Comment nous utilisons vos informations",
+        "description": "Nous utilisons les informations que nous collectons pour :",
+        "items": {
+          "provideServices": "Fournir, maintenir et améliorer nos services",
+          "processTransactions": "Traiter les transactions et envoyer des informations connexes",
+          "sendNotices": "Envoyer des avis techniques, des mises à jour et des messages de support",
+          "respondComments": "Répondre à vos commentaires et questions",
+          "monitorAnalyze": "Surveiller et analyser les tendances et l'utilisation",
+          "personalize": "Personnaliser et améliorer votre expérience",
+          "ensureSafety": "Assurer la sécurité sur notre plateforme"
+        }
+      },
+      "informationSharing": {
+        "title": "3. Partage d'informations",
+        "description": "Nous pouvons partager vos informations dans les circonstances suivantes :",
+        "items": {
+          "withUsers": "Avec d'autres utilisateurs si nécessaire pour fournir nos services",
+          "withProviders": "Avec des prestataires de services qui nous aident à exploiter notre plateforme",
+          "requiredByLaw": "Lorsque requis par la loi ou pour protéger nos droits",
+          "businessTransfer": "Dans le cadre d'un transfert ou d'une acquisition d'entreprise",
+          "withConsent": "Avec votre consentement ou à votre demande"
+        }
+      },
+      "dataSecurity": {
+        "title": "4. Sécurité des données",
+        "description": "Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos informations personnelles contre l'accès non autorisé, l'altération, la divulgation ou la destruction. Cependant, aucune méthode de transmission sur Internet ou de stockage électronique n'est sécurisée à 100%."
+      },
+      "yourRights": {
+        "title": "5. Vos droits",
+        "description": "Selon votre localisation, vous pouvez avoir les droits suivants :",
+        "items": {
+          "accessUpdate": "Accéder et mettre à jour vos informations personnelles",
+          "deleteAccount": "Supprimer votre compte et les données associées",
+          "optOut": "Vous désinscrire de certaines communications",
+          "requestCopy": "Demander une copie de vos données",
+          "objectProcessing": "Vous opposer à certaines activités de traitement"
+        }
+      },
+      "cookiesTracking": {
+        "title": "6. Cookies et suivi",
+        "description": "Nous utilisons des cookies et des technologies similaires pour améliorer votre expérience, analyser l'utilisation et fournir du contenu personnalisé. Vous pouvez contrôler les paramètres des cookies via votre navigateur, mais la désactivation des cookies peut affecter la fonctionnalité de nos services."
+      },
+      "childrenPrivacy": {
+        "title": "7. Confidentialité des enfants",
+        "description": "Nos services ne sont pas destinés aux enfants de moins de 13 ans. Nous ne collectons pas sciemment d'informations personnelles auprès d'enfants de moins de 13 ans. Si nous apprenons que nous avons collecté de telles informations, nous prendrons des mesures pour les supprimer."
+      },
+      "changesToPolicy": {
+        "title": "8. Modifications de cette politique",
+        "description": "Nous pouvons mettre à jour cette Politique de Confidentialité de temps à autre. Nous vous informerons de tout changement en publiant la nouvelle politique sur cette page et en mettant à jour la date de \"Dernière mise à jour\". Votre utilisation continue de nos services après tout changement constitue une acceptation de la politique mise à jour."
+      },
+      "contactUs": {
+        "title": "9. Contactez-nous",
+        "description": "Si vous avez des questions concernant cette Politique de Confidentialité ou nos pratiques de confidentialité, veuillez nous contacter à :",
+        "email": "E-mail :",
+        "emailValue": "privacy@manzelhelp.com"
+      }
+    }
+  }
+}

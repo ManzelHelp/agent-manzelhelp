@@ -194,6 +194,7 @@ function NotificationScrollHandler({ notificationId, notifications, user, markAs
 export default function NotificationsPage() {
   const { user } = useUserStore();
   const t = useTranslations("notifications");
+  const tToast = useTranslations("toasts");
   const router = useRouter();
   const { toast } = useToast();
 

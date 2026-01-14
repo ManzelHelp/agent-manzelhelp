@@ -1,0 +1,44 @@
+{
+  "findAHelper": {
+    "hero": {
+      "title": "Finden Sie Vertrauenswürdige Helfer für Jede Aufgabe",
+      "description": "Buchen Sie zuverlässige Service-Agenten in Ihrer Nähe – schnell, einfach und sicher.",
+      "startSearching": "Suche Starten"
+    },
+    "advantages": {
+      "verifiedTrusted": {
+        "title": "Verifizierte und Vertrauenswürdige Helfer",
+        "description": "Alle unsere Service-Agenten werden überprüft und von der Community bewertet."
+      },
+      "flexibleFast": {
+        "title": "Flexible und Schnelle Buchung",
+        "description": "Buchen Sie einen Helfer für die Zeit und den Service, den Sie benötigen, mit sofortiger Bestätigung."
+      },
+      "wideRange": {
+        "title": "Breite Palette von Dienstleistungen",
+        "description": "Von der Reinigung bis zu Reparaturen finden Sie den richtigen Experten für jede Aufgabe."
+      }
+    },
+    "pricing": {
+      "title": "Geschätzte Preise",
+      "description": "Die Preise hängen von der Art des Service und der Erfahrung des Arbeiters ab. Hier sind einige typische Bereiche:",
+      "perHour": "Stunde",
+      "cleaning": {
+        "service": "Reinigung",
+        "note": "Hängt von Erfahrung und Aufgabenkomplexität ab"
+      },
+      "handyman": {
+        "service": "Handwerker",
+        "note": "Variiert je nach Fähigkeiten und Projektgröße"
+      },
+      "gardening": {
+        "service": "Gartenarbeit",
+        "note": "Basiert auf Expertise und Gartengröße"
+      }
+    },
+    "cta": {
+      "title": "Bereit, Ihren perfekten Helfer zu finden?",
+      "getStarted": "Loslegen"
+    }
+  }
+}

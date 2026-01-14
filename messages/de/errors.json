@@ -1,0 +1,77 @@
+{
+  "errors": {
+    "general": {
+      "notAuthenticated": "Benutzer nicht authentifiziert",
+      "unexpected": "Ein unerwarteter Fehler ist aufgetreten",
+      "failedToFetchUser": "Benutzerdaten konnten nicht abgerufen werden"
+    },
+    "walletRefunds": {
+      "notAuthenticated": "Benutzer nicht authentifiziert",
+      "failedToFetchUser": "Benutzerdaten konnten nicht abgerufen werden",
+      "onlyTaskersCanCreate": "Nur Tasker können Rückerstattungsanfragen erstellen",
+      "amountMustBeGreaterThanZero": "Betrag muss größer als 0 sein",
+      "minAmount": "Mindestbetrag ist {min} MAD",
+      "maxAmount": "Höchstbetrag ist {max} MAD",
+      "insufficientBalance": "Unzureichendes Wallet-Guthaben",
+      "pendingRequestExists": "Sie haben bereits eine ausstehende Rückerstattungsanfrage",
+      "failedToCreate": "Rückerstattungsanfrage konnte nicht erstellt werden",
+      "requestNotFound": "Rückerstattungsanfrage nicht gefunden",
+      "unauthorizedConfirm": "Nicht autorisiert: Sie können nur Ihre eigenen Rückerstattungsanfragen bestätigen",
+      "cannotConfirmPayment": "Zahlung kann nicht bestätigt werden. Aktueller Status: {status}",
+      "failedToConfirmPayment": "Zahlungsbestätigung fehlgeschlagen",
+      "onlyAdminsCanViewAll": "Nur Administratoren können alle Rückerstattungsanfragen einsehen",
+      "onlyAdminsCanMarkVerifying": "Nur Administratoren können Rückerstattungsanfragen als überprüfend markieren",
+      "cannotMarkVerifying": "Anfrage kann nicht als überprüfend markiert werden. Aktueller Status: {status}",
+      "onlyAdminsCanApprove": "Nur Administratoren können Rückerstattungsanfragen genehmigen",
+      "failedToFetchWalletBalance": "Tasker-Wallet-Guthaben konnte nicht abgerufen werden",
+      "walletBalanceWouldBeNegative": "Tasker-Wallet-Guthaben wäre negativ. Kann nicht genehmigt werden.",
+      "failedToUpdateWallet": "Wallet konnte nicht aktualisiert werden",
+      "failedToApprove": "Genehmigung fehlgeschlagen",
+      "onlyAdminsCanReject": "Nur Administratoren können Rückerstattungsanfragen ablehnen",
+      "adminNotesRequired": "Admin-Notizen sind erforderlich, wenn eine Anfrage abgelehnt wird",
+      "failedToReject": "Ablehnung fehlgeschlagen"
+    },
+    "jobs": {
+      "notAuthenticated": "Benutzer nicht authentifiziert",
+      "failedToFetchUser": "Benutzerdaten konnten nicht abgerufen werden",
+      "onlyCustomersCanPost": "Nur Kunden können Jobs veröffentlichen",
+      "jobNotFound": "Job nicht gefunden",
+      "unauthorized": "Sie haben keine Berechtigung für diese Aktion",
+      "failedToCreate": "Job konnte nicht erstellt werden",
+      "failedToUpdate": "Job konnte nicht aktualisiert werden",
+      "failedToDelete": "Job konnte nicht gelöscht werden",
+      "applicationNotFound": "Bewerbung nicht gefunden",
+      "failedToAcceptApplication": "Bewerbung konnte nicht angenommen werden",
+      "failedToRejectApplication": "Bewerbung konnte nicht abgelehnt werden",
+      "jobAlreadyAssigned": "Job wurde bereits zugewiesen",
+      "failedToStart": "Job konnte nicht gestartet werden",
+      "failedToComplete": "Job konnte nicht abgeschlossen werden",
+      "failedToProcessPayment": "Zahlung konnte nicht verarbeitet werden",
+      "failedToConfirm": "Job konnte nicht bestätigt werden"
+    },
+    "messages": {
+      "notAuthenticated": "Benutzer nicht authentifiziert",
+      "conversationNotFound": "Konversation nicht gefunden",
+      "unauthorized": "Sie haben keine Berechtigung, auf diese Konversation zuzugreifen",
+      "failedToSend": "Nachricht konnte nicht gesendet werden",
+      "failedToCreateConversation": "Konversation konnte nicht erstellt werden"
+    },
+    "reviews": {
+      "notAuthenticated": "Benutzer nicht authentifiziert",
+      "failedToCreate": "Bewertung konnte nicht erstellt werden",
+      "reviewNotFound": "Bewertung nicht gefunden",
+      "unauthorized": "Sie haben keine Berechtigung für diese Aktion"
+    },
+    "bookings": {
+      "notAuthenticated": "Benutzer nicht authentifiziert",
+      "bookingNotFound": "Buchung nicht gefunden",
+      "unauthorized": "Sie haben keine Berechtigung für diese Aktion",
+      "failedToCreate": "Buchung konnte nicht erstellt werden",
+      "failedToUpdate": "Buchung konnte nicht aktualisiert werden",
+      "failedToCancel": "Buchung konnte nicht storniert werden",
+      "failedToAccept": "Buchung konnte nicht angenommen werden",
+      "failedToConfirm": "Buchung konnte nicht bestätigt werden",
+      "failedToComplete": "Buchung konnte nicht abgeschlossen werden"
+    }
+  }
+}

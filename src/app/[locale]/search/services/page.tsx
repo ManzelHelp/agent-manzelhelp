@@ -263,6 +263,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   applyFilters: t("applyFilters"),
                   categories: t("categories"),
                   allCategories: t("allCategories"),
+                  min: t("min"),
+                  max: t("max"),
                 }}
               />
             </div>
@@ -286,6 +288,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   applyFilters: t("applyFilters"),
                   categories: t("categories"),
                   allCategories: t("allCategories"),
+                  min: t("min"),
+                  max: t("max"),
                 }}
               />
             </div>
@@ -427,17 +431,17 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
 
             {/* Enhanced Pagination */}
             {filteredServices.length > 0 && (count || 0) > limit && (
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-8 sm:mt-12 animate-fade-in-up">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 sm:mt-8 animate-fade-in-up">
                 {page > 1 && (
                   <Link
                     href={`/${locale}/search?${new URLSearchParams({
                       ...resolvedSearchParams,
                       page: (page - 1).toString(),
                     }).toString()}`}
-                    className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm sm:text-base"
+                    className="inline-flex items-center px-3 py-1.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm"
                   >
                     <svg
-                      className="w-4 h-4 mr-1 sm:mr-2"
+                      className="w-3.5 h-3.5 mr-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -454,8 +458,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   </Link>
                 )}
 
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl shadow-sm">
-                  <span className="text-[var(--color-text-primary)] font-medium text-sm sm:text-base">
+                <div className="flex items-center gap-2 px-2 py-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl shadow-sm">
+                  <span className="text-[var(--color-text-primary)] font-medium text-sm">
                     {t("pageOf", { page, total: Math.ceil((count || 0) / limit) })}
                   </span>
                 </div>
@@ -466,12 +470,12 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                       ...resolvedSearchParams,
                       page: (page + 1).toString(),
                     }).toString()}`}
-                    className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm sm:text-base"
+                    className="inline-flex items-center px-3 py-1.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm"
                   >
                     <span className="hidden sm:inline">{t("next")}</span>
                     <span className="sm:hidden">{t("next")}</span>
                     <svg
-                      className="w-4 h-4 ml-1 sm:ml-2"
+                      className="w-3.5 h-3.5 ml-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

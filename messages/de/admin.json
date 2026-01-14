@@ -1,0 +1,97 @@
+{
+  "admin": {
+    "contactMessages": {
+      "title": "Kontaktnachrichten",
+      "description": "Verwalten Sie Kontaktnachrichten von Benutzern",
+      "loading": "Nachrichten werden geladen...",
+      "noMessages": "Keine Nachrichten gefunden",
+      "statusUpdated": "Status erfolgreich aktualisiert",
+      "filters": {
+        "status": "Status",
+        "all": "Alle",
+        "new": "Neu",
+        "read": "Gelesen",
+        "replied": "Beantwortet",
+        "archived": "Archiviert"
+      },
+      "status": {
+        "new": "Neu",
+        "read": "Gelesen",
+        "replied": "Beantwortet",
+        "archived": "Archiviert"
+      },
+      "actions": {
+        "view": "Ansehen",
+        "markRead": "Als gelesen markieren",
+        "markReplied": "Als beantwortet markieren",
+        "archive": "Archivieren"
+      },
+      "detail": {
+        "subject": "Betreff",
+        "message": "Nachricht",
+        "adminNotes": "Admin-Notizen"
+      },
+      "errors": {
+        "loadFailed": "Fehler beim Laden der Nachrichten",
+        "updateFailed": "Fehler beim Aktualisieren"
+      }
+    },
+    "walletRefunds": {
+      "title": "Geldbörsen-Rückerstattungsanfragen",
+      "description": "Verwalten Sie Geldbörsen-Rückerstattungsanfragen von Taskern",
+      "loading": "Anfragen werden geladen...",
+      "noRequests": "Keine Rückerstattungsanfragen gefunden",
+      "filters": {
+        "status": "Status",
+        "all": "Alle",
+        "pending": "Ausstehend",
+        "payment_confirmed": "Zahlung Bestätigt",
+        "admin_verifying": "Wird Überprüft",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
+      },
+      "status": {
+        "pending": "Ausstehend",
+        "payment_confirmed": "Zahlung Bestätigt",
+        "admin_verifying": "Wird Überprüft",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
+      },
+      "actions": {
+        "view": "Details Ansehen",
+        "approve": "Genehmigen",
+        "reject": "Ablehnen",
+        "viewReceipt": "Beleg Ansehen"
+      },
+      "detail": {
+        "tasker": "Tasker",
+        "amount": "Betrag",
+        "referenceCode": "Referenzcode",
+        "status": "Status",
+        "createdAt": "Erstellt Am",
+        "confirmedAt": "Bestätigt Am",
+        "approvedAt": "Genehmigt Am",
+        "receipt": "Beleg",
+        "adminNotes": "Admin-Notizen",
+        "enterNotes": "Notizen eingeben (erforderlich für Ablehnung)",
+        "rejectionReason": "Ablehnungsgrund"
+      },
+      "confirm": {
+        "approveTitle": "Rückerstattungsanfrage Genehmigen",
+        "approveMessage": "Sind Sie sicher, dass Sie diese Rückerstattungsanfrage genehmigen möchten? Der Betrag wird vom Geldbörsen-Guthaben des Taskers abgebucht.",
+        "rejectTitle": "Rückerstattungsanfrage Ablehnen",
+        "rejectMessage": "Bitte geben Sie einen Grund für die Ablehnung dieser Anfrage an. Dies wird an den Tasker gesendet.",
+        "rejectReasonRequired": "Ablehnungsgrund ist erforderlich"
+      },
+      "success": {
+        "approved": "Rückerstattungsanfrage erfolgreich genehmigt",
+        "rejected": "Rückerstattungsanfrage erfolgreich abgelehnt"
+      },
+      "errors": {
+        "loadFailed": "Fehler beim Laden der Rückerstattungsanfragen",
+        "approveFailed": "Fehler beim Genehmigen der Rückerstattungsanfrage",
+        "rejectFailed": "Fehler beim Ablehnen der Rückerstattungsanfrage"
+      }
+    }
+  }
+}

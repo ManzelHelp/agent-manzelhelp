@@ -1,0 +1,119 @@
+{
+  "postService": {
+    "title": "إنشاء عرض خدمة",
+    "subtitle": "اعرض مهاراتك وجذب العملاء",
+    "steps": {
+      "basicInfo": "المعلومات الأساسية",
+      "pricing": "التسعير والتفاصيل",
+      "reviewPost": "المراجعة والنشر"
+    },
+    "stepDescriptions": {
+      "basicInfo": "أخبرنا عن خدمتك",
+      "pricing": "حدد التسعير وتفاصيل الخدمة",
+      "reviewPost": "راجع ونشر خدمتك"
+    },
+    "basicInfo": {
+      "title": "عنوان الخدمة",
+      "titlePlaceholder": "مثلاً: خدمة تنظيف منازل احترافية",
+      "description": "وصف الخدمة",
+      "descriptionPlaceholder": "صف ما تقدمه، خبرتك، وما يميزك...",
+      "category": "فئة الخدمة",
+      "service": "خدمة محددة",
+      "location": "موقع الخدمة",
+      "serviceArea": "منطقة الخدمة (اختياري)",
+      "serviceAreaPlaceholder": "صف المناطق التي تغطيها أو أي تفضيلات للموقع"
+    },
+    "pricing": {
+      "pricingType": "نوع التسعير",
+      "fixed": "سعر ثابت",
+      "hourly": "سعر بالساعة",
+      "perItem": "لكل عنصر",
+      "basePrice": "السعر الأساسي",
+      "basePricePlaceholder": "أدخل سعرك الأساسي",
+      "hourlyRate": "السعر بالساعة",
+      "hourlyRatePlaceholder": "أدخل سعرك بالساعة",
+      "minimumBooking": "الحد الأدنى لساعات الحجز",
+      "minimumBookingPlaceholder": "الحد الأدنى لساعات الحجز",
+      "estimatedDuration": "المدة المقدرة (بالساعات)",
+      "durationPlaceholder": "كم تستغرق هذه الخدمة عادة؟",
+      "extras": "خدمات إضافية",
+      "addExtra": "إضافة خدمة إضافية",
+      "extraName": "اسم الخدمة",
+      "extraPrice": "السعر",
+      "removeExtra": "إزالة"
+    },
+    "review": {
+      "title": "راجع عرض خدمتك",
+      "description": "يرجى مراجعة جميع التفاصيل قبل نشر خدمتك",
+      "serviceOverview": "نظرة عامة على الخدمة",
+      "pricingDetails": "تفاصيل التسعير",
+      "publishService": "نشر الخدمة",
+      "publishingService": "جاري نشر الخدمة..."
+    },
+    "success": {
+      "servicePosted": "تم نشر الخدمة بنجاح!",
+      "servicePostedDescription": "تم نشر خدمتك ويمكن للعملاء الآن حجزها."
+    },
+    "errors": {
+      "titleRequired": "عنوان الخدمة مطلوب",
+      "descriptionRequired": "وصف الخدمة مطلوب",
+      "categoryRequired": "يرجى اختيار فئة الخدمة",
+      "serviceRequired": "يرجى اختيار خدمة محددة",
+      "locationRequired": "يرجى إضافة عنوان في ملفك الشخصي أولاً",
+      "basePriceRequired": "السعر الأساسي مطلوب للتسعير الثابت",
+      "hourlyRateRequired": "السعر بالساعة مطلوب للتسعير بالساعة",
+      "priceGreaterThanZero": "يجب أن يكون السعر أكبر من 0",
+      "minimumBookingGreaterThanZero": "يجب أن يكون الحد الأدنى لساعات الحجز أكبر من 0",
+      "durationGreaterThanZero": "يجب أن تكون المدة أكبر من 0",
+      "serviceCreationFailed": "فشل إنشاء الخدمة",
+      "notLoggedIn": "يرجى تسجيل الدخول لإنشاء خدمة",
+      "onlyTaskersCanPost": "يمكن للمساعدين فقط إنشاء الخدمات",
+      "customersCannotPost": "لا يمكن للعملاء إنشاء الخدمات. يرجى التبديل إلى حساب مساعد.",
+      "loadFormDataFailed": "فشل تحميل بيانات النموذج. يرجى المحاولة مرة أخرى.",
+      "loadAddressesFailed": "فشل تحميل العناوين. يرجى المحاولة مرة أخرى.",
+      "error": "خطأ",
+      "incompleteProfile": "الملف الشخصي غير مكتمل",
+      "incompleteProfileDescription": "يرجى إكمال إعداد ملفك الشخصي للمتابعة",
+      "verifyProfileFailed": "فشل التحقق من حالة الملف الشخصي"
+    },
+    "step1": {
+      "title": "تفاصيل الخدمة",
+      "description": "أخبرنا عن الخدمة التي تريد تقديمها",
+      "serviceTitle": "عنوان الخدمة",
+      "serviceDescription": "وصف الخدمة",
+      "selectCategory": "اختر الفئة",
+      "selectService": "اختر الخدمة",
+      "selectLocation": "اختر الموقع",
+      "addProfilePhoto": "أضف صورة ملف شخصي لبناء الثقة مع العملاء",
+      "characters": "أحرف",
+      "yourWorkingHours": "ساعات عملك",
+      "editHours": "تعديل الساعات",
+      "workingHoursManaged": "يتم إدارة ساعات عملك في إعدادات ملفك الشخصي",
+      "noAvailability": "لم يتم تعيين التوفر. يرجى إضافة ساعات عملك في ملفك الشخصي أولاً.",
+      "addWorkingHours": "إضافة ساعات العمل",
+      "noAddresses": "لم يتم العثور على عناوين. يرجى إضافة عنوان في ملفك الشخصي أولاً.",
+      "addAddress": "إضافة عنوان"
+    },
+    "step2": {
+      "title": "التسعير والسياسات",
+      "description": "حدد أسعارك وسياسات الحجز",
+      "pricingModel": "نموذج التسعير",
+      "fixedPrice": "سعر ثابت",
+      "hourlyRate": "سعر بالساعة",
+      "perItem": "لكل عنصر",
+      "fixedPriceLabel": "سعر ثابت (€)",
+      "hourlyRateLabel": "سعر بالساعة (€)",
+      "perItemLabel": "السعر لكل عنصر (€)",
+      "fixedPriceReview": "سعر ثابت:",
+      "hourlyRateReview": "سعر بالساعة:",
+      "perItemReview": "السعر لكل عنصر:"
+    },
+    "tips": {
+      "title": "نصائح لعرض خدمة رائع",
+      "tip1": "كن محددًا بشأن ما تقدمه وخبرتك",
+      "tip2": "حدد أسعارًا تنافسية بناءً على أسعار السوق",
+      "tip3": "قم بتضمين أوصاف واضحة لما هو مدرج",
+      "tip4": "أضف خدمات إضافية لزيادة إمكاناتك في الكسب"
+    }
+  }
+}

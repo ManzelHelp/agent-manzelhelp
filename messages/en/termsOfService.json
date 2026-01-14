@@ -1,0 +1,99 @@
+{
+  "termsOfService": {
+    "hero": {
+      "title": "Terms of Service",
+      "description": "Please read these terms carefully before using our services.",
+      "lastUpdated": "Last updated:"
+    },
+    "sections": {
+      "acceptanceOfTerms": {
+        "title": "1. Acceptance of Terms",
+        "description": "By accessing and using ManzelHelp (\"the Service\"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service."
+      },
+      "descriptionOfService": {
+        "title": "2. Description of Service",
+        "description": "ManzelHelp is a platform that connects service providers (\"Helpers\") with customers seeking various services. We facilitate the connection but are not a party to the actual service agreements between users."
+      },
+      "userAccounts": {
+        "title": "3. User Accounts",
+        "description": "To use our service, you must:",
+        "items": {
+          "accurateInfo": "Provide accurate and complete information",
+          "maintainSecurity": "Maintain the security of your account",
+          "ageRequirement": "Be at least 18 years old (or have parental consent)",
+          "complyLaws": "Comply with all applicable laws and regulations"
+        }
+      },
+      "userResponsibilities": {
+        "title": "4. User Responsibilities",
+        "description": "Users agree to:",
+        "items": {
+          "lawfulPurposes": "Use the service only for lawful purposes",
+          "notInterfere": "Not interfere with or disrupt the service",
+          "notImpersonate": "Not impersonate any person or entity",
+          "respectUsers": "Respect other users and maintain professional conduct",
+          "accurateServiceInfo": "Provide accurate information about services and pricing",
+          "completeServices": "Complete agreed-upon services in a timely manner"
+        }
+      },
+      "prohibitedActivities": {
+        "title": "5. Prohibited Activities",
+        "description": "The following activities are prohibited:",
+        "items": {
+          "falseInfo": "Posting false, misleading, or fraudulent information",
+          "harassment": "Harassment, abuse, or threatening behavior",
+          "spam": "Spam, unsolicited communications, or advertising",
+          "ipViolation": "Violation of intellectual property rights",
+          "circumventPayment": "Attempting to circumvent our payment system",
+          "illegalActivities": "Any illegal or harmful activities"
+        }
+      },
+      "paymentTerms": {
+        "title": "6. Payment Terms",
+        "description": "Payment processing is handled through secure third-party providers. Users agree to:",
+        "items": {
+          "payFees": "Pay all fees and charges as described",
+          "accuratePayment": "Provide accurate payment information",
+          "authorizeCharges": "Authorize charges for services rendered",
+          "finalSales": "Understand that all sales are final unless otherwise specified"
+        }
+      },
+      "disputeResolution": {
+        "title": "7. Dispute Resolution",
+        "description": "In case of disputes between users, we encourage direct communication and resolution. ManzelHelp may assist in dispute resolution but is not responsible for the outcome of service agreements between users."
+      },
+      "limitationOfLiability": {
+        "title": "8. Limitation of Liability",
+        "description": "ManzelHelp acts as a platform connecting users and is not responsible for:",
+        "items": {
+          "serviceQuality": "The quality or outcome of services provided",
+          "userConduct": "User conduct or interactions",
+          "damages": "Damages resulting from service agreements",
+          "thirdParty": "Third-party actions or content"
+        }
+      },
+      "intellectualProperty": {
+        "title": "9. Intellectual Property",
+        "description": "The ManzelHelp platform, including its design, functionality, and content, is protected by intellectual property laws. Users retain rights to their own content but grant us a license to use it in connection with our services."
+      },
+      "termination": {
+        "title": "10. Termination",
+        "description": "We reserve the right to terminate or suspend accounts that violate these terms. Users may also terminate their accounts at any time. Upon termination, certain provisions of these terms will continue to apply."
+      },
+      "changesToTerms": {
+        "title": "11. Changes to Terms",
+        "description": "We may modify these terms at any time. Continued use of the service after changes constitutes acceptance of the updated terms. We will notify users of significant changes through the platform or email."
+      },
+      "governingLaw": {
+        "title": "12. Governing Law",
+        "description": "These terms are governed by the laws of [Your Jurisdiction]. Any disputes will be resolved in the courts of [Your Jurisdiction]."
+      },
+      "contactInformation": {
+        "title": "13. Contact Information",
+        "description": "For questions about these Terms of Service, please contact us at:",
+        "email": "Email:",
+        "emailValue": "legal@manzelhelp.com"
+      }
+    }
+  }
+}

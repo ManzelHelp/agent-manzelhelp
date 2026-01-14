@@ -1,0 +1,61 @@
+{
+  "chat": {
+    "title": "المحادثة",
+    "subtitle": "تواصل مع مقدم الخدمة الخاص بك",
+    "common": {
+      "unknown": "غير معروف",
+      "fileAttachment": "ملف مرفق"
+    },
+    "loading": {
+      "title": "جاري تحميل المحادثة",
+      "description": "يرجى الانتظار بينما نقوم بتحميل رسائلك"
+    },
+    "empty": {
+      "title": "لا توجد رسائل بعد",
+      "description": "ابدأ المحادثة بإرسال رسالة"
+    },
+    "actions": {
+      "send": "إرسال",
+      "attach": "إرفاق ملف",
+      "emoji": "إضافة رمز تعبيري",
+      "call": "اتصال",
+      "video": "مكالمة فيديو",
+      "info": "معلومات المحادثة",
+      "goBack": "رجوع",
+      "tryAgain": "حاول مرة أخرى",
+      "refresh": "تحديث",
+      "refreshing": "جاري التحديث...",
+      "loadOlder": "تحميل الرسائل الأقدم",
+      "loading": "جاري التحميل..."
+    },
+    "input": {
+      "placeholder": "اكتب رسالتك هنا...",
+      "charactersCount": "{count} / {max} حرف",
+      "pressEnter": "اضغط Enter للإرسال"
+    },
+    "time": {
+      "justNow": "الآن",
+      "minutesAgo": "منذ {minutes} دقيقة",
+      "hoursAgo": "منذ {hours} ساعة",
+      "today": "اليوم",
+      "yesterday": "أمس"
+    },
+    "errors": {
+      "title": "خطأ",
+      "loadFailed": "فشل تحميل المحادثة",
+      "conversationNotFound": "لم يتم العثور على المحادثة",
+      "sendFailed": "فشل إرسال الرسالة",
+      "unauthorizedAccess": "ليس لديك إذن لعرض هذه المحادثة",
+      "fileTooLarge": "يجب أن يكون حجم الملف أقل من 5 ميجابايت",
+      "notAuthenticated": "يجب أن تكون مسجلاً الدخول",
+      "uploadFailed": "فشل تحميل الملف",
+      "urlGenerationFailed": "فشل إنشاء رابط الملف"
+    },
+    "success": {
+      "title": "نجاح",
+      "messageSent": "تم إرسال الرسالة بنجاح",
+      "messagesMarkedRead": "تم تحديد الرسائل كمقروءة",
+      "fileSent": "تم إرسال الملف بنجاح"
+    }
+  }
+}

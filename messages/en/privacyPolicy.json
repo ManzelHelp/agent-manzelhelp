@@ -1,0 +1,91 @@
+{
+  "privacyPolicy": {
+    "hero": {
+      "title": "Privacy Policy",
+      "description": "Your privacy is important to us. This policy explains how we collect, use, and protect your information.",
+      "lastUpdated": "Last updated:"
+    },
+    "sections": {
+      "informationWeCollect": {
+        "title": "1. Information We Collect",
+        "personalInformation": {
+          "title": "Personal Information",
+          "description": "We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support. This may include:",
+          "items": {
+            "nameContact": "Name and contact information (email, phone number)",
+            "profilePreferences": "Profile information and preferences",
+            "paymentBilling": "Payment and billing information",
+            "communications": "Communications with us and other users"
+          }
+        },
+        "usageInformation": {
+          "title": "Usage Information",
+          "description": "We automatically collect certain information about your use of our services, including:",
+          "items": {
+            "deviceInfo": "Device information and identifiers",
+            "logData": "Log data and analytics",
+            "locationInfo": "Location information (with your permission)",
+            "cookies": "Cookies and similar technologies"
+          }
+        }
+      },
+      "howWeUse": {
+        "title": "2. How We Use Your Information",
+        "description": "We use the information we collect to:",
+        "items": {
+          "provideServices": "Provide, maintain, and improve our services",
+          "processTransactions": "Process transactions and send related information",
+          "sendNotices": "Send technical notices, updates, and support messages",
+          "respondComments": "Respond to your comments and questions",
+          "monitorAnalyze": "Monitor and analyze trends and usage",
+          "personalize": "Personalize and improve your experience",
+          "ensureSafety": "Ensure safety and security on our platform"
+        }
+      },
+      "informationSharing": {
+        "title": "3. Information Sharing",
+        "description": "We may share your information in the following circumstances:",
+        "items": {
+          "withUsers": "With other users as necessary to provide our services",
+          "withProviders": "With service providers who assist us in operating our platform",
+          "requiredByLaw": "When required by law or to protect our rights",
+          "businessTransfer": "In connection with a business transfer or acquisition",
+          "withConsent": "With your consent or at your direction"
+        }
+      },
+      "dataSecurity": {
+        "title": "4. Data Security",
+        "description": "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet or electronic storage is 100% secure."
+      },
+      "yourRights": {
+        "title": "5. Your Rights",
+        "description": "Depending on your location, you may have the following rights:",
+        "items": {
+          "accessUpdate": "Access and update your personal information",
+          "deleteAccount": "Delete your account and associated data",
+          "optOut": "Opt out of certain communications",
+          "requestCopy": "Request a copy of your data",
+          "objectProcessing": "Object to certain processing activities"
+        }
+      },
+      "cookiesTracking": {
+        "title": "6. Cookies and Tracking",
+        "description": "We use cookies and similar technologies to enhance your experience, analyze usage, and provide personalized content. You can control cookie settings through your browser, but disabling cookies may affect the functionality of our services."
+      },
+      "childrenPrivacy": {
+        "title": "7. Children's Privacy",
+        "description": "Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected such information, we will take steps to delete it."
+      },
+      "changesToPolicy": {
+        "title": "8. Changes to This Policy",
+        "description": "We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the \"Last updated\" date. Your continued use of our services after any changes constitutes acceptance of the updated policy."
+      },
+      "contactUs": {
+        "title": "9. Contact Us",
+        "description": "If you have any questions about this Privacy Policy or our privacy practices, please contact us at:",
+        "email": "Email:",
+        "emailValue": "privacy@manzelhelp.com"
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "reviews": {
+    "reviewsAndFeedback": "Reviews & Feedback",
+    "monitorPerformance": "Monitor your performance and build trust with clients through meaningful interactions",
+    "averageRating": "Average Rating",
+    "basedOnReviews": "Based on {count} reviews",
+    "fiveStarReviews": "5-Star Reviews",
+    "excellenceRate": "Excellence rate",
+    "responseRate": "Response rate",
+    "responseRateLabel": "Response Rate",
+    "clientEngagement": "Client engagement",
+    "totalReviews": "Total Reviews",
+    "totalReviewsCount": "{count} Total reviews",
+    "allTimeFeedback": "All time feedback",
+    "clientReviews": "Client Reviews",
+    "reviewCount": "{count} review",
+    "all": "All",
+    "fourStarPlus": "4★+",
+    "threeStarMinus": "3★-",
+    "needsReply": "Needs Reply",
+    "yourResponse": "Your Response",
+    "repliedOn": "Replied on {date}",
+    "quality": "Quality",
+    "communication": "Communication",
+    "timeliness": "Timeliness",
+    "totalReviewsLabel": "Total reviews",
+    "noReviewsFound": "No reviews found",
+    "greatJob": "Great job! You've responded to all reviews.",
+    "noReviewsMatch": "No reviews match the selected filter. Try adjusting your filter criteria.",
+    "filterApplied": "filter applied",
+    "replyToReview": "Reply to Review",
+    "writeThoughtfulResponse": "Write a thoughtful response to this review...",
+    "sendReply": "Send Reply",
+    "sending": "Sending...",
+    "cancel": "Cancel",
+    "client": "Client",
+    "reviewCountPlural": "{count} reviews",
+    "charactersCount": "{count}/1000 characters",
+    "success": {
+      "replySubmitted": "Reply submitted successfully!"
+    }
+  }
+}

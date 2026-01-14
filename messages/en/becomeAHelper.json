@@ -1,0 +1,85 @@
+{
+  "becomeAHelper": {
+    "hero": {
+      "badge": "Join thousands of successful helpers",
+      "titlePart1": "Turn Your Skills",
+      "titlePart2": "Into Income",
+      "description": "Ready to earn money doing what you love? Join ManzelHelp as a helper and connect with people who need your expertise.",
+      "descriptionBold": "Whether you clean, fix, tutor, or assist in any way, you can make a difference and get paid for it!"
+    },
+    "stats": {
+      "activeHelpers": {
+        "value": "10K+",
+        "label": "Active Helpers"
+      },
+      "earned": {
+        "label": "Earned by Helpers"
+      },
+      "averageRating": {
+        "value": "4.9★",
+        "label": "Average Rating"
+      }
+    },
+    "benefitsSection": {
+      "title": "Why Choose",
+      "titleHighlight": "ManzelHelp?",
+      "description": "Join a platform designed to help you succeed and grow your business"
+    },
+    "benefits": {
+      "earnMoney": {
+        "title": "Earn Money",
+        "description": "Set your own rates and get paid for your skills and time"
+      },
+      "helpCommunity": {
+        "title": "Help Your Community",
+        "description": "Make a real difference in people's lives while building your reputation"
+      },
+      "buildReputation": {
+        "title": "Build Your Reputation",
+        "description": "Earn reviews and ratings that showcase your expertise"
+      },
+      "flexibleSchedule": {
+        "title": "Flexible Schedule",
+        "description": "Work when you want, where you want - complete control over your time"
+      },
+      "securePayments": {
+        "title": "Secure Payments",
+        "description": "Get paid safely through our protected payment system"
+      },
+      "makeConnections": {
+        "title": "Make Connections",
+        "description": "Build lasting relationships with clients who value your work"
+      }
+    },
+    "howItWorks": {
+      "title": "How to",
+      "titleHighlight": "Get Started",
+      "description": "Start earning in just 4 simple steps"
+    },
+    "steps": {
+      "createAccount": {
+        "title": "Create Your Account",
+        "description": "Sign up in minutes with just your email and basic information"
+      },
+      "buildProfile": {
+        "title": "Build Your Profile",
+        "description": "Add your skills, experience, and showcase what makes you unique"
+      },
+      "listServices": {
+        "title": "List Your Services",
+        "description": "Describe what you offer, set your rates, and define your service area"
+      },
+      "startEarning": {
+        "title": "Start Earning",
+        "description": "Connect with clients, complete tasks, and get paid for your expertise"
+      }
+    },
+    "cta": {
+      "badge": "Ready to start earning?",
+      "title": "Join Our Community of",
+      "titleHighlight": "Successful Helpers",
+      "description": "Don't wait - start your journey today and begin earning money doing what you love. Join thousands of helpers who are already making a difference in their communities.",
+      "features": "✓ Free to join ✓ No monthly fees ✓ Start earning immediately"
+    }
+  }
+}

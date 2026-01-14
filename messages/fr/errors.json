@@ -1,0 +1,77 @@
+{
+  "errors": {
+    "general": {
+      "notAuthenticated": "Utilisateur non authentifié",
+      "unexpected": "Une erreur inattendue s'est produite",
+      "failedToFetchUser": "Échec de la récupération des données utilisateur"
+    },
+    "walletRefunds": {
+      "notAuthenticated": "Utilisateur non authentifié",
+      "failedToFetchUser": "Échec de la récupération des données utilisateur",
+      "onlyTaskersCanCreate": "Seuls les assistants peuvent créer des demandes de remboursement",
+      "amountMustBeGreaterThanZero": "Le montant doit être supérieur à 0",
+      "minAmount": "Le montant minimum est {min} MAD",
+      "maxAmount": "Le montant maximum est {max} MAD",
+      "insufficientBalance": "Solde du portefeuille insuffisant",
+      "pendingRequestExists": "Vous avez déjà une demande de remboursement en attente",
+      "failedToCreate": "Échec de la création de la demande de remboursement",
+      "requestNotFound": "Demande de remboursement introuvable",
+      "unauthorizedConfirm": "Non autorisé : Vous ne pouvez confirmer que vos propres demandes de remboursement",
+      "cannotConfirmPayment": "Impossible de confirmer le paiement. Statut actuel : {status}",
+      "failedToConfirmPayment": "Échec de la confirmation du paiement",
+      "onlyAdminsCanViewAll": "Seuls les administrateurs peuvent voir toutes les demandes de remboursement",
+      "onlyAdminsCanMarkVerifying": "Seuls les administrateurs peuvent marquer les demandes de remboursement comme étant en vérification",
+      "cannotMarkVerifying": "Impossible de marquer la demande comme étant en vérification. Statut actuel : {status}",
+      "onlyAdminsCanApprove": "Seuls les administrateurs peuvent approuver les demandes de remboursement",
+      "failedToFetchWalletBalance": "Échec de la récupération du solde du portefeuille de l'assistant",
+      "walletBalanceWouldBeNegative": "Le solde du portefeuille de l'assistant serait négatif. Impossible d'approuver.",
+      "failedToUpdateWallet": "Échec de la mise à jour du portefeuille",
+      "failedToApprove": "Échec de l'approbation de la demande",
+      "onlyAdminsCanReject": "Seuls les administrateurs peuvent rejeter les demandes de remboursement",
+      "adminNotesRequired": "Les notes de l'administrateur sont requises lors du rejet d'une demande",
+      "failedToReject": "Échec du rejet de la demande"
+    },
+    "jobs": {
+      "notAuthenticated": "Utilisateur non authentifié",
+      "failedToFetchUser": "Échec de la récupération des données utilisateur",
+      "onlyCustomersCanPost": "Seuls les clients peuvent publier des emplois",
+      "jobNotFound": "Emploi introuvable",
+      "unauthorized": "Vous n'avez pas la permission d'effectuer cette action",
+      "failedToCreate": "Échec de la création de l'emploi",
+      "failedToUpdate": "Échec de la mise à jour de l'emploi",
+      "failedToDelete": "Échec de la suppression de l'emploi",
+      "applicationNotFound": "Candidature introuvable",
+      "failedToAcceptApplication": "Échec de l'acceptation de la candidature",
+      "failedToRejectApplication": "Échec du rejet de la candidature",
+      "jobAlreadyAssigned": "L'emploi a déjà été assigné",
+      "failedToStart": "Échec du démarrage de l'emploi",
+      "failedToComplete": "Échec de la finalisation de l'emploi",
+      "failedToProcessPayment": "Échec du traitement du paiement",
+      "failedToConfirm": "Échec de la confirmation de l'emploi"
+    },
+    "messages": {
+      "notAuthenticated": "Utilisateur non authentifié",
+      "conversationNotFound": "Conversation introuvable",
+      "unauthorized": "Vous n'avez pas la permission d'accéder à cette conversation",
+      "failedToSend": "Échec de l'envoi du message",
+      "failedToCreateConversation": "Échec de la création de la conversation"
+    },
+    "reviews": {
+      "notAuthenticated": "Utilisateur non authentifié",
+      "failedToCreate": "Échec de la création de l'avis",
+      "reviewNotFound": "Avis introuvable",
+      "unauthorized": "Vous n'avez pas la permission d'effectuer cette action"
+    },
+    "bookings": {
+      "notAuthenticated": "Utilisateur non authentifié",
+      "bookingNotFound": "Réservation introuvable",
+      "unauthorized": "Vous n'avez pas la permission d'effectuer cette action",
+      "failedToCreate": "Échec de la création de la réservation",
+      "failedToUpdate": "Échec de la mise à jour de la réservation",
+      "failedToCancel": "Échec de l'annulation de la réservation",
+      "failedToAccept": "Échec de l'acceptation de la réservation",
+      "failedToConfirm": "Échec de la confirmation de la réservation",
+      "failedToComplete": "Échec de la finalisation de la réservation"
+    }
+  }
+}

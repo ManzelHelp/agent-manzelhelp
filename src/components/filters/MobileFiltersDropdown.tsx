@@ -20,6 +20,8 @@ interface MobileFiltersDropdownProps {
     applyFilters: string;
     categories: string;
     allCategories: string;
+    min?: string;
+    max?: string;
   };
 }
 
@@ -220,7 +222,7 @@ export default function MobileFiltersDropdown({
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="number"
-                  placeholder="Min $"
+                  placeholder={`${t?.min || "Min"} $`}
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
                   min={0}
@@ -228,7 +230,7 @@ export default function MobileFiltersDropdown({
                 />
                 <input
                   type="number"
-                  placeholder="Max $"
+                  placeholder={`${t?.max || "Max"} $`}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
                   min={0}

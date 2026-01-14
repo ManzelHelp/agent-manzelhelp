@@ -1,0 +1,59 @@
+{
+  "chat": {
+    "title": "Chat",
+    "subtitle": "Kommunizieren Sie mit Ihrem Dienstleister",
+    "loading": {
+      "title": "Unterhaltung wird geladen",
+      "description": "Bitte warten Sie, während wir Ihre Nachrichten laden"
+    },
+    "empty": {
+      "title": "Noch keine Nachrichten",
+      "description": "Starten Sie die Unterhaltung, indem Sie eine Nachricht senden"
+    },
+    "common": {
+      "unknown": "Unbekannt",
+      "fileAttachment": "Dateianhang"
+    },
+    "actions": {
+      "send": "Senden",
+      "attach": "Datei anhängen",
+      "emoji": "Emoji hinzufügen",
+      "call": "Anrufen",
+      "video": "Videoanruf",
+      "info": "Unterhaltungsinfo",
+      "goBack": "Zurück",
+      "tryAgain": "Erneut versuchen",
+      "refresh": "Aktualisieren",
+      "refreshing": "Wird aktualisiert..."
+    },
+    "input": {
+      "placeholder": "Schreibe eine Nachricht...",
+      "charactersCount": "{count}/{max} Zeichen",
+      "pressEnter": "Enter zum Senden drücken"
+    },
+    "time": {
+      "justNow": "Gerade eben",
+      "minutesAgo": "Vor {minutes} Min.",
+      "hoursAgo": "Vor {hours} Std.",
+      "today": "Heute",
+      "yesterday": "Gestern"
+    },
+    "errors": {
+      "title": "Fehler",
+      "loadFailed": "Fehler beim Laden der Unterhaltung",
+      "conversationNotFound": "Unterhaltung nicht gefunden",
+      "sendFailed": "Fehler beim Senden der Nachricht",
+      "unauthorizedAccess": "Sie haben keine Berechtigung, diese Unterhaltung anzuzeigen",
+      "fileTooLarge": "Die Dateigröße muss weniger als 5 MB betragen",
+      "notAuthenticated": "Sie müssen angemeldet sein",
+      "uploadFailed": "Fehler beim Hochladen der Datei",
+      "urlGenerationFailed": "Fehler beim Generieren der Datei-URL"
+    },
+    "success": {
+      "title": "Erfolg",
+      "messageSent": "Nachricht erfolgreich gesendet",
+      "messagesMarkedRead": "Nachrichten als gelesen markiert",
+      "fileSent": "Datei erfolgreich gesendet"
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "admin": {
+    "contactMessages": {
+      "title": "Contact Messages",
+      "description": "Manage user contact messages",
+      "loading": "جاري تحميل الرسائل...",
+      "noMessages": "No messages found",
+      "statusUpdated": "Status updated successfully",
+      "filters": {
+        "status": "Status",
+        "all": "All",
+        "new": "New",
+        "read": "Read",
+        "replied": "Replied",
+        "archived": "Archived"
+      },
+      "status": {
+        "new": "New",
+        "read": "Read",
+        "replied": "Replied",
+        "archived": "Archived"
+      },
+      "actions": {
+        "view": "View",
+        "markRead": "Mark as Read",
+        "markReplied": "Mark as Replied",
+        "archive": "Archive"
+      },
+      "detail": {
+        "subject": "Subject",
+        "message": "Message",
+        "adminNotes": "Admin Notes"
+      },
+      "errors": {
+        "loadFailed": "Error loading messages",
+        "updateFailed": "Error updating"
+      }
+    },
+    "walletRefunds": {
+      "title": "Wallet Refund Requests",
+      "description": "Manage wallet refund requests from taskers",
+      "loading": "جاري تحميل الطلبات...",
+      "noRequests": "No refund requests found",
+      "filters": {
+        "status": "Status",
+        "all": "All",
+        "pending": "Pending",
+        "payment_confirmed": "Payment Confirmed",
+        "admin_verifying": "Under Review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "status": {
+        "pending": "Pending",
+        "payment_confirmed": "Payment Confirmed",
+        "admin_verifying": "Under Review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "actions": {
+        "view": "View Details",
+        "approve": "Approve",
+        "reject": "Reject",
+        "viewReceipt": "View Receipt"
+      },
+      "detail": {
+        "tasker": "Tasker",
+        "amount": "Amount",
+        "referenceCode": "Reference Code",
+        "status": "Status",
+        "createdAt": "Created At",
+        "confirmedAt": "Confirmed At",
+        "approvedAt": "Approved At",
+        "receipt": "Receipt",
+        "adminNotes": "Admin Notes",
+        "enterNotes": "Enter notes (required for rejection)",
+        "rejectionReason": "Rejection Reason"
+      },
+      "confirm": {
+        "approveTitle": "Approve Refund Request",
+        "approveMessage": "Are you sure you want to approve this refund request? The amount will be debited from the tasker's wallet.",
+        "rejectTitle": "Reject Refund Request",
+        "rejectMessage": "Please provide a reason for rejecting this request. This will be sent to the tasker.",
+        "rejectReasonRequired": "Rejection reason is required"
+      },
+      "success": {
+        "approved": "Refund request approved successfully",
+        "rejected": "Refund request rejected successfully"
+      },
+      "errors": {
+        "loadFailed": "Error loading refund requests",
+        "approveFailed": "Error approving refund request",
+        "rejectFailed": "Error rejecting refund request"
+      }
+    }
+  }
+}

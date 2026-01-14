@@ -1,0 +1,61 @@
+{
+  "chat": {
+    "title": "Chat",
+    "subtitle": "Communicate with your service provider",
+    "common": {
+      "unknown": "Unknown",
+       "fileAttachment": "File attachment"
+    },
+    "loading": {
+      "title": "Loading conversation",
+      "description": "Please wait while we load your messages"
+    },
+    "empty": {
+      "title": "No messages yet",
+      "description": "Start the conversation by sending a message"
+    },
+    "actions": {
+      "send": "Send",
+      "attach": "Attach file",
+      "emoji": "Add emoji",
+      "call": "Call",
+      "video": "Video call",
+      "info": "Conversation info",
+      "goBack": "Go back",
+      "tryAgain": "Try again",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "loadOlder": "Load Older Messages",
+      "loading": "Loading..."
+    },
+    "input": {
+      "placeholder": "Type your message...",
+      "charactersCount": "{count}/{max} characters",
+      "pressEnter": "Press Enter to send"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "errors": {
+      "title": "Error",
+      "loadFailed": "Failed to load conversation",
+      "conversationNotFound": "Conversation not found",
+      "sendFailed": "Failed to send message",
+      "unauthorizedAccess": "You don't have permission to view this conversation",
+      "fileTooLarge": "File size must be less than 5MB",
+      "notAuthenticated": "You must be logged in",
+      "uploadFailed": "Failed to upload file",
+      "urlGenerationFailed": "Failed to generate file URL"
+    },
+    "success": {
+      "title": "Success",
+      "messageSent": "Message sent successfully",
+      "messagesMarkedRead": "Messages marked as read",
+      "fileSent": "File sent successfully"
+    }
+  }
+}

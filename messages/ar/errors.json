@@ -1,0 +1,77 @@
+{
+  "errors": {
+    "general": {
+      "notAuthenticated": "المستخدم غير مصادق عليه",
+      "unexpected": "حدث خطأ غير متوقع",
+      "failedToFetchUser": "فشل في جلب بيانات المستخدم"
+    },
+    "walletRefunds": {
+      "notAuthenticated": "المستخدم غير مصادق عليه",
+      "failedToFetchUser": "فشل في جلب بيانات المستخدم",
+      "onlyTaskersCanCreate": "يمكن للعاملين فقط إنشاء طلبات الاسترداد",
+      "amountMustBeGreaterThanZero": "يجب أن يكون المبلغ أكبر من 0",
+      "minAmount": "الحد الأدنى للمبلغ هو {min} درهم",
+      "maxAmount": "الحد الأقصى للمبلغ هو {max} درهم",
+      "insufficientBalance": "رصيد المحفظة غير كافٍ",
+      "pendingRequestExists": "لديك بالفعل طلب استرداد قيد الانتظار",
+      "failedToCreate": "فشل في إنشاء طلب الاسترداد",
+      "requestNotFound": "طلب الاسترداد غير موجود",
+      "unauthorizedConfirm": "غير مصرح: يمكنك تأكيد طلبات الاسترداد الخاصة بك فقط",
+      "cannotConfirmPayment": "لا يمكن تأكيد الدفع. الحالة الحالية: {status}",
+      "failedToConfirmPayment": "فشل في تأكيد الدفع",
+      "onlyAdminsCanViewAll": "يمكن للمديرين فقط عرض جميع طلبات الاسترداد",
+      "onlyAdminsCanMarkVerifying": "يمكن للمديرين فقط وضع علامة على طلبات الاسترداد كقيد المراجعة",
+      "cannotMarkVerifying": "لا يمكن وضع علامة على الطلب كقيد المراجعة. الحالة الحالية: {status}",
+      "onlyAdminsCanApprove": "يمكن للمديرين فقط الموافقة على طلبات الاسترداد",
+      "failedToFetchWalletBalance": "فشل في جلب رصيد محفظة العامل",
+      "walletBalanceWouldBeNegative": "رصيد محفظة العامل سيكون سالبًا. لا يمكن الموافقة.",
+      "failedToUpdateWallet": "فشل في تحديث المحفظة",
+      "failedToApprove": "فشل في الموافقة على الطلب",
+      "onlyAdminsCanReject": "يمكن للمديرين فقط رفض طلبات الاسترداد",
+      "adminNotesRequired": "ملاحظات المدير مطلوبة عند رفض الطلب",
+      "failedToReject": "فشل في رفض الطلب"
+    },
+    "jobs": {
+      "notAuthenticated": "المستخدم غير مصادق عليه",
+      "failedToFetchUser": "فشل في جلب بيانات المستخدم",
+      "onlyCustomersCanPost": "يمكن للعملاء فقط نشر الوظائف",
+      "jobNotFound": "الوظيفة غير موجودة",
+      "unauthorized": "ليس لديك إذن لأداء هذا الإجراء",
+      "failedToCreate": "فشل في إنشاء الوظيفة",
+      "failedToUpdate": "فشل في تحديث الوظيفة",
+      "failedToDelete": "فشل في حذف الوظيفة",
+      "applicationNotFound": "الطلب غير موجود",
+      "failedToAcceptApplication": "فشل في قبول الطلب",
+      "failedToRejectApplication": "فشل في رفض الطلب",
+      "jobAlreadyAssigned": "تم تعيين الوظيفة بالفعل",
+      "failedToStart": "فشل في بدء الوظيفة",
+      "failedToComplete": "فشل في إكمال الوظيفة",
+      "failedToProcessPayment": "فشل في معالجة الدفع",
+      "failedToConfirm": "فشل في تأكيد الوظيفة"
+    },
+    "messages": {
+      "notAuthenticated": "المستخدم غير مصادق عليه",
+      "conversationNotFound": "المحادثة غير موجودة",
+      "unauthorized": "ليس لديك إذن للوصول إلى هذه المحادثة",
+      "failedToSend": "فشل في إرسال الرسالة",
+      "failedToCreateConversation": "فشل في إنشاء المحادثة"
+    },
+    "reviews": {
+      "notAuthenticated": "المستخدم غير مصادق عليه",
+      "failedToCreate": "فشل في إنشاء التقييم",
+      "reviewNotFound": "التقييم غير موجود",
+      "unauthorized": "ليس لديك إذن لأداء هذا الإجراء"
+    },
+    "bookings": {
+      "notAuthenticated": "المستخدم غير مصادق عليه",
+      "bookingNotFound": "الحجز غير موجود",
+      "unauthorized": "ليس لديك إذن لأداء هذا الإجراء",
+      "failedToCreate": "فشل في إنشاء الحجز",
+      "failedToUpdate": "فشل في تحديث الحجز",
+      "failedToCancel": "فشل في إلغاء الحجز",
+      "failedToAccept": "فشل في قبول الحجز",
+      "failedToConfirm": "فشل في تأكيد الحجز",
+      "failedToComplete": "فشل في إكمال الحجز"
+    }
+  }
+}

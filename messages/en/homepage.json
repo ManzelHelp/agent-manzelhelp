@@ -1,0 +1,103 @@
+{
+  "homepage": {
+    "title": "Welcome to ManzelHelp",
+    "description": "A friendly place where users can offer and request services like housekeeping, tutoring, pet care, and more. Connect, help, and grow together!",
+    "servicesOffered": "Services Offered",
+    "servicesOfferedPlaceholder": "Coming soon: Browse available services",
+    "requestService": "Request a Service",
+    "requestServicePlaceholder": "Coming soon: Post your service needs",
+    "jobsOffered": "Jobs Available",
+    "jobsOfferedTitle": "Find Your Next Opportunity",
+    "jobsOfferedDescription": "Discover exciting job opportunities posted by customers in your area",
+    "noJobsAvailable": "No jobs available at the moment",
+    "noJobsAvailableDescription": "Check back soon for amazing opportunities from our customers!",
+    "becomeTasker": "Become a Tasker",
+    "whyTitle": "Why ManzelHelp?",
+    "why1": "Connect with trusted local helpers",
+    "why2": "Offer your skills and earn extra income",
+    "why3": "Easy, friendly, and secure",
+    "trustedBy": "Trusted by 1000+ customers",
+    "stats": {
+      "verifiedTaskers": "Verified Taskers",
+      "serviceCategories": "Service Categories",
+      "happyCustomers": "Happy Customers",
+      "averageRating": "Average Rating"
+    },
+    "popularServices": {
+      "badge": "Popular Services",
+      "title": "Explore Our Services",
+      "description": "Discover the most popular service categories and find the perfect tasker for your needs",
+      "categoryDescription": "Professional services in this category",
+      "exploreButton": "Explore Services",
+      "verifiedTaskers": "Verified Taskers",
+      "qualityGuaranteed": "Quality Guaranteed",
+      "topRated": "Top Rated"
+    },
+    "featuredServices": {
+      "badge": "Featured Services",
+      "description": "Discover top-rated taskers offering professional services in your area",
+      "noServices": "No services available at the moment",
+      "noServicesDescription": "Check back soon for amazing services from our verified taskers!",
+      "viewAll": "View All Services"
+    },
+    "whyChooseUs": {
+      "badge": "Why Choose Us",
+      "description": "We connect you with verified, skilled professionals for all your home and business needs",
+      "verifiedProfessionals": {
+        "title": "Verified Professionals",
+        "description": "All our taskers are thoroughly vetted and background-checked for your safety and peace of mind"
+      },
+      "quickReliable": {
+        "title": "Quick & Reliable",
+        "description": "Get matched with available taskers in your area within minutes, 24/7 availability"
+      },
+      "qualityGuaranteed": {
+        "title": "Quality Guaranteed",
+        "description": "Satisfaction guaranteed with our quality assurance and dedicated customer support team"
+      },
+      "bestPrices": {
+        "title": "Best Prices",
+        "description": "Competitive rates for quality services"
+      },
+      "trustedPlatform": {
+        "title": "Trusted Platform",
+        "description": "Secure payments and reviews"
+      },
+      "instantBooking": {
+        "title": "Instant Booking",
+        "description": "Book services in seconds"
+      },
+      "topRated": {
+        "title": "Top Rated",
+        "description": "4.8★ average rating"
+      }
+    },
+    "offeredJobs": {
+      "badge": "Available Jobs",
+      "title": "Find Your Next Job",
+      "description": "Browse available jobs posted by customers and apply to start earning",
+      "noJobs": "No jobs available at the moment",
+      "noJobsDescription": "Check back soon for new job opportunities from our customers!",
+      "viewAllJobs": "View All Jobs",
+      "becomeTasker": "Become a Tasker",
+      "stats": {
+        "newJobsDaily": "New Jobs Daily",
+        "newJobsDailyDescription": "Fresh opportunities posted regularly",
+        "competitiveRates": "Competitive Rates",
+        "competitiveRatesDescription": "Fair compensation for quality work",
+        "verifiedCustomers": "Verified Customers",
+        "verifiedCustomersDescription": "Work with trusted clients"
+      }
+    },
+    "cta": {
+      "badge": "Join Our Community",
+      "title": "Ready to Get Started?",
+      "description": "Join thousands of satisfied customers who trust us for their service needs",
+      "findTasker": "Find a Tasker",
+      "findJobs": "Find Jobs",
+      "securePlatform": "Secure Platform",
+      "verifiedTaskers": "Verified Taskers",
+      "support24_7": "24/7 Support"
+    }
+  }
+}

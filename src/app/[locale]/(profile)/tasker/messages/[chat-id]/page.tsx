@@ -21,6 +21,9 @@ import {
   Clock,
   MessageCircle,
   RefreshCw,
+  X,
+  File,
+  Image as ImageIcon,
 } from "lucide-react";
 
 import {
@@ -30,10 +33,12 @@ import {
   type MessageWithDetails,
   type ConversationWithDetails,
 } from "@/actions/messages";
+import { createClient } from "@/supabase/client";
 import { useUserStore } from "@/stores/userStore";
 import { usePathname } from "next/navigation";
 import { formatDateShort } from "@/lib/date-utils";
 import { useMessagesRealtime } from "@/hooks/useMessagesRealtime";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -42,6 +47,7 @@ export default function ChatPage() {
   const t = useTranslations("chat");
   const chatId = params["chat-id"] as string;
   const { user } = useUserStore();
+  const { toast } = useToast();
 
   const [messages, setMessages] = useState<MessageWithDetails[]>([]);
   const [conversation, setConversation] =
@@ -54,6 +60,10 @@ export default function ChatPage() {
   const [hasMore, setHasMore] = useState(false);
   const [currentOffset, setCurrentOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -164,10 +174,29 @@ export default function ChatPage() {
     enabled: !!chatId,
     onNewMessage: (message) => {
       setMessages((prev) => {
-        // Avoid duplicates
+        // Avoid duplicates by ID
         if (prev.some((m) => m.id === message.id)) {
           return prev;
         }
+        // Avoid duplicates by content, sender, and timestamp (within 2 seconds)
+        const isDuplicate = prev.some((m) => {
+          if (m.content === message.content &&
+              m.sender_id === message.sender_id &&
+              m.conversation_id === message.conversation_id) {
+            const timeDiff = Math.abs(
+              new Date(m.created_at || 0).getTime() -
+              new Date(message.created_at || 0).getTime()
+            );
+            if (timeDiff < 2000) {
+              return true;
+            }
+          }
+          return false;
+        });
+        if (isDuplicate) {
+          return prev;
+        }
+        // Add message (whether from current user or not)
         return [...prev, message];
       });
       scrollToBottom();
@@ -179,33 +208,179 @@ export default function ChatPage() {
     },
   });
 
-  // Send a new message
+  // Send a new message (with optional file)
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || isSending || !chatId) return;
+    if ((!newMessage.trim() && !selectedFile) || isSending || isUploading || !chatId) return;
 
-    const messageContent = newMessage.trim();
-    setNewMessage("");
     setIsSending(true);
+    const messageContent = newMessage.trim();
+    const fileToSend = selectedFile;
+    
+    // Clear inputs immediately for better UX
+    setNewMessage("");
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
 
     try {
+      let attachmentUrl: string | undefined = undefined;
+
+      // Upload file if one is selected
+      if (fileToSend) {
+        setIsUploading(true);
+        try {
+          const supabase = createClient();
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          
+          if (userError || !user) {
+            throw new Error(t("errors.notAuthenticated", { default: "You must be logged in" }));
+          }
+
+          // Generate unique filename
+          const fileExt = fileToSend.name.split(".").pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          const filePath = `${user.id}/${chatId}/${fileName}`;
+
+          // Try to upload to message-attachments bucket, fallback to avatars if it doesn't exist
+          let uploadError = null;
+          let bucketName = "message-attachments";
+
+          const uploadResult = await supabase.storage
+            .from("message-attachments")
+            .upload(filePath, fileToSend, {
+              cacheControl: "3600",
+              upsert: false,
+            });
+
+          uploadError = uploadResult.error;
+
+          // If bucket doesn't exist, try avatars bucket as fallback
+          if (uploadError && (uploadError.message?.includes("Bucket not found") || uploadError.message?.includes("does not exist"))) {
+            bucketName = "avatars";
+            const fallbackResult = await supabase.storage
+              .from("avatars")
+              .upload(filePath, fileToSend, {
+                cacheControl: "3600",
+                upsert: false,
+              });
+            uploadError = fallbackResult.error;
+          }
+
+          if (uploadError) {
+            throw new Error(t("errors.uploadFailed", { default: `Failed to upload file: ${uploadError.message}` }));
+          }
+
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from(bucketName)
+            .getPublicUrl(filePath);
+
+          attachmentUrl = urlData?.publicUrl;
+
+          if (!attachmentUrl) {
+            throw new Error(t("errors.urlGenerationFailed", { default: "Failed to generate file URL" }));
+          }
+        } catch (fileError: any) {
+          toast({
+            variant: "destructive",
+            title: t("errors.title", { default: "Error" }),
+            description: fileError.message || t("errors.uploadFailed", { default: "Failed to upload file" }),
+          });
+          setNewMessage(messageContent); // Restore message on error
+          setSelectedFile(fileToSend); // Restore file on error
+          if (fileToSend.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              setFilePreview(e.target?.result as string);
+            };
+            reader.readAsDataURL(fileToSend);
+          }
+          return;
+        } finally {
+          setIsUploading(false);
+        }
+      }
+
+      // Send message (with or without attachment)
+      const contentToSend = messageContent || (fileToSend ? `📎 ${fileToSend.name}` : "");
       const { message, errorMessage } = await sendMessageAction(
         chatId,
-        messageContent
+        contentToSend,
+        attachmentUrl
       );
 
       if (errorMessage) {
-        setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: t("errors.title", { default: "Error" }),
+          description: errorMessage,
+        });
         setNewMessage(messageContent); // Restore message on error
+        if (fileToSend) setSelectedFile(fileToSend); // Restore file on error
       } else if (message) {
-        setMessages((prev) => [...prev, message]);
+        toast({
+          variant: "success",
+          title: t("success.title", { default: "Success" }),
+          description: fileToSend 
+            ? t("success.fileSent", { default: "File sent successfully" })
+            : t("success.messageSent", { default: "Message sent successfully" }),
+        });
+        // Message will be added via realtime
         scrollToBottom();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error sending message:", err);
-      setError("Failed to send message");
+      toast({
+        variant: "destructive",
+        title: t("errors.title", { default: "Error" }),
+        description: err?.message || t("errors.sendFailed", { default: "Failed to send message" }),
+      });
       setNewMessage(messageContent); // Restore message on error
+      if (fileToSend) setSelectedFile(fileToSend); // Restore file on error
     } finally {
       setIsSending(false);
+    }
+  };
+
+  // Handle file selection (just store the file, don't upload yet)
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({
+        variant: "destructive",
+        title: t("errors.title", { default: "Error" }),
+        description: t("errors.fileTooLarge", { default: "File size must be less than 5MB" }),
+      });
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Create preview for images
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFilePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  // Remove selected file
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -352,9 +527,9 @@ export default function ChatPage() {
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] flex flex-col">
+    <div className="h-screen bg-[var(--color-bg)] flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-10">
+      <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <BackButton />
@@ -528,11 +703,57 @@ export default function ChatPage() {
                                 : "bg-gray-100 dark:bg-gray-800 text-[var(--color-text-primary)] border border-gray-200 dark:border-gray-700 rounded-bl-sm"
                             }`}
                           >
-                            <p className={`text-sm mobile-leading ${
-                              isOwn ? "text-white" : "text-[var(--color-text-primary)]"
-                            }`}>
-                              {message.content}
-                            </p>
+                            {message.attachment_url && (
+                              <div className="mb-2">
+                                {message.attachment_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                  <a
+                                    href={message.attachment_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block rounded-lg overflow-hidden max-w-xs"
+                                  >
+                                    <Image
+                                      src={message.attachment_url}
+                                      alt={message.content?.replace("📎 ", "") || "Attachment"}
+                                      width={300}
+                                      height={200}
+                                      className="w-full h-auto object-cover"
+                                      unoptimized
+                                    />
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={message.attachment_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`flex items-center gap-2 p-2 rounded-lg ${
+                                      isOwn 
+                                        ? "bg-white/20 hover:bg-white/30" 
+                                        : "bg-[var(--color-surface)] hover:bg-[var(--color-surface)]/80"
+                                    } transition-colors`}
+                                  >
+                                    <File className={`h-5 w-5 ${isOwn ? "text-white" : "text-[var(--color-primary)]"}`} />
+                                    <span className={`text-sm font-medium ${isOwn ? "text-white" : "text-[var(--color-text-primary)]"}`}>
+                                      {message.content?.replace("📎 ", "") || "File attachment"}
+                                    </span>
+                                  </a>
+                                )}
+                              </div>
+                            )}
+                            {message.content && !message.attachment_url && (
+                              <p className={`text-sm mobile-leading ${
+                                isOwn ? "text-white" : "text-[var(--color-text-primary)]"
+                              }`}>
+                                {message.content}
+                              </p>
+                            )}
+                            {message.content && message.attachment_url && !message.content.startsWith("📎") && (
+                              <p className={`text-sm mobile-leading mt-2 ${
+                                isOwn ? "text-white" : "text-[var(--color-text-primary)]"
+                              }`}>
+                                {message.content}
+                              </p>
+                            )}
                           </div>
 
                           <div
@@ -577,16 +798,30 @@ export default function ChatPage() {
       </div>
 
       {/* Message Input */}
-      <div className="bg-[var(--color-surface)] border-t border-[var(--color-border)] p-4">
+      <div className="bg-[var(--color-surface)] border-t border-[var(--color-border)] p-4 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end gap-3">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*,application/pdf,.doc,.docx"
+              onChange={handleFileSelect}
+              disabled={isUploading || isSending}
+            />
             <Button
               variant="ghost"
               size="sm"
               className="touch-target p-2 flex-shrink-0"
               title={t("actions.attach")}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading || isSending}
             >
-              <Paperclip className="h-5 w-5" />
+              {isUploading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Paperclip className="h-5 w-5" />
+              )}
             </Button>
 
             <div className="flex-1 relative">
@@ -612,16 +847,55 @@ export default function ChatPage() {
 
             <Button
               onClick={handleSendMessage}
-              disabled={!newMessage.trim() || isSending}
+              disabled={(!newMessage.trim() && !selectedFile) || isSending || isUploading}
               className="touch-target bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white rounded-2xl px-4"
             >
-              {isSending ? (
+              {isSending || isUploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Send className="h-4 w-4" />
               )}
             </Button>
           </div>
+
+          {/* Selected File Preview */}
+          {selectedFile && (
+            <div className="mt-3 p-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg flex items-center gap-3">
+              {filePreview ? (
+                <div className="relative">
+                  <Image
+                    src={filePreview}
+                    alt={selectedFile.name}
+                    width={60}
+                    height={60}
+                    className="w-15 h-15 object-cover rounded-lg"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-15 h-15 bg-[var(--color-primary)]/10 rounded-lg flex items-center justify-center">
+                  <File className="h-6 w-6 text-[var(--color-primary)]" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                  {selectedFile.name}
+                </p>
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  {(selectedFile.size / 1024).toFixed(1)} KB
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveFile}
+                className="h-8 w-8 p-0"
+                disabled={isSending || isUploading}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
           {newMessage.length > 0 && (
             <div className="flex justify-between items-center mt-2 text-xs text-[var(--color-text-secondary)]">

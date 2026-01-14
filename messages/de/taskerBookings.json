@@ -1,0 +1,38 @@
+{
+  "taskerBookings": {
+    "title": "Tasker-Buchungen",
+    "description": "Dienstleistungen, die Sie bei anderen Taskern gebucht haben",
+    "allBookings": "Alle Buchungen",
+    "pendingRequests": "Ausstehende Anfragen",
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "confirmed": "Bestätigt",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert"
+    },
+    "labels": {
+      "serviceProvider": "Dienstleister",
+      "agreedPrice": "Vereinbarter Preis",
+      "duration": "Dauer",
+      "date": "Datum",
+      "location": "Standort",
+      "requirements": "Anforderungen",
+      "bookedOn": "Gebucht am",
+      "flexible": "Flexibel",
+      "addressNotSpecified": "Adresse nicht angegeben",
+      "noRequirements": "Keine spezifischen Anforderungen angegeben"
+    },
+    "bookingTypes": {
+      "instant": "Sofortbuchung",
+      "scheduled": "Terminbuchung",
+      "recurring": "Wiederkehrende Buchung"
+    },
+    "actions": {
+      "viewDetails": "Details anzeigen",
+      "contactTasker": "Tasker kontaktieren",
+      "cancelBooking": "Buchung stornieren"
+    }
+  }
+}

@@ -261,7 +261,7 @@ export async function getBookingById(bookingId: string): Promise<BookingWithDeta
   } as BookingWithDetails;
 }
 
-export async function getCustomerBookings(limit: number = 10, offset: number = 0) {
+export async function getCustomerBookings(limit: number = 10, offset: number = 0, p0: boolean) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");

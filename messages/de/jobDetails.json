@@ -1,0 +1,42 @@
+{
+  "jobDetails": {
+    "jobDetails": "Jobdetails",
+    "manageJobPost": "Jobanzeige verwalten",
+    "jobStatus": "Jobstatus",
+    "completed": "Abgeschlossen",
+    "postedOn": "Veröffentlicht am {date}",
+    "description": "Beschreibung",
+    "preferredDate": "Bevorzugtes Datum",
+    "preferredTime": "Bevorzugte Uhrzeit",
+    "location": "Ort",
+    "locationNotSpecified": "Ort nicht angegeben",
+    "customerInformation": "Kundeninformationen",
+    "jobPostedByCustomer": "Job vom Kunden veröffentlicht",
+    "jobProgress": "Jobfortschritt",
+    "currentStatus": "Aktueller Status",
+    "startedAt": "Gestartet am",
+    "completedAt": "Abgeschlossen am",
+    "noDescription": "Keine Beschreibung verfügbar",
+    "requirements": "Anforderungen",
+    "flexibleTiming": "Flexible Zeitplanung",
+    "openToScheduleAdjustments": "Offen für Zeitplananpassungen",
+    "actions": {
+      "startJob": "Job starten",
+      "completeJob": "Job abschließen",
+      "jobStarted": "Job erfolgreich gestartet",
+      "jobCompleted": "Job abgeschlossen",
+      "waitingConfirmation": "Warten auf Kundenbestätigung",
+      "jobConfirmed": "Job bestätigt",
+      "customerConfirmed": "Vom Kunden bestätigt am {date}"
+    },
+    "status": {
+      "active": "Offen",
+      "under_review": "In Prüfung",
+      "assigned": "Zugewiesen",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "unknown": "Unbekannt"
+    }
+  }
+}

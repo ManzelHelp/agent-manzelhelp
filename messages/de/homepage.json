@@ -1,0 +1,103 @@
+{
+  "homepage": {
+    "title": "Willkommen bei ManzelHelp",
+    "description": "Ein freundlicher Ort, wo Nutzer Dienste wie Haushaltsführung, Nachhilfe, Tierpflege und mehr anbieten und anfragen können. Zusammen verbinden, helfen und wachsen!",
+    "servicesOffered": "Angebotene Dienste",
+    "servicesOfferedPlaceholder": "Bald verfügbar: Verfügbare Dienste durchsuchen",
+    "requestService": "Einen Dienst Anfragen",
+    "requestServicePlaceholder": "Bald verfügbar: Ihre Dienstleistungsbedürfnisse posten",
+    "jobsOffered": "Verfügbare Jobs",
+    "jobsOfferedTitle": "Finden Sie Ihre nächste Gelegenheit",
+    "jobsOfferedDescription": "Entdecken Sie spannende Jobmöglichkeiten, die von Kunden in Ihrer Umgebung gepostet wurden",
+    "noJobsAvailable": "Derzeit keine Jobs verfügbar",
+    "noJobsAvailableDescription": "Schauen Sie bald wieder vorbei für großartige Möglichkeiten von unseren Kunden!",
+    "becomeTasker": "Tasker werden",
+    "whyTitle": "Warum ManzelHelp?",
+    "why1": "Verbindung zu vertrauenswürdigen lokalen Helfern",
+    "why2": "Ihre Fähigkeiten anbieten und zusätzliches Einkommen erzielen",
+    "why3": "Einfach, freundlich und sicher",
+    "trustedBy": "Vertraut von über 1000 Kunden",
+    "stats": {
+      "verifiedTaskers": "Verifizierte Tasker",
+      "serviceCategories": "Dienstkategorien",
+      "happyCustomers": "Zufriedene Kunden",
+      "averageRating": "Durchschnittliche Bewertung"
+    },
+    "popularServices": {
+      "badge": "Beliebte Dienste",
+      "title": "Entdecken Sie unsere Dienste",
+      "description": "Entdecken Sie die beliebtesten Dienstkategorien und finden Sie den perfekten Tasker für Ihre Bedürfnisse",
+      "categoryDescription": "Professionelle Dienste in dieser Kategorie",
+      "exploreButton": "Dienste erkunden",
+      "verifiedTaskers": "Verifizierte Tasker",
+      "qualityGuaranteed": "Qualität garantiert",
+      "topRated": "Top bewertet"
+    },
+    "featuredServices": {
+      "badge": "Empfohlene Dienste",
+      "description": "Entdecken Sie top-bewertete Tasker, die professionelle Dienste in Ihrer Umgebung anbieten",
+      "noServices": "Derzeit keine Dienste verfügbar",
+      "noServicesDescription": "Schauen Sie bald wieder vorbei für großartige Dienste von unseren verifizierten Taskern!",
+      "viewAll": "Alle Dienste anzeigen"
+    },
+    "whyChooseUs": {
+      "badge": "Warum uns wählen",
+      "description": "Wir verbinden Sie mit verifizierten, qualifizierten Fachleuten für alle Ihre Haushalts- und Geschäftsbedürfnisse",
+      "verifiedProfessionals": {
+        "title": "Verifizierte Fachleute",
+        "description": "Alle unsere Tasker werden gründlich überprüft und auf ihre Hintergründe geprüft, für Ihre Sicherheit und Ihr Wohlbefinden"
+      },
+      "quickReliable": {
+        "title": "Schnell & Zuverlässig",
+        "description": "Werden Sie innerhalb von Minuten mit verfügbaren Taskern in Ihrer Umgebung zusammengebracht, 24/7 verfügbar"
+      },
+      "qualityGuaranteed": {
+        "title": "Qualität garantiert",
+        "description": "Zufriedenheit garantiert mit unserer Qualitätssicherung und unserem engagierten Kundensupport-Team"
+      },
+      "bestPrices": {
+        "title": "Beste Preise",
+        "description": "Wettbewerbsfähige Preise für qualitativ hochwertige Dienste"
+      },
+      "trustedPlatform": {
+        "title": "Vertrauenswürdige Plattform",
+        "description": "Sichere Zahlungen und Bewertungen"
+      },
+      "instantBooking": {
+        "title": "Sofortige Buchung",
+        "description": "Buchen Sie Dienste in Sekunden"
+      },
+      "topRated": {
+        "title": "Top bewertet",
+        "description": "4.8★ durchschnittliche Bewertung"
+      }
+    },
+    "offeredJobs": {
+      "badge": "Verfügbare Jobs",
+      "title": "Finden Sie Ihren nächsten Job",
+      "description": "Durchsuchen Sie verfügbare Jobs, die von Kunden gepostet wurden, und bewerben Sie sich, um zu verdienen",
+      "noJobs": "Derzeit keine Jobs verfügbar",
+      "noJobsDescription": "Schauen Sie bald wieder vorbei für neue Jobmöglichkeiten von unseren Kunden!",
+      "viewAllJobs": "Alle Jobs anzeigen",
+      "becomeTasker": "Tasker werden",
+      "stats": {
+        "newJobsDaily": "Täglich neue Jobs",
+        "newJobsDailyDescription": "Frische Möglichkeiten werden regelmäßig gepostet",
+        "competitiveRates": "Wettbewerbsfähige Preise",
+        "competitiveRatesDescription": "Faire Vergütung für qualitativ hochwertige Arbeit",
+        "verifiedCustomers": "Verifizierte Kunden",
+        "verifiedCustomersDescription": "Arbeiten Sie mit vertrauenswürdigen Kunden"
+      }
+    },
+    "cta": {
+      "badge": "Treten Sie unserer Community bei",
+      "title": "Bereit loszulegen?",
+      "description": "Schließen Sie sich Tausenden zufriedenen Kunden an, die uns für ihre Dienstleistungsbedürfnisse vertrauen",
+      "findTasker": "Einen Tasker finden",
+      "findJobs": "Jobs finden",
+      "securePlatform": "Sichere Plattform",
+      "verifiedTaskers": "Verifizierte Tasker",
+      "support24_7": "24/7 Support"
+    }
+  }
+}

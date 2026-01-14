@@ -1,0 +1,77 @@
+{
+  "errors": {
+    "general": {
+      "notAuthenticated": "User not authenticated",
+      "unexpected": "An unexpected error occurred",
+      "failedToFetchUser": "Failed to fetch user data"
+    },
+    "walletRefunds": {
+      "notAuthenticated": "User not authenticated",
+      "failedToFetchUser": "Failed to fetch user data",
+      "onlyTaskersCanCreate": "Only taskers can create refund requests",
+      "amountMustBeGreaterThanZero": "Amount must be greater than 0",
+      "minAmount": "Minimum amount is {min} MAD",
+      "maxAmount": "Maximum amount is {max} MAD",
+      "insufficientBalance": "Insufficient wallet balance",
+      "pendingRequestExists": "You already have a pending refund request",
+      "failedToCreate": "Failed to create refund request",
+      "requestNotFound": "Refund request not found",
+      "unauthorizedConfirm": "Unauthorized: You can only confirm your own refund requests",
+      "cannotConfirmPayment": "Cannot confirm payment. Current status: {status}",
+      "failedToConfirmPayment": "Failed to confirm payment",
+      "onlyAdminsCanViewAll": "Only admins can view all refund requests",
+      "onlyAdminsCanMarkVerifying": "Only admins can mark refund requests as verifying",
+      "cannotMarkVerifying": "Cannot mark request as verifying. Current status: {status}",
+      "onlyAdminsCanApprove": "Only admins can approve refund requests",
+      "failedToFetchWalletBalance": "Failed to fetch tasker wallet balance",
+      "walletBalanceWouldBeNegative": "Tasker wallet balance would be negative. Cannot approve.",
+      "failedToUpdateWallet": "Failed to update wallet",
+      "failedToApprove": "Failed to approve request",
+      "onlyAdminsCanReject": "Only admins can reject refund requests",
+      "adminNotesRequired": "Admin notes are required when rejecting a request",
+      "failedToReject": "Failed to reject request"
+    },
+    "jobs": {
+      "notAuthenticated": "User not authenticated",
+      "failedToFetchUser": "Failed to fetch user data",
+      "onlyCustomersCanPost": "Only customers can post jobs",
+      "jobNotFound": "Job not found",
+      "unauthorized": "You don't have permission to perform this action",
+      "failedToCreate": "Failed to create job",
+      "failedToUpdate": "Failed to update job",
+      "failedToDelete": "Failed to delete job",
+      "applicationNotFound": "Application not found",
+      "failedToAcceptApplication": "Failed to accept application",
+      "failedToRejectApplication": "Failed to reject application",
+      "jobAlreadyAssigned": "Job has already been assigned",
+      "failedToStart": "Failed to start job",
+      "failedToComplete": "Failed to complete job",
+      "failedToProcessPayment": "Failed to process payment",
+      "failedToConfirm": "Failed to confirm job"
+    },
+    "messages": {
+      "notAuthenticated": "User not authenticated",
+      "conversationNotFound": "Conversation not found",
+      "unauthorized": "You don't have permission to access this conversation",
+      "failedToSend": "Failed to send message",
+      "failedToCreateConversation": "Failed to create conversation"
+    },
+    "reviews": {
+      "notAuthenticated": "User not authenticated",
+      "failedToCreate": "Failed to create review",
+      "reviewNotFound": "Review not found",
+      "unauthorized": "You don't have permission to perform this action"
+    },
+    "bookings": {
+      "notAuthenticated": "User not authenticated",
+      "bookingNotFound": "Booking not found",
+      "unauthorized": "You don't have permission to perform this action",
+      "failedToCreate": "Failed to create booking",
+      "failedToUpdate": "Failed to update booking",
+      "failedToCancel": "Failed to cancel booking",
+      "failedToAccept": "Failed to accept booking",
+      "failedToConfirm": "Failed to confirm booking",
+      "failedToComplete": "Failed to complete booking"
+    }
+  }
+}

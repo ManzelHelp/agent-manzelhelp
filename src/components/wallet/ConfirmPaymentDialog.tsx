@@ -243,7 +243,7 @@ export function ConfirmPaymentDialog({
                 {t("confirmPayment")}
               </DialogTitle>
               <DialogDescription className="text-[var(--color-text-secondary)]">
-                Upload your bank transfer receipt to confirm the payment
+                {t("uploadReceiptDescription", { default: "Upload your bank transfer receipt to confirm the payment" })}
               </DialogDescription>
             </div>
           </div>
@@ -287,10 +287,10 @@ export function ConfirmPaymentDialog({
               >
                 <Upload className="h-8 w-8 mx-auto mb-2 text-[var(--color-text-secondary)]" />
                 <div className="text-sm text-[var(--color-text-secondary)]">
-                  Click to upload receipt (JPG, PNG, WebP, or PDF)
+                  {t("clickToUploadReceipt", { default: "Click to upload receipt (JPG, PNG, WebP, or PDF)" })}
                 </div>
                 <div className="text-xs text-[var(--color-text-secondary)] mt-1">
-                  Max file size: 5MB
+                  {t("maxFileSize", { default: "Max file size: 5MB" })}
                 </div>
               </div>
             ) : (
@@ -348,8 +348,7 @@ export function ConfirmPaymentDialog({
           {adminWhatsAppPhone && (
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="text-sm text-blue-800 dark:text-blue-400">
-                After uploading the receipt, you will be redirected to WhatsApp
-                to send it to the admin.
+                {t("whatsappRedirectMessage", { default: "After uploading the receipt, you will be redirected to WhatsApp to send it to the admin." })}
               </div>
             </div>
           )}

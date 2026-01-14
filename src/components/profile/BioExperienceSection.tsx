@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 export default function BioExperienceSection({ taskerProfile, loading, onProfileRefresh }: any) {
   const { toast } = useToast();
   const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const [editBioOpen, setEditBioOpen] = useState(false);
   
   const [bioForm, setBioForm] = useState({
@@ -29,7 +30,7 @@ export default function BioExperienceSection({ taskerProfile, loading, onProfile
     if (!validation.success) {
       toast({
         variant: "destructive",
-        title: "Validation échouée",
+        title: tCommon("error"),
         description: validation.error.issues[0].message,
       });
       return;
@@ -38,12 +39,12 @@ export default function BioExperienceSection({ taskerProfile, loading, onProfile
     try {
       const result = await updateTaskerBio(taskerProfile.id, bioForm);
       if (result.success) {
-        toast({ variant: "success", title: "Mis à jour", description: "Vos informations professionnelles sont à jour." });
+        toast({ variant: "success", title: t("success.genericSuccess"), description: t("success.profileUpdated") });
         setEditBioOpen(false);
         await onProfileRefresh();
       }
     } catch (error) {
-      toast({ variant: "destructive", description: "Erreur lors de la mise à jour" });
+      toast({ variant: "destructive", description: t("errors.updateProfile") });
     }
   };
 
@@ -53,15 +54,15 @@ export default function BioExperienceSection({ taskerProfile, loading, onProfile
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
              <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full"><FileText className="text-white" /></div>
-             <CardTitle>Bio & Expérience</CardTitle>
+             <CardTitle>{t("sections.bio.title")}</CardTitle>
           </div>
           <Dialog open={editBioOpen} onOpenChange={setEditBioOpen}>
-            <DialogTrigger asChild><Button variant="outline" size="sm"><Edit className="h-4 w-4 mr-2" />{t("edit")}</Button></DialogTrigger>
+            <DialogTrigger asChild><Button variant="outline" size="sm"><Edit className="h-4 w-4 mr-2" />{t("actions.edit")}</Button></DialogTrigger>
             <DialogContent>
                <form onSubmit={handleUpdate} noValidate className="space-y-4">
-                 <DialogHeader><DialogTitle>Modifier votre Bio</DialogTitle></DialogHeader>
+                 <DialogHeader><DialogTitle>{t("sections.bio.editBioTitle")}</DialogTitle></DialogHeader>
                  <div className="space-y-2">
-                    <Label>Biographie (min 50 caractères)</Label>
+                    <Label>{t("sections.bio.biography")}</Label>
                     <textarea 
                        className="w-full p-3 border rounded-lg h-32 text-sm focus:ring-2 focus:ring-green-500"
                        value={bioForm.bio}
@@ -69,7 +70,7 @@ export default function BioExperienceSection({ taskerProfile, loading, onProfile
                     />
                     <p className="text-[10px] text-right text-slate-400">{bioForm.bio.length} / 500</p>
                  </div>
-                 <DialogFooter><Button type="submit">Sauvegarder</Button></DialogFooter>
+                 <DialogFooter><Button type="submit">{t("sections.bio.save")}</Button></DialogFooter>
                </form>
             </DialogContent>
           </Dialog>
@@ -77,7 +78,7 @@ export default function BioExperienceSection({ taskerProfile, loading, onProfile
       </CardHeader>
       <CardContent>
           <p className="text-sm text-slate-600 leading-relaxed italic">
-            "{taskerProfile?.bio || "Aucune biographie ajoutée."}"
+            "{taskerProfile?.bio || t("sections.bio.noBio")}"
           </p>
       </CardContent>
     </Card>

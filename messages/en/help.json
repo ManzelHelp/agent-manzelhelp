@@ -1,0 +1,104 @@
+{
+  "help": {
+    "hero": {
+      "title": "Help Center",
+      "description": "Find answers to your questions and get the support you need.",
+      "searchPlaceholder": "Search for help..."
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "whatsapp": {
+        "title": "Chat Live WhatsApp",
+        "description": "Contact us directly via WhatsApp",
+        "action": "Open WhatsApp",
+        "available": "Available 24/7"
+      },
+      "email": {
+        "title": "Email Support",
+        "description": "Send us a detailed message",
+        "action": "Send an Email",
+        "available": "Response within 24 hours"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "noResults": "No results found for \"{query}\"",
+      "categories": {
+        "gettingStarted": {
+          "title": "Getting Started",
+          "questions": {
+            "createAccount": {
+              "question": "How do I create an account?",
+              "answer": "Click the 'Sign Up' button in the top right corner, fill in your details, and verify your email address."
+            },
+            "helperVsCustomer": {
+              "question": "What's the difference between a Helper and Customer?",
+              "answer": "Helpers offer services to others, while Customers book services. You can be both on the same account."
+            },
+            "completeProfile": {
+              "question": "How do I complete my profile?",
+              "answer": "Go to your profile page and add your skills, experience, photos, and availability to attract more clients."
+            }
+          }
+        },
+        "payments": {
+          "title": "Payments & Billing",
+          "questions": {
+            "howPaymentsWork": {
+              "question": "How do payments work?",
+              "answer": "Payments are processed securely through our platform. Customers pay upfront, and Helpers receive payment after service completion."
+            },
+            "paymentMethods": {
+              "question": "What payment methods do you accept?",
+              "answer": "We accept all major credit cards, PayPal, and bank transfers in supported regions."
+            },
+            "whenGetPaid": {
+              "question": "When do I get paid?",
+              "answer": "Helpers receive payment within 2-3 business days after the customer confirms service completion."
+            }
+          }
+        },
+        "safety": {
+          "title": "Safety & Security",
+          "questions": {
+            "verifyHelpers": {
+              "question": "How do you verify Helpers?",
+              "answer": "All Helpers undergo background checks, identity verification, and skill assessments before joining our platform."
+            },
+            "notSatisfied": {
+              "question": "What if I'm not satisfied with a service?",
+              "answer": "Contact our support team within 24 hours. We'll work with you to resolve the issue or provide a refund."
+            },
+            "personalInfoSafe": {
+              "question": "Is my personal information safe?",
+              "answer": "Yes, we use industry-standard encryption and security measures to protect your data. Read our Privacy Policy for details."
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "title": "Additional Resources",
+      "userGuide": {
+        "title": "User Guide",
+        "description": "Complete guide to using ManzelHelp",
+        "action": "Read Guide"
+      },
+      "communityForum": {
+        "title": "Community Forum",
+        "description": "Connect with other users",
+        "action": "Join Forum"
+      },
+      "safetyTips": {
+        "title": "Safety Tips",
+        "description": "Stay safe while using our platform",
+        "action": "Learn More"
+      },
+      "videoTutorials": {
+        "title": "Video Tutorials",
+        "description": "Watch step-by-step tutorials",
+        "action": "Watch Now"
+      }
+    }
+  }
+}

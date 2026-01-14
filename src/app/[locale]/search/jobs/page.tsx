@@ -140,6 +140,15 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
     query = query.neq("customer_id", currentUser.id);
   }
 
+  // Check if any filters are active
+  const hasActiveFilters = !!(
+    (resolvedSearchParams.q && resolvedSearchParams.q.trim()) ||
+    resolvedSearchParams.category ||
+    resolvedSearchParams.minPrice ||
+    resolvedSearchParams.maxPrice ||
+    resolvedSearchParams.location
+  );
+
   // Apply filters
   if (resolvedSearchParams.q && resolvedSearchParams.q.trim()) {
     query = query.ilike("title", `%${resolvedSearchParams.q.trim()}%`);
@@ -322,6 +331,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   applyFilters: t("applyFilters"),
                   categories: t("categories"),
                   allCategories: t("allCategories"),
+                  min: t("min"),
+                  max: t("max"),
                 }}
               />
             </div>
@@ -345,6 +356,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                   applyFilters: t("applyFilters"),
                   categories: t("categories"),
                   allCategories: t("allCategories"),
+                  min: t("min"),
+                  max: t("max"),
                 }}
               />
             </div>
@@ -444,32 +457,52 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                 <div className="text-center py-12 sm:py-16 animate-fade-in-up">
                   <div className="max-w-md mx-auto px-4">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center">
-                      <svg
-                        className="w-10 h-10 sm:w-12 sm:h-12 text-[var(--color-accent)]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
+                      {hasActiveFilters ? (
+                        <svg
+                          className="w-10 h-10 sm:w-12 sm:h-12 text-[var(--color-accent)]"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-10 h-10 sm:w-12 sm:h-12 text-[var(--color-accent)]"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      )}
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-2 sm:mb-3">
-                      {t("noResults")}
+                      {hasActiveFilters ? t("noResults") : t("noJobsAvailable")}
                     </h3>
                     <p className="text-[var(--color-text-secondary)] text-base sm:text-lg mb-4 sm:mb-6">
-                      {t("tryAdjustingFilters")}
+                      {hasActiveFilters
+                        ? t("tryAdjustingFilters")
+                        : t("noJobsAvailableDescription")}
                     </p>
-                    <Link
-                      href={`/${locale}/search/jobs`}
-                      className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-secondary)] text-white rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium text-sm sm:text-base"
-                    >
-                      {t("clearAllFilters")}
-                    </Link>
+                    {hasActiveFilters && (
+                      <Link
+                        href={`/${locale}/search/jobs`}
+                        className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-secondary)] text-white rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary-dark)] transition-all duration-200 font-medium text-sm sm:text-base"
+                      >
+                        {t("clearAllFilters")}
+                      </Link>
+                    )}
                   </div>
                 </div>
               )}

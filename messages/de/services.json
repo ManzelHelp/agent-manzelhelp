@@ -1,0 +1,73 @@
+{
+  "services": {
+    "serviceManagementHub": "Service-Management-Hub",
+    "buildAndManage": "Erstellen und verwalten Sie Ihr professionelles Service-Portfolio. Erstellen Sie überzeugende Angebote, verfolgen Sie die Leistung und wachsen Sie Ihr Geschäft mit unseren leistungsstarken Tools.",
+    "performanceTracking": "Leistungsverfolgung",
+    "customerInsights": "Kunden-Insights",
+    "qualityControl": "Qualitätskontrolle",
+    "totalServices": "Gesamte Services",
+    "active": "Aktiv",
+    "bookings": "Buchungen",
+    "verified": "Verifiziert",
+    "yourServicePortfolio": "Ihr Service-Portfolio",
+    "manageAndShowcase": "Verwalten und präsentieren Sie Ihre professionellen Dienstleistungen",
+    "addNewService": "Neuen Service Hinzufügen",
+    "areaNotSpecified": "Bereich nicht angegeben",
+    "edit": "Bearbeiten",
+    "available": "Verfügbar",
+    "unverified": "nicht verifiziert",
+    "deleteService": "Service Löschen",
+    "deleteServiceConfirmation": {
+      "title": "Service Löschen",
+      "description": "Sind Sie sicher, dass Sie diesen Service löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden. Wenn es aktive Buchungen für diesen Service gibt, kann er nicht gelöscht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Service Löschen",
+      "deleting": "Wird gelöscht...",
+      "success": "Service erfolgreich gelöscht",
+      "failed": "Fehler beim Löschen des Services",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
+    },
+    "serviceDetails": "Service-Details",
+    "manageServiceOffer": "Verwalten Sie Ihr Service-Angebot",
+    "paused": "Pausiert",
+    "pending": "Ausstehend",
+    "rejected": "Abgelehnt",
+    "underReview": "In Überprüfung",
+    "multipleAreas": "Mehrere Bereiche",
+    "promoted": "Beworben",
+    "actions": {
+      "edit": "Service bearbeiten",
+      "delete": "Service Löschen",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "noDescription": "Keine Beschreibung verfügbar",
+    "hours": "Stunden",
+    "serviceRadius": "Service-Radius",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "unavailable": "Nicht verfügbar",
+    "verificationStatus": {
+      "pending": "Wartet auf Überprüfung durch Admin",
+      "verified": "Service wurde vom Admin überprüft und genehmigt",
+      "rejected": "Service wurde vom Admin abgelehnt",
+      "title": "Überprüfungsstatus"
+    },
+    "pricingType": {
+      "title": "Preistyp",
+      "hourly": "Stundensatz",
+      "perItem": "Pro Artikel",
+      "fixed": "Fester Preis",
+      "hourlyWithCurrency": "Stundensatz (€)",
+      "basePrice": "Grundpreis (€)"
+    },
+    "listedOn": "Aufgelistet am",
+    "description": "Beschreibung",
+    "serviceArea": "Service-Bereich",
+    "serviceAreaPlaceholder": "z.B.: Berlin, Deutschland",
+    "minimumDuration": "Mindestdauer (Stunden)",
+    "minDuration": "Min. {duration}h",
+    "loading": "Lädt...",
+    "category": "Kategorie",
+    "service": "Service"
+  }
+}

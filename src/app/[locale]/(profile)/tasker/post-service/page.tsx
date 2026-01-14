@@ -292,8 +292,8 @@ export default function CreateOfferPage() {
         console.error("Error fetching addresses:", addressesResult.error);
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Failed to load addresses. Please try again.",
+          title: t("errors.error"),
+          description: t("errors.loadAddressesFailed"),
         });
       }
 
@@ -316,8 +316,8 @@ export default function CreateOfferPage() {
       console.error("Error fetching initial data:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: t("errors.loadFormDataFailed", { default: "Failed to load form data. Please try again." }),
+        title: t("errors.error"),
+        description: t("errors.loadFormDataFailed"),
       });
     } finally {
       setLoading(false);
@@ -336,8 +336,8 @@ export default function CreateOfferPage() {
         if (!profileCheck.hasCompleted) {
           toast({
             variant: "default",
-            title: "Profil incomplet",
-            description: "Please complete your profile setup to continue",
+            title: t("errors.incompleteProfile"),
+            description: t("errors.incompleteProfileDescription", { default: "Please complete your profile setup to continue" }),
           });
           router.replace("/finish-signUp");
           return;
@@ -346,8 +346,8 @@ export default function CreateOfferPage() {
         console.error("Error checking profile completion:", error);
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Failed to verify profile status",
+          title: t("errors.error"),
+          description: t("errors.verifyProfileFailed", { default: "Failed to verify profile status" }),
         });
       }
     };
@@ -475,7 +475,7 @@ export default function CreateOfferPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: t("errors.error"),
           description: result.error || t("errors.serviceCreationFailed"),
         });
       }
@@ -483,7 +483,7 @@ export default function CreateOfferPage() {
       console.error("Error creating offer:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("errors.error"),
         description: t("errors.serviceCreationFailed"),
       });
     } finally {
@@ -610,10 +610,10 @@ export default function CreateOfferPage() {
                       </div>
                       <div>
                         <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
-                          Service Details
+                          {t("step1.title")}
                         </CardTitle>
                         <CardDescription className="text-[var(--color-text-secondary)]">
-                          Tell us about the service you want to offer
+                          {t("step1.description")}
                         </CardDescription>
                       </div>
                     </div>
@@ -654,7 +654,7 @@ export default function CreateOfferPage() {
                           {(!user?.avatar_url || avatarError) && (
                             <p className="text-xs text-[var(--color-warning)] mt-1 flex items-center">
                               <Info className="h-3 w-3 inline mr-1" />
-                              Add a profile photo to build trust with customers
+                              {t("step1.addProfilePhoto")}
                             </p>
                           )}
                         </div>
@@ -668,7 +668,7 @@ export default function CreateOfferPage() {
                         className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
                       >
                         <Star className="h-4 w-4 text-[var(--color-secondary)]" />
-                        Service Title *
+                        {t("step1.serviceTitle")} *
                       </Label>
                       <Input
                         id="title"
@@ -707,7 +707,7 @@ export default function CreateOfferPage() {
                         className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
                       >
                         <Edit className="h-4 w-4 text-[var(--color-secondary)]" />
-                        Service Description *
+                        {t("step1.serviceDescription")} *
                       </Label>
                       <textarea
                         id="description"
@@ -740,7 +740,7 @@ export default function CreateOfferPage() {
                       )}
                       {!step1Form.formState.errors.description && step1Form.watch("description") && (
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                          {step1Form.watch("description").length} caractères
+                          {step1Form.watch("description").length} {t("step1.characters")}
                         </p>
                       )}
                     </div>
@@ -750,7 +750,7 @@ export default function CreateOfferPage() {
                       <div className="space-y-3">
                         <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                           <Sparkles className="h-4 w-4 text-[var(--color-secondary)]" />
-                          Service Category *
+                          {t("basicInfo.category")} *
                         </Label>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -769,8 +769,8 @@ export default function CreateOfferPage() {
                                   ? categories.find(
                                       (c) =>
                                         c.id === step1Form.watch("categoryId")
-                                    )?.name_en || "Select category"
-                                  : "Select category"}
+                                    )?.name_en || t("step1.selectCategory")
+                                  : t("step1.selectCategory")}
                               </span>
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
@@ -809,7 +809,7 @@ export default function CreateOfferPage() {
                       <div className="space-y-3">
                         <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                           <User className="h-4 w-4 text-[var(--color-secondary)]" />
-                          Specific Service *
+                          {t("basicInfo.service")} *
                         </Label>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -832,8 +832,8 @@ export default function CreateOfferPage() {
                                   ? services.find(
                                       (s) =>
                                         s.id === step1Form.watch("serviceId")
-                                    )?.name_en || "Select service"
-                                  : "Select service"}
+                                    )?.name_en || t("step1.selectService")
+                                  : t("step1.selectService")}
                               </span>
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
@@ -872,7 +872,7 @@ export default function CreateOfferPage() {
                     <div className="space-y-3">
                       <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-[var(--color-secondary)]" />
-                        Service Location
+                        {t("basicInfo.location")}
                       </Label>
                       {addresses.length > 0 ? (
                         <DropdownMenu>
@@ -904,10 +904,10 @@ export default function CreateOfferPage() {
                                             String(a.id) === String(step1Form.watch("selectedAddressId"))
                                         )?.city
                                       }`
-                                    : "Select location"
+                                    : t("step1.selectLocation")
                                   : addresses[0]
                                   ? `${addresses[0].street_address}, ${addresses[0].city}`
-                                  : "Select location"}
+                                  : t("step1.selectLocation")}
                               </span>
                               <MapPin className="h-4 w-4 opacity-50" />
                             </Button>
@@ -945,8 +945,7 @@ export default function CreateOfferPage() {
                         <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-surface)]">
                           <MapPin className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
                           <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                            No addresses found. Please add an address in your
-                            profile first.
+                            {t("step1.noAddresses")}
                           </p>
                           <Button
                             variant="outline"
@@ -957,7 +956,7 @@ export default function CreateOfferPage() {
                             }
                           >
                             <Edit className="h-4 w-4 mr-2" />
-                            Add Address
+                            {t("step1.addAddress")}
                           </Button>
                         </div>
                       )}
@@ -973,7 +972,7 @@ export default function CreateOfferPage() {
                     <div className="space-y-3">
                       <Label className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                         <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
-                        Your Working Hours
+                        {t("step1.yourWorkingHours")}
                       </Label>
                       {availability && availability.length > 0 ? (
                         <div className="space-y-4">
@@ -1008,11 +1007,10 @@ export default function CreateOfferPage() {
                               }
                             >
                               <Edit className="h-4 w-4 mr-2" />
-                              Edit Hours
+                              {t("step1.editHours")}
                             </Button>
                             <p className="text-sm text-[var(--color-text-secondary)]">
-                              Your working hours are managed in your profile
-                              settings
+                              {t("step1.workingHoursManaged")}
                             </p>
                           </div>
                         </div>
@@ -1020,8 +1018,7 @@ export default function CreateOfferPage() {
                         <div className="p-6 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-surface)]">
                           <Clock className="h-12 w-12 text-[var(--color-text-secondary)] mx-auto mb-3" />
                           <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                            No availability set. Please add your working hours
-                            in your profile first.
+                            {t("step1.noAvailability")}
                           </p>
                           <Button
                             variant="outline"
@@ -1034,7 +1031,7 @@ export default function CreateOfferPage() {
                             }
                           >
                             <Clock className="h-4 w-4 mr-2" />
-                            Add Working Hours
+                            {t("step1.addWorkingHours")}
                           </Button>
                         </div>
                       )}
@@ -1053,10 +1050,10 @@ export default function CreateOfferPage() {
                       </div>
                       <div>
                         <CardTitle className="text-xl font-bold text-[var(--color-text-primary)]">
-                          Pricing & Policies
+                          {t("step2.title")}
                         </CardTitle>
                         <CardDescription className="text-[var(--color-text-secondary)]">
-                          Set your rates and booking policies
+                          {t("step2.description")}
                         </CardDescription>
                       </div>
                     </div>
@@ -1066,7 +1063,7 @@ export default function CreateOfferPage() {
                     <div className="space-y-4">
                       <Label className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                         <DollarSign className="h-5 w-5 text-[var(--color-secondary)]" />
-                        Pricing Model *
+                        {t("step2.pricingModel")} *
                       </Label>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {["fixed", "hourly", "per_item"].map((type) => (
@@ -1101,7 +1098,7 @@ export default function CreateOfferPage() {
                               />
                               <div>
                                 <div className="font-semibold capitalize text-[var(--color-text-primary)]">
-                                  {type === "per_item" ? "Per Item" : type} Rate
+                                  {type === "fixed" ? t("step2.fixedPrice") : type === "hourly" ? t("step2.hourlyRate") : t("step2.perItem")}
                                 </div>
                                 <div className="text-sm text-[var(--color-text-secondary)] mt-1">
                                   {type === "fixed" &&
@@ -1126,7 +1123,7 @@ export default function CreateOfferPage() {
                             className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
                           >
                             <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
-                            Fixed Price (€) *
+                            {t("step2.fixedPriceLabel")} *
                           </Label>
                           <Input
                             id="basePrice"
@@ -1171,7 +1168,7 @@ export default function CreateOfferPage() {
                             className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
                           >
                             <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
-                            Hourly Rate (€) *
+                            {t("step2.hourlyRateLabel")} *
                           </Label>
                           <Input
                             id="hourlyRate"
@@ -1220,7 +1217,7 @@ export default function CreateOfferPage() {
                             className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
                           >
                             <DollarSign className="h-4 w-4 text-[var(--color-secondary)]" />
-                            Price Per Item (€) *
+                            {t("step2.perItemLabel")} *
                           </Label>
                           <Input
                             id="basePricePerItem"
@@ -1509,10 +1506,10 @@ export default function CreateOfferPage() {
                         <div>
                           <span className="text-muted-foreground">
                             {formData.pricing.pricingType === "fixed"
-                              ? "Fixed Price:"
+                              ? t("step2.fixedPriceReview")
                               : formData.pricing.pricingType === "hourly"
-                              ? "Hourly Rate:"
-                              : "Price Per Item:"}
+                              ? t("step2.hourlyRateReview")
+                              : t("step2.perItemReview")}
                           </span>
                           <p className="font-medium">
                             €

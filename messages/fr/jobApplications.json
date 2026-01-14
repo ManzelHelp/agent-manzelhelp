@@ -1,0 +1,41 @@
+{
+  "jobApplications": {
+    "title": "Candidatures d'emploi",
+    "description": "Suivez vos candidatures d'emploi et leur statut",
+    "status": {
+      "pending": "En attente",
+      "accepted": "Accepté",
+      "rejected": "Rejeté",
+      "withdrawn": "Retiré"
+    },
+    "jobStatus": {
+      "under_review": "En cours d'examen",
+      "active": "Actif",
+      "assigned": "Assigné",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé",
+      "disputed": "En litige",
+      "draft": "Brouillon",
+      "open": "Ouvert"
+    },
+    "labels": {
+      "jobPoster": "Annonceur d'emploi",
+      "proposedPrice": "Prix proposé",
+      "estimatedDuration": "Durée estimée",
+      "preferredDate": "Date préférée",
+      "customerBudget": "Budget client",
+      "message": "Message",
+      "appliedOn": "Candidaté le",
+      "flexible": "Flexible",
+      "notSpecified": "Non spécifié",
+      "jobCompletedMessage": "Ce job a été terminé. Votre candidature n'est plus pertinente.",
+      "jobCancelledMessage": "Ce job a été annulé. Votre candidature n'est plus pertinente."
+    },
+    "actions": {
+      "viewDetails": "Voir les détails",
+      "withdrawApplication": "Retirer la candidature",
+      "contactCustomer": "Contacter le client"
+    }
+  }
+}

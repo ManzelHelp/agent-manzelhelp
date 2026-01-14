@@ -28,8 +28,8 @@ export default function PaymentSection({ missingFields }: PaymentSectionProps) {
   const handleAddPaymentClick = () => {
     // Intégration Toast Premium pour informer l'utilisateur
     toast({
-      title: "Prochainement",
-      description: "L'ajout de méthodes de paiement sera bientôt disponible.",
+      title: t("sections.payment.comingSoon"),
+      description: t("sections.payment.comingSoonDescription"),
     });
   };
 

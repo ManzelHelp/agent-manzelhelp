@@ -1,0 +1,47 @@
+{
+  "customerBookings": {
+    "service": "Service",
+    "tasker": "Prestataire",
+    "locationNotSpecified": "Lieu non spécifié",
+    "dateNotSet": "Date non définie",
+    "viewDetails": "Voir les détails",
+    "title": "Mes Réservations",
+    "description": "Suivez et gérez toutes vos réservations de services au même endroit",
+    "status": {
+      "pending": "En attente",
+      "accepted": "Accepté",
+      "confirmed": "Confirmé",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé",
+      "disputed": "En litige",
+      "refunded": "Remboursé"
+    },
+    "actions": {
+      "cancelBooking": "Annuler la réservation",
+      "loadMoreBookings": "Charger plus",
+      "tryAgain": "Réessayer"
+    },
+    "confirmations": {
+      "cancel": {
+        "title": "Annuler la réservation",
+        "description": "Êtes-vous sûr de vouloir annuler cette réservation avec {taskerName} ? Cette action est irréversible.",
+        "confirmText": "Oui, annuler"
+      }
+    },
+    "success": {
+      "bookingCancelled": "Réservation annulée avec succès"
+    },
+    "errors": {
+      "cancelFailed": "Échec de l'annulation",
+      "unexpectedError": "Une erreur inattendue est survenue",
+      "loadFailed": "Échec du chargement des réservations"
+    },
+    "loading": {
+      "loadingMore": "Chargement en cours..."
+    },
+    "results": {
+      "showing": "Affichage de {current} sur {total} réservations"
+    }
+  }
+}

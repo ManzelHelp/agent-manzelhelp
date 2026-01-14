@@ -1,0 +1,94 @@
+{
+  "bookingDetails": {
+    "cancelled": "تم إلغاء هذا الحجز",
+    "title": "تفاصيل الحجز",
+    "loading": "جاري التحميل...",
+    "pleaseWait": "يرجى الانتظار بينما نجلب تفاصيل حجزك...",
+    "notFound": "الحجز غير موجود",
+    "bookingNotFound": "الحجز الذي تبحث عنه غير موجود أو ليس لديك إذن لعرضه.",
+    "backToBookings": "العودة إلى حجوزاتي",
+    "service": "الخدمة",
+    "tasker": "الحرفي",
+    "customer": "الزبون",
+    "agreedPrice": "السعر المتفق عليه",
+    "price": "السعر",
+    "duration": "المدة",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "type": "النوع",
+    "payment": "الدفع",
+    "addressNotSpecified": "العنوان غير محدد",
+    "noRequirements": "لا توجد متطلبات خاصة محددة.",
+    "timeNotSpecified": "الوقت غير محدد",
+    "status": {
+      "pending": "معلق",
+      "accepted": "مقبول",
+      "confirmed": "مؤكد",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "cancelled": "ملغي",
+      "unknown": "غير معروف"
+    },
+    "statusDescriptions": {
+      "pending": "في انتظار رد الحرفي",
+      "accepted": "تم قبول طلبك من طرف الحرفي",
+      "confirmed": "الحجز مؤكد وجاهز",
+      "in_progress": "الخدمة قيد التنفيذ حالياً",
+      "completed": "تم إنجاز الخدمة بنجاح",
+      "cancelled": "تم إلغاء هذا الحجز",
+      "unknown": "حالة غير معروفة"
+    },
+    "bookingType": {
+      "instant": "حجز فوري",
+      "scheduled": "موعد محدد",
+      "recurring": "متكرر"
+    },
+    "sections": {
+      "customerInfo": "معلومات الزبون",
+      "taskerInfo": "معلومات الحرفي",
+      "serviceDetails": "تفاصيل الخدمة",
+      "bookingInfo": "معلومات الحجز",
+      "location": "الموقع",
+      "requirements": "المتطلبات",
+      "actions": "الإجراءات",
+      "timeline": "سجل الأحداث"
+    },
+    "actions": {
+      "cancelBooking": "إلغاء الحجز",
+      "messageTasker": "مراسلة الحرفي",
+      "copyBookingId": "نسخ رقم الحجز",
+      "share": "مشاركة",
+      "leaveReview": "ترك تقييم"
+    },
+    "timeline": {
+      "bookingCreated": "تم إنشاء الحجز",
+      "bookingAccepted": "تم قبول الحجز",
+      "bookingConfirmed": "تم تأكيد الحجز",
+      "taskStarted": "بدأت الخدمة",
+      "taskCompleted": "انتهت الخدمة"
+    },
+    "completion": {
+      "awaitingTitle": "اكتملت الخدمة - في انتظار تأكيدك",
+      "awaitingDescription": "لقد حدد الحرفي هذه الخدمة كمكتملة. يرجى مراجعة العمل وتأكيد الإتمام.",
+      "completedOn": "اكتمل في:",
+      "confirmBtn": "تأكيد إتمام الحجز",
+      "confirming": "جاري التأكيد...",
+      "confirmedTitle": "تم تأكيد الحجز",
+      "confirmedDescription": "لقد أكدت أن هذا الحجز قد اكتمل بنجاح. تم معالجة الدفع.",
+      "confirmedOn": "تم التأكيد في:",
+      "alreadyReviewed": "✓ لقد قمت بالفعل بتقييم هذا الحجز"
+    },
+    "success": {
+      "statusUpdated": "تم تحديث حالة الحجز بنجاح",
+      "copiedToClipboard": "تم نسخ رقم الحجز",
+      "linkCopied": "تم نسخ الرابط",
+      "confirmed": "تم تأكيد الحجز بنجاح"
+    },
+    "errors": {
+      "updateFailed": "فشل تحديث الحالة",
+      "unexpectedError": "حدث خطأ غير متوقع",
+      "taskerInfoNotAvailable": "معلومات الحرفي غير متوفرة",
+      "confirmFailed": "فشل في تأكيد إتمام الحجز"
+    }
+  }
+}

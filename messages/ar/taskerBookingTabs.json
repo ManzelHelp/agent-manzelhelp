@@ -1,0 +1,16 @@
+{
+  "taskerBookingTabs": {
+    "myBookings": {
+      "label": "حجوزاتي",
+      "description": "حجوزات خدماتك"
+    },
+    "bookedTaskers": {
+      "label": "المساعدون المحجوزون",
+      "description": "الخدمات التي حجزتها"
+    },
+    "myApplications": {
+      "label": "طلباتي",
+      "description": "الوظائف التي تقدمت إليها"
+    }
+  }
+}

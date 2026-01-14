@@ -1,0 +1,17 @@
+{
+  "serviceCard": {
+    "multipleAreas": "Plusieurs zones",
+    "areaNotSpecified": "Zone non spécifiée",
+    "review": "avis",
+    "reviews": "avis",
+    "minDuration": "Min {hours}h",
+    "hourlyRate": "Tarif horaire",
+    "perItem": "Par article",
+    "fixedPrice": "Prix fixe",
+    "verified": "Vérifié",
+    "perHour": "/heure",
+    "perItemUnit": "/article",
+    "plusFees": "+ frais",
+    "viewDetails": "Voir les détails"
+  }
+}

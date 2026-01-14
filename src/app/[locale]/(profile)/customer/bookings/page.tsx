@@ -35,16 +35,9 @@ interface ConfirmationDialogState {
   title: string;
   description: string;
   confirmText: string;
-  variant:
-    | "default"
-    | "destructive"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link";
+  variant: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
-// Utility functions moved outside component to avoid re-creation
 const getActionButton = (
   booking: BookingWithDetails,
   t: (key: string, values?: Record<string, string | number>) => string
@@ -80,28 +73,25 @@ const getActionButton = (
       text: t("status.completed"),
       variant: "default" as const,
       action: "none",
-      className:
-        "bg-color-success/10 text-color-success border border-color-success/20",
+      className: "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20",
     },
     cancelled: {
       text: t("status.cancelled"),
       variant: "default" as const,
       action: "none",
-      className:
-        "bg-color-error/10 text-color-error border border-color-error/20",
+      className: "bg-red-500/10 text-red-500 border border-red-500/20",
     },
     disputed: {
       text: t("status.disputed"),
       variant: "default" as const,
       action: "none",
-      className:
-        "bg-color-warning/10 text-color-warning border border-color-warning/20",
+      className: "bg-amber-500/10 text-amber-500 border border-amber-500/20",
     },
     refunded: {
       text: t("status.refunded"),
       variant: "default" as const,
       action: "none",
-      className: "bg-color-info/10 text-color-info border border-color-info/20",
+      className: "bg-blue-500/10 text-blue-500 border border-blue-500/20",
     },
   };
 
@@ -117,6 +107,9 @@ const getTaskerName = (booking: BookingWithDetails) => {
 export default function CustomerBookingsPage() {
   const { user } = useUserStore();
   const { toast } = useToast();
+  const t = useTranslations("customerBookings");
+  const tCommon = useTranslations("common");
+
   const [activeTab, setActiveTab] = useState<TaskStatus>("all");
   const [isNavExpanded, setIsNavExpanded] = useState(false);
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
@@ -127,39 +120,27 @@ export default function CustomerBookingsPage() {
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [paginationError, setPaginationError] = useState<string | null>(null);
-  const [confirmationDialog, setConfirmationDialog] =
-    useState<ConfirmationDialogState>({
-      isOpen: false,
-      bookingId: "",
-      action: "",
-      title: "",
-      description: "",
-      confirmText: "",
-      variant: "default",
-    });
+  const [confirmationDialog, setConfirmationDialog] = useState<ConfirmationDialogState>({
+    isOpen: false,
+    bookingId: "",
+    action: "",
+    title: "",
+    description: "",
+    confirmText: "",
+    variant: "default",
+  });
 
-  const t = useTranslations("customerBookings");
-
-  // Fetch bookings with pagination
   const fetchBookings = useCallback(
     async (page: number = 0, append: boolean = false) => {
       try {
-        if (append) {
-          setIsLoadingMore(true);
-        } else {
-          setIsLoading(true);
-        }
-
-        // Clear any previous pagination errors
+        append ? setIsLoadingMore(true) : setIsLoading(true);
         setPaginationError(null);
 
         const result = await getCustomerBookings(10, page * 10, !append);
 
         if (append) {
-          // Append new bookings to existing ones
           setBookings((prev) => [...prev, ...result.bookings]);
         } else {
-          // Replace bookings for initial load or refresh
           setBookings(result.bookings);
         }
 
@@ -167,18 +148,14 @@ export default function CustomerBookingsPage() {
         setHasMore(result.hasMore);
         setTotalCount(result.total);
       } catch (error) {
-        console.error("Error fetching customer bookings:", error);
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to load bookings";
-
-        // Set pagination error for better UX
+        console.error("Error fetching bookings:", error);
+        const errorMessage = t("errors.loadFailed");
         setPaginationError(errorMessage);
 
-        // Only show toast for initial load errors, not for load more errors
         if (!append) {
           toast({
             variant: "destructive",
-            title: "Erreur",
+            title: tCommon("error"),
             description: errorMessage,
           });
           setBookings([]);
@@ -188,10 +165,9 @@ export default function CustomerBookingsPage() {
         setIsLoadingMore(false);
       }
     },
-    []
+    [t, tCommon, toast]
   );
 
-  // Use realtime hook for bookings updates
   useBookingsRealtime({
     userId: user?.id || null,
     enabled: !!user?.id,
@@ -204,30 +180,22 @@ export default function CustomerBookingsPage() {
     },
     onNewBooking: (booking) => {
       setBookings((prev) => {
-        if (prev.some((b) => b.id === booking.id)) {
-          return prev;
-        }
+        if (prev.some((b) => b.id === booking.id)) return prev;
         return [booking as BookingWithDetails, ...prev];
       });
     },
   });
 
-  // Initial data fetch
   useEffect(() => {
     fetchBookings(0);
   }, [fetchBookings]);
 
-  // Memoized filtered bookings for better performance
   const filteredBookings = useMemo(() => {
-    if (activeTab === "all") {
-      return bookings;
-    }
-    return bookings.filter((booking) => booking.status === activeTab);
+    return activeTab === "all" ? bookings : bookings.filter((b) => b.status === activeTab);
   }, [bookings, activeTab]);
 
-  // Memoized booking counts for better performance
   const bookingCounts = useMemo(() => {
-    const counts: Record<TaskStatus, number> = {
+    return {
       all: bookings.length,
       pending: bookings.filter((b) => b.status === "pending").length,
       accepted: bookings.filter((b) => b.status === "accepted").length,
@@ -236,39 +204,23 @@ export default function CustomerBookingsPage() {
       completed: bookings.filter((b) => b.status === "completed").length,
       cancelled: bookings.filter((b) => b.status === "cancelled").length,
     };
-    return counts;
   }, [bookings]);
 
   const handleActionClick = useCallback(
     (booking: BookingWithDetails) => {
       const actionButton = getActionButton(booking, t);
-
-      if (actionButton.action === "none") {
-        return;
-      }
-
-      const actionConfig = {
-        cancel: {
-          title: t("confirmations.cancel.title"),
-          description: t("confirmations.cancel.description", {
-            taskerName: getTaskerName(booking),
-          }),
-          confirmText: t("confirmations.cancel.confirmText"),
-          variant: "destructive" as const,
-        },
-      };
-
-      const config =
-        actionConfig[actionButton.action as keyof typeof actionConfig];
+      if (actionButton.action === "none") return;
 
       setConfirmationDialog({
         isOpen: true,
         bookingId: booking.id,
         action: actionButton.action,
-        title: config.title,
-        description: config.description,
-        confirmText: config.confirmText,
-        variant: config.variant,
+        title: t("confirmations.cancel.title"),
+        description: t("confirmations.cancel.description", {
+          taskerName: getTaskerName(booking),
+        }),
+        confirmText: t("confirmations.cancel.confirmText"),
+        variant: "destructive",
       });
     },
     [t]
@@ -276,92 +228,52 @@ export default function CustomerBookingsPage() {
 
   const handleConfirmAction = useCallback(async () => {
     setIsUpdating(true);
-
     try {
       if (confirmationDialog.action === "cancel") {
-        const result = await cancelCustomerBooking(
-          confirmationDialog.bookingId,
-          "Cancelled by customer"
-        );
+        const result = await cancelCustomerBooking(confirmationDialog.bookingId, "Cancelled by customer");
 
         if (result.success) {
-          // Update local state
           setBookings((prev) =>
-            prev.map((booking) =>
-              booking.id === confirmationDialog.bookingId
-                ? { ...booking, status: "cancelled" as BookingStatus }
-                : booking
-            )
+            prev.map((b) => (b.id === confirmationDialog.bookingId ? { ...b, status: "cancelled" } : b))
           );
           toast({
             variant: "success",
-            title: "Succès",
+            title: tCommon("complete"),
             description: t("success.bookingCancelled"),
           });
         } else {
-          console.error("Failed to cancel booking:", result.error);
           toast({
             variant: "destructive",
-            title: "Erreur",
+            title: tCommon("error"),
             description: result.error || t("errors.cancelFailed"),
           });
         }
       }
     } catch (error) {
-      console.error("Error cancelling booking:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: tCommon("error"),
         description: t("errors.unexpectedError"),
       });
     } finally {
       setIsUpdating(false);
       setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
     }
-  }, [confirmationDialog, t]);
+  }, [confirmationDialog, t, tCommon, toast]);
 
   const handleCloseDialog = useCallback(() => {
     setConfirmationDialog((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
-  const handleTabChange = useCallback((tab: TaskStatus) => {
-    setActiveTab(tab);
-    setIsNavExpanded(false);
-    // Reset pagination when changing tabs
-    setCurrentPage(0);
-    setHasMore(false);
-    setPaginationError(null);
-    // Note: We don't refetch here since filtering is done client-side
-    // If you want server-side filtering, you'd need to refetch here
-  }, []);
-
-  const handleNavToggle = useCallback(() => {
-    setIsNavExpanded((prev) => !prev);
-  }, []);
-
-  const handleRetryLoadMore = useCallback(() => {
-    setPaginationError(null);
-    fetchBookings(currentPage + 1, true);
-  }, [fetchBookings, currentPage]);
-
-  const handleLoadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore) {
-      fetchBookings(currentPage + 1, true);
-    }
-  }, [fetchBookings, currentPage, isLoadingMore, hasMore]);
-
-  if (isLoading) {
-    return <BookingLoadingSkeleton />;
-  }
+  if (isLoading) return <BookingLoadingSkeleton />;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       <div className="container mx-auto px-4 py-6 max-w-6xl space-y-8">
-        {/* Header with Back Button */}
         <div className="flex items-center gap-4 mb-4">
           <BackButton />
         </div>
-        {/* Navigation Tabs */}
+
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
           <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 px-8 py-6 border-b border-slate-200/50 dark:border-slate-600/50">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
@@ -370,126 +282,81 @@ export default function CustomerBookingsPage() {
               </div>
               {t("title")}
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
-              {t("description")}
-            </p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{t("description")}</p>
           </div>
           <div className="p-6">
             <BookingTabs
               activeTab={activeTab}
-              onTabChange={handleTabChange}
+              onTabChange={(tab) => {
+                setActiveTab(tab as TaskStatus);
+                setIsNavExpanded(false);
+                setCurrentPage(0);
+              }}
               bookingCounts={bookingCounts}
               isNavExpanded={isNavExpanded}
-              onNavToggle={handleNavToggle}
+              onNavToggle={() => setIsNavExpanded(!isNavExpanded)}
               filteredBookingsLength={filteredBookings.length}
             />
           </div>
         </div>
 
-        {/* Booking Cards */}
         <div className="space-y-6">
-          {filteredBookings.map((booking, index) => {
-            const actionButton = getActionButton(booking, t);
+          {filteredBookings.map((booking, index) => (
+            <div
+              key={booking.id}
+              className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.01] animate-fade-in-up"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <CustomerBookingCard
+                booking={booking}
+                onActionClick={handleActionClick}
+                isUpdating={isUpdating}
+                actionButton={getActionButton(booking, t)}
+              />
+            </div>
+          ))}
 
-            return (
-              <div
-                key={booking.id}
-                className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] animate-fade-in-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <CustomerBookingCard
-                  booking={booking}
-                  onActionClick={handleActionClick}
-                  isUpdating={isUpdating}
-                  actionButton={actionButton}
-                />
-              </div>
-            );
-          })}
-
-          {/* Loading indicator for new items */}
           {isLoadingMore && (
             <div className="flex justify-center py-8">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50">
-                <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-400">
-                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm font-medium">
-                    {t("loading.loadingMore")}
-                  </span>
-                </div>
+              <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-400">
+                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-medium">{t("loading.loadingMore")}</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Empty State */}
         {!isLoading && filteredBookings.length === 0 && (
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-fade-in-up">
+          <div className="animate-fade-in-up">
             <EmptyState activeTab={activeTab} />
           </div>
         )}
 
-        {/* Load More Section - Only show if there are bookings and more to load */}
-        {hasMore &&
-          !isLoading &&
-          bookings.length > 0 &&
-          totalCount > bookings.length && (
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-              <div className="p-8">
-                <div className="flex flex-col items-center space-y-6">
-                  {/* Error State */}
-                  {paginationError && (
-                    <div className="text-center p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl max-w-md shadow-lg">
-                      <p className="text-red-600 dark:text-red-400 text-sm mb-4 font-medium">
-                        {paginationError}
-                      </p>
-                      <button
-                        onClick={handleRetryLoadMore}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-semibold underline transition-colors"
-                      >
-                        {t("actions.tryAgain")}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Load More Button */}
-                  <button
-                    onClick={handleLoadMore}
-                    disabled={isLoadingMore}
-                    className="group relative inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-700 border-2 border-blue-600 dark:border-blue-400 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-600/20 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:scale-105"
-                    aria-label={t("actions.loadMoreBookings")}
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-3"></div>
-                        {t("loading.loadingMore")}
-                      </>
-                    ) : (
-                      <>
-                        <span>{t("actions.loadMoreBookings")}</span>
-                        <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
-                      </>
-                    )}
-                  </button>
-
-                  {/* Results Count - Only show if there are bookings */}
-                  {totalCount > 0 && (
-                    <div className="bg-slate-50 dark:bg-slate-700 rounded-xl px-4 py-2 border border-slate-200 dark:border-slate-600">
-                      <p className="text-slate-600 dark:text-slate-400 text-sm text-center font-medium">
-                        {t("results.showing", {
-                          current: bookings.length,
-                          total: totalCount,
-                        })}
-                      </p>
-                    </div>
-                  )}
-                </div>
+        {hasMore && !isLoading && bookings.length < totalCount && (
+          <div className="flex flex-col items-center py-8 space-y-4">
+            {paginationError && (
+              <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl">
+                <p className="text-red-600 text-sm mb-2">{paginationError}</p>
+                <button onClick={() => fetchBookings(currentPage + 1, true)} className="text-blue-600 text-sm font-bold underline">
+                  {t("actions.tryAgain")}
+                </button>
               </div>
-            </div>
-          )}
+            )}
+            <button
+              onClick={() => fetchBookings(currentPage + 1, true)}
+              disabled={isLoadingMore}
+              className="px-8 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {isLoadingMore ? t("loading.loadingMore") : t("actions.loadMoreBookings")}
+              {!isLoadingMore && <ArrowRight className="w-4 h-4" />}
+            </button>
+            <p className="text-xs text-slate-500">
+              {t("results.showing", { current: bookings.length, total: totalCount })}
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={confirmationDialog.isOpen}
         onClose={handleCloseDialog}

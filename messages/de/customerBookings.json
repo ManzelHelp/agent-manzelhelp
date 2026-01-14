@@ -1,0 +1,47 @@
+{
+  "customerBookings": {
+    "service": "Dienstleistung",
+    "tasker": "Tasker",
+    "locationNotSpecified": "Standort nicht angegeben",
+    "dateNotSet": "Datum nicht festgelegt",
+    "viewDetails": "Details anzeigen",
+    "title": "Meine Buchungen",
+    "description": "Verfolgen und verwalten Sie alle Ihre Servicebuchungen an einem Ort",
+    "status": {
+      "pending": "Ausstehend",
+      "accepted": "Akzeptiert",
+      "confirmed": "Bestätigt",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "disputed": "Umstritten",
+      "refunded": "Erstattet"
+    },
+    "actions": {
+      "cancelBooking": "Buchung stornieren",
+      "loadMoreBookings": "Mehr laden",
+      "tryAgain": "Erneut versuchen"
+    },
+    "confirmations": {
+      "cancel": {
+        "title": "Buchung stornieren",
+        "description": "Sind Sie sicher, dass Sie diese Buchung mit {taskerName} stornieren möchten? Dies kann nicht rückgängig gemacht werden.",
+        "confirmText": "Ja, Buchung stornieren"
+      }
+    },
+    "success": {
+      "bookingCancelled": "Buchung erfolgreich storniert"
+    },
+    "errors": {
+      "cancelFailed": "Stornierung fehlgeschlagen",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
+      "loadFailed": "Buchungen konnten nicht geladen werden"
+    },
+    "loading": {
+      "loadingMore": "Wird geladen..."
+    },
+    "results": {
+      "showing": "{current} von {total} Buchungen werden angezeigt"
+    }
+  }
+}

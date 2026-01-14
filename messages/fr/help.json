@@ -1,0 +1,104 @@
+{
+  "help": {
+    "hero": {
+      "title": "Centre d'aide",
+      "description": "Trouvez des réponses à vos questions et obtenez le support dont vous avez besoin.",
+      "searchPlaceholder": "Rechercher de l'aide..."
+    },
+    "contact": {
+      "title": "Contactez-nous",
+      "whatsapp": {
+        "title": "Chat en direct WhatsApp",
+        "description": "Contactez-nous directement via WhatsApp",
+        "action": "Ouvrir WhatsApp",
+        "available": "Disponible 24/7"
+      },
+      "email": {
+        "title": "Support par Email",
+        "description": "Envoyez-nous un message détaillé",
+        "action": "Envoyer un Email",
+        "available": "Réponse sous 24 heures"
+      }
+    },
+    "faq": {
+      "title": "Questions Fréquemment Posées",
+      "noResults": "Aucun résultat trouvé pour \"{query}\"",
+      "categories": {
+        "gettingStarted": {
+          "title": "Pour commencer",
+          "questions": {
+            "createAccount": {
+              "question": "Comment créer un compte ?",
+              "answer": "Cliquez sur le bouton 'S'inscrire' en haut à droite, remplissez vos informations et vérifiez votre adresse e-mail."
+            },
+            "helperVsCustomer": {
+              "question": "Quelle est la différence entre un Assistant et un Client ?",
+              "answer": "Les Assistants offrent des services à d'autres, tandis que les Clients réservent des services. Vous pouvez être les deux sur le même compte."
+            },
+            "completeProfile": {
+              "question": "Comment compléter mon profil ?",
+              "answer": "Allez sur votre page de profil et ajoutez vos compétences, votre expérience, vos photos et votre disponibilité pour attirer plus de clients."
+            }
+          }
+        },
+        "payments": {
+          "title": "Paiements et Facturation",
+          "questions": {
+            "howPaymentsWork": {
+              "question": "Comment fonctionnent les paiements ?",
+              "answer": "Les paiements sont traités en toute sécurité via notre plateforme. Les clients paient à l'avance et les assistants reçoivent le paiement après la fin du service."
+            },
+            "paymentMethods": {
+              "question": "Quels modes de paiement acceptez-vous ?",
+              "answer": "Nous acceptons toutes les principales cartes de crédit, PayPal et les virements bancaires dans les régions prises en charge."
+            },
+            "whenGetPaid": {
+              "question": "Quand suis-je payé ?",
+              "answer": "Les assistants reçoivent le paiement dans les 2-3 jours ouvrables après que le client ait confirmé la fin du service."
+            }
+          }
+        },
+        "safety": {
+          "title": "Sécurité et Protection",
+          "questions": {
+            "verifyHelpers": {
+              "question": "Comment vérifiez-vous les Assistants ?",
+              "answer": "Tous les Assistants subissent des vérifications d'antécédents, une vérification d'identité et des évaluations de compétences avant de rejoindre notre plateforme."
+            },
+            "notSatisfied": {
+              "question": "Que faire si je ne suis pas satisfait d'un service ?",
+              "answer": "Contactez notre équipe de support dans les 24 heures. Nous travaillerons avec vous pour résoudre le problème ou fournir un remboursement."
+            },
+            "personalInfoSafe": {
+              "question": "Mes informations personnelles sont-elles sûres ?",
+              "answer": "Oui, nous utilisons un cryptage de niveau industriel et des mesures de sécurité pour protéger vos données. Lisez notre Politique de Confidentialité pour plus de détails."
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "title": "Ressources Supplémentaires",
+      "userGuide": {
+        "title": "Guide Utilisateur",
+        "description": "Guide complet pour utiliser ManzelHelp",
+        "action": "Lire le Guide"
+      },
+      "communityForum": {
+        "title": "Forum Communautaire",
+        "description": "Connectez-vous avec d'autres utilisateurs",
+        "action": "Rejoindre le Forum"
+      },
+      "safetyTips": {
+        "title": "Conseils de Sécurité",
+        "description": "Restez en sécurité lors de l'utilisation de notre plateforme",
+        "action": "En savoir plus"
+      },
+      "videoTutorials": {
+        "title": "Tutoriels Vidéo",
+        "description": "Regardez des tutoriels étape par étape",
+        "action": "Regarder Maintenant"
+      }
+    }
+  }
+}

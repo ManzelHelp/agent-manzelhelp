@@ -1,0 +1,16 @@
+{
+  "taskerBookingTabs": {
+    "myBookings": {
+      "label": "Mes réservations",
+      "description": "Réservations pour vos services"
+    },
+    "bookedTaskers": {
+      "label": "Tâcherons réservés",
+      "description": "Services que vous avez réservés"
+    },
+    "myApplications": {
+      "label": "Mes candidatures",
+      "description": "Emplois auxquels vous avez postulé"
+    }
+  }
+}

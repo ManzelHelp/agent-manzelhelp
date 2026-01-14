@@ -1,0 +1,42 @@
+{
+  "jobDetails": {
+    "jobDetails": "Détails de l'Emploi",
+    "manageJobPost": "Gérez votre offre d'emploi",
+    "jobStatus": "Statut de l'Emploi",
+    "completed": "Terminé",
+    "postedOn": "Publié le {date}",
+    "description": "Description",
+    "preferredDate": "Date Prévue",
+    "preferredTime": "Heure Prévue",
+    "location": "Localisation",
+    "locationNotSpecified": "Localisation non spécifiée",
+    "customerInformation": "Informations Client",
+    "jobPostedByCustomer": "Emploi publié par ce client",
+    "jobProgress": "Progression de l'Emploi",
+    "currentStatus": "Statut Actuel",
+    "startedAt": "Démarré Le",
+    "completedAt": "Terminé Le",
+    "noDescription": "Aucune description disponible",
+    "requirements": "Exigences",
+    "flexibleTiming": "Horaires flexibles",
+    "openToScheduleAdjustments": "Ouvert aux ajustements d'horaire",
+    "actions": {
+      "startJob": "Démarrer l'Emploi",
+      "completeJob": "Terminer l'Emploi",
+      "jobStarted": "Emploi démarré avec succès",
+      "jobCompleted": "Emploi Terminé",
+      "waitingConfirmation": "En attente de confirmation du client",
+      "jobConfirmed": "Emploi Confirmé",
+      "customerConfirmed": "Confirmé par le client le {date}"
+    },
+    "status": {
+      "active": "Ouvert",
+      "underReview": "En Révision",
+      "assigned": "Assigné",
+      "inProgress": "En Cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé",
+      "unknown": "Inconnu"
+    }
+  }
+}

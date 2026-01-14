@@ -1,0 +1,29 @@
+{
+  "messages": {
+    "messages": "Messages",
+    "manageCommunications": "Gérez vos communications avec les clients",
+    "inbox": "Boîte de réception",
+    "unreadMessages": "{count} message non lu",
+    "unreadMessagesPlural": "{count} messages non lus",
+    "all": "tous",
+    "unread": "non lu",
+    "read": "lu",
+    "searchPlaceholder": "Rechercher des messages...",
+    "loadingMessages": "Chargement des messages...",
+    "pleaseWait": "Veuillez patienter pendant que nous récupérons vos conversations",
+    "errorLoadingMessages": "Erreur lors du chargement des messages",
+    "tryAgain": "Réessayer",
+    "noMessagesFound": "Aucun message trouvé",
+    "tryAdjustingSearch": "Essayez d'ajuster vos termes de recherche",
+    "noUnreadMessages": "Vous n'avez pas de messages non lus",
+    "noReadMessages": "Vous n'avez pas de messages lus",
+    "emptyInbox": "Votre boîte de réception est vide",
+    "refresh": "Actualiser",
+    "refreshing": "Actualisation...",
+    "justNow": "À l'instant",
+    "hoursAgo": "Il y a {count} {count, plural, one {heure} other {heures}}",
+    "daysAgo": "Il y a {count} {count, plural, one {jour} other {jours}}",
+    "unknown": "Inconnu",
+    "conversationsCount": "{count, plural, one {# conversation} other {# conversations}}"
+  }
+}

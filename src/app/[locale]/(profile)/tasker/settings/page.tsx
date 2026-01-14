@@ -31,6 +31,7 @@ import { useTheme } from "next-themes";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
+  const tToast = useTranslations("toasts");
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -180,24 +181,24 @@ export default function SettingsPage() {
       if (!result.success) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: result.error || "Failed to save preferences",
+          title: tToast("error"),
+          description: result.error || tToast("failedToSavePreferences"),
         });
         // Revert on error
         setNotifications((prev) => ({ ...prev, [key]: !newValue }));
       } else {
         toast({
           variant: "success",
-          title: "Succès",
-          description: "Preferences saved successfully",
+          title: tToast("success"),
+          description: tToast("preferencesSaved"),
         });
       }
     } catch (error) {
       console.error("Error saving preferences:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Failed to save preferences",
+        title: tToast("error"),
+        description: tToast("failedToSavePreferences"),
       });
       // Revert on error
       setNotifications((prev) => ({ ...prev, [key]: !newValue }));
@@ -217,18 +218,18 @@ export default function SettingsPage() {
     if (/\d/.test(password)) strength++;
     if (/[^a-zA-Z\d]/.test(password)) strength++;
     
-    if (strength <= 2) return { strength, label: "Faible", color: "text-red-500" };
-    if (strength <= 3) return { strength, label: "Moyen", color: "text-orange-500" };
-    if (strength <= 4) return { strength, label: "Fort", color: "text-green-500" };
-    return { strength, label: "Très fort", color: "text-green-600" };
+    if (strength <= 2) return { strength, label: t("changePasswordDialog.weak"), color: "text-red-500" };
+    if (strength <= 3) return { strength, label: t("changePasswordDialog.medium"), color: "text-orange-500" };
+    if (strength <= 4) return { strength, label: t("changePasswordDialog.strong"), color: "text-green-500" };
+    return { strength, label: t("changePasswordDialog.veryStrong"), color: "text-green-600" };
   };
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs",
+        title: tToast("error"),
+        description: tToast("pleaseFillAllFieldsRequired"),
       });
       return;
     }
@@ -240,8 +241,8 @@ export default function SettingsPage() {
       if (!verifyResult.success) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: verifyResult.errorMessage || "Mot de passe actuel incorrect",
+          title: tToast("error"),
+          description: verifyResult.errorMessage || tToast("emailNotFound"),
         });
         setChangingPassword(false);
         return;
@@ -250,8 +251,8 @@ export default function SettingsPage() {
       if (newPassword.length < 6) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Le mot de passe doit contenir au moins 6 caractères",
+          title: tToast("error"),
+          description: tToast("passwordMinLength"),
         });
         setChangingPassword(false);
         return;
@@ -260,8 +261,8 @@ export default function SettingsPage() {
       if (newPassword !== confirmPassword) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Les mots de passe ne correspondent pas",
+          title: tToast("error"),
+          description: tToast("passwordsDoNotMatch"),
         });
         setChangingPassword(false);
         return;
@@ -271,8 +272,8 @@ export default function SettingsPage() {
       if (result.success) {
         toast({
           variant: "success",
-          title: "Succès",
-          description: "Mot de passe mis à jour avec succès",
+          title: tToast("success"),
+          description: tToast("passwordUpdated"),
         });
         setChangePasswordOpen(false);
         setCurrentPassword("");
@@ -281,16 +282,16 @@ export default function SettingsPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: result.errorMessage || "Échec de la mise à jour du mot de passe",
+          title: tToast("error"),
+          description: result.errorMessage || tToast("failedToUpdatePassword"),
         });
       }
     } catch (error) {
       console.error("Error changing password:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Échec de la mise à jour du mot de passe",
+        title: tToast("error"),
+        description: tToast("failedToUpdatePassword"),
       });
     } finally {
       setChangingPassword(false);
@@ -301,8 +302,8 @@ export default function SettingsPage() {
     if (!user?.email) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Email non trouvé",
+        title: tToast("error"),
+        description: tToast("emailNotFound"),
       });
       return;
     }
@@ -312,22 +313,22 @@ export default function SettingsPage() {
       if (result.errorMessage) {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: tToast("error"),
           description: result.errorMessage,
         });
       } else {
         toast({
           variant: "success",
-          title: "Email envoyé",
-          description: "Un email de réinitialisation a été envoyé à votre adresse",
+          title: tToast("emailSent"),
+          description: tToast("resetEmailSent"),
         });
       }
     } catch (error) {
       console.error("Error sending reset email:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Échec de l'envoi de l'email",
+        title: tToast("error"),
+        description: tToast("failedToUpdateEmail"),
       });
     }
   };
@@ -336,8 +337,8 @@ export default function SettingsPage() {
     if (!newEmail || !emailCurrentPassword) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs",
+        title: tToast("error"),
+        description: tToast("pleaseFillAllFieldsRequired"),
       });
       return;
     }
@@ -346,8 +347,8 @@ export default function SettingsPage() {
     if (!emailRegex.test(newEmail)) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email valide",
+        title: tToast("error"),
+        description: tToast("pleaseEnterValidEmail"),
       });
       return;
     }
@@ -358,8 +359,8 @@ export default function SettingsPage() {
       if (result.success) {
         toast({
           variant: "success",
-          title: "Email de vérification envoyé",
-          description: "Veuillez vérifier votre nouvelle adresse e-mail. Un email de confirmation a été envoyé à " + newEmail,
+          title: tToast("verificationEmailSent"),
+          description: tToast("checkNewEmail", { email: newEmail }),
         });
         setChangeEmailOpen(false);
         setNewEmail("");
@@ -372,16 +373,16 @@ export default function SettingsPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: result.errorMessage || "Échec de la mise à jour de l'email",
+          title: tToast("error"),
+          description: result.errorMessage || tToast("failedToUpdateEmail"),
         });
       }
     } catch (error) {
       console.error("Error changing email:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Échec de la mise à jour de l'email",
+        title: tToast("error"),
+        description: tToast("failedToUpdateEmail"),
       });
     } finally {
       setChangingEmail(false);
@@ -404,14 +405,14 @@ export default function SettingsPage() {
       localStorage.setItem("theme", value);
       toast({
         variant: "success",
-        title: "Succès",
-        description: "Thème mis à jour avec succès",
+        title: tToast("success"),
+        description: tToast("themeUpdated"),
       });
     } else {
       toast({
         variant: "success",
-        title: "Succès",
-        description: "Preference saved successfully",
+        title: tToast("success"),
+        description: tToast("preferencesSaved"),
       });
     }
   };
@@ -790,9 +791,9 @@ export default function SettingsPage() {
                           value={preferences.theme}
                           onChange={(e) => handlePreferenceChange("theme", e.target.value)}
                         >
-                          <option value="system" className="dark:bg-slate-800 dark:text-slate-100">Système</option>
-                          <option value="light" className="dark:bg-slate-800 dark:text-slate-100">Clair</option>
-                          <option value="dark" className="dark:bg-slate-800 dark:text-slate-100">Sombre</option>
+                          <option value="system" className="dark:bg-slate-800 dark:text-slate-100">{t("themeSystem", { default: "System" })}</option>
+                          <option value="light" className="dark:bg-slate-800 dark:text-slate-100">{t("themeLight", { default: "Light" })}</option>
+                          <option value="dark" className="dark:bg-slate-800 dark:text-slate-100">{t("themeDark", { default: "Dark" })}</option>
                         </select>
                       </div>
                     </div>
@@ -810,23 +811,23 @@ export default function SettingsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-color-text-primary">
               <Lock className="h-5 w-5" />
-              Changer le mot de passe
+              {t("changePasswordDialog.title")}
             </DialogTitle>
             <DialogDescription className="text-color-text-secondary">
-              Entrez votre mot de passe actuel et votre nouveau mot de passe
+              {t("changePasswordDialog.description")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {/* Current Password */}
             <div className="space-y-2">
-              <Label htmlFor="currentPassword" className="text-color-text-primary">Mot de passe actuel *</Label>
+              <Label htmlFor="currentPassword" className="text-color-text-primary">{t("changePasswordDialog.currentPassword")}</Label>
               <div className="relative">
                 <Input
                   id="currentPassword"
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Entrez votre mot de passe actuel"
+                  placeholder={t("changePasswordDialog.currentPasswordPlaceholder")}
                   className="pr-10 bg-color-surface text-color-text-primary border-color-border"
                 />
                 <button
@@ -845,14 +846,14 @@ export default function SettingsPage() {
 
             {/* New Password */}
             <div className="space-y-2">
-              <Label htmlFor="newPassword" className="text-color-text-primary">Nouveau mot de passe *</Label>
+              <Label htmlFor="newPassword" className="text-color-text-primary">{t("changePasswordDialog.newPassword")}</Label>
               <div className="relative">
                 <Input
                   id="newPassword"
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Entrez votre nouveau mot de passe"
+                  placeholder={t("changePasswordDialog.newPasswordPlaceholder")}
                   className="pr-10 bg-color-surface text-color-text-primary border-color-border"
                 />
                 <button
@@ -872,7 +873,7 @@ export default function SettingsPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs">
                     <span className={getPasswordStrength(newPassword).color}>
-                      Force: {getPasswordStrength(newPassword).label}
+                      {t("changePasswordDialog.passwordStrength")}: {getPasswordStrength(newPassword).label}
                     </span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((level) => (
@@ -897,14 +898,14 @@ export default function SettingsPage() {
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-color-text-primary">Confirmation du nouveau mot de passe *</Label>
+              <Label htmlFor="confirmPassword" className="text-color-text-primary">{t("changePasswordDialog.confirmPassword")}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirmez votre nouveau mot de passe"
+                  placeholder={t("changePasswordDialog.confirmPasswordPlaceholder")}
                   className="pr-10 bg-color-surface text-color-text-primary border-color-border"
                 />
                 <button
@@ -920,7 +921,7 @@ export default function SettingsPage() {
                 </button>
               </div>
               {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-red-500">Les mots de passe ne correspondent pas</p>
+                <p className="text-xs text-red-500">{t("changePasswordDialog.passwordsDoNotMatch")}</p>
               )}
             </div>
 
@@ -932,7 +933,7 @@ export default function SettingsPage() {
                 className="text-sm text-color-primary hover:underline flex items-center gap-1"
               >
                 <LinkIcon className="h-3 w-3" />
-                Mot de passe oublié ?
+                {t("changePasswordDialog.forgotPassword")}
               </button>
             </div>
           </div>
@@ -947,13 +948,13 @@ export default function SettingsPage() {
               }}
               className="border-color-border"
             >
-              Annuler
+              {t("changePasswordDialog.cancel")}
             </Button>
             <Button
               onClick={handleChangePassword}
               disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
             >
-              {changingPassword ? "Changement..." : "Changer le mot de passe"}
+              {changingPassword ? t("changePasswordDialog.changing") : t("changePasswordDialog.change")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -977,17 +978,17 @@ export default function SettingsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-color-text-primary">
               <Mail className="h-5 w-5" />
-              Changer l'adresse e-mail
+              {t("changeEmailDialog.title")}
             </DialogTitle>
             <DialogDescription className="text-color-text-secondary">
-              Entrez votre nouvelle adresse e-mail et votre mot de passe actuel pour confirmer
+              {t("changeEmailDialog.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             {/* Current Email (read-only) */}
             <div className="space-y-2">
-              <Label htmlFor="currentEmail" className="text-color-text-primary">Adresse e-mail actuelle</Label>
+              <Label htmlFor="currentEmail" className="text-color-text-primary">{t("changeEmailDialog.currentEmail")}</Label>
               <Input
                 id="currentEmail"
                 type="email"
@@ -999,7 +1000,7 @@ export default function SettingsPage() {
 
             {/* New Email */}
             <div className="space-y-2">
-              <Label htmlFor="newEmail" className="text-color-text-primary">Nouvelle adresse e-mail *</Label>
+              <Label htmlFor="newEmail" className="text-color-text-primary">{t("changeEmailDialog.newEmail")}</Label>
               <Input
                 key={`new-email-input-${emailDialogKey}`}
                 id={`newEmail-${emailDialogKey}`}
@@ -1007,7 +1008,7 @@ export default function SettingsPage() {
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="Entrez votre nouvelle adresse e-mail"
+                placeholder={t("changeEmailDialog.newEmailPlaceholder")}
                 autoComplete="off"
                 autoFocus
                 className="bg-color-surface text-color-text-primary border-color-border"
@@ -1016,7 +1017,7 @@ export default function SettingsPage() {
 
             {/* Current Password */}
             <div className="space-y-2">
-              <Label htmlFor="emailCurrentPassword" className="text-color-text-primary">Mot de passe actuel *</Label>
+              <Label htmlFor="emailCurrentPassword" className="text-color-text-primary">{t("changeEmailDialog.currentPassword")}</Label>
               <div className="relative">
                 <Input
                   key={`email-password-input-${emailDialogKey}`}
@@ -1025,7 +1026,7 @@ export default function SettingsPage() {
                   type={showEmailPassword ? "text" : "password"}
                   value={emailCurrentPassword}
                   onChange={(e) => setEmailCurrentPassword(e.target.value)}
-                  placeholder="Entrez votre mot de passe actuel"
+                  placeholder={t("changeEmailDialog.currentPasswordPlaceholder")}
                   className="pr-10 bg-color-surface text-color-text-primary border-color-border"
                   autoComplete="off"
                 />
@@ -1042,15 +1043,14 @@ export default function SettingsPage() {
                 </button>
               </div>
               <p className="text-xs text-color-text-secondary">
-                Votre mot de passe actuel est requis pour confirmer le changement
+                {t("changeEmailDialog.passwordRequired")}
               </p>
             </div>
 
             {/* Info Message */}
             <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <p className="text-sm text-blue-900 dark:text-blue-200">
-                <strong>Note importante :</strong> Un email de vérification sera envoyé à votre nouvelle adresse. 
-                L'email ne sera modifié qu'après confirmation via le lien dans l'email.
+                <strong>{t("changeEmailDialog.importantNote")}</strong> {t("changeEmailDialog.verificationEmailNote")}
               </p>
             </div>
           </div>
@@ -1067,13 +1067,13 @@ export default function SettingsPage() {
               }}
               className="border-color-border"
             >
-              Annuler
+              {t("changeEmailDialog.cancel")}
             </Button>
             <Button
               onClick={handleChangeEmail}
               disabled={changingEmail || !newEmail || !emailCurrentPassword}
             >
-              {changingEmail ? "Envoi..." : "Changer l'email"}
+              {changingEmail ? t("changeEmailDialog.changing") : t("changeEmailDialog.change")}
             </Button>
           </DialogFooter>
         </DialogContent>

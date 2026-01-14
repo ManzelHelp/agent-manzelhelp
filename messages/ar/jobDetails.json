@@ -1,0 +1,55 @@
+{
+  "jobDetails": {
+    "estimatedDuration": "المدة التقديرية",
+    "category": "الفئة",
+    "applicationsLimit": "عدد الطلبات",
+    "lastUpdated": "آخر تحديث",
+    "assignedTasker": "المساعد المكلف",
+    "assignedToThisJob": "مكلف بهذه الوظيفة",
+    "confirmation": {
+      "jobConfirmed": "تم تأكيد الوظيفة",
+      "jobConfirmedDescription": "لقد قمت بتأكيد إتمام هذه الوظيفة بنجاح.",
+      "confirmedOn": "تم التأكيد في {date}",
+      "reviewAlreadyLeft": "✓ لقد قمت بترك تقييم لهذه الوظيفة"
+    },
+    "jobDetails": "تفاصيل الوظيفة",
+    "manageJobPost": "إدارة إعلان الوظيفة",
+    "jobStatus": "حالة الوظيفة",
+    "completed": "مكتملة",
+    "postedOn": "تم النشر في {date}",
+    "description": "الوصف",
+    "preferredDate": "التاريخ المفضل",
+    "preferredTime": "الوقت المفضل",
+    "location": "الموقع",
+    "locationNotSpecified": "الموقع غير محدد",
+    "customerInformation": "معلومات العميل",
+    "jobPostedByCustomer": "تم نشر هذه الوظيفة من قبل العميل",
+    "jobProgress": "تقدم الوظيفة",
+    "currentStatus": "الحالة الحالية",
+    "startedAt": "بدأت في",
+    "completedAt": "اكتملت في",
+    "noDescription": "لا يوجد وصف متاح",
+    "requirements": "المتطلبات",
+    "flexibleTiming": "توقيت مرن",
+    "openToScheduleAdjustments": "منفتح على تعديل المواعيد",
+    "actions": {
+      "startJob": "بدء العمل",
+      "completeJob": "إكمال العمل",
+      "jobStarted": "تم بدء العمل بنجاح",
+      "jobCompleted": "تم إكمال العمل",
+      "waitingConfirmation": "في انتظار تأكيد العميل",
+      "jobConfirmed": "تم تأكيد العمل",
+      "customerConfirmed": "تم تأكيد العميل في {date}"
+    },
+    "status": {
+      "active": "مفتوحة",
+      "under_review": "قيد المراجعة",
+      "assigned": "مُكلف بها",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "unknown": "غير معروفة"
+    }
+    
+  }
+}

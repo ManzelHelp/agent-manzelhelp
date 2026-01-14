@@ -1,0 +1,29 @@
+{
+  "messages": {
+    "justNow": "الآن",
+    "messages": "الرسائل",
+    "manageCommunications": "إدارة اتصالاتك مع العملاء",
+    "inbox": "صندوق الوارد",
+    "unreadMessages": "{count} رسالة غير مقروءة",
+    "unreadMessagesPlural": "{count} رسائل غير مقروءة",
+    "all": "الكل",
+    "unread": "غير مقروء",
+    "read": "مقروء",
+    "searchPlaceholder": "البحث في الرسائل...",
+    "loadingMessages": "جاري تحميل الرسائل...",
+    "pleaseWait": "يرجى الانتظار بينما نسترد محادثاتك",
+    "errorLoadingMessages": "خطأ في تحميل الرسائل",
+    "tryAgain": "حاول مرة أخرى",
+    "noMessagesFound": "لم يتم العثور على رسائل",
+    "tryAdjustingSearch": "حاول تعديل مصطلحات البحث",
+    "noUnreadMessages": "ليس لديك رسائل غير مقروءة",
+    "noReadMessages": "ليس لديك رسائل مقروءة",
+    "emptyInbox": "صندوق الوارد الخاص بك فارغ",
+    "refresh": "تحديث",
+    "refreshing": "جاري التحديث...",
+    "hoursAgo": "منذ {count} ساعة",
+    "daysAgo": "منذ {count} يوم",
+    "unknown": "غير معروف",
+    "conversationsCount": "{count, plural, one {محادثة واحدة} other {# محادثات}}"
+  }
+}

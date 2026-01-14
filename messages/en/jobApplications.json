@@ -1,0 +1,41 @@
+{
+  "jobApplications": {
+    "title": "Job Applications",
+    "description": "Track your job applications and their status",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
+    },
+    "jobStatus": {
+      "under_review": "Under Review",
+      "active": "Active",
+      "assigned": "Assigned",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "disputed": "Disputed",
+      "draft": "Draft",
+      "open": "Open"
+    },
+    "labels": {
+      "jobPoster": "Job Poster",
+      "proposedPrice": "Proposed Price",
+      "estimatedDuration": "Estimated Duration",
+      "preferredDate": "Preferred Date",
+      "customerBudget": "Customer Budget",
+      "message": "Message",
+      "appliedOn": "Applied on",
+      "flexible": "Flexible",
+      "notSpecified": "Not specified",
+      "jobCompletedMessage": "This job has been completed. Your application is no longer relevant.",
+      "jobCancelledMessage": "This job has been cancelled. Your application is no longer relevant."
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "withdrawApplication": "Withdraw Application",
+      "contactCustomer": "Contact Customer"
+    }
+  }
+}

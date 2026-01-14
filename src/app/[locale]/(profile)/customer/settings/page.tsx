@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Shield, Bell, Palette, Mail, CheckCircle, Eye, EyeOff, Lock, Link as LinkIcon, Moon, Sun } from "lucide-react";
+import { Shield, Bell, Palette, Mail, CheckCircle, Eye, EyeOff, Lock, Link as LinkIcon, ChevronRight, Settings, User, AlertTriangle, Moon, Sun } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { updateNotificationPreferences } from "@/actions/profile";
@@ -30,7 +30,8 @@ import { useLocale } from "next-intl";
 import { useTheme } from "next-themes";
 
 export default function SettingsPage() {
-  const t = useTranslations("profile");
+  const t = useTranslations("settings");
+  const tToast = useTranslations("toasts");
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -180,24 +181,24 @@ export default function SettingsPage() {
       if (!result.success) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: result.error || "Failed to save preferences",
+          title: tToast("error"),
+          description: result.error || tToast("failedToSavePreferences"),
         });
         // Revert on error
         setNotifications((prev) => ({ ...prev, [key]: !newValue }));
       } else {
         toast({
           variant: "success",
-          title: "Succès",
-          description: "Preferences saved successfully",
+          title: tToast("success"),
+          description: tToast("preferencesSaved"),
         });
       }
     } catch (error) {
       console.error("Error saving preferences:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Failed to save preferences",
+        title: tToast("error"),
+        description: tToast("failedToSavePreferences"),
       });
       // Revert on error
       setNotifications((prev) => ({ ...prev, [key]: !newValue }));
@@ -217,18 +218,18 @@ export default function SettingsPage() {
     if (/\d/.test(password)) strength++;
     if (/[^a-zA-Z\d]/.test(password)) strength++;
     
-    if (strength <= 2) return { strength, label: "Faible", color: "text-red-500" };
-    if (strength <= 3) return { strength, label: "Moyen", color: "text-orange-500" };
-    if (strength <= 4) return { strength, label: "Fort", color: "text-green-500" };
-    return { strength, label: "Très fort", color: "text-green-600" };
+    if (strength <= 2) return { strength, label: t("changePasswordDialog.weak"), color: "text-red-500" };
+    if (strength <= 3) return { strength, label: t("changePasswordDialog.medium"), color: "text-orange-500" };
+    if (strength <= 4) return { strength, label: t("changePasswordDialog.strong"), color: "text-green-500" };
+    return { strength, label: t("changePasswordDialog.veryStrong"), color: "text-green-600" };
   };
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs",
+        title: tToast("error"),
+        description: tToast("pleaseFillAllFieldsRequired"),
       });
       return;
     }
@@ -240,8 +241,8 @@ export default function SettingsPage() {
       if (!verifyResult.success) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: verifyResult.errorMessage || "Mot de passe actuel incorrect",
+          title: tToast("error"),
+          description: verifyResult.errorMessage || tToast("emailNotFound"),
         });
         setChangingPassword(false);
         return;
@@ -250,8 +251,8 @@ export default function SettingsPage() {
       if (newPassword.length < 6) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Le mot de passe doit contenir au moins 6 caractères",
+          title: tToast("error"),
+          description: tToast("passwordMinLength"),
         });
         setChangingPassword(false);
         return;
@@ -260,8 +261,8 @@ export default function SettingsPage() {
       if (newPassword !== confirmPassword) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Les mots de passe ne correspondent pas",
+          title: tToast("error"),
+          description: tToast("passwordsDoNotMatch"),
         });
         setChangingPassword(false);
         return;
@@ -271,8 +272,8 @@ export default function SettingsPage() {
       if (result.success) {
         toast({
           variant: "success",
-          title: "Succès",
-          description: "Mot de passe mis à jour avec succès",
+          title: tToast("success"),
+          description: tToast("passwordUpdated"),
         });
         setChangePasswordOpen(false);
         setCurrentPassword("");
@@ -281,16 +282,16 @@ export default function SettingsPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: result.errorMessage || "Échec de la mise à jour du mot de passe",
+          title: tToast("error"),
+          description: result.errorMessage || tToast("failedToUpdatePassword"),
         });
       }
     } catch (error) {
       console.error("Error changing password:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Échec de la mise à jour du mot de passe",
+        title: tToast("error"),
+        description: tToast("failedToUpdatePassword"),
       });
     } finally {
       setChangingPassword(false);
@@ -301,8 +302,8 @@ export default function SettingsPage() {
     if (!user?.email) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Email non trouvé",
+        title: tToast("error"),
+        description: tToast("emailNotFound"),
       });
       return;
     }
@@ -312,22 +313,22 @@ export default function SettingsPage() {
       if (result.errorMessage) {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: tToast("error"),
           description: result.errorMessage,
         });
       } else {
         toast({
           variant: "success",
-          title: "Email envoyé",
-          description: "Un email de réinitialisation a été envoyé à votre adresse",
+          title: tToast("emailSent"),
+          description: tToast("resetEmailSent"),
         });
       }
     } catch (error) {
       console.error("Error sending reset email:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Échec de l'envoi de l'email",
+        title: tToast("error"),
+        description: tToast("failedToUpdateEmail"),
       });
     }
   };
@@ -336,8 +337,8 @@ export default function SettingsPage() {
     if (!newEmail || !emailCurrentPassword) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs",
+        title: tToast("error"),
+        description: tToast("pleaseFillAllFieldsRequired"),
       });
       return;
     }
@@ -346,8 +347,8 @@ export default function SettingsPage() {
     if (!emailRegex.test(newEmail)) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email valide",
+        title: tToast("error"),
+        description: tToast("pleaseEnterValidEmail"),
       });
       return;
     }
@@ -358,8 +359,8 @@ export default function SettingsPage() {
       if (result.success) {
         toast({
           variant: "success",
-          title: "Email de vérification envoyé",
-          description: "Veuillez vérifier votre nouvelle adresse e-mail. Un email de confirmation a été envoyé à " + newEmail,
+          title: tToast("verificationEmailSent"),
+          description: tToast("checkNewEmail", { email: newEmail }),
         });
         setChangeEmailOpen(false);
         setNewEmail("");
@@ -372,16 +373,16 @@ export default function SettingsPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: result.errorMessage || "Échec de la mise à jour de l'email",
+          title: tToast("error"),
+          description: result.errorMessage || tToast("failedToUpdateEmail"),
         });
       }
     } catch (error) {
       console.error("Error changing email:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Échec de la mise à jour de l'email",
+        title: tToast("error"),
+        description: tToast("failedToUpdateEmail"),
       });
     } finally {
       setChangingEmail(false);
@@ -404,315 +405,435 @@ export default function SettingsPage() {
       localStorage.setItem("theme", value);
       toast({
         variant: "success",
-        title: "Succès",
-        description: "Thème mis à jour avec succès",
+        title: tToast("success"),
+        description: tToast("themeUpdated"),
       });
     } else {
       toast({
         variant: "success",
-        title: "Succès",
-        description: "Preference saved successfully",
+        title: tToast("success"),
+        description: tToast("preferencesSaved"),
       });
     }
   };
 
   const sections = [
-    { id: "security", title: t("sections.security.title") },
-    { id: "notifications", title: t("sections.notifications.title") },
-    { id: "preferences", title: t("sections.preferences.title") },
+    {
+      id: "security",
+      title: t("securityAndPrivacy"),
+      icon: Shield,
+      description: t("manageAccountSecurity"),
+    },
+    {
+      id: "notifications",
+      title: t("notifications"),
+      icon: Bell,
+      description: t("chooseNotifications"),
+    },
+    {
+      id: "preferences",
+      title: t("preferences", { default: "Preferences" }),
+      icon: Palette,
+      description: t("managePreferences", { default: "Manage your preferences" }),
+    },
   ];
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
-      {/* Header with Back Button */}
-      <div className="flex items-center gap-4 mb-4">
-        <BackButton />
-      </div>
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar Navigation */}
-        <aside className="lg:w-1/4">
-          <nav className="space-y-1">
-            {sections.map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={`w-full flex items-center gap-3 px-6 py-3 text-left text-sm font-medium transition-colors hover:bg-accent rounded-lg ${
-                  activeSection === section.id
-                    ? "bg-primary/10 text-primary border-r-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {section.title}
-              </button>
-            ))}
-          </nav>
-        </aside>
-        {/* Main Content */}
-        <main className="flex-1 space-y-6">
-          {/* Security Section */}
-          {activeSection === "security" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  {t("sections.security.title")}
-                </CardTitle>
-                <CardDescription>{t("sections.security.description")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Sign-in Methods */}
-                <div className="space-y-4">
-                  <h3 className="font-medium">{t("security.signInMethods")}</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">
-                            {t("security.emailPassword")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {user?.email || "user@email.com"}
-                          </p>
+    <div className="min-h-screen bg-gradient-to-br from-color-bg to-color-surface">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-4">
+          <BackButton />
+        </div>
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-color-primary/10 rounded-lg">
+              <Settings className="h-6 w-6 text-color-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-color-text-primary">
+                {t("settings", { default: "Settings" })}
+              </h1>
+              <p className="text-color-text-secondary mt-1">
+                {t("manageAccountPreferences", { default: "Manage your account preferences and security" })}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Mobile Navigation - Horizontal Scroll */}
+          <div className="lg:hidden">
+            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
+              {sections.map((section) => {
+                const Icon = section.icon;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 touch-target ${
+                      activeSection === section.id
+                        ? "border-color-primary bg-color-primary/5 text-color-primary shadow-lg"
+                        : "border-color-border bg-color-surface text-color-text-secondary hover:border-color-primary/50 hover:text-color-text-primary"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="text-sm font-medium whitespace-nowrap">
+                      {section.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block lg:col-span-1">
+            <nav className="space-y-2 sticky top-6">
+              {sections.map((section) => {
+                const Icon = section.icon;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl transition-all duration-200 group ${
+                      activeSection === section.id
+                        ? "bg-color-primary text-color-surface shadow-lg"
+                        : "text-color-text-secondary hover:bg-color-accent/50 hover:text-color-text-primary"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <div className="flex-1 text-left">
+                      <div className="font-medium">{section.title}</div>
+                      <div
+                        className={`text-xs mt-0.5 ${
+                          activeSection === section.id
+                            ? "text-color-surface/80"
+                            : "text-color-text-secondary"
+                        }`}
+                      >
+                        {section.description}
+                      </div>
+                    </div>
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform ${
+                        activeSection === section.id
+                          ? "rotate-90"
+                          : "group-hover:translate-x-1"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          {/* Main Content */}
+          <main className="lg:col-span-3">
+            <div className="space-y-6">
+              {/* Security Section */}
+              {activeSection === "security" && (
+                <div className="space-y-6">
+                  <Card className="border-color-border bg-color-surface shadow-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-3 text-color-text-primary">
+                        <div className="p-2 bg-color-primary/10 rounded-lg">
+                          <Shield className="h-5 w-5 text-color-primary" />
+                        </div>
+                        {t("securityAndPrivacy")}
+                      </CardTitle>
+                      <CardDescription className="text-color-text-secondary">
+                        {t("manageAccountSecurity")}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Sign-in Methods */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-color-text-primary flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          {t("signInMethods")}
+                        </h3>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-4 border border-color-border rounded-xl bg-color-surface hover:bg-color-accent/30 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-color-success/10 rounded-lg">
+                                <Mail className="h-4 w-4 text-color-success" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-color-text-primary">
+                                  {t("email")}
+                                </p>
+                                <p className="text-sm text-color-text-secondary">
+                                  {user?.email || "user@email.com"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-color-success" />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-color-border hover:bg-color-primary hover:text-color-surface touch-target"
+                                onClick={() => {
+                                  // Clear fields and force re-render
+                                  setNewEmail("");
+                                  setEmailCurrentPassword("");
+                                  setShowEmailPassword(false);
+                                  setEmailDialogKey(prev => prev + 1);
+                                  setChangeEmailOpen(true);
+                                }}
+                              >
+                                {t("change")}
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            // Clear fields and force re-render
-                            setNewEmail("");
-                            setEmailCurrentPassword("");
-                            setShowEmailPassword(false);
-                            setEmailDialogKey(prev => prev + 1);
-                            setChangeEmailOpen(true);
-                          }}
+
+                      {/* Password */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-color-text-primary flex items-center gap-2">
+                          <Shield className="h-4 w-4" />
+                          {t("password")}
+                        </h3>
+                        <div className="flex items-center justify-between p-4 border border-color-border rounded-xl bg-color-surface hover:bg-color-accent/30 transition-colors">
+                          <div>
+                            <p className="font-medium text-color-text-primary">
+                              {t("password")}
+                            </p>
+                            <p className="text-sm text-color-text-secondary">
+                              {t("useStrongPassword")}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="border-color-border hover:bg-color-primary hover:text-color-surface touch-target"
+                            onClick={() => setChangePasswordOpen(true)}
+                          >
+                            {t("changePassword")}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Account Deactivation */}
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-color-error flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          {t("dangerZone")}
+                        </h3>
+                        <div className="p-4 border border-color-error/20 rounded-xl bg-color-error/5">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-color-error">
+                                {t("deactivateAccount")}
+                              </p>
+                              <p className="text-sm text-color-text-secondary">
+                                {t("deactivateDescription")}
+                              </p>
+                            </div>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="bg-color-error hover:bg-color-error/90 touch-target"
+                            >
+                              {t("deactivate")}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Notifications Section */}
+              {activeSection === "notifications" && (
+                <Card className="border-color-border bg-color-surface shadow-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-3 text-color-text-primary">
+                      <div className="p-2 bg-color-primary/10 rounded-lg">
+                        <Bell className="h-5 w-5 text-color-primary" />
+                      </div>
+                      {t("notifications")}
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      {t("chooseNotifications")}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {(
+                      [
+                        {
+                          key: "push",
+                          title: t("pushNotifications"),
+                          description: t("getInstantNotifications"),
+                          icon: Bell,
+                        },
+                        {
+                          key: "marketing",
+                          title: t("marketingEmails"),
+                          description: t("receivePromotionalOffers"),
+                          icon: Mail,
+                        },
+                      ] as {
+                        key: NotificationKey;
+                        title: string;
+                        description: string;
+                        icon: React.ComponentType<{ className?: string }>;
+                      }[]
+                    ).map((notification) => {
+                      const Icon = notification.icon;
+                      return (
+                        <div
+                          key={notification.key}
+                          className="flex items-center justify-between p-4 border border-color-border rounded-xl bg-color-surface hover:bg-color-accent/30 transition-colors"
                         >
-                          {t("security.change")}
-                        </Button>
+                          <div>
+                            <p className="font-medium text-color-text-primary">
+                              {notification.title}
+                            </p>
+                            <p className="text-sm text-color-text-secondary">
+                              {notification.description}
+                            </p>
+                          </div>
+                          <button
+                            disabled={loading}
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2 focus-visible:ring-offset-color-surface disabled:opacity-50 disabled:cursor-not-allowed ${
+                              notifications[notification.key]
+                                ? "bg-color-primary"
+                                : "bg-gray-300 dark:bg-gray-600"
+                            }`}
+                            onClick={() => handleToggle(notification.key)}
+                            aria-pressed={notifications[notification.key]}
+                            aria-label={`Toggle ${notification.title}`}
+                            type="button"
+                          >
+                            <span
+                              className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-200 shadow-lg ring-0 transition duration-200 ease-in-out ${
+                                notifications[notification.key]
+                                  ? "translate-x-5"
+                                  : "translate-x-0"
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Preferences Section */}
+              {activeSection === "preferences" && (
+                <Card className="border-color-border bg-color-surface shadow-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-3 text-color-text-primary">
+                      <div className="p-2 bg-color-primary/10 rounded-lg">
+                        <Palette className="h-5 w-5 text-color-primary" />
+                      </div>
+                      {t("preferences", { default: "Preferences" })}
+                    </CardTitle>
+                    <CardDescription className="text-color-text-secondary">
+                      {t("managePreferences", { default: "Manage your preferences" })}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-color-text-primary">
+                          {t("language", { default: "Language" })}
+                        </Label>
+                        <select 
+                          className="w-full rounded-md border border-color-border bg-color-surface dark:bg-slate-800 text-color-text-primary dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2"
+                          value={preferences.language}
+                          onChange={(e) => handlePreferenceChange("language", e.target.value)}
+                        >
+                          <option value="en" className="dark:bg-slate-800 dark:text-slate-100">English</option>
+                          <option value="ar" className="dark:bg-slate-800 dark:text-slate-100">العربية (Arabic)</option>
+                          <option value="de" className="dark:bg-slate-800 dark:text-slate-100">Deutsch</option>
+                          <option value="fr" className="dark:bg-slate-800 dark:text-slate-100">Français</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-color-text-primary">
+                          {t("timezone", { default: "Timezone" })}
+                        </Label>
+                        <select 
+                          className="w-full rounded-md border border-color-border bg-color-surface dark:bg-slate-800 text-color-text-primary dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2"
+                          value={preferences.timezone}
+                          onChange={(e) => handlePreferenceChange("timezone", e.target.value)}
+                        >
+                          <option value="GMT" className="dark:bg-slate-800 dark:text-slate-100">GMT (Greenwich Mean Time)</option>
+                          <option value="CET" className="dark:bg-slate-800 dark:text-slate-100">CET (Central European Time)</option>
+                          <option value="EST" className="dark:bg-slate-800 dark:text-slate-100">EST (Eastern Standard Time)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-color-text-primary">
+                          {t("currency", { default: "Currency" })}
+                        </Label>
+                        <select 
+                          className="w-full rounded-md border border-color-border bg-color-surface dark:bg-slate-800 text-color-text-primary dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2"
+                          value={preferences.currency}
+                          onChange={(e) => handlePreferenceChange("currency", e.target.value)}
+                        >
+                          <option value="MAD" className="dark:bg-slate-800 dark:text-slate-100">MAD (Moroccan Dirham)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-color-text-primary flex items-center gap-2">
+                          {mounted && (resolvedTheme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />)}
+                          {t("theme", { default: "Theme" })}
+                        </Label>
+                        <select 
+                          className="w-full rounded-md border border-color-border bg-color-surface dark:bg-slate-800 text-color-text-primary dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-color-primary focus-visible:ring-offset-2"
+                          value={preferences.theme}
+                          onChange={(e) => handlePreferenceChange("theme", e.target.value)}
+                        >
+                          <option value="system" className="dark:bg-slate-800 dark:text-slate-100">{t("themeSystem", { default: "System" })}</option>
+                          <option value="light" className="dark:bg-slate-800 dark:text-slate-100">{t("themeLight", { default: "Light" })}</option>
+                          <option value="dark" className="dark:bg-slate-800 dark:text-slate-100">{t("themeDark", { default: "Dark" })}</option>
+                        </select>
                       </div>
                     </div>
-                  </div>
-                </div>
-                {/* Password */}
-                <div className="space-y-4">
-                  <h3 className="font-medium">{t("security.password")}</h3>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">
-                        {t("security.passwordTitle")}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {t("security.passwordDescription")}
-                      </p>
-                    </div>
-                    <Button 
-                      variant="outline"
-                      onClick={() => setChangePasswordOpen(true)}
-                    >
-                      {t("security.changePassword")}
-                    </Button>
-                  </div>
-                </div>
-                {/* Account Deactivation */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-destructive">
-                    {t("security.dangerZone")}
-                  </h3>
-                  <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">
-                          {t("security.deactivateAccount")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {t("security.deactivateDescription")}
-                        </p>
-                      </div>
-                      <Button variant="destructive" size="sm">
-                        {t("security.deactivate")}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          {/* Notifications Section */}
-          {activeSection === "notifications" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  {t("sections.notifications.title")}
-                </CardTitle>
-                <CardDescription>
-                  {t("sections.notifications.description")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  {(
-                    [
-                      {
-                        key: "push",
-                        title: t("notifications.push"),
-                        description: t("notifications.pushDescription"),
-                      },
-                      {
-                        key: "marketing",
-                        title: t("notifications.marketing"),
-                        description: t("notifications.marketingDescription"),
-                      },
-                    ] as {
-                      key: NotificationKey;
-                      title: string;
-                      description: string;
-                    }[]
-                  ).map((notification) => (
-                    <div
-                      key={notification.key}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{notification.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {notification.description}
-                        </p>
-                      </div>
-                      <button
-                        disabled={loading}
-                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed ${
-                          notifications[notification.key]
-                            ? "bg-primary"
-                            : "bg-muted"
-                        }`}
-                        onClick={() => handleToggle(notification.key)}
-                        aria-pressed={notifications[notification.key]}
-                        aria-label={`Toggle ${notification.title}`}
-                      >
-                        <span
-                          className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                            notifications[notification.key]
-                              ? "translate-x-5"
-                              : "translate-x-0"
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          {/* Preferences Section */}
-          {activeSection === "preferences" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Palette className="h-5 w-5" />
-                  {t("sections.preferences.title")}
-                </CardTitle>
-                <CardDescription>
-                  {t("sections.preferences.description")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {t("preferences.language")}
-                    </Label>
-                    <select 
-                      className="w-full rounded-md border border-input bg-background dark:bg-slate-800 text-foreground dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      value={preferences.language}
-                      onChange={(e) => handlePreferenceChange("language", e.target.value)}
-                    >
-                      <option value="en" className="dark:bg-slate-800 dark:text-slate-100">English</option>
-                      <option value="ar" className="dark:bg-slate-800 dark:text-slate-100">العربية (Arabic)</option>
-                      <option value="de" className="dark:bg-slate-800 dark:text-slate-100">Deutsch</option>
-                      <option value="fr" className="dark:bg-slate-800 dark:text-slate-100">Français</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {t("preferences.timezone")}
-                    </Label>
-                    <select 
-                      className="w-full rounded-md border border-input bg-background dark:bg-slate-800 text-foreground dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      value={preferences.timezone}
-                      onChange={(e) => handlePreferenceChange("timezone", e.target.value)}
-                    >
-                      <option value="GMT" className="dark:bg-slate-800 dark:text-slate-100">GMT (Greenwich Mean Time)</option>
-                      <option value="CET" className="dark:bg-slate-800 dark:text-slate-100">CET (Central European Time)</option>
-                      <option value="EST" className="dark:bg-slate-800 dark:text-slate-100">EST (Eastern Standard Time)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {t("preferences.currency")}
-                    </Label>
-                    <select 
-                      className="w-full rounded-md border border-input bg-background dark:bg-slate-800 text-foreground dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      value={preferences.currency}
-                      onChange={(e) => handlePreferenceChange("currency", e.target.value)}
-                    >
-                      <option value="MAD" className="dark:bg-slate-800 dark:text-slate-100">MAD (Moroccan Dirham)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium flex items-center gap-2">
-                      {mounted && (resolvedTheme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />)}
-                      {t("preferences.theme", { default: "Theme" })}
-                    </Label>
-                    <select 
-                      className="w-full rounded-md border border-input bg-background dark:bg-slate-800 text-foreground dark:text-slate-100 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      value={preferences.theme}
-                      onChange={(e) => handlePreferenceChange("theme", e.target.value)}
-                    >
-                      <option value="system" className="dark:bg-slate-800 dark:text-slate-100">Système</option>
-                      <option value="light" className="dark:bg-slate-800 dark:text-slate-100">Clair</option>
-                      <option value="dark" className="dark:bg-slate-800 dark:text-slate-100">Sombre</option>
-                    </select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </main>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </main>
+        </div>
       </div>
 
       {/* Change Password Dialog */}
       <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-color-surface border-color-border">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-color-text-primary">
               <Lock className="h-5 w-5" />
-              Changer le mot de passe
+              {t("changePasswordDialog.title")}
             </DialogTitle>
-            <DialogDescription>
-              Entrez votre mot de passe actuel et votre nouveau mot de passe
+            <DialogDescription className="text-color-text-secondary">
+              {t("changePasswordDialog.description")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {/* Current Password */}
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Mot de passe actuel *</Label>
+              <Label htmlFor="currentPassword" className="text-color-text-primary">{t("changePasswordDialog.currentPassword")}</Label>
               <div className="relative">
                 <Input
                   id="currentPassword"
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Entrez votre mot de passe actuel"
-                  className="pr-10"
+                  placeholder={t("changePasswordDialog.currentPasswordPlaceholder")}
+                  className="pr-10 bg-color-surface text-color-text-primary border-color-border"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-color-text-secondary hover:text-color-text-primary"
                 >
                   {showCurrentPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -725,20 +846,20 @@ export default function SettingsPage() {
 
             {/* New Password */}
             <div className="space-y-2">
-              <Label htmlFor="newPassword">Nouveau mot de passe *</Label>
+              <Label htmlFor="newPassword" className="text-color-text-primary">{t("changePasswordDialog.newPassword")}</Label>
               <div className="relative">
                 <Input
                   id="newPassword"
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Entrez votre nouveau mot de passe"
-                  className="pr-10"
+                  placeholder={t("changePasswordDialog.newPasswordPlaceholder")}
+                  className="pr-10 bg-color-surface text-color-text-primary border-color-border"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-color-text-secondary hover:text-color-text-primary"
                 >
                   {showNewPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -752,7 +873,7 @@ export default function SettingsPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs">
                     <span className={getPasswordStrength(newPassword).color}>
-                      Force: {getPasswordStrength(newPassword).label}
+                      {t("changePasswordDialog.passwordStrength")}: {getPasswordStrength(newPassword).label}
                     </span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((level) => (
@@ -777,20 +898,20 @@ export default function SettingsPage() {
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmation du nouveau mot de passe *</Label>
+              <Label htmlFor="confirmPassword" className="text-color-text-primary">{t("changePasswordDialog.confirmPassword")}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirmez votre nouveau mot de passe"
-                  className="pr-10"
+                  placeholder={t("changePasswordDialog.confirmPasswordPlaceholder")}
+                  className="pr-10 bg-color-surface text-color-text-primary border-color-border"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-color-text-secondary hover:text-color-text-primary"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -800,7 +921,7 @@ export default function SettingsPage() {
                 </button>
               </div>
               {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-red-500">Les mots de passe ne correspondent pas</p>
+                <p className="text-xs text-red-500">{t("changePasswordDialog.passwordsDoNotMatch")}</p>
               )}
             </div>
 
@@ -809,10 +930,10 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-sm text-primary hover:underline flex items-center gap-1"
+                className="text-sm text-color-primary hover:underline flex items-center gap-1"
               >
                 <LinkIcon className="h-3 w-3" />
-                Mot de passe oublié ?
+                {t("changePasswordDialog.forgotPassword")}
               </button>
             </div>
           </div>
@@ -825,137 +946,138 @@ export default function SettingsPage() {
                 setNewPassword("");
                 setConfirmPassword("");
               }}
+              className="border-color-border"
             >
-              Annuler
+              {t("changePasswordDialog.cancel")}
             </Button>
             <Button
               onClick={handleChangePassword}
               disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
             >
-              {changingPassword ? "Changement..." : "Changer le mot de passe"}
+              {changingPassword ? t("changePasswordDialog.changing") : t("changePasswordDialog.change")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Change Email Dialog */}
-      {/* Change Email Dialog */}
-<Dialog 
-  open={changeEmailOpen} 
-  onOpenChange={(open) => {
-    setChangeEmailOpen(open);
-    if (!open) {
-      // Clear fields when dialog closes
-      setNewEmail("");
-      setEmailCurrentPassword("");
-      setShowEmailPassword(false);
-      setEmailDialogKey(prev => prev + 1); // force re-render
-    }
-  }}
->
-  <DialogContent className="max-w-md" key={emailDialogKey}>
-    <DialogHeader>
-      <DialogTitle className="flex items-center gap-2">
-        <Mail className="h-5 w-5" />
-        Changer l'adresse e-mail
-      </DialogTitle>
-      <DialogDescription>
-        Entrez votre nouvelle adresse e-mail et votre mot de passe actuel pour confirmer
-      </DialogDescription>
-    </DialogHeader>
-
-    <div className="space-y-4 py-4">
-      {/* Current Email (read-only) */}
-      <div className="space-y-2">
-        <Label htmlFor="currentEmail">Adresse e-mail actuelle</Label>
-        <Input
-          id="currentEmail"
-          type="email"
-          value={user?.email || ""}
-          disabled
-          className="bg-muted"
-        />
-      </div>
-
-      {/* New Email */}
-      <div className="space-y-2">
-        <Label htmlFor="newEmail">Nouvelle adresse e-mail *</Label>
-        <Input
-          key={`new-email-input-${emailDialogKey}`}
-          id={`newEmail-${emailDialogKey}`}
-          name={`newEmail-${emailDialogKey}`}
-          type="email"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          placeholder="Entrez votre nouvelle adresse e-mail"
-          autoComplete="off"
-          autoFocus
-        />
-      </div>
-
-      {/* Current Password */}
-      <div className="space-y-2">
-        <Label htmlFor="emailCurrentPassword">Mot de passe actuel *</Label>
-        <div className="relative">
-          <Input
-            key={`email-password-input-${emailDialogKey}`}
-            id={`emailCurrentPassword-${emailDialogKey}`}
-            name={`emailCurrentPassword-${emailDialogKey}`}
-            type={showEmailPassword ? "text" : "password"}
-            value={emailCurrentPassword}
-            onChange={(e) => setEmailCurrentPassword(e.target.value)}
-            placeholder="Entrez votre mot de passe actuel"
-            className="pr-10"
-            autoComplete="off"
-          />
-          <button
-            type="button"
-            onClick={() => setShowEmailPassword(!showEmailPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            {showEmailPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Votre mot de passe actuel est requis pour confirmer le changement
-        </p>
-      </div>
-
-      {/* Info Message */}
-      <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <p className="text-sm text-blue-900 dark:text-blue-200">
-          <strong>Note importante :</strong> Un email de vérification sera envoyé à votre nouvelle adresse. 
-          L'email ne sera modifié qu'après confirmation via le lien dans l'email.
-        </p>
-      </div>
-    </div>
-
-    <DialogFooter>
-      <Button
-        variant="outline"
-        onClick={() => {
-          setChangeEmailOpen(false);
-          setNewEmail("");
-          setEmailCurrentPassword("");
-          setShowEmailPassword(false);
-          setEmailDialogKey(prev => prev + 1);
+      <Dialog 
+        open={changeEmailOpen} 
+        onOpenChange={(open) => {
+          setChangeEmailOpen(open);
+          if (!open) {
+            // Clear fields when dialog closes
+            setNewEmail("");
+            setEmailCurrentPassword("");
+            setShowEmailPassword(false);
+            setEmailDialogKey(prev => prev + 1); // force re-render
+          }
         }}
       >
-        Annuler
-      </Button>
-      <Button
-        onClick={handleChangeEmail}
-        disabled={changingEmail || !newEmail || !emailCurrentPassword}
-      >
-        {changingEmail ? "Envoi..." : "Changer l'email"}
-      </Button>
-     </DialogFooter>
-     </DialogContent>
-   </Dialog>
+        <DialogContent className="max-w-md bg-color-surface border-color-border" key={emailDialogKey}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-color-text-primary">
+              <Mail className="h-5 w-5" />
+              {t("changeEmailDialog.title")}
+            </DialogTitle>
+            <DialogDescription className="text-color-text-secondary">
+              {t("changeEmailDialog.description")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Current Email (read-only) */}
+            <div className="space-y-2">
+              <Label htmlFor="currentEmail" className="text-color-text-primary">{t("changeEmailDialog.currentEmail")}</Label>
+              <Input
+                id="currentEmail"
+                type="email"
+                value={user?.email || ""}
+                disabled
+                className="bg-color-accent/30 cursor-not-allowed"
+              />
+            </div>
+
+            {/* New Email */}
+            <div className="space-y-2">
+              <Label htmlFor="newEmail" className="text-color-text-primary">{t("changeEmailDialog.newEmail")}</Label>
+              <Input
+                key={`new-email-input-${emailDialogKey}`}
+                id={`newEmail-${emailDialogKey}`}
+                name={`newEmail-${emailDialogKey}`}
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder={t("changeEmailDialog.newEmailPlaceholder")}
+                autoComplete="off"
+                autoFocus
+                className="bg-color-surface text-color-text-primary border-color-border"
+              />
+            </div>
+
+            {/* Current Password */}
+            <div className="space-y-2">
+              <Label htmlFor="emailCurrentPassword" className="text-color-text-primary">{t("changeEmailDialog.currentPassword")}</Label>
+              <div className="relative">
+                <Input
+                  key={`email-password-input-${emailDialogKey}`}
+                  id={`emailCurrentPassword-${emailDialogKey}`}
+                  name={`emailCurrentPassword-${emailDialogKey}`}
+                  type={showEmailPassword ? "text" : "password"}
+                  value={emailCurrentPassword}
+                  onChange={(e) => setEmailCurrentPassword(e.target.value)}
+                  placeholder={t("changeEmailDialog.currentPasswordPlaceholder")}
+                  className="pr-10 bg-color-surface text-color-text-primary border-color-border"
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowEmailPassword(!showEmailPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-color-text-secondary hover:text-color-text-primary"
+                >
+                  {showEmailPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-color-text-secondary">
+                {t("changeEmailDialog.passwordRequired")}
+              </p>
+            </div>
+
+            {/* Info Message */}
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-900 dark:text-blue-200">
+                <strong>{t("changeEmailDialog.importantNote")}</strong> {t("changeEmailDialog.verificationEmailNote")}
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setChangeEmailOpen(false);
+                setNewEmail("");
+                setEmailCurrentPassword("");
+                setShowEmailPassword(false);
+                setEmailDialogKey(prev => prev + 1);
+              }}
+              className="border-color-border"
+            >
+              {t("changeEmailDialog.cancel")}
+            </Button>
+            <Button
+              onClick={handleChangeEmail}
+              disabled={changingEmail || !newEmail || !emailCurrentPassword}
+            >
+              {changingEmail ? t("changeEmailDialog.changing") : t("changeEmailDialog.change")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

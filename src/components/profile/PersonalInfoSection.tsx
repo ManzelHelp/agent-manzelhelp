@@ -72,6 +72,7 @@ export default function PersonalInfoSection({
   missingFields,
 }: PersonalInfoSectionProps) {
   const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const { toast } = useToast();
   const [editPersonalOpen, setEditPersonalOpen] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -147,13 +148,13 @@ export default function PersonalInfoSection({
           phone: result.user.phone || "",
           date_of_birth: result.user.date_of_birth ? result.user.date_of_birth.split("T")[0] : "",
         });
-        toast({ variant: "success", title: "Succès", description: "Profil mis à jour" });
+        toast({ variant: "success", title: t("success.genericSuccess"), description: t("success.profileUpdated") });
         setEditPersonalOpen(false);
       } else {
-        toast({ variant: "destructive", title: "Erreur", description: result.error || "Échec de la mise à jour" });
+        toast({ variant: "destructive", title: tCommon("error"), description: result.error || t("errors.updateProfile") });
       }
     } catch (error) {
-      toast({ variant: "destructive", title: "Erreur", description: "Erreur serveur" });
+      toast({ variant: "destructive", title: tCommon("error"), description: tCommon("unknown") });
     }
   };
 
@@ -161,7 +162,7 @@ export default function PersonalInfoSection({
   const handlePhotoUpload = async (file: File) => {
     if (!user?.id) return;
     if (!IMAGE_CONSTRAINTS.allowedTypes.includes(file.type)) {
-      toast({ variant: "destructive", description: "Format invalide" });
+      toast({ variant: "destructive", description: tCommon("error") });
       return;
     }
     setUploadingPhoto(true);
@@ -172,7 +173,7 @@ export default function PersonalInfoSection({
       if (result.success) {
         onUserUpdate(result.user!);
         await onProfileRefresh();
-        toast({ variant: "success", title: "Photo mise à jour" });
+        toast({ variant: "success", title: t("success.genericSuccess"), description: t("success.profileUpdated") });
       }
     } catch (e: any) {
       toast({ variant: "destructive", description: e.message });
@@ -381,13 +382,13 @@ export default function PersonalInfoSection({
         </div>
 
         <div className="pt-4 space-y-3">
-          <h4 className="text-sm font-bold text-[var(--color-text-primary)]">Statut de vérification</h4>
+          <h4 className="text-sm font-bold text-[var(--color-text-primary)]">{t("verificationStatus")}</h4>
           <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-emerald-500" />
-              <p className="text-sm font-medium text-emerald-600">Email vérifié</p>
+              <p className="text-sm font-medium text-emerald-600">{t("completion.emailVerified")}</p>
             </div>
-            <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase font-bold">Actif</span>
+            <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase font-bold">{t("available")}</span>
           </div>
         </div>
       </CardContent>

@@ -1,0 +1,85 @@
+{
+  "profile": {
+    "navigation": { "title": "Paramètres du profil" },
+    "subtitle": "Gérez vos informations et vos préférences",
+    "completion": {
+      "title": "Complétez votre profil",
+      "complete": "Profil complet !",
+      "requiredFieldsRemaining": "{count} champs requis restants",
+      "percentageComplete": "{percentage}% complété",
+      "emailVerified": "Email vérifié"
+    },
+    "sections": {
+      "personal": {
+        "title": "Informations personnelles",
+        "description": "Vos données de base et photo",
+        "editProfile": "Modifier le profil",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "phoneNumber": "Téléphone",
+        "dateOfBirth": "Date de naissance",
+        "emailReadOnly": "L'email ne peut pas être modifié ici",
+        "profilePhoto": "Photo de profil",
+        "profilePhotoDescription": "Ajoutez une photo pour votre compte"
+      },
+      "addresses": {
+        "title": "Adresses",
+        "description": "Gérez vos lieux de service",
+        "addAddress": "Ajouter une adresse",
+        "addNewAddress": "Ajouter une nouvelle adresse",
+        "label": "Étiquette",
+        "country": "Pays",
+        "streetAddress": "Adresse",
+        "city": "Ville",
+        "region": "Région",
+        "postalCode": "Code postal",
+        "enterStreetAddress": "Entrez l'adresse",
+        "enterCity": "Entrez la ville",
+        "enterRegion": "Entrez la région",
+        "enterPostalCode": "Entrez le code postal"
+      },
+      "payment": {
+        "title": "Paiement",
+        "description": "Gérez vos modes de paiement",
+        "noPaymentMethods": "Aucun mode de paiement",
+        "addPaymentMethod": "Ajouter un mode",
+        "addPaymentMethodDescription": "Ajoutez un mode pour vos transactions",
+        "addFirstPaymentMethod": "Ajouter un premier mode",
+        "comingSoon": "Bientôt",
+        "comingSoonDescription": "Le paiement sera disponible prochainement"
+      }
+    },
+    "dialog": {
+      "editPersonalInfo": {
+        "title": "Modifier les infos",
+        "description": "Mettez à jour vos informations personnelles",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "phoneNumber": "Téléphone",
+        "dateOfBirth": "Date de naissance",
+        "emailCannotBeChanged": "L'email ne peut pas être modifié",
+        "enterFirstName": "Entrez votre prénom",
+        "enterLastName": "Entrez votre nom",
+        "enterPhoneNumber": "Entrez votre numéro"
+      }
+    },
+    "success": {
+      "profileUpdated": "Profil mis à jour",
+      "genericSuccess": "Succès"
+    },
+    "personalInformation": "Informations personnelles",
+    "yourBasicProfileInformation": "Vos informations de base",
+    "verificationStatus": "Statut de vérification",
+    "serviceLocations": "Lieux de service",
+    "manageYourLocations": "Gérez vos adresses",
+    "addLocation": "Ajouter",
+    "noAddresses": "Aucune adresse enregistrée",
+    "deleteAddress": "Supprimer",
+    "missing": "{count} manquant(s)",
+    "edit": "Modifier",
+    "available": "Vérifié",
+    "role": "Rôle"
+  }
+}

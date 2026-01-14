@@ -43,18 +43,20 @@ export default function AvailabilitySection({
   onProfileRefresh,
   missingFields,
 }: AvailabilitySectionProps) {
+  // On utilise "profile" comme namespace pour correspondre au fichier profile.json
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
   const { toast } = useToast();
 
+  // Utilisation des clés de traduction pour les jours
   const weekdays = [
-    { key: "monday", label: t("monday") },
-    { key: "tuesday", label: t("tuesday") },
-    { key: "wednesday", label: t("wednesday") },
-    { key: "thursday", label: t("thursday") },
-    { key: "friday", label: t("friday") },
-    { key: "saturday", label: t("saturday") },
-    { key: "sunday", label: t("sunday") },
+    { key: "monday", label: t("days.monday") },
+    { key: "tuesday", label: t("days.tuesday") },
+    { key: "wednesday", label: t("days.wednesday") },
+    { key: "thursday", label: t("days.thursday") },
+    { key: "friday", label: t("days.friday") },
+    { key: "saturday", label: t("days.saturday") },
+    { key: "sunday", label: t("days.sunday") },
   ];
 
   const [editAvailabilityOpen, setEditAvailabilityOpen] = useState(false);
@@ -79,7 +81,7 @@ export default function AvailabilitySection({
     if (!validation.success) {
       toast({
         variant: "destructive",
-        title: "Attention",
+        title: tCommon("error"), // Utilisation de common
         description: validation.error.issues[0].message,
       });
       return;
@@ -95,15 +97,15 @@ export default function AvailabilitySection({
         await onProfileRefresh();
         toast({
           variant: "success",
-          title: "Succès",
-          description: "Horaires mis à jour avec succès.",
+          title: t("success.genericSuccess"),
+          description: t("success.availabilityUpdated"),
         });
         setEditAvailabilityOpen(false);
       } else {
-        toast({ variant: "destructive", description: "Échec de la mise à jour" });
+        toast({ variant: "destructive", description: t("availability.errors.updateFailed") });
       }
     } catch (error) {
-      toast({ variant: "destructive", description: "Une erreur est survenue" });
+      toast({ variant: "destructive", description: tCommon("unknown") });
     }
   };
 
@@ -117,10 +119,10 @@ export default function AvailabilitySection({
             </div>
             <div>
               <CardTitle className="text-xl text-[var(--color-text-primary)]">
-                {t("availability")}
+                {t("availability.title")}
               </CardTitle>
               <CardDescription className="text-[var(--color-text-secondary)]">
-                {t("setWorkingHours")}
+                {t("availability.setWorkingHours")}
               </CardDescription>
             </div>
           </div>
@@ -129,7 +131,9 @@ export default function AvailabilitySection({
             {availabilityMissingFields.length > 0 && (
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
                 <AlertTriangle className="h-4 w-4 text-red-500" />
-                <span className="text-xs font-medium text-red-500">Incomplet</span>
+                <span className="text-xs font-medium text-red-500">
+                  {t("availability.incomplete")}
+                </span>
               </div>
             )}
             
@@ -137,19 +141,19 @@ export default function AvailabilitySection({
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="dark:border-slate-700 dark:hover:bg-slate-800">
                   <Edit className="h-4 w-4 mr-2" />
-                  {t("edit")}
+                  {t("actions.edit")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md dark:bg-slate-900 dark:border-slate-800">
                 <form onSubmit={handleUpdateAvailability} noValidate className="space-y-4">
                   <DialogHeader>
-                    <DialogTitle className="dark:text-white">{t("editAvailability")}</DialogTitle>
+                    <DialogTitle className="dark:text-white">{t("availability.editAvailability")}</DialogTitle>
                     <DialogDescription className="dark:text-slate-400">
-                      Configurez vos heures de travail par jour.
+                      {t("availability.description")}
                     </DialogDescription>
                   </DialogHeader>
 
-                  <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
                     {weekdays.map((day, index) => {
                       const slot = availabilityForm[index] || { day: day.key, enabled: false, startTime: "09:00", endTime: "17:00" };
                       return (
@@ -163,7 +167,7 @@ export default function AvailabilitySection({
                                 newForm[index] = { ...slot, enabled: e.target.checked };
                                 setAvailabilityForm(newForm);
                               }}
-                              className="h-4 w-4 rounded border-gray-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 dark:bg-slate-700"
+                              className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                             />
                             <Label className="font-semibold text-sm cursor-pointer dark:text-slate-200">{day.label}</Label>
                           </div>
@@ -178,9 +182,9 @@ export default function AvailabilitySection({
                                   newForm[index] = { ...slot, startTime: e.target.value };
                                   setAvailabilityForm(newForm);
                                 }}
-                                className="h-9 dark:bg-slate-800 dark:border-slate-700"
+                                className="h-9"
                               />
-                              <span className="text-xs text-slate-400">à</span>
+                              <span className="text-xs text-slate-400">{t("availability.to")}</span>
                               <Input 
                                 type="time" 
                                 value={slot.endTime} 
@@ -189,7 +193,7 @@ export default function AvailabilitySection({
                                   newForm[index] = { ...slot, endTime: e.target.value };
                                   setAvailabilityForm(newForm);
                                 }}
-                                className="h-9 dark:bg-slate-800 dark:border-slate-700"
+                                className="h-9"
                               />
                             </div>
                           )}
@@ -199,11 +203,11 @@ export default function AvailabilitySection({
                   </div>
 
                   <DialogFooter className="pt-4 gap-2">
-                    <Button type="button" variant="ghost" onClick={() => setEditAvailabilityOpen(false)} className="dark:text-slate-400">
+                    <Button type="button" variant="ghost" onClick={() => setEditAvailabilityOpen(false)}>
                       {tCommon("cancel")}
                     </Button>
                     <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white">
-                      {loading ? "Chargement..." : tCommon("saveChanges")}
+                      {loading ? tCommon("saving") : t("actions.save")}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -240,7 +244,7 @@ export default function AvailabilitySection({
                       {day.label}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-500">
-                      {isEnabled ? `${slot.startTime} - ${slot.endTime}` : t("notAvailable")}
+                      {isEnabled ? `${slot.startTime} - ${slot.endTime}` : t("availability.notAvailable")}
                     </p>
                   </div>
                 </div>

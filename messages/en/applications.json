@@ -1,0 +1,49 @@
+{
+  "applications": {
+    "title": "Job Applications",
+    "subtitle": "Review applications from taskers for your job",
+    "noApplications": "No applications yet",
+    "noApplicationsDescription": "Taskers haven't applied to your job yet. Your job is live and visible to qualified taskers.",
+    "applicationCard": {
+      "appliedOn": "Applied on",
+      "proposedPrice": "Proposed Price",
+      "estimatedDuration": "Estimated Duration",
+      "availability": "Availability",
+      "experience": "Experience",
+      "message": "Message",
+      "contactInfo": "Contact Information",
+      "viewProfile": "View Profile",
+      "acceptApplication": "Accept Application",
+      "rejectApplication": "Reject Application",
+      "contactTasker": "Contact Tasker",
+      "premiumApplication": "Premium Application",
+      "verifiedTasker": "Verified Tasker"
+    },
+    "actions": {
+      "accept": "Accept",
+      "reject": "Reject",
+      "contact": "Contact",
+      "viewProfile": "View Profile"
+    },
+    "confirmations": {
+      "acceptTitle": "Accept Application",
+      "acceptDescription": "Are you sure you want to accept this application? This will assign the tasker to your job and notify them.",
+      "rejectTitle": "Reject Application",
+      "rejectDescription": "Are you sure you want to reject this application? The tasker will be notified and won't be able to apply again.",
+      "confirmAccept": "Yes, Accept",
+      "confirmReject": "Yes, Reject",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "errors": {
+      "loadFailed": "Failed to load applications",
+      "acceptFailed": "Failed to accept application",
+      "rejectFailed": "Failed to reject application",
+      "unauthorized": "You don't have permission to view these applications"
+    }
+  }
+}

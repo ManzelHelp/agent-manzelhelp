@@ -1,0 +1,228 @@
+{
+  "taskerProfile": {
+    "title": "Profil Assistant",
+    "subtitle": "Construisez votre profil professionnel pour attirer plus de clients",
+    "navigation": {
+      "title": "Paramètres du profil"
+    },
+    "sections": {
+      "personal": "Informations personnelles",
+      "bio": "Biographie et expérience",
+      "skills": "Compétences et services",
+      "availability": "Disponibilité",
+      "verification": "Vérification",
+      "addresses": "Zones de service",
+      "security": "Sécurité",
+      "payment": "Méthodes de paiement",
+      "notifications": "Notifications",
+      "preferences": "Préférences",
+      "serviceLocations": "Lieux de service"
+    },
+    "completion": {
+      "title": "Complétez votre profil assistant",
+      "description": "Complétez votre profil pour commencer à recevoir des demandes d'emploi et établir la confiance avec les clients.",
+      "complete": "Profil complet",
+      "basicInfo": "Informations de base",
+      "profilePhoto": "Photo de profil",
+      "bioExperience": "Biographie et expérience",
+      "servicesSkills": "Services et compétences",
+      "availability": "Planning de disponibilité",
+      "address": "Zones de service",
+      "identityVerified": "Identité vérifiée",
+      "emailVerified": "E-mail vérifié",
+      "required": "Requis"
+    },
+    "personal": {
+      "description": "Mettez à jour vos informations de base et votre photo professionnelle",
+      "avatar": "Photo de profil",
+      "avatarDescription": "Téléchargez une photo professionnelle pour établir la confiance avec les clients",
+      "uploadPhoto": "Télécharger une photo",
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "Entrez votre prénom",
+      "lastName": "Nom de famille",
+      "lastNamePlaceholder": "Entrez votre nom de famille",
+      "email": "Adresse e-mail",
+      "emailNote": "Contactez le support pour changer votre adresse e-mail",
+      "phone": "Numéro de téléphone",
+      "phonePlaceholder": "+33 (0) 1 23 45 67 89",
+      "birthDate": "Date de naissance"
+    },
+    "bio": {
+      "description": "Parlez aux clients de votre expérience et expertise",
+      "bioTitle": "À propos de vous",
+      "bioPlaceholder": "Décrivez vos compétences, votre expérience et ce qui vous rend excellent dans ce que vous faites...",
+      "bioHint": "Partagez votre parcours, vos spécialités et pourquoi les clients devraient vous choisir",
+      "experienceLevel": "Niveau d'expérience",
+      "serviceRadius": "Rayon de service",
+      "serviceRadiusHint": "Jusqu'où êtes-vous prêt à vous déplacer pour des emplois ?",
+      "experienceLevels": {
+        "beginner": "Débutant (0-1 ans)",
+        "intermediate": "Intermédiaire (1-3 ans)",
+        "experienced": "Expérimenté (3-5 ans)",
+        "expert": "Expert (5+ ans)"
+      }
+    },
+    "skills": {
+      "description": "Gérez les services que vous proposez aux clients",
+      "addService": "Ajouter un service",
+      "noServices": "Aucun service proposé pour le moment",
+      "noServicesDescription": "Ajoutez des services pour commencer à recevoir des demandes d'emploi des clients",
+      "addFirstService": "Ajoutez votre premier service",
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "availability": {
+      "description": "Définissez votre disponibilité hebdomadaire pour de nouveaux emplois",
+      "unavailable": "Indisponible",
+      "quickBookingTitle": "Réservation rapide",
+      "quickBookingDescription": "Les clients peuvent vous réserver instantanément pendant vos heures disponibles pour des emplois plus rapides",
+      "success": {
+        "updated": "Disponibilité mise à jour avec succès"
+      },
+      "errors": {
+        "enableAtLeastOneDay": "Veuillez activer au moins un jour de disponibilité",
+        "setStartEndTimes": "Veuillez définir les heures de début et de fin pour tous les jours activés",
+        "endTimeAfterStart": "L'heure de fin doit être après l'heure de début",
+        "profileNotFound": "Profil introuvable. Veuillez actualiser la page et réessayer.",
+        "updateFailed": "Échec de la mise à jour de la disponibilité",
+        "invalidDataFormat": "Format de données de disponibilité invalide",
+        "invalidTimeFormat": "Format d'heure invalide. Veuillez utiliser le format HH:MM (ex: 09:00)"
+      }
+    },
+    "verification": {
+      "description": "Vérifiez votre identité pour établir la confiance et débloquer toutes les fonctionnalités",
+      "identity": "Vérification d'identité",
+      "email": "Adresse e-mail",
+      "phone": "Numéro de téléphone",
+      "phoneNotAdded": "Aucun numéro de téléphone ajouté",
+      "verified": "Vérifié",
+      "verify": "Vérifier",
+      "identityRequired": "Vérification d'identité requise",
+      "mandatory": "Obligatoire",
+      "identityVerified": "Identité vérifiée",
+      "identityPending": "Vérification en attente",
+      "identityDescription": "Téléchargez une pièce d'identité officielle pour vérifier votre identité et commencer à proposer des services",
+      "uploadDocument": "Télécharger un document",
+      "acceptedDocuments": "Accepté : Permis de conduire, Passeport, Carte d'identité nationale",
+      "benefitsTitle": "Avantages de la vérification",
+      "benefit1": "Débloquer toutes les fonctionnalités assistant et candidatures d'emploi",
+      "benefit2": "Établir la confiance avec les clients grâce au statut vérifié",
+      "benefit3": "Recevoir la priorité dans les résultats de recherche",
+      "benefit4": "Accès à des opportunités d'emploi de plus haute valeur"
+    },
+    "addresses": {
+      "description": "Ajoutez les zones où vous fournissez des services",
+      "add": "Ajouter une zone de service",
+      "empty": "Aucune zone de service ajoutée",
+      "emptyDescription": "Ajoutez des zones de service pour que les clients sachent où vous travaillez",
+      "addFirst": "Ajoutez votre première zone de service",
+      "newAddress": "Nouvelle zone de service",
+      "label": "Étiquette",
+      "home": "Base domiciliaire",
+      "work": "Zone de travail",
+      "other": "Autre",
+      "country": "Pays",
+      "street": "Adresse",
+      "streetPlaceholder": "123 Rue de la Paix",
+      "city": "Ville",
+      "cityPlaceholder": "Paris",
+      "region": "Région/Département",
+      "regionPlaceholder": "75",
+      "postalCode": "Code postal",
+      "postalCodePlaceholder": "75001",
+      "default": "Principal"
+    },
+    "serviceLocations": {
+      "description": "Gérez où vous fournissez vos services.",
+      "addLocation": "Ajouter un lieu de service"
+    },
+    "security": {
+      "description": "Gérez la sécurité de votre compte et vos préférences de connexion",
+      "signInMethods": "Méthodes de connexion",
+      "emailPassword": "E-mail",
+      "change": "Changer",
+      "password": "Mot de passe",
+      "passwordTitle": "Mot de passe",
+      "passwordDescription": "Utilisez un mot de passe fort pour protéger votre compte",
+      "changePassword": "Changer le mot de passe",
+      "dangerZone": "Zone de danger",
+      "deactivateAccount": "Désactiver le compte",
+      "deactivateDescription": "Cela désactivera définitivement votre compte assistant",
+      "deactivate": "Désactiver"
+    },
+    "payment": {
+      "description": "Gérez vos méthodes de paiement pour recevoir des gains",
+      "addMethod": "Ajouter une méthode de paiement",
+      "noMethods": "Aucune méthode de paiement",
+      "noMethodsDescription": "Ajoutez une méthode de paiement pour recevoir des gains des emplois terminés",
+      "addFirst": "Ajouter une méthode de paiement"
+    },
+    "notifications": {
+      "description": "Choisissez comment vous souhaitez être notifié des emplois",
+      "email": "Notifications par e-mail",
+      "emailDescription": "Recevoir des alertes d'emploi et des mises à jour par e-mail",
+      "push": "Notifications push",
+      "pushDescription": "Recevoir des notifications instantanées sur votre appareil",
+      "sms": "Notifications SMS",
+      "smsDescription": "Recevoir des alertes d'emploi urgentes par message texte",
+      "marketing": "E-mails marketing",
+      "marketingDescription": "Recevoir des offres promotionnelles et des mises à jour de la plateforme",
+      "jobAlerts": "Alertes d'emploi",
+      "jobAlertsDescription": "Être notifié quand de nouveaux emplois correspondent à vos compétences",
+      "unread": "Non lu",
+      "seen": "Vu",
+      "empty": "Aucune notification",
+      "emptyDescription": "Vous n'avez aucune notification pour le moment."
+    },
+    "preferences": {
+      "description": "Personnalisez votre expérience assistant",
+      "language": "Langue",
+      "timezone": "Fuseau horaire",
+      "currency": "Devise",
+      "languages": {
+        "en": "Anglais",
+        "de": "Allemand",
+        "fr": "Français",
+        "ar": "Arabe"
+      },
+      "timezones": {
+        "GMT": "GMT (Greenwich Mean Time)",
+        "CET": "CET (Central European Time)",
+        "EST": "EST (Eastern Standard Time)"
+      },
+      "currencies": {
+        "EUR": "EUR (Euro)",
+        "USD": "USD (US Dollar)",
+        "MAD": "MAD (Moroccan Dirham)"
+      }
+    },
+    "actions": {
+      "edit": "Modifier",
+      "cancel": "Annuler",
+      "save": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "uploading": "Téléchargement..."
+    },
+    "success": {
+      "profileUpdated": "Profil mis à jour avec succès !",
+      "bioUpdated": "Biographie mise à jour avec succès !",
+      "serviceRemoved": "Service supprimé avec succès !",
+      "addressAdded": "Zone de service ajoutée avec succès !",
+      "addressDeleted": "Zone de service supprimée avec succès !",
+      "availabilityUpdated": "Disponibilité mise à jour avec succès !",
+      "profilePhotoUpdated": "Photo de profil mise à jour avec succès !"
+    },
+    "errors": {
+      "notLoggedIn": "Non connecté",
+      "loginRequired": "Veuillez vous connecter pour voir votre profil assistant",
+      "updateProfile": "Échec de la mise à jour du profil",
+      "updateBio": "Échec de la mise à jour de la biographie",
+      "removeService": "Échec de la suppression du service",
+      "fetchAddresses": "Échec du chargement des zones de service",
+      "addAddress": "Échec de l'ajout de la zone de service",
+      "deleteAddress": "Échec de la suppression de la zone de service",
+      "profilePhotoUpload": "Échec du téléchargement de la photo de profil",
+      "requiredFields": "Veuillez remplir tous les champs requis"
+    }
+  }
+}

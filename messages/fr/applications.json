@@ -1,0 +1,49 @@
+{
+  "applications": {
+    "title": "Candidatures d'Emploi",
+    "subtitle": "Examinez les candidatures des assistants pour votre emploi",
+    "noApplications": "Aucune candidature pour le moment",
+    "noApplicationsDescription": "Les assistants ne se sont pas encore portés candidats pour votre emploi. Votre emploi est en ligne et visible pour les assistants qualifiés.",
+    "applicationCard": {
+      "appliedOn": "Candidaté le",
+      "proposedPrice": "Prix Proposé",
+      "estimatedDuration": "Durée Estimée",
+      "availability": "Disponibilité",
+      "experience": "Expérience",
+      "message": "Message",
+      "contactInfo": "Informations de Contact",
+      "viewProfile": "Voir le Profil",
+      "acceptApplication": "Accepter la Candidature",
+      "rejectApplication": "Rejeter la Candidature",
+      "contactTasker": "Contacter l'Assistant",
+      "premiumApplication": "Candidature Premium",
+      "verifiedTasker": "Assistant Vérifié"
+    },
+    "actions": {
+      "accept": "Accepter",
+      "reject": "Rejeter",
+      "contact": "Contacter",
+      "viewProfile": "Voir le Profil"
+    },
+    "confirmations": {
+      "acceptTitle": "Accepter la Candidature",
+      "acceptDescription": "Êtes-vous sûr de vouloir accepter cette candidature ? Cela assignera l'assistant à votre emploi et le notifiera.",
+      "rejectTitle": "Rejeter la Candidature",
+      "rejectDescription": "Êtes-vous sûr de vouloir rejeter cette candidature ? L'assistant sera notifié et ne pourra plus se porter candidat.",
+      "confirmAccept": "Oui, Accepter",
+      "confirmReject": "Oui, Rejeter",
+      "cancel": "Annuler"
+    },
+    "status": {
+      "pending": "En Attente",
+      "accepted": "Accepté",
+      "rejected": "Rejeté"
+    },
+    "errors": {
+      "loadFailed": "Échec du chargement des candidatures",
+      "acceptFailed": "Échec de l'acceptation de la candidature",
+      "rejectFailed": "Échec du rejet de la candidature",
+      "unauthorized": "Vous n'avez pas la permission de voir ces candidatures"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "reviews": {
+    "reviewsAndFeedback": "Avis et Commentaires",
+    "monitorPerformance": "Surveillez vos performances et établissez la confiance avec les clients grâce à des interactions significatives",
+    "averageRating": "Note Moyenne",
+    "basedOnReviews": "Basé sur {count} avis",
+    "fiveStarReviews": "Avis 5 Étoiles",
+    "excellenceRate": "Taux d'excellence",
+    "responseRate": "Taux de réponse",
+    "responseRateLabel": "Taux de Réponse",
+    "clientEngagement": "Engagement client",
+    "totalReviews": "Total des Avis",
+    "totalReviewsCount": "{count} Total des avis",
+    "allTimeFeedback": "Retours de tous les temps",
+    "clientReviews": "Avis Clients",
+    "reviewCount": "{count} avis",
+    "reviewCountPlural": "{count} avis",
+    "all": "Tous",
+    "fourStarPlus": "4★+",
+    "threeStarMinus": "3★-",
+    "needsReply": "Nécessite une Réponse",
+    "yourResponse": "Votre Réponse",
+    "repliedOn": "Répondu le {date}",
+    "quality": "Qualité",
+    "communication": "Communication",
+    "timeliness": "Ponctualité",
+    "totalReviewsLabel": "Total des avis",
+    "noReviewsFound": "Aucun avis trouvé",
+    "greatJob": "Excellent travail ! Vous avez répondu à tous les avis.",
+    "noReviewsMatch": "Aucun avis ne correspond au filtre sélectionné. Essayez d'ajuster vos critères de filtre.",
+    "filterApplied": "filtre appliqué",
+    "replyToReview": "Répondre à l'Avis",
+    "writeThoughtfulResponse": "Écrivez une réponse réfléchie à cet avis...",
+    "sendReply": "Envoyer la Réponse",
+    "sending": "Envoi en cours...",
+    "cancel": "Annuler",
+    "client": "Client",
+    "charactersCount": "{count}/1000 caractères",
+    "success": {
+      "replySubmitted": "Réponse envoyée avec succès !"
+    }
+  }
+}

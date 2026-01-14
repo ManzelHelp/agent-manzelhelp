@@ -1,0 +1,77 @@
+{
+  "postJob": {
+    "title": "Job Posten",
+    "subtitle": "Beschreiben Sie, was Sie brauchen und finden Sie den perfekten Helfer",
+    "steps": {
+      "jobDetails": "Job-Details",
+      "scheduleBudget": "Zeitplan & Budget",
+      "reviewPost": "Überprüfen & Posten"
+    },
+    "stepDescriptions": {
+      "jobDetails": "Erzählen Sie uns von dem Job, den Sie erledigt haben möchten",
+      "scheduleBudget": "Legen Sie Ihren Zeitplan und Ihr Budget fest",
+      "reviewPost": "Überprüfen und veröffentlichen Sie Ihren Job"
+    },
+    "jobDetails": {
+      "title": "Job-Titel",
+      "titlePlaceholder": "z.B. Hausreinigung für 3-Zimmer-Wohnung benötigt",
+      "description": "Job-Beschreibung",
+      "descriptionPlaceholder": "Beschreiben Sie, was erledigt werden muss, spezielle Anforderungen und was enthalten ist...",
+      "category": "Service-Kategorie",
+      "service": "Spezifischer Service",
+      "location": "Job-Standort",
+      "requirements": "Besondere Anforderungen (Optional)",
+      "requirementsPlaceholder": "Besondere Anweisungen, benötigte Materialien oder spezielle Anforderungen...",
+      "images": "Fotos Hinzufügen (Optional)",
+      "imagesDescription": "Laden Sie Fotos hoch, um Taskern zu helfen, den Job besser zu verstehen"
+    },
+    "scheduleBudget": {
+      "preferredDate": "Bevorzugtes Datum",
+      "preferredTime": "Bevorzugte Zeit",
+      "timeFlexible": "Zeit ist flexibel",
+      "estimatedDuration": "Geschätzte Dauer (Stunden)",
+      "durationPlaceholder": "Wie lange wird das Ihrer Meinung nach dauern?",
+      "budget": "Ihr Budget",
+      "budgetPlaceholder": "Wie hoch ist Ihr Budget für diesen Job?",
+      "currency": "Währung",
+      "maxApplications": "Maximale Bewerbungen",
+      "maxApplicationsDescription": "Wie viele Tasker-Bewerbungen möchten Sie erhalten?"
+    },
+    "review": {
+      "title": "Überprüfen Sie Ihre Job-Anzeige",
+      "description": "Bitte überprüfen Sie alle Details, bevor Sie Ihren Job veröffentlichen",
+      "jobOverview": "Job-Übersicht",
+      "scheduleBudget": "Zeitplan & Budget",
+      "publishJob": "Job Veröffentlichen",
+      "publishingJob": "Job wird veröffentlicht..."
+    },
+    "success": {
+      "jobPosted": "Job erfolgreich gepostet!",
+      "jobPostedDescription": "Ihr Job wurde veröffentlicht und Tasker können sich jetzt bewerben."
+    },
+    "errors": {
+      "titleRequired": "Job-Titel ist erforderlich",
+      "descriptionRequired": "Job-Beschreibung ist erforderlich",
+      "categoryRequired": "Bitte wählen Sie eine Service-Kategorie",
+      "serviceRequired": "Bitte wählen Sie einen spezifischen Service",
+      "locationRequired": "Bitte wählen Sie einen Job-Standort",
+      "dateRequired": "Bitte wählen Sie ein bevorzugtes Datum",
+      "budgetRequired": "Bitte geben Sie Ihr Budget ein",
+      "budgetGreaterThanZero": "Budget muss größer als 0 sein",
+      "durationGreaterThanZero": "Dauer muss größer als 0 sein",
+      "maxApplicationsRequired": "Bitte legen Sie maximale Bewerbungen fest",
+      "maxApplicationsGreaterThanZero": "Maximale Bewerbungen müssen größer als 0 sein",
+      "jobCreationFailed": "Job konnte nicht erstellt werden",
+      "notLoggedIn": "Bitte melden Sie sich an, um einen Job zu posten",
+      "onlyCustomersCanPost": "Nur Kunden können Jobs posten",
+      "taskersCannotPost": "Tasker können keine Jobs posten. Bitte wechseln Sie zu einem Kundenkonto."
+    },
+    "tips": {
+      "title": "Tipps für eine großartige Job-Anzeige",
+      "tip1": "Seien Sie spezifisch bezüglich Ihrer Bedürfnisse und Anforderungen",
+      "tip2": "Fügen Sie Fotos hinzu, um Taskern zu helfen, den Job besser zu verstehen",
+      "tip3": "Legen Sie ein realistisches Budget basierend auf Marktpreisen fest",
+      "tip4": "Seien Sie flexibel mit der Zeit, um mehr Bewerbungen zu erhalten"
+    }
+  }
+}

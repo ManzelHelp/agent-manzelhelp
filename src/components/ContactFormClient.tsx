@@ -20,6 +20,7 @@ interface ContactFormClientProps {
 
 export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as ContactFormClientProps) {
   const t = useTranslations("contact.form");
+  const tCommon = useTranslations("common");
   const { user } = useUserStore();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -96,7 +97,7 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
         } else {
           toast({
             variant: "destructive",
-            title: "Erreur",
+            title: tCommon("error"),
             description: result.errorMessage || t("errors.submitFailed"),
           });
         }
@@ -104,7 +105,7 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
         console.error("Error submitting contact form:", error);
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: tCommon("error"),
           description: t("errors.submitFailed"),
         });
       }
@@ -237,7 +238,7 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
         )}
         {!errors.message && messageValue && (
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {messageValue.length} / 5000 caractères
+            {messageValue.length} / 5000 {t("fields.characters")}
           </p>
         )}
       </div>

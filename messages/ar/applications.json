@@ -1,0 +1,49 @@
+{
+  "applications": {
+    "title": "طلبات الوظائف",
+    "subtitle": "راجع الطلبات من المساعدين لوظيفتك",
+    "noApplications": "لا توجد طلبات بعد",
+    "noApplicationsDescription": "لم يتقدم المساعدون لوظيفتك بعد. وظيفتك نشطة ومرئية للمساعدين المؤهلين.",
+    "applicationCard": {
+      "appliedOn": "تم التقديم في",
+      "proposedPrice": "السعر المقترح",
+      "estimatedDuration": "المدة المقدرة",
+      "availability": "متى أكون متاحًا",
+      "experience": "الخبرة",
+      "message": "الرسالة",
+      "contactInfo": "معلومات الاتصال",
+      "viewProfile": "عرض الملف الشخصي",
+      "acceptApplication": "قبول الطلب",
+      "rejectApplication": "رفض الطلب",
+      "contactTasker": "الاتصال بالمساعد",
+      "premiumApplication": "طلب مميز",
+      "verifiedTasker": "مساعد موثق"
+    },
+    "actions": {
+      "accept": "قبول",
+      "reject": "رفض",
+      "contact": "اتصال",
+      "viewProfile": "عرض الملف الشخصي"
+    },
+    "confirmations": {
+      "acceptTitle": "قبول الطلب",
+      "acceptDescription": "هل أنت متأكد من أنك تريد قبول هذا الطلب؟ سيؤدي هذا إلى تعيين المساعد لوظيفتك وإشعاره.",
+      "rejectTitle": "رفض الطلب",
+      "rejectDescription": "هل أنت متأكد من أنك تريد رفض هذا الطلب؟ سيتم إشعار المساعد ولن يتمكن من التقديم مرة أخرى.",
+      "confirmAccept": "نعم، قبول",
+      "confirmReject": "نعم، رفض",
+      "cancel": "إلغاء"
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "accepted": "مقبول",
+      "rejected": "مرفوض"
+    },
+    "errors": {
+      "loadFailed": "فشل تحميل الطلبات",
+      "acceptFailed": "فشل قبول الطلب",
+      "rejectFailed": "فشل رفض الطلب",
+      "unauthorized": "ليس لديك إذن لعرض هذه الطلبات"
+    }
+  }
+}

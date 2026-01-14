@@ -9,12 +9,13 @@ import {
   Clock,
   MapPin,
   MessageSquare,
-  Phone,
 } from "lucide-react";
 import { BookingWithDetails } from "@/actions/bookings";
 import { useRouter } from "next/navigation";
 import { createConversationAction } from "@/actions/messages";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import { formatDateShort } from "@/lib/date-utils";
 
 interface CustomerBookingCardProps {
   booking: BookingWithDetails;
@@ -27,7 +28,7 @@ interface CustomerBookingCardProps {
   };
 }
 
-// Utility functions moved outside component to avoid re-creation
+// Fonctions utilitaires conservées et adaptées pour la traduction
 const formatCurrency = (amount: number, currency: string) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -35,13 +36,6 @@ const formatCurrency = (amount: number, currency: string) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
-};
-
-import { formatDateShort } from "@/lib/date-utils";
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "Date not set";
-  return formatDateShort(dateString);
 };
 
 const formatTime = (timeString: string | null) => {
@@ -64,19 +58,6 @@ const formatDuration = (minutes: number | null) => {
   } else {
     return `${mins}m`;
   }
-};
-
-const getTaskerName = (booking: BookingWithDetails) => {
-  const firstName = booking.tasker_first_name || "";
-  const lastName = booking.tasker_last_name || "";
-  return `${firstName} ${lastName}`.trim() || "Tasker";
-};
-
-const getLocation = (booking: BookingWithDetails) => {
-  const parts = [booking.street_address, booking.city, booking.region].filter(
-    Boolean
-  );
-  return parts.join(", ") || "Location not specified";
 };
 
 const getStatusColor = (status: string) => {
@@ -104,14 +85,25 @@ const getStatusColor = (status: string) => {
 
 export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
   ({ booking, onActionClick, isUpdating, actionButton }) => {
+    const t = useTranslations("customerBookings");
     const router = useRouter();
     const [isOpeningMessage, setIsOpeningMessage] = useState(false);
-    const taskerName = getTaskerName(booking);
-    const location = getLocation(booking);
+
+    // Helpers utilisant les traductions
+    const taskerName = `${booking.tasker_first_name || ""} ${booking.tasker_last_name || ""}`.trim() || t("tasker");
+    
+    const location = [booking.street_address, booking.city, booking.region]
+      .filter(Boolean)
+      .join(", ") || t("locationNotSpecified");
+
+    const formatDate = (dateString: string | null) => {
+      if (!dateString) return t("dateNotSet");
+      return formatDateShort(dateString);
+    };
 
     const handleMessageClick = async () => {
       if (!booking.tasker_id) {
-        toast.error("Tasker information not available");
+        toast.error(t("errors.taskerNotAvailable"));
         return;
       }
 
@@ -119,25 +111,24 @@ export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
         setIsOpeningMessage(true);
         const result = await createConversationAction(
           booking.tasker_id,
-          undefined, // jobId
-          undefined, // serviceId
-          booking.id, // bookingId
-          `Hello! I'd like to discuss the booking for "${booking.service_title || "service"}".` // initialMessage
+          undefined,
+          undefined,
+          booking.id,
+          t("actions.initialMessage", { title: booking.service_title || t("service") })
         );
 
         if (result.conversation) {
           router.push(`/customer/messages/${result.conversation.id}`);
         } else {
-          toast.error(result.errorMessage || "Failed to open conversation");
+          toast.error(result.errorMessage || t("errors.unexpectedError"));
         }
       } catch (error) {
         console.error("Error opening conversation:", error);
-        toast.error("Failed to open conversation");
+        toast.error(t("errors.unexpectedError"));
       } finally {
         setIsOpeningMessage(false);
       }
     };
-
 
     return (
       <Card className="border-color-border bg-color-surface shadow-sm hover:shadow-md transition-shadow">
@@ -146,14 +137,14 @@ export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
             <div className="space-y-3 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
-                  {booking.service_title || "Service"}
+                  {booking.service_title || t("service")}
                 </h3>
                 <span
                   className={`text-xs px-2 py-1 rounded-full font-medium border ${getStatusColor(
                     booking.status
                   )}`}
                 >
-                  {booking.status.replace("_", " ")}
+                  {t(`status.${booking.status}`)}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-color-text-secondary mobile-leading">
@@ -206,14 +197,14 @@ export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
                 </Button>
               )}
 
-              {/* View Booking Button - Always visible */}
+              {/* View Booking Button */}
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => router.push(`/customer/bookings/${booking.id}`)}
                 className="w-full sm:w-auto touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
               >
-                View Details
+                {t("viewDetails")}
               </Button>
 
               <div className="flex gap-2 w-full sm:w-auto">

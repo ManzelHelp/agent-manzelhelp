@@ -1,0 +1,99 @@
+{
+  "termsOfService": {
+    "hero": {
+      "title": "Nutzungsbedingungen",
+      "description": "Bitte lesen Sie diese Bedingungen sorgfältig durch, bevor Sie unsere Dienste nutzen.",
+      "lastUpdated": "Zuletzt aktualisiert:"
+    },
+    "sections": {
+      "acceptanceOfTerms": {
+        "title": "1. Annahme der Bedingungen",
+        "description": "Durch den Zugriff auf und die Nutzung von ManzelHelp (\"der Dienst\") akzeptieren und stimmen Sie zu, an die Bedingungen und Bestimmungen dieser Vereinbarung gebunden zu sein. Wenn Sie nicht zustimmen, sich an das oben Genannte zu halten, verwenden Sie diesen Dienst bitte nicht."
+      },
+      "descriptionOfService": {
+        "title": "2. Beschreibung des Dienstes",
+        "description": "ManzelHelp ist eine Plattform, die Dienstleister (\"Helfer\") mit Kunden verbindet, die verschiedene Dienstleistungen suchen. Wir erleichtern die Verbindung, sind aber nicht Partei der tatsächlichen Servicevereinbarungen zwischen Benutzern."
+      },
+      "userAccounts": {
+        "title": "3. Benutzerkonten",
+        "description": "Um unseren Dienst zu nutzen, müssen Sie:",
+        "items": {
+          "accurateInfo": "Genaue und vollständige Informationen bereitstellen",
+          "maintainSecurity": "Die Sicherheit Ihres Kontos aufrechterhalten",
+          "ageRequirement": "Mindestens 18 Jahre alt sein (oder elterliche Zustimmung haben)",
+          "complyLaws": "Alle geltenden Gesetze und Vorschriften einhalten"
+        }
+      },
+      "userResponsibilities": {
+        "title": "4. Benutzerverantwortlichkeiten",
+        "description": "Benutzer stimmen zu:",
+        "items": {
+          "lawfulPurposes": "Den Dienst nur für rechtmäßige Zwecke nutzen",
+          "notInterfere": "Den Dienst nicht stören oder unterbrechen",
+          "notImpersonate": "Sich nicht als Person oder Entität ausgeben",
+          "respectUsers": "Andere Benutzer respektieren und professionelles Verhalten aufrechterhalten",
+          "accurateServiceInfo": "Genaue Informationen über Dienstleistungen und Preise bereitstellen",
+          "completeServices": "Vereinbarte Dienstleistungen rechtzeitig abschließen"
+        }
+      },
+      "prohibitedActivities": {
+        "title": "5. Verbotene Aktivitäten",
+        "description": "Die folgenden Aktivitäten sind verboten:",
+        "items": {
+          "falseInfo": "Veröffentlichung falscher, irreführender oder betrügerischer Informationen",
+          "harassment": "Belästigung, Missbrauch oder bedrohliches Verhalten",
+          "spam": "Spam, unerwünschte Kommunikation oder Werbung",
+          "ipViolation": "Verletzung geistiger Eigentumsrechte",
+          "circumventPayment": "Versuch, unser Zahlungssystem zu umgehen",
+          "illegalActivities": "Illegale oder schädliche Aktivitäten"
+        }
+      },
+      "paymentTerms": {
+        "title": "6. Zahlungsbedingungen",
+        "description": "Die Zahlungsabwicklung erfolgt über sichere Drittanbieter. Benutzer stimmen zu:",
+        "items": {
+          "payFees": "Alle Gebühren und Kosten wie beschrieben zahlen",
+          "accuratePayment": "Genaue Zahlungsinformationen bereitstellen",
+          "authorizeCharges": "Gebühren für erbrachte Dienstleistungen autorisieren",
+          "finalSales": "Verstehen, dass alle Verkäufe endgültig sind, sofern nicht anders angegeben"
+        }
+      },
+      "disputeResolution": {
+        "title": "7. Streitbeilegung",
+        "description": "Im Falle von Streitigkeiten zwischen Benutzern fördern wir direkte Kommunikation und Lösung. ManzelHelp kann bei der Streitbeilegung helfen, ist aber nicht für das Ergebnis von Servicevereinbarungen zwischen Benutzern verantwortlich."
+      },
+      "limitationOfLiability": {
+        "title": "8. Haftungsbeschränkung",
+        "description": "ManzelHelp fungiert als Plattform, die Benutzer verbindet, und ist nicht verantwortlich für:",
+        "items": {
+          "serviceQuality": "Die Qualität oder das Ergebnis der erbrachten Dienstleistungen",
+          "userConduct": "Benutzerverhalten oder Interaktionen",
+          "damages": "Schäden aus Servicevereinbarungen",
+          "thirdParty": "Handlungen oder Inhalte Dritter"
+        }
+      },
+      "intellectualProperty": {
+        "title": "9. Geistiges Eigentum",
+        "description": "Die ManzelHelp-Plattform, einschließlich ihres Designs, ihrer Funktionalität und ihres Inhalts, ist durch Gesetze zum geistigen Eigentum geschützt. Benutzer behalten Rechte an ihrem eigenen Inhalt, gewähren uns jedoch eine Lizenz, ihn in Verbindung mit unseren Diensten zu verwenden."
+      },
+      "termination": {
+        "title": "10. Kündigung",
+        "description": "Wir behalten uns das Recht vor, Konten zu kündigen oder zu sperren, die diese Bedingungen verletzen. Benutzer können ihre Konten auch jederzeit kündigen. Bei Kündigung gelten bestimmte Bestimmungen dieser Bedingungen weiterhin."
+      },
+      "changesToTerms": {
+        "title": "11. Änderungen der Bedingungen",
+        "description": "Wir können diese Bedingungen jederzeit ändern. Die fortgesetzte Nutzung des Dienstes nach Änderungen stellt eine Annahme der aktualisierten Bedingungen dar. Wir werden Benutzer über wesentliche Änderungen über die Plattform oder per E-Mail benachrichtigen."
+      },
+      "governingLaw": {
+        "title": "12. Geltendes Recht",
+        "description": "Diese Bedingungen unterliegen den Gesetzen von [Ihre Gerichtsbarkeit]. Streitigkeiten werden vor den Gerichten von [Ihre Gerichtsbarkeit] beigelegt."
+      },
+      "contactInformation": {
+        "title": "13. Kontaktinformationen",
+        "description": "Bei Fragen zu diesen Nutzungsbedingungen kontaktieren Sie uns bitte unter:",
+        "email": "E-Mail:",
+        "emailValue": "legal@manzelhelp.com"
+      }
+    }
+  }
+}

@@ -305,9 +305,6 @@ export default function DashboardPage() {
                 `${stats.walletBalance.toLocaleString()} MAD`
               )}
             </div>
-            <p className="text-sm opacity-90">
-              {t("availableForWithdrawals")}
-            </p>
           </CardContent>
         </Card>
 

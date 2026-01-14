@@ -1,0 +1,43 @@
+{
+  "reviews": {
+    "reviewsAndFeedback": "Bewertungen & Feedback",
+    "monitorPerformance": "Überwachen Sie Ihre Leistung und bauen Sie Vertrauen mit Kunden durch sinnvolle Interaktionen auf",
+    "averageRating": "Durchschnittliche Bewertung",
+    "basedOnReviews": "Basierend auf {count} Bewertungen",
+    "fiveStarReviews": "5-Sterne-Bewertungen",
+    "excellenceRate": "Exzellenzrate",
+    "responseRate": "Antwortrate",
+    "responseRateLabel": "Antwortrate",
+    "clientEngagement": "Kundenbindung",
+    "totalReviews": "Gesamtbewertungen",
+    "totalReviewsCount": "{count} Gesamtbewertungen",
+    "allTimeFeedback": "Gesamtes Feedback",
+    "clientReviews": "Kundenbewertungen",
+    "reviewCount": "{count} Bewertung",
+    "all": "Alle",
+    "fourStarPlus": "4★+",
+    "threeStarMinus": "3★-",
+    "needsReply": "Benötigt Antwort",
+    "yourResponse": "Ihre Antwort",
+    "repliedOn": "Beantwortet am {date}",
+    "quality": "Qualität",
+    "communication": "Kommunikation",
+    "timeliness": "Pünktlichkeit",
+    "totalReviewsLabel": "Gesamtbewertungen",
+    "noReviewsFound": "Keine Bewertungen gefunden",
+    "greatJob": "Gute Arbeit! Sie haben auf alle Bewertungen geantwortet.",
+    "noReviewsMatch": "Keine Bewertungen entsprechen dem ausgewählten Filter. Versuchen Sie, Ihre Filterkriterien anzupassen.",
+    "filterApplied": "Filter angewendet",
+    "replyToReview": "Auf Bewertung antworten",
+    "writeThoughtfulResponse": "Schreiben Sie eine durchdachte Antwort auf diese Bewertung...",
+    "sendReply": "Antwort senden",
+    "sending": "Wird gesendet...",
+    "cancel": "Abbrechen",
+    "client": "Kunde",
+    "reviewCountPlural": "{count} Bewertungen",
+    "charactersCount": "{count}/1000 Zeichen",
+    "success": {
+      "replySubmitted": "Antwort erfolgreich gesendet!"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "Header": {
+    "services": "Services",
+    "about_us": "About Us",
+    "become_helper": "Become a Helper",
+    "find_helper": "Find a Helper",
+    "sign_up": "Sign Up",
+    "login": "Login",
+    "create_offer": "Create Offer",
+    "close_menu": "Close Menu",
+    "open_menu": "Open Menu",
+    "jobs": "Jobs",
+    "bookings": "Bookings",
+    "finance": "Finance",
+    "messages": "Messages",
+    "reviews": "Reviews",
+    "myServices": "My Services",
+    "myJobs": "My Jobs",
+    "browseServices": "Browse Services",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "tasker": "Tasker",
+    "customer": "Customer",
+    "contactSupport": "Contact Support"
+  }
+}

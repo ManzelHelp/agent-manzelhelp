@@ -92,8 +92,8 @@ export function TransactionDetailDrawer({
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()} direction="bottom">
-      <DrawerContent className="max-h-[90vh] overflow-y-auto">
-        <DrawerHeader className="border-b">
+      <DrawerContent className="max-h-[90vh] flex flex-col overflow-hidden">
+        <DrawerHeader className="border-b flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {getStatusIcon(transaction.paymentStatus)}
@@ -114,7 +114,7 @@ export function TransactionDetailDrawer({
           </div>
         </DrawerHeader>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1 scrollbar-hide">
           {/* Amount Section */}
           <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-6 border border-primary/20">
             <div className="flex items-center justify-between">
@@ -180,7 +180,7 @@ export function TransactionDetailDrawer({
               {transaction.paymentMethod && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{t("paymentMethod", { default: "Payment Method" })}</p>
-                  <p className="font-medium capitalize">{transaction.paymentMethod}</p>
+                  <p className="font-medium">{tFinance(`status.${transaction.paymentMethod?.toLowerCase()}`, { default: transaction.paymentMethod })}</p>
                 </div>
               )}
 
@@ -256,7 +256,7 @@ export function TransactionDetailDrawer({
           )}
         </div>
 
-        <DrawerFooter className="border-t">
+        <DrawerFooter className="border-t flex-shrink-0">
           <DrawerClose asChild>
             <Button variant="outline" className="w-full">
               {t("close", { default: "Close" })}

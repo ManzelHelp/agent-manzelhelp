@@ -1,0 +1,103 @@
+{
+  "homepage": {
+    "title": "مرحباً بك في ManzelHelp",
+    "description": "مكان ودود حيث يمكن للمستخدمين تقديم وطلب خدمات مثل الأعمال المنزلية والدروس الخصوصية ورعاية الحيوانات الأليفة والمزيد. تواصل ومساعدة ونمو معاً!",
+    "servicesOffered": "الخدمات المقدمة",
+    "servicesOfferedPlaceholder": "قريباً: تصفح الخدمات المتاحة",
+    "requestService": "طلب خدمة",
+    "requestServicePlaceholder": "قريباً: انشر احتياجاتك من الخدمات",
+    "jobsOffered": "الوظائف المتاحة",
+    "jobsOfferedTitle": "ابحث عن فرصتك القادمة",
+    "jobsOfferedDescription": "اكتشف فرص عمل مثيرة نشرها العملاء في منطقتك",
+    "noJobsAvailable": "لا توجد وظائف متاحة في الوقت الحالي",
+    "noJobsAvailableDescription": "تحقق مرة أخرى قريباً للحصول على فرص رائعة من عملائنا!",
+    "becomeTasker": "كن مساعداً",
+    "whyTitle": "لماذا ManzelHelp؟",
+    "why1": "تواصل مع مساعدين محليين موثوقين",
+    "why2": "قدم مهاراتك واكسب دخلاً إضافياً",
+    "why3": "سهل وودود وآمن",
+    "trustedBy": "موثوق به من قبل أكثر من 1000 عميل",
+    "stats": {
+      "verifiedTaskers": "مساعدون موثقون",
+      "serviceCategories": "فئات الخدمات",
+      "happyCustomers": "عملاء سعداء",
+      "averageRating": "التقييم المتوسط"
+    },
+    "popularServices": {
+      "badge": "الخدمات الشائعة",
+      "title": "استكشف خدماتنا",
+      "description": "اكتشف فئات الخدمات الأكثر شيوعاً وابحث عن المساعد المثالي لاحتياجاتك",
+      "categoryDescription": "خدمات مهنية في هذه الفئة",
+      "exploreButton": "استكشف الخدمات",
+      "verifiedTaskers": "مساعدون موثقون",
+      "qualityGuaranteed": "الجودة مضمونة",
+      "topRated": "الأعلى تقييماً"
+    },
+    "featuredServices": {
+      "badge": "الخدمات المميزة",
+      "description": "اكتشف المساعدين الأعلى تقييماً الذين يقدمون خدمات مهنية في منطقتك",
+      "noServices": "لا توجد خدمات متاحة في الوقت الحالي",
+      "noServicesDescription": "تحقق مرة أخرى قريباً للحصول على خدمات رائعة من مساعدينا الموثقين!",
+      "viewAll": "عرض جميع الخدمات"
+    },
+    "whyChooseUs": {
+      "badge": "لماذا تختارنا",
+      "description": "نوصل بينك وبين المحترفين المهرة الموثقين لجميع احتياجات منزلك وأعمالك",
+      "verifiedProfessionals": {
+        "title": "محترفون موثقون",
+        "description": "جميع مساعدينا يتم فحصهم بدقة والتحقق من خلفياتهم لسلامتك وراحة بالك"
+      },
+      "quickReliable": {
+        "title": "سريع وموثوق",
+        "description": "احصل على مطابقة مع مساعدين متاحين في منطقتك في غضون دقائق، متاح 24/7"
+      },
+      "qualityGuaranteed": {
+        "title": "الجودة مضمونة",
+        "description": "رضا مضمون مع ضمان الجودة وفريق دعم العملاء المخصص"
+      },
+      "bestPrices": {
+        "title": "أفضل الأسعار",
+        "description": "أسعار تنافسية للخدمات عالية الجودة"
+      },
+      "trustedPlatform": {
+        "title": "منصة موثوقة",
+        "description": "مدفوعات آمنة وتقييمات"
+      },
+      "instantBooking": {
+        "title": "حجز فوري",
+        "description": "احجز الخدمات في ثوانٍ"
+      },
+      "topRated": {
+        "title": "الأعلى تقييماً",
+        "description": "تقييم متوسط 4.8★"
+      }
+    },
+    "offeredJobs": {
+      "badge": "الوظائف المتاحة",
+      "title": "ابحث عن وظيفتك القادمة",
+      "description": "تصفح الوظائف المتاحة التي نشرها العملاء وتقدم للبدء في الكسب",
+      "noJobs": "لا توجد وظائف متاحة في الوقت الحالي",
+      "noJobsDescription": "تحقق مرة أخرى قريباً للحصول على فرص عمل جديدة من عملائنا!",
+      "viewAllJobs": "عرض جميع الوظائف",
+      "becomeTasker": "كن مساعداً",
+      "stats": {
+        "newJobsDaily": "وظائف جديدة يومياً",
+        "newJobsDailyDescription": "فرص جديدة تُنشر بانتظام",
+        "competitiveRates": "أسعار تنافسية",
+        "competitiveRatesDescription": "تعويض عادل للعمل عالي الجودة",
+        "verifiedCustomers": "عملاء موثقون",
+        "verifiedCustomersDescription": "اعمل مع عملاء موثوقين"
+      }
+    },
+    "cta": {
+      "badge": "انضم إلى مجتمعنا",
+      "title": "هل أنت مستعد للبدء؟",
+      "description": "انضم إلى آلاف العملاء الراضين الذين يثقون بنا لاحتياجاتهم من الخدمات",
+      "findTasker": "ابحث عن مساعد",
+      "findJobs": "ابحث عن وظائف",
+      "securePlatform": "منصة آمنة",
+      "verifiedTaskers": "مساعدون موثقون",
+      "support24_7": "دعم 24/7"
+    }
+  }
+}

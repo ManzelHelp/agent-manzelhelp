@@ -1,0 +1,85 @@
+{
+  "becomeAHelper": {
+    "hero": {
+      "badge": "Rejoignez des milliers d'assistants qui réussissent",
+      "titlePart1": "Transformez Vos Compétences",
+      "titlePart2": "en Revenus",
+      "description": "Prêt à gagner de l'argent en faisant ce que vous aimez ? Rejoignez ManzelHelp en tant qu'assistant et connectez-vous avec des personnes qui ont besoin de votre expertise.",
+      "descriptionBold": "Que vous nettoyiez, répariez, donniez des cours ou aidiez de quelque manière que ce soit, vous pouvez faire une différence et être payé pour cela !"
+    },
+    "stats": {
+      "activeHelpers": {
+        "value": "10K+",
+        "label": "Assistants Actifs"
+      },
+      "earned": {
+        "label": "Gagné par les Assistants"
+      },
+      "averageRating": {
+        "value": "4.9★",
+        "label": "Note Moyenne"
+      }
+    },
+    "benefitsSection": {
+      "title": "Pourquoi Choisir",
+      "titleHighlight": "ManzelHelp ?",
+      "description": "Rejoignez une plateforme conçue pour vous aider à réussir et développer votre activité"
+    },
+    "benefits": {
+      "earnMoney": {
+        "title": "Gagner de l'Argent",
+        "description": "Fixez vos propres tarifs et soyez payé pour vos compétences et votre temps"
+      },
+      "helpCommunity": {
+        "title": "Aidez Votre Communauté",
+        "description": "Faites une vraie différence dans la vie des gens tout en construisant votre réputation"
+      },
+      "buildReputation": {
+        "title": "Construisez Votre Réputation",
+        "description": "Gagnez des avis et des notes qui mettent en valeur votre expertise"
+      },
+      "flexibleSchedule": {
+        "title": "Horaire Flexible",
+        "description": "Travaillez quand vous voulez, où vous voulez - contrôle total sur votre temps"
+      },
+      "securePayments": {
+        "title": "Paiements Sécurisés",
+        "description": "Soyez payé en toute sécurité grâce à notre système de paiement protégé"
+      },
+      "makeConnections": {
+        "title": "Créez des Connexions",
+        "description": "Construisez des relations durables avec des clients qui valorisent votre travail"
+      }
+    },
+    "howItWorks": {
+      "title": "Comment",
+      "titleHighlight": "Commencer",
+      "description": "Commencez à gagner en seulement 4 étapes simples"
+    },
+    "steps": {
+      "createAccount": {
+        "title": "Créez Votre Compte",
+        "description": "Inscrivez-vous en quelques minutes avec juste votre e-mail et vos informations de base"
+      },
+      "buildProfile": {
+        "title": "Construisez Votre Profil",
+        "description": "Ajoutez vos compétences, votre expérience et montrez ce qui vous rend unique"
+      },
+      "listServices": {
+        "title": "Listez Vos Services",
+        "description": "Décrivez ce que vous offrez, fixez vos tarifs et définissez votre zone de service"
+      },
+      "startEarning": {
+        "title": "Commencez à Gagner",
+        "description": "Connectez-vous avec des clients, complétez des tâches et soyez payé pour votre expertise"
+      }
+    },
+    "cta": {
+      "badge": "Prêt à commencer à gagner ?",
+      "title": "Rejoignez Notre Communauté d'",
+      "titleHighlight": "Assistants qui Réussissent",
+      "description": "N'attendez pas - commencez votre voyage aujourd'hui et commencez à gagner de l'argent en faisant ce que vous aimez. Rejoignez des milliers d'assistants qui font déjà une différence dans leurs communautés.",
+      "features": "✓ Inscription gratuite ✓ Aucuns frais mensuels ✓ Commencez à gagner immédiatement"
+    }
+  }
+}

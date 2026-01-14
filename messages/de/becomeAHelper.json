@@ -1,0 +1,85 @@
+{
+  "becomeAHelper": {
+    "hero": {
+      "badge": "Schließen Sie sich Tausenden erfolgreicher Helfer an",
+      "titlePart1": "Verwandeln Sie Ihre Fähigkeiten",
+      "titlePart2": "in Einkommen",
+      "description": "Bereit, Geld zu verdienen, indem Sie tun, was Sie lieben? Schließen Sie sich ManzelHelp als Helfer an und verbinden Sie sich mit Menschen, die Ihre Expertise benötigen.",
+      "descriptionBold": "Ob Sie putzen, reparieren, unterrichten oder auf andere Weise helfen - Sie können einen Unterschied machen und dafür bezahlt werden!"
+    },
+    "stats": {
+      "activeHelpers": {
+        "value": "10K+",
+        "label": "Aktive Helfer"
+      },
+      "earned": {
+        "label": "Von Helfern Verdient"
+      },
+      "averageRating": {
+        "value": "4.9★",
+        "label": "Durchschnittliche Bewertung"
+      }
+    },
+    "benefitsSection": {
+      "title": "Warum",
+      "titleHighlight": "ManzelHelp wählen?",
+      "description": "Schließen Sie sich einer Plattform an, die darauf ausgelegt ist, Ihnen beim Erfolg zu helfen und Ihr Geschäft auszubauen"
+    },
+    "benefits": {
+      "earnMoney": {
+        "title": "Geld Verdienen",
+        "description": "Legen Sie Ihre eigenen Preise fest und werden Sie für Ihre Fähigkeiten und Zeit bezahlt"
+      },
+      "helpCommunity": {
+        "title": "Helfen Sie Ihrer Gemeinschaft",
+        "description": "Machen Sie einen echten Unterschied im Leben der Menschen und bauen Sie gleichzeitig Ihren Ruf auf"
+      },
+      "buildReputation": {
+        "title": "Bauen Sie Ihren Ruf auf",
+        "description": "Verdienen Sie Bewertungen und Noten, die Ihre Expertise zeigen"
+      },
+      "flexibleSchedule": {
+        "title": "Flexibler Zeitplan",
+        "description": "Arbeiten Sie, wann und wo Sie wollen - vollständige Kontrolle über Ihre Zeit"
+      },
+      "securePayments": {
+        "title": "Sichere Zahlungen",
+        "description": "Werden Sie sicher durch unser geschütztes Zahlungssystem bezahlt"
+      },
+      "makeConnections": {
+        "title": "Verbindungen Knüpfen",
+        "description": "Bauen Sie dauerhafte Beziehungen zu Kunden auf, die Ihre Arbeit schätzen"
+      }
+    },
+    "howItWorks": {
+      "title": "Wie man",
+      "titleHighlight": "Loslegt",
+      "description": "Beginnen Sie in nur 4 einfachen Schritten zu verdienen"
+    },
+    "steps": {
+      "createAccount": {
+        "title": "Erstellen Sie Ihr Konto",
+        "description": "Melden Sie sich in wenigen Minuten mit Ihrer E-Mail und grundlegenden Informationen an"
+      },
+      "buildProfile": {
+        "title": "Erstellen Sie Ihr Profil",
+        "description": "Fügen Sie Ihre Fähigkeiten, Erfahrung hinzu und zeigen Sie, was Sie einzigartig macht"
+      },
+      "listServices": {
+        "title": "Listen Sie Ihre Dienstleistungen",
+        "description": "Beschreiben Sie, was Sie anbieten, legen Sie Ihre Preise fest und definieren Sie Ihr Servicegebiet"
+      },
+      "startEarning": {
+        "title": "Beginnen Sie zu Verdienen",
+        "description": "Verbinden Sie sich mit Kunden, erledigen Sie Aufgaben und werden Sie für Ihre Expertise bezahlt"
+      }
+    },
+    "cta": {
+      "badge": "Bereit, mit dem Verdienen zu beginnen?",
+      "title": "Schließen Sie sich unserer Gemeinschaft von",
+      "titleHighlight": "Erfolgreichen Helfern an",
+      "description": "Warten Sie nicht - beginnen Sie heute Ihre Reise und verdienen Sie Geld, indem Sie tun, was Sie lieben. Schließen Sie sich Tausenden von Helfern an, die bereits einen Unterschied in ihren Gemeinden machen.",
+      "features": "✓ Kostenlos beitreten ✓ Keine monatlichen Gebühren ✓ Sofort mit dem Verdienen beginnen"
+    }
+  }
+}

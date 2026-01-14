@@ -1,0 +1,47 @@
+{
+  "customerBookings": {
+    "service": "Service",
+    "tasker": "Tasker",
+    "locationNotSpecified": "Location not specified",
+    "dateNotSet": "Date not set",
+    "viewDetails": "View Details",
+    "title": "My Bookings",
+    "description": "Track and manage all your service bookings in one place",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "disputed": "Disputed",
+      "refunded": "Refunded"
+    },
+    "actions": {
+      "cancelBooking": "Cancel Booking",
+      "loadMoreBookings": "Load More",
+      "tryAgain": "Try Again"
+    },
+    "confirmations": {
+      "cancel": {
+        "title": "Cancel Booking",
+        "description": "Are you sure you want to cancel this booking with {taskerName}? This action cannot be undone.",
+        "confirmText": "Yes, cancel booking"
+      }
+    },
+    "success": {
+      "bookingCancelled": "Booking cancelled successfully"
+    },
+    "errors": {
+      "cancelFailed": "Failed to cancel booking",
+      "unexpectedError": "An unexpected error occurred",
+      "loadFailed": "Failed to load bookings"
+    },
+    "loading": {
+      "loadingMore": "Loading more..."
+    },
+    "results": {
+      "showing": "Showing {current} of {total} bookings"
+    }
+  }
+}

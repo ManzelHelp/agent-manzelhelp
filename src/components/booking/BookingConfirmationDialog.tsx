@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast"; // CHANGEMENT
-import { createBookingSchema } from "@/lib/schemas/bookings"; // CHANGEMENT
+import { useToast } from "@/hooks/use-toast";
+import { createBookingSchema } from "@/lib/schemas/bookings";
 import { getCustomerProfileData } from "@/actions/profile";
 import { createServiceBooking } from "@/actions/bookings";
 import {
@@ -16,13 +16,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, User, CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceData }: any) {
-  const { toast } = useToast(); // HOOK TOAST
+  const { toast } = useToast();
   const t = useTranslations("taskerOffer.bookingDialog");
+  const tCommon = useTranslations("common");
+
   const [formData, setFormData] = useState({
     booking_type: "instant" as any,
     scheduled_date: "",
@@ -33,6 +34,7 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
     customer_requirements: "",
     payment_method: "wallet" as any
   });
+  
   const [addresses, setAddresses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +46,6 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
         getCustomerProfileData().then(res => {
             setAddresses(res.addresses || []);
             if (res.addresses?.length > 0) {
-              // Convertir l'ID en string pour correspondre au schéma Zod
               setFormData(prev => ({...prev, address_id: String(res.addresses[0].id)}));
             }
             setIsLoading(false);
@@ -55,8 +56,6 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 1. Validation Zod (Front-end) - Messages inline sous les champs
-    // z.coerce dans le schéma gère automatiquement les conversions de type
     const validationData = {
         ...formData,
         tasker_id: serviceData.tasker.id,
@@ -67,7 +66,6 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
     const validation = createBookingSchema.safeParse(validationData);
 
     if (!validation.success) {
-      // Afficher les erreurs sous les champs concernés
       const errors: Record<string, string> = {};
       validation.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
@@ -75,36 +73,32 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
       });
       setFormErrors(errors);
       
-      // Afficher aussi un toast avec le premier message d'erreur pour attirer l'attention
-      const firstError = validation.error.issues[0];
       toast({
         variant: "destructive",
-        title: "Erreur de validation",
-        description: firstError.message,
+        title: t("validationError"),
+        description: validation.error.issues[0].message,
       });
       return;
     }
 
-    // Clear errors if validation passes
     setFormErrors({});
-
     setIsSubmitting(true);
     try {
-      const result = await createServiceBooking(validationData); // FIX TYPESCRIPT ICI
+      const result = await createServiceBooking(validationData);
 
       if (result.success) {
         toast({
           variant: "success",
-          title: "Demande envoyée !",
-          description: "L'assistant a été notifié de votre réservation.",
+          title: t("successTitle"),
+          description: t("successDescription"),
         });
         onSuccess(result.bookingId!);
         onClose();
       } else {
-        toast({ variant: "destructive", title: "Erreur", description: result.error });
+        toast({ variant: "destructive", title: tCommon("error"), description: result.error });
       }
     } catch (error) {
-      toast({ variant: "destructive", description: "Une erreur est survenue." });
+      toast({ variant: "destructive", title: tCommon("error"), description: tCommon("unknown") });
     } finally {
       setIsSubmitting(false);
     }
@@ -127,25 +121,21 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
             </div>
           </DialogHeader>
 
-          {/* TON DESIGN ORIGINAL CONSERVÉ ICI */}
           <div className="space-y-6">
             <div className="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-4">
-                <div><p className="text-xs text-slate-500 font-bold">Service</p><p className="font-semibold">{serviceData.title}</p></div>
-                <div><p className="text-xs text-slate-500 font-bold">Total</p><p className="font-bold text-green-600">MAD {getTotalPrice().toFixed(2)}</p></div>
+                <div><p className="text-xs text-slate-500 font-bold">{t("service")}</p><p className="font-semibold">{serviceData.title}</p></div>
+                <div><p className="text-xs text-slate-500 font-bold">{t("total")}</p><p className="font-bold text-green-600">MAD {getTotalPrice().toFixed(2)}</p></div>
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Besoins spécifiques (min 100 caractères) *</Label>
+              <Label className="font-bold">{t("requirementsLabel")}</Label>
               <textarea 
                 className={`w-full min-h-[120px] p-4 border rounded-xl dark:bg-slate-900 outline-none focus:ring-2 ${
-                  formErrors.customer_requirements 
-                    ? "border-red-500 focus:ring-red-500" 
-                    : "focus:ring-green-500"
+                  formErrors.customer_requirements ? "border-red-500 focus:ring-red-500" : "focus:ring-green-500"
                 }`}
                 value={formData.customer_requirements}
                 onChange={(e) => {
                   setFormData({...formData, customer_requirements: e.target.value});
-                  // Clear error when user types
                   if (formErrors.customer_requirements) {
                     setFormErrors(prev => {
                       const newErrors = { ...prev };
@@ -156,7 +146,7 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
                 }}
               />
               <div className="flex justify-between text-[10px] text-slate-400">
-                <span>Min. 100 caractères</span>
+                <span>{t("minCharacters")}</span>
                 <span className={formData.customer_requirements.length < 100 ? "text-red-500" : "text-green-500"}>
                     {formData.customer_requirements.length} / 2000
                 </span>
@@ -167,7 +157,7 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
             </div>
 
             <div className="space-y-3">
-                <Label className="flex items-center gap-2 font-bold"><MapPin className="h-4 w-4 text-blue-500" /> Adresse</Label>
+                <Label className="flex items-center gap-2 font-bold"><MapPin className="h-4 w-4 text-blue-500" /> {t("addressLabel")}</Label>
                 <select 
                     className={`w-full h-12 border rounded-xl px-4 dark:bg-slate-900 ${
                       formErrors.address_id ? "border-red-500" : ""
@@ -175,7 +165,6 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
                     value={formData.address_id}
                     onChange={(e) => {
                       setFormData({...formData, address_id: String(e.target.value)});
-                      // Clear error when user selects an address
                       if (formErrors.address_id) {
                         setFormErrors(prev => {
                           const newErrors = { ...prev };
@@ -185,7 +174,7 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
                       }
                     }}
                 >
-                    <option value="">Sélectionner une adresse</option>
+                    <option value="">{t("selectAddress")}</option>
                     {addresses.map((addr: any) => (
                       <option key={addr.id} value={String(addr.id)}>
                         {addr.label} - {addr.street_address}
@@ -199,9 +188,9 @@ export function BookingConfirmationDialog({ isOpen, onClose, onSuccess, serviceD
           </div>
 
           <DialogFooter className="gap-3">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Annuler</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>{tCommon("cancel")}</Button>
             <Button type="submit" disabled={isSubmitting} className="bg-green-600 text-white font-bold px-8 h-12 rounded-xl shadow-lg">
-              {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : "Confirmer la réservation"}
+              {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : t("confirmButton")}
             </Button>
           </DialogFooter>
         </form>

@@ -1,0 +1,46 @@
+{
+  "bookings": {
+    "allBookings": "Toutes les réservations",
+    "pendingRequests": "Demandes en attente",
+    "accepted": "Accepté",
+    "confirmed": "Confirmé",
+    "inProgress": "En cours",
+    "completed": "Terminé",
+    "cancelled": "Annulé",
+    "taskerBookings": "Réservations Tâcheron",
+    "manageBookings": "Gérez vos réservations, candidatures et services embauchés",
+    "noBookingsFound": "Aucune réservation trouvée",
+    "noBookingsYet": "Vous n'avez pas encore de réservations.",
+    "emptyStates": {
+      "all": {
+        "title": "Aucune réservation trouvée",
+        "description": "Vous n'avez pas encore de réservations."
+      },
+      "pending": {
+        "title": "Aucune demande en attente",
+        "description": "Vous n'avez pas de nouvelles demandes de réservation pour le moment."
+      },
+      "completed": {
+        "title": "Aucune réservation terminée",
+        "description": "Vous n'avez pas encore de réservations terminées."
+      },
+      "accepted": {
+        "title": "Aucune réservation acceptée",
+        "description": "Vous n'avez pas de réservations acceptées pour le moment."
+      },
+      "confirmed": {
+        "title": "Aucune réservation confirmée",
+        "description": "Vous n'avez pas de réservations confirmées pour le moment."
+      },
+      "in_progress": {
+        "title": "Aucune tâche active",
+        "description": "Vous n'avez pas de tâches en cours pour le moment."
+      },
+      "cancelled": {
+        "title": "Aucune réservation annulée",
+        "description": "Vous n'avez pas de réservations annulées."
+      }
+    },
+    "tryAgain": "Réessayer"
+  }
+}

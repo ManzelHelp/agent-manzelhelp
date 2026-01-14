@@ -1,0 +1,119 @@
+{
+  "postService": {
+    "title": "Service-Angebot Erstellen",
+    "subtitle": "Zeigen Sie Ihre Fähigkeiten und ziehen Sie Kunden an",
+    "steps": {
+      "basicInfo": "Grundinformationen",
+      "pricing": "Preise & Details",
+      "reviewPost": "Überprüfen & Veröffentlichen"
+    },
+    "stepDescriptions": {
+      "basicInfo": "Erzählen Sie uns von Ihrem Service",
+      "pricing": "Legen Sie Ihre Preise und Service-Details fest",
+      "reviewPost": "Überprüfen und veröffentlichen Sie Ihren Service"
+    },
+    "basicInfo": {
+      "title": "Service-Titel",
+      "titlePlaceholder": "z.B. Professioneller Hausreinigungsservice",
+      "description": "Service-Beschreibung",
+      "descriptionPlaceholder": "Beschreiben Sie, was Sie anbieten, Ihre Erfahrung und was Sie besonders macht...",
+      "category": "Service-Kategorie",
+      "service": "Spezifischer Service",
+      "location": "Service-Standort",
+      "serviceArea": "Servicegebiet (Optional)",
+      "serviceAreaPlaceholder": "Beschreiben Sie die Gebiete, die Sie abdecken, oder Standortpräferenzen"
+    },
+    "pricing": {
+      "pricingType": "Preistyp",
+      "fixed": "Fester Preis",
+      "hourly": "Stundensatz",
+      "perItem": "Pro Stück",
+      "basePrice": "Grundpreis",
+      "basePricePlaceholder": "Geben Sie Ihren Grundpreis ein",
+      "hourlyRate": "Stundensatz",
+      "hourlyRatePlaceholder": "Geben Sie Ihren Stundensatz ein",
+      "minimumBooking": "Mindestbuchungsstunden",
+      "minimumBookingPlaceholder": "Mindeststunden für Buchung",
+      "estimatedDuration": "Geschätzte Dauer (Stunden)",
+      "durationPlaceholder": "Wie lange dauert dieser Service normalerweise?",
+      "extras": "Zusätzliche Services",
+      "addExtra": "Extra-Service Hinzufügen",
+      "extraName": "Service-Name",
+      "extraPrice": "Preis",
+      "removeExtra": "Entfernen"
+    },
+    "review": {
+      "title": "Überprüfen Sie Ihr Service-Angebot",
+      "description": "Bitte überprüfen Sie alle Details, bevor Sie Ihren Service veröffentlichen",
+      "serviceOverview": "Service-Übersicht",
+      "pricingDetails": "Preisdetails",
+      "publishService": "Service Veröffentlichen",
+      "publishingService": "Service wird veröffentlicht..."
+    },
+    "success": {
+      "servicePosted": "Service erfolgreich gepostet!",
+      "servicePostedDescription": "Ihr Service wurde veröffentlicht und Kunden können ihn jetzt buchen."
+    },
+    "errors": {
+      "titleRequired": "Service-Titel ist erforderlich",
+      "descriptionRequired": "Service-Beschreibung ist erforderlich",
+      "categoryRequired": "Bitte wählen Sie eine Service-Kategorie",
+      "serviceRequired": "Bitte wählen Sie einen spezifischen Service",
+      "locationRequired": "Bitte fügen Sie zuerst eine Adresse zu Ihrem Profil hinzu",
+      "basePriceRequired": "Grundpreis ist für feste Preise erforderlich",
+      "hourlyRateRequired": "Stundensatz ist für stündliche Preise erforderlich",
+      "priceGreaterThanZero": "Preis muss größer als 0 sein",
+      "minimumBookingGreaterThanZero": "Mindestbuchungsstunden müssen größer als 0 sein",
+      "durationGreaterThanZero": "Dauer muss größer als 0 sein",
+      "serviceCreationFailed": "Service konnte nicht erstellt werden",
+      "notLoggedIn": "Bitte melden Sie sich an, um einen Service zu erstellen",
+      "onlyTaskersCanPost": "Nur Tasker können Services erstellen",
+      "customersCannotPost": "Kunden können keine Services erstellen. Bitte wechseln Sie zu einem Tasker-Konto.",
+      "loadFormDataFailed": "Fehler beim Laden der Formulardaten. Bitte versuchen Sie es erneut.",
+      "loadAddressesFailed": "Fehler beim Laden der Adressen. Bitte versuchen Sie es erneut.",
+      "error": "Fehler",
+      "incompleteProfile": "Unvollständiges Profil",
+      "incompleteProfileDescription": "Bitte vervollständigen Sie Ihre Profileinstellungen, um fortzufahren",
+      "verifyProfileFailed": "Fehler beim Überprüfen des Profilstatus"
+    },
+    "step1": {
+      "title": "Service-Details",
+      "description": "Erzählen Sie uns von dem Service, den Sie anbieten möchten",
+      "serviceTitle": "Service-Titel",
+      "serviceDescription": "Service-Beschreibung",
+      "selectCategory": "Kategorie auswählen",
+      "selectService": "Service auswählen",
+      "selectLocation": "Standort auswählen",
+      "addProfilePhoto": "Fügen Sie ein Profilfoto hinzu, um Vertrauen bei Kunden aufzubauen",
+      "characters": "Zeichen",
+      "yourWorkingHours": "Ihre Arbeitszeiten",
+      "editHours": "Stunden bearbeiten",
+      "workingHoursManaged": "Ihre Arbeitszeiten werden in Ihren Profileinstellungen verwaltet",
+      "noAvailability": "Keine Verfügbarkeit festgelegt. Bitte fügen Sie zuerst Ihre Arbeitszeiten in Ihrem Profil hinzu.",
+      "addWorkingHours": "Arbeitszeiten hinzufügen",
+      "noAddresses": "Keine Adressen gefunden. Bitte fügen Sie zuerst eine Adresse zu Ihrem Profil hinzu.",
+      "addAddress": "Adresse hinzufügen"
+    },
+    "step2": {
+      "title": "Preise & Richtlinien",
+      "description": "Legen Sie Ihre Tarife und Buchungsrichtlinien fest",
+      "pricingModel": "Preismodell",
+      "fixedPrice": "Fester Preis",
+      "hourlyRate": "Stundensatz",
+      "perItem": "Pro Stück",
+      "fixedPriceLabel": "Fester Preis (€)",
+      "hourlyRateLabel": "Stundensatz (€)",
+      "perItemLabel": "Preis pro Stück (€)",
+      "fixedPriceReview": "Fester Preis:",
+      "hourlyRateReview": "Stundensatz:",
+      "perItemReview": "Preis pro Stück:"
+    },
+    "tips": {
+      "title": "Tipps für ein Großartiges Service-Angebot",
+      "tip1": "Seien Sie spezifisch bezüglich dessen, was Sie anbieten und Ihrer Erfahrung",
+      "tip2": "Legen Sie wettbewerbsfähige Preise basierend auf Marktpreisen fest",
+      "tip3": "Fügen Sie klare Beschreibungen dessen hinzu, was enthalten ist",
+      "tip4": "Fügen Sie zusätzliche Services hinzu, um Ihr Verdienstpotenzial zu steigern"
+    }
+  }
+}

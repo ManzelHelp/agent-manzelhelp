@@ -76,9 +76,9 @@ const getSections = (t: ReturnType<typeof useTranslations>) => [
   },
   {
     id: "availability" as ProfileSection,
-    title: t("availability"),
+    title: t("availability.title"),
     icon: Clock,
-    description: t("setWorkingHours"),
+    description: t("availability.setWorkingHours"),
     color: "from-purple-500 to-purple-600",
   },
   {
@@ -137,7 +137,7 @@ export default function TaskerProfilePage() {
       if (result.error) {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: tCommon("error"),
           description: result.error,
         });
         return;
@@ -156,7 +156,7 @@ export default function TaskerProfilePage() {
       console.error("Error fetching profile data:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: tCommon("error"),
         description: t("errors.loadFailed", { default: "Failed to load profile data" }),
       });
     } finally {

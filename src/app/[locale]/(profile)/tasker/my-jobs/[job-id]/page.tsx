@@ -244,19 +244,19 @@ export default function JobDetailPage() {
   const getStatusLabel = (status?: string | null) => {
     switch (status) {
       case "active":
-        return "Open";
+        return t("status.active");
       case "under_review":
-        return "Under Review";
+        return t("status.underReview");
       case "assigned":
-        return "Assigned";
+        return t("status.assigned");
       case "in_progress":
-        return "In Progress";
+        return t("status.inProgress");
       case "completed":
-        return "Completed";
+        return t("status.completed");
       case "cancelled":
-        return "Cancelled";
+        return t("status.cancelled");
       default:
-        return "Unknown";
+        return t("status.unknown");
     }
   };
 

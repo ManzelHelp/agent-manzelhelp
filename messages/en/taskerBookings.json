@@ -1,0 +1,38 @@
+{
+  "taskerBookings": {
+    "title": "Tasker Bookings",
+    "description": "Services you've booked from other taskers",
+    "allBookings": "All Bookings",
+    "pendingRequests": "Pending Requests",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "labels": {
+      "serviceProvider": "Service Provider",
+      "agreedPrice": "Agreed Price",
+      "duration": "Duration",
+      "date": "Date",
+      "location": "Location",
+      "requirements": "Requirements",
+      "bookedOn": "Booked on",
+      "flexible": "Flexible",
+      "addressNotSpecified": "Address not specified",
+      "noRequirements": "No specific requirements provided"
+    },
+    "bookingTypes": {
+      "instant": "Instant Booking",
+      "scheduled": "Scheduled Booking",
+      "recurring": "Recurring Booking"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "contactTasker": "Contact Tasker",
+      "cancelBooking": "Cancel Booking"
+    }
+  }
+}

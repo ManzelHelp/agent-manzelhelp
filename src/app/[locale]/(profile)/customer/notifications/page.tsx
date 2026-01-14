@@ -195,6 +195,7 @@ export default function CustomerNotificationsPage() {
   const { user } = useUserStore();
   const { toast } = useToast();
   const t = useTranslations("notifications");
+  const tToast = useTranslations("toasts");
   const router = useRouter();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -346,7 +347,7 @@ export default function CustomerNotificationsPage() {
           if (!append) {
             toast({
               variant: "destructive",
-              title: "Erreur",
+              title: tToast("error"),
               description: t("errors.fetchFailed"),
             });
           }
@@ -393,7 +394,7 @@ export default function CustomerNotificationsPage() {
         if (!append) {
           toast({
             variant: "destructive",
-            title: "Erreur",
+            title: tToast("error"),
             description: t("errors.fetchFailed"),
           });
         }
@@ -508,7 +509,7 @@ export default function CustomerNotificationsPage() {
         setUnreadCount((prev) => Math.max(0, prev - 1));
         toast({
           variant: "success",
-          title: "Succès",
+          title: tToast("success"),
           description: t("success.markedAsRead"),
         });
       } else {
@@ -543,7 +544,7 @@ export default function CustomerNotificationsPage() {
         }
         toast({
           variant: "success",
-          title: "Succès",
+          title: tToast("success"),
           description: t("success.deleted"),
         });
       } else {
@@ -575,7 +576,7 @@ export default function CustomerNotificationsPage() {
         setUnreadCount(0);
         toast({
           variant: "success",
-          title: "Succès",
+          title: tToast("success"),
           description: t("success.allMarkedAsRead"),
         });
       } else {
@@ -619,7 +620,7 @@ export default function CustomerNotificationsPage() {
           setUnreadCount((prev) => Math.max(0, prev - deletedUnreadCount));
           toast({
             variant: "success",
-            title: "Succès",
+            title: tToast("success"),
             description: t("success.bulkDeleted", {
               count: result.count || notificationIds.length,
             }),
@@ -645,7 +646,7 @@ export default function CustomerNotificationsPage() {
 
           toast({
             variant: "success",
-            title: "Succès",
+            title: tToast("success"),
             description: t(`success.bulkMarked${action}`, {
               count: result.count || notificationIds.length,
             }),

@@ -1,0 +1,44 @@
+{
+  "findAHelper": {
+    "hero": {
+      "title": "Find Trusted Helpers for Any Task",
+      "description": "Book reliable service agents in your area – fast, easy, and secure.",
+      "startSearching": "Start Searching"
+    },
+    "advantages": {
+      "verifiedTrusted": {
+        "title": "Verified & Trusted Helpers",
+        "description": "All our service agents are background-checked and reviewed by the community."
+      },
+      "flexibleFast": {
+        "title": "Flexible & Fast Booking",
+        "description": "Book a helper for the time and service you need, with instant confirmation."
+      },
+      "wideRange": {
+        "title": "Wide Range of Services",
+        "description": "From cleaning to repairs, find the right expert for any task."
+      }
+    },
+    "pricing": {
+      "title": "Estimated Prices",
+      "description": "Prices depend on the type of service and the experience of the worker. Here are some typical ranges:",
+      "perHour": "hour",
+      "cleaning": {
+        "service": "Cleaning",
+        "note": "Depends on experience & task complexity"
+      },
+      "handyman": {
+        "service": "Handyman",
+        "note": "Varies by skill & project size"
+      },
+      "gardening": {
+        "service": "Gardening",
+        "note": "Based on expertise & garden size"
+      }
+    },
+    "cta": {
+      "title": "Ready to find your perfect helper?",
+      "getStarted": "Get Started"
+    }
+  }
+}

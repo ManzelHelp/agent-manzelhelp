@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Card,
   CardContent,
@@ -35,6 +35,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { formatDateShort } from "@/lib/date-utils";
 import { BackButton } from "@/components/ui/BackButton";
+import { TransactionDetailDrawer } from "@/components/finance/TransactionDetailDrawer";
 
 // Loading skeleton components
 function FinanceStatsSkeleton() {
@@ -85,6 +86,7 @@ function TransactionSkeleton() {
 // Main component
 export default function CustomerFinancePage() {
   const t = useTranslations("finance");
+  const locale = useLocale();
   const { toast } = useToast();
   const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(
     null
@@ -99,6 +101,9 @@ export default function CustomerFinancePage() {
   >("month");
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const fetchFinanceData = useCallback(async (append = false) => {
     try {
@@ -147,6 +152,11 @@ export default function CustomerFinancePage() {
       fetchFinanceData(true);
     }
   }, [isLoadingMore, hasMore, loading, fetchFinanceData]);
+
+  // Set mounted flag to avoid hydration errors
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Fetch data on component mount and when period/month/year changes
   useEffect(() => {
@@ -276,9 +286,14 @@ export default function CustomerFinancePage() {
           variants[status as keyof typeof variants] || variants.pending
         }
       >
-        {t(`status.${status}`)}
+        {t(`status.${status}`, { default: status })}
       </Badge>
     );
+  };
+
+  const handleTransactionClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsDrawerOpen(true);
   };
 
   return (
@@ -333,13 +348,21 @@ export default function CustomerFinancePage() {
                   onChange={(e) => setSelectedMonth(Number(e.target.value))}
                   className="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <option key={month} value={month}>
-                      {new Date(2000, month - 1, 1).toLocaleString("en-US", {
-                        month: "long",
-                      })}
-                    </option>
-                  ))}
+                  {isMounted ? (
+                    Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                      <option key={month} value={month}>
+                        {new Date(2000, month - 1, 1).toLocaleString(locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-US", {
+                          month: "long",
+                        })}
+                      </option>
+                    ))
+                  ) : (
+                    Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
             )}
@@ -480,7 +503,8 @@ export default function CustomerFinancePage() {
               {transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors gap-3 sm:gap-0"
+                  onClick={() => handleTransactionClick(transaction)}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer hover:shadow-md gap-3 sm:gap-0 group"
                 >
                   <div className="space-y-2 sm:space-y-1 flex-1">
                     <div className="flex items-center gap-2">
@@ -493,7 +517,7 @@ export default function CustomerFinancePage() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <CreditCard className="h-3 w-3" />
-                        {transaction.paymentMethod || "Unknown"}
+                        {t(`status.${transaction.paymentMethod?.toLowerCase()}`, { default: transaction.paymentMethod || "Unknown" })}
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
@@ -502,7 +526,7 @@ export default function CustomerFinancePage() {
                       {transaction.bookingStatus && (
                         <span className="flex items-center gap-1">
                           <BarChart2 className="h-3 w-3" />
-                          {transaction.bookingStatus}
+                          {t(`bookingStatuses.${transaction.bookingStatus}`, { default: transaction.bookingStatus })}
                         </span>
                       )}
                     </div>
@@ -543,6 +567,15 @@ export default function CustomerFinancePage() {
           )}
         </CardContent>
       </Card>
+
+      <TransactionDetailDrawer
+        transaction={selectedTransaction}
+        isOpen={isDrawerOpen}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedTransaction(null);
+        }}
+      />
     </div>
   );
 }

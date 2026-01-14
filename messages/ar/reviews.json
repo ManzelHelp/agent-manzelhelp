@@ -1,0 +1,43 @@
+{
+  "reviews": {
+    "reviewsAndFeedback": "المراجعات والتعليقات",
+    "monitorPerformance": "راقب أداءك وابنِ الثقة مع العملاء من خلال التفاعلات الهادفة",
+    "averageRating": "التقييم المتوسط",
+    "basedOnReviews": "بناءً على {count} مراجعة",
+    "fiveStarReviews": "مراجعات 5 نجوم",
+    "excellenceRate": "معدل التميز",
+    "responseRate": "معدل الاستجابة",
+    "responseRateLabel": "معدل الاستجابة",
+    "clientEngagement": "مشاركة العملاء",
+    "totalReviews": "إجمالي المراجعات",
+    "totalReviewsCount": "{count} إجمالي المراجعات",
+    "allTimeFeedback": "التعليقات على الإطلاق",
+    "clientReviews": "مراجعات العملاء",
+    "reviewCount": "{count} مراجعة",
+    "reviewCountPlural": "{count} مراجعة",
+    "all": "الكل",
+    "fourStarPlus": "4★+",
+    "threeStarMinus": "3★-",
+    "needsReply": "يحتاج إلى رد",
+    "yourResponse": "ردك",
+    "repliedOn": "تم الرد في {date}",
+    "quality": "الجودة",
+    "communication": "التواصل",
+    "timeliness": "الالتزام بالمواعيد",
+    "totalReviewsLabel": "إجمالي المراجعات",
+    "noReviewsFound": "لم يتم العثور على مراجعات",
+    "greatJob": "عمل رائع! لقد قمت بالرد على جميع المراجعات.",
+    "noReviewsMatch": "لا توجد مراجعات تطابق الفلتر المحدد. حاول تعديل معايير الفلتر.",
+    "filterApplied": "فلتر مطبق",
+    "replyToReview": "الرد على المراجعة",
+    "writeThoughtfulResponse": "اكتب ردًا مدروسًا على هذه المراجعة...",
+    "sendReply": "إرسال الرد",
+    "sending": "جاري الإرسال...",
+    "cancel": "إلغاء",
+    "client": "العميل",
+    "charactersCount": "{count}/1000 حرف",
+    "success": {
+      "replySubmitted": "تم إرسال الرد بنجاح!"
+    }
+  }
+}

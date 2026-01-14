@@ -1,0 +1,228 @@
+{
+  "taskerProfile": {
+    "title": "Tasker Profile",
+    "subtitle": "Build your professional profile to attract more clients",
+    "navigation": {
+      "title": "Profile Settings"
+    },
+    "sections": {
+      "personal": "Personal Information",
+      "bio": "Bio & Experience",
+      "skills": "Skills & Services",
+      "availability": "Availability",
+      "verification": "Verification",
+      "addresses": "Service Areas",
+      "security": "Security",
+      "payment": "Payment Methods",
+      "notifications": "Notifications",
+      "preferences": "Preferences",
+      "serviceLocations": "Service Locations"
+    },
+    "completion": {
+      "title": "Complete Your Tasker Profile",
+      "description": "Complete your profile to start receiving job requests and build trust with clients.",
+      "complete": "Profile Complete",
+      "basicInfo": "Basic Information",
+      "profilePhoto": "Profile Photo",
+      "bioExperience": "Bio & Experience",
+      "servicesSkills": "Services & Skills",
+      "availability": "Availability Schedule",
+      "address": "Service Areas",
+      "identityVerified": "Identity Verified",
+      "emailVerified": "Email Verified",
+      "required": "Required"
+    },
+    "personal": {
+      "description": "Update your basic information and professional photo",
+      "avatar": "Profile Photo",
+      "avatarDescription": "Upload a professional photo to build trust with clients",
+      "uploadPhoto": "Upload Photo",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email Address",
+      "emailNote": "Contact support to change your email address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "birthDate": "Date of Birth"
+    },
+    "bio": {
+      "description": "Tell clients about your experience and expertise",
+      "bioTitle": "About You",
+      "bioPlaceholder": "Describe your skills, experience, and what makes you great at what you do...",
+      "bioHint": "Share your background, specialties, and why clients should choose you",
+      "experienceLevel": "Experience Level",
+      "serviceRadius": "Service Radius",
+      "serviceRadiusHint": "How far are you willing to travel for jobs?",
+      "experienceLevels": {
+        "beginner": "Beginner (0-1 years)",
+        "intermediate": "Intermediate (1-3 years)",
+        "experienced": "Experienced (3-5 years)",
+        "expert": "Expert (5+ years)"
+      }
+    },
+    "skills": {
+      "description": "Manage the services you offer to clients",
+      "addService": "Add Service",
+      "noServices": "No services offered yet",
+      "noServicesDescription": "Add services to start receiving job requests from clients",
+      "addFirstService": "Add Your First Service",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "availability": {
+      "description": "Set your weekly availability for new jobs",
+      "unavailable": "Unavailable",
+      "quickBookingTitle": "Quick Booking",
+      "quickBookingDescription": "Clients can instantly book you during your available hours for faster jobs",
+      "success": {
+        "updated": "Availability updated successfully"
+      },
+      "errors": {
+        "enableAtLeastOneDay": "Please enable at least one day of availability",
+        "setStartEndTimes": "Please set start and end times for all enabled days",
+        "endTimeAfterStart": "End time must be after start time",
+        "profileNotFound": "Profile not found. Please refresh the page and try again.",
+        "updateFailed": "Failed to update availability",
+        "invalidDataFormat": "Invalid availability data format",
+        "invalidTimeFormat": "Invalid time format. Please use HH:MM format (e.g., 09:00)"
+      }
+    },
+    "verification": {
+      "description": "Verify your identity to build trust and unlock all features",
+      "identity": "Identity Verification",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "phoneNotAdded": "No phone number added",
+      "verified": "Verified",
+      "verify": "Verify",
+      "identityRequired": "Identity Verification Required",
+      "mandatory": "Mandatory",
+      "identityVerified": "Identity Verified",
+      "identityPending": "Verification Pending",
+      "identityDescription": "Upload a government-issued ID to verify your identity and start offering services",
+      "uploadDocument": "Upload Document",
+      "acceptedDocuments": "Accepted: Driver's License, Passport, National ID Card",
+      "benefitsTitle": "Verification Benefits",
+      "benefit1": "Unlock all tasker features and job applications",
+      "benefit2": "Build trust with clients through verified status",
+      "benefit3": "Receive priority in search results",
+      "benefit4": "Access to higher-value job opportunities"
+    },
+    "addresses": {
+      "description": "Add the areas where you provide services",
+      "add": "Add Service Area",
+      "empty": "No service areas added",
+      "emptyDescription": "Add service areas to let clients know where you work",
+      "addFirst": "Add Your First Service Area",
+      "newAddress": "New Service Area",
+      "label": "Label",
+      "home": "Home Base",
+      "work": "Work Area",
+      "other": "Other",
+      "country": "Country",
+      "street": "Street Address",
+      "streetPlaceholder": "123 Main Street",
+      "city": "City",
+      "cityPlaceholder": "New York",
+      "region": "State/Region",
+      "regionPlaceholder": "NY",
+      "postalCode": "Postal Code",
+      "postalCodePlaceholder": "10001",
+      "default": "Primary"
+    },
+    "serviceLocations": {
+      "description": "Manage where you provide your services.",
+      "addLocation": "Add Service Location"
+    },
+    "security": {
+      "description": "Manage your account security and sign-in preferences",
+      "signInMethods": "Sign-in Methods",
+      "emailPassword": "Email",
+      "change": "Change",
+      "password": "Password",
+      "passwordTitle": "Password",
+      "passwordDescription": "Use a strong password to protect your account",
+      "changePassword": "Change Password",
+      "dangerZone": "Danger Zone",
+      "deactivateAccount": "Deactivate Account",
+      "deactivateDescription": "This will permanently disable your tasker account",
+      "deactivate": "Deactivate"
+    },
+    "payment": {
+      "description": "Manage your payment methods for receiving earnings",
+      "addMethod": "Add Payment Method",
+      "noMethods": "No payment methods",
+      "noMethodsDescription": "Add a payment method to receive earnings from completed jobs",
+      "addFirst": "Add Payment Method"
+    },
+    "notifications": {
+      "description": "Choose how you'd like to be notified about jobs",
+      "email": "Email Notifications",
+      "emailDescription": "Receive job alerts and updates via email",
+      "push": "Push Notifications",
+      "pushDescription": "Get instant notifications on your device",
+      "sms": "SMS Notifications",
+      "smsDescription": "Receive urgent job alerts via text message",
+      "marketing": "Marketing Emails",
+      "marketingDescription": "Receive promotional offers and platform updates",
+      "jobAlerts": "Job Alerts",
+      "jobAlertsDescription": "Get notified when new jobs match your skills",
+      "unread": "Unread",
+      "seen": "Seen",
+      "empty": "No notifications",
+      "emptyDescription": "You have no notifications at this time."
+    },
+    "preferences": {
+      "description": "Customize your tasker experience",
+      "language": "Language",
+      "timezone": "Timezone",
+      "currency": "Currency",
+      "languages": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français",
+        "ar": "العربية"
+      },
+      "timezones": {
+        "GMT": "GMT (Greenwich Mean Time)",
+        "CET": "CET (Central European Time)",
+        "EST": "EST (Eastern Standard Time)"
+      },
+      "currencies": {
+        "EUR": "EUR (Euro)",
+        "USD": "USD (US Dollar)",
+        "MAD": "MAD (Moroccan Dirham)"
+      }
+    },
+    "actions": {
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "uploading": "Uploading..."
+    },
+    "success": {
+      "profileUpdated": "Profile updated successfully!",
+      "bioUpdated": "Bio updated successfully!",
+      "serviceRemoved": "Service removed successfully!",
+      "addressAdded": "Service area added successfully!",
+      "addressDeleted": "Service area deleted successfully!",
+      "availabilityUpdated": "Availability updated successfully!",
+      "profilePhotoUpdated": "Profile photo updated successfully!"
+    },
+    "errors": {
+      "notLoggedIn": "Not Logged In",
+      "loginRequired": "Please log in to view your tasker profile",
+      "updateProfile": "Failed to update profile",
+      "updateBio": "Failed to update bio",
+      "removeService": "Failed to remove service",
+      "fetchAddresses": "Failed to load service areas",
+      "addAddress": "Failed to add service area",
+      "deleteAddress": "Failed to delete service area",
+      "profilePhotoUpload": "Failed to upload profile photo",
+      "requiredFields": "Please fill in all required fields"
+    }
+  }
+}

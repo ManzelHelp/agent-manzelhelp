@@ -1,0 +1,17 @@
+{
+  "serviceCard": {
+    "multipleAreas": "مناطق متعددة",
+    "areaNotSpecified": "المنطقة غير محددة",
+    "review": "مراجعة",
+    "reviews": "مراجعات",
+    "minDuration": "الحد الأدنى {hours} ساعة",
+    "hourlyRate": "السعر بالساعة",
+    "perItem": "لكل عنصر",
+    "fixedPrice": "سعر ثابت",
+    "verified": "موثق",
+    "perHour": "/ساعة",
+    "perItemUnit": "/عنصر",
+    "plusFees": "+ رسوم",
+    "viewDetails": "عرض التفاصيل"
+  }
+}

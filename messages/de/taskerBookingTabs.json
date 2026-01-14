@@ -1,0 +1,16 @@
+{
+  "taskerBookingTabs": {
+    "myBookings": {
+      "label": "Meine Buchungen",
+      "description": "Buchungen für Ihre Dienstleistungen"
+    },
+    "bookedTaskers": {
+      "label": "Gebuchte Tasker",
+      "description": "Dienstleistungen, die Sie gebucht haben"
+    },
+    "myApplications": {
+      "label": "Meine Bewerbungen",
+      "description": "Stellen, auf die Sie sich beworben haben"
+    }
+  }
+}

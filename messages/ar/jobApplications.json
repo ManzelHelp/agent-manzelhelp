@@ -1,0 +1,41 @@
+{
+  "jobApplications": {
+    "title": "طلبات الوظائف",
+    "description": "تتبع طلبات الوظائف الخاصة بك وحالتها",
+    "status": {
+      "pending": "معلق",
+      "accepted": "مقبول",
+      "rejected": "مرفوض",
+      "withdrawn": "منسحب"
+    },
+    "jobStatus": {
+      "under_review": "قيد المراجعة",
+      "active": "نشط",
+      "assigned": "مكلف",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "cancelled": "ملغي",
+      "disputed": "متنازع عليه",
+      "draft": "مسودة",
+      "open": "مفتوح"
+    },
+    "labels": {
+      "jobPoster": "ناشر الوظيفة",
+      "proposedPrice": "السعر المقترح",
+      "estimatedDuration": "المدة المقدرة",
+      "preferredDate": "التاريخ المفضل",
+      "customerBudget": "ميزانية العميل",
+      "message": "رسالة",
+      "appliedOn": "تم التقديم في",
+      "flexible": "مرن",
+      "notSpecified": "غير محدد",
+      "jobCompletedMessage": "تم إكمال هذه الوظيفة. طلبك لم يعد ذا صلة.",
+      "jobCancelledMessage": "تم إلغاء هذه الوظيفة. طلبك لم يعد ذا صلة."
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "withdrawApplication": "Withdraw Application",
+      "contactCustomer": "Contact Customer"
+    }
+  }
+}

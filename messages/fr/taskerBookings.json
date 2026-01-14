@@ -1,0 +1,38 @@
+{
+  "taskerBookings": {
+    "title": "Réservations de tâcherons",
+    "description": "Services que vous avez réservés auprès d'autres tâcherons",
+    "allBookings": "Toutes les réservations",
+    "pendingRequests": "Demandes en attente",
+    "status": {
+      "pending": "En attente",
+      "accepted": "Accepté",
+      "confirmed": "Confirmé",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "labels": {
+      "serviceProvider": "Fournisseur de service",
+      "agreedPrice": "Prix convenu",
+      "duration": "Durée",
+      "date": "Date",
+      "location": "Emplacement",
+      "requirements": "Exigences",
+      "bookedOn": "Réservé le",
+      "flexible": "Flexible",
+      "addressNotSpecified": "Adresse non spécifiée",
+      "noRequirements": "Aucune exigence spécifique fournie"
+    },
+    "bookingTypes": {
+      "instant": "Réservation instantanée",
+      "scheduled": "Réservation programmée",
+      "recurring": "Réservation récurrente"
+    },
+    "actions": {
+      "viewDetails": "Voir les détails",
+      "contactTasker": "Contacter le tâcheron",
+      "cancelBooking": "Annuler la réservation"
+    }
+  }
+}

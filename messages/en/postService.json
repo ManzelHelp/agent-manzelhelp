@@ -1,0 +1,119 @@
+{
+  "postService": {
+    "title": "Create Service Offer",
+    "subtitle": "Showcase your skills and attract customers",
+    "steps": {
+      "basicInfo": "Basic Information",
+      "pricing": "Pricing & Details",
+      "reviewPost": "Review & Publish"
+    },
+    "stepDescriptions": {
+      "basicInfo": "Tell us about your service",
+      "pricing": "Set your pricing and service details",
+      "reviewPost": "Review and publish your service"
+    },
+    "basicInfo": {
+      "title": "Service Title",
+      "titlePlaceholder": "e.g., Professional House Cleaning Service",
+      "description": "Service Description",
+      "descriptionPlaceholder": "Describe what you offer, your experience, and what makes you special...",
+      "category": "Service Category",
+      "service": "Specific Service",
+      "location": "Service Location",
+      "serviceArea": "Service Area (Optional)",
+      "serviceAreaPlaceholder": "Describe the areas you cover or any location preferences"
+    },
+    "pricing": {
+      "pricingType": "Pricing Type",
+      "fixed": "Fixed Price",
+      "hourly": "Hourly Rate",
+      "perItem": "Per Item",
+      "basePrice": "Base Price",
+      "basePricePlaceholder": "Enter your base price",
+      "hourlyRate": "Hourly Rate",
+      "hourlyRatePlaceholder": "Enter your hourly rate",
+      "minimumBooking": "Minimum Booking Hours",
+      "minimumBookingPlaceholder": "Minimum hours for booking",
+      "estimatedDuration": "Estimated Duration (hours)",
+      "durationPlaceholder": "How long does this service typically take?",
+      "extras": "Additional Services",
+      "addExtra": "Add Extra Service",
+      "extraName": "Service Name",
+      "extraPrice": "Price",
+      "removeExtra": "Remove"
+    },
+    "review": {
+      "title": "Review Your Service Offer",
+      "description": "Please review all details before publishing your service",
+      "serviceOverview": "Service Overview",
+      "pricingDetails": "Pricing Details",
+      "publishService": "Publish Service",
+      "publishingService": "Publishing Service..."
+    },
+    "success": {
+      "servicePosted": "Service posted successfully!",
+      "servicePostedDescription": "Your service has been published and customers can now book it."
+    },
+    "errors": {
+      "titleRequired": "Service title is required",
+      "descriptionRequired": "Service description is required",
+      "categoryRequired": "Please select a service category",
+      "serviceRequired": "Please select a specific service",
+      "locationRequired": "Please add an address in your profile first",
+      "basePriceRequired": "Base price is required for fixed pricing",
+      "hourlyRateRequired": "Hourly rate is required for hourly pricing",
+      "priceGreaterThanZero": "Price must be greater than 0",
+      "minimumBookingGreaterThanZero": "Minimum booking hours must be greater than 0",
+      "durationGreaterThanZero": "Duration must be greater than 0",
+      "serviceCreationFailed": "Failed to create service",
+      "notLoggedIn": "Please log in to create a service",
+      "onlyTaskersCanPost": "Only taskers can create services",
+      "customersCannotPost": "Customers cannot create services. Please switch to tasker account.",
+      "loadFormDataFailed": "Failed to load form data. Please try again.",
+      "loadAddressesFailed": "Failed to load addresses. Please try again.",
+      "error": "Error",
+      "incompleteProfile": "Incomplete Profile",
+      "incompleteProfileDescription": "Please complete your profile setup to continue",
+      "verifyProfileFailed": "Failed to verify profile status"
+    },
+    "step1": {
+      "title": "Service Details",
+      "description": "Tell us about the service you want to offer",
+      "serviceTitle": "Service Title",
+      "serviceDescription": "Service Description",
+      "selectCategory": "Select category",
+      "selectService": "Select service",
+      "selectLocation": "Select location",
+      "addProfilePhoto": "Add a profile photo to build trust with customers",
+      "characters": "characters",
+      "yourWorkingHours": "Your Working Hours",
+      "editHours": "Edit Hours",
+      "workingHoursManaged": "Your working hours are managed in your profile settings",
+      "noAvailability": "No availability set. Please add your working hours in your profile first.",
+      "addWorkingHours": "Add Working Hours",
+      "noAddresses": "No addresses found. Please add an address in your profile first.",
+      "addAddress": "Add Address"
+    },
+    "step2": {
+      "title": "Pricing & Policies",
+      "description": "Set your rates and booking policies",
+      "pricingModel": "Pricing Model",
+      "fixedPrice": "Fixed Price",
+      "hourlyRate": "Hourly Rate",
+      "perItem": "Per Item",
+      "fixedPriceLabel": "Fixed Price (€)",
+      "hourlyRateLabel": "Hourly Rate (€)",
+      "perItemLabel": "Price Per Item (€)",
+      "fixedPriceReview": "Fixed Price:",
+      "hourlyRateReview": "Hourly Rate:",
+      "perItemReview": "Price Per Item:"
+    },
+    "tips": {
+      "title": "Tips for a Great Service Offer",
+      "tip1": "Be specific about what you offer and your experience",
+      "tip2": "Set competitive pricing based on market rates",
+      "tip3": "Include clear descriptions of what's included",
+      "tip4": "Add extra services to increase your earning potential"
+    }
+  }
+}

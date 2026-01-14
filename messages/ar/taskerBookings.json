@@ -1,0 +1,38 @@
+{
+  "taskerBookings": {
+    "title": "حجوزات المساعد",
+    "description": "الخدمات التي حجزتها من مساعدين آخرين",
+    "allBookings": "جميع الحجوزات",
+    "pendingRequests": "الطلبات المعلقة",
+    "status": {
+      "pending": "معلق",
+      "accepted": "مقبول",
+      "confirmed": "مؤكد",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "cancelled": "ملغي"
+    },
+    "labels": {
+      "serviceProvider": "Service Provider",
+      "agreedPrice": "Agreed Price",
+      "duration": "Duration",
+      "date": "Date",
+      "location": "Location",
+      "requirements": "Requirements",
+      "bookedOn": "Booked on",
+      "flexible": "Flexible",
+      "addressNotSpecified": "Address not specified",
+      "noRequirements": "No specific requirements provided"
+    },
+    "bookingTypes": {
+      "instant": "Instant Booking",
+      "scheduled": "Scheduled Booking",
+      "recurring": "Recurring Booking"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "contactTasker": "Contact Tasker",
+      "cancelBooking": "Cancel Booking"
+    }
+  }
+}

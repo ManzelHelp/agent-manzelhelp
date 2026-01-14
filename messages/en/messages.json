@@ -1,0 +1,24 @@
+{
+  "messages": {
+    "messages": "Messages",
+    "manageCommunications": "Manage your communications with clients",
+    "inbox": "Inbox",
+    "unreadMessages": "{count} unread message",
+    "unreadMessagesPlural": "{count} unread messages",
+    "all": "all",
+    "unread": "unread",
+    "read": "read",
+    "searchPlaceholder": "Search messages...",
+    "loadingMessages": "Loading messages...",
+    "pleaseWait": "Please wait while we fetch your conversations",
+    "errorLoadingMessages": "Error loading messages",
+    "tryAgain": "Try Again",
+    "noMessagesFound": "No messages found",
+    "tryAdjustingSearch": "Try adjusting your search terms",
+    "noUnreadMessages": "You have no unread messages",
+    "noReadMessages": "You have no read messages",
+    "emptyInbox": "Your inbox is empty",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing..."
+  }
+}

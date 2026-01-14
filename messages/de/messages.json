@@ -1,0 +1,29 @@
+{
+  "messages": {
+    "messages": "Nachrichten",
+    "manageCommunications": "Verwalten Sie Ihre Kommunikation mit Kunden",
+    "inbox": "Posteingang",
+    "unreadMessages": "{count} ungelesene Nachricht",
+    "unreadMessagesPlural": "{count} ungelesene Nachrichten",
+    "all": "alle",
+    "unread": "ungelesen",
+    "read": "gelesen",
+    "searchPlaceholder": "Nachrichten suchen...",
+    "loadingMessages": "Nachrichten werden geladen...",
+    "pleaseWait": "Bitte warten Sie, während wir Ihre Konversationen abrufen",
+    "errorLoadingMessages": "Fehler beim Laden der Nachrichten",
+    "tryAgain": "Erneut versuchen",
+    "noMessagesFound": "Keine Nachrichten gefunden",
+    "tryAdjustingSearch": "Versuchen Sie, Ihre Suchbegriffe anzupassen",
+    "noUnreadMessages": "Sie haben keine ungelesenen Nachrichten",
+    "noReadMessages": "Sie haben keine gelesenen Nachrichten",
+    "emptyInbox": "Ihr Posteingang ist leer",
+    "refresh": "Aktualisieren",
+    "refreshing": "Wird aktualisiert...",
+    "justNow": "Gerade eben",
+    "hoursAgo": "Vor {count} {count, plural, one {Stunde} other {Stunden}}",
+    "daysAgo": "Vor {count} {count, plural, one {Tag} other {Tagen}}",
+    "unknown": "Unbekannt",
+    "conversationsCount": "{count, plural, one {# Gespräch} other {# Gespräche}}"
+  }
+}

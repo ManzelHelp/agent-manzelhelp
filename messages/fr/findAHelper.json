@@ -1,0 +1,44 @@
+{
+  "findAHelper": {
+    "hero": {
+      "title": "Trouvez des Assistants de Confiance pour Toute Tâche",
+      "description": "Réservez des agents de service fiables dans votre région – rapide, facile et sécurisé.",
+      "startSearching": "Commencer la Recherche"
+    },
+    "advantages": {
+      "verifiedTrusted": {
+        "title": "Assistants Vérifiés et de Confiance",
+        "description": "Tous nos agents de service sont vérifiés et examinés par la communauté."
+      },
+      "flexibleFast": {
+        "title": "Réservation Flexible et Rapide",
+        "description": "Réservez un assistant pour le moment et le service dont vous avez besoin, avec confirmation instantanée."
+      },
+      "wideRange": {
+        "title": "Large Gamme de Services",
+        "description": "Du nettoyage aux réparations, trouvez le bon expert pour toute tâche."
+      }
+    },
+    "pricing": {
+      "title": "Prix Estimés",
+      "description": "Les prix dépendent du type de service et de l'expérience du travailleur. Voici quelques fourchettes typiques :",
+      "perHour": "heure",
+      "cleaning": {
+        "service": "Nettoyage",
+        "note": "Dépend de l'expérience et de la complexité de la tâche"
+      },
+      "handyman": {
+        "service": "Bricoleur",
+        "note": "Varie selon les compétences et la taille du projet"
+      },
+      "gardening": {
+        "service": "Jardinage",
+        "note": "Basé sur l'expertise et la taille du jardin"
+      }
+    },
+    "cta": {
+      "title": "Prêt à trouver votre assistant parfait ?",
+      "getStarted": "Commencer"
+    }
+  }
+}
