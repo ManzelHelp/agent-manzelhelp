@@ -1,0 +1,96 @@
+{
+  "aboutUs": {
+    "hero": {
+      "title": "Unsere Geschichte: ManzelHelp Aufbauen",
+      "subtitle": "Von einer einfachen Idee zur Stärkung von Gemeinschaften in ganz Marokko",
+      "description": "Entdecken Sie, wie wir begonnen haben, was wir gelernt haben und wohin wir uns in unserer Mission bewegen, Menschen zu verbinden und Möglichkeiten zu schaffen."
+    },
+    "journey": {
+      "title": "Unsere Reise",
+      "subtitle": "Eine Geschichte des Wachstums, Lernens und der Gemeinschaft",
+      "beginning": {
+        "title": "Der Anfang",
+        "badge": "Vor Monaten",
+        "description": "Alles begann vor Monaten, als wir ManzelHelp auf manzelhelp.com starteten. Wir begannen mit einem einfachen Fokus: außergewöhnliche Reinigungsdienste für Haushalte und Unternehmen in ganz Marokko anzubieten.",
+        "experience": "Wir haben hart gearbeitet, aus jeder Interaktion gelernt und bedeutungsvolle Beziehungen zu unseren Kunden aufgebaut. Das positive Feedback und zufriedene Kunden zeigten uns, dass wir auf dem richtigen Weg waren."
+      },
+      "growth": {
+        "title": "Ein Neues Kapitel",
+        "description": "Diese Erfahrung war nur der Anfang unserer Reise. Heute starten wir einen völlig neuen Ansatz - öffnen unsere Plattform für alle in Marokko.",
+        "vision": "Jetzt kann jeder seine Dienste anbieten oder Jobs veröffentlichen. Ob Sie zusätzliches Einkommen verdienen möchten oder Hilfe bei Aufgaben benötigen, ManzelHelp macht es einfach, modern und zugänglich."
+      },
+      "mission": {
+        "title": "Unsere Mission",
+        "description": "Wir glauben, dass jeder die Möglichkeit verdient, Geld zu verdienen und auf qualitativ hochwertige Dienstleistungen zuzugreifen. In Marokko, wo Gemeinschaft und Vertrauen wichtig sind, bauen wir eine Plattform auf, die Nachbarn verbindet, lokale Talente unterstützt und wirtschaftliche Möglichkeiten für alle schafft."
+      }
+    },
+    "values": {
+      "title": "Was Uns Antreibt",
+      "subtitle": "Werte, die alles leiten, was wir tun",
+      "community": {
+        "title": "Gemeinschaft Zuerst",
+        "description": "Wir bauen für Marokko, mit Marokkanern. Jede Funktion, jede Entscheidung wird mit unserer lokalen Gemeinschaft im Hinterkopf getroffen."
+      },
+      "trust": {
+        "title": "Vertrauen & Sicherheit",
+        "description": "Verifizierte Profile, sichere Zahlungen und transparente Bewertungen sorgen dafür, dass sich jeder sicher und zuversichtlich fühlt."
+      },
+      "opportunity": {
+        "title": "Wirtschaftliche Chance",
+        "description": "Schaffung von Möglichkeiten für Menschen, Einkommen zu verdienen und gleichzeitig Dienstleistungen für alle zugänglicher zu machen."
+      },
+      "innovation": {
+        "title": "Modern & Einfach",
+        "description": "Technologie nutzen, um Verbindungen einfacher, schneller und zuverlässiger als je zuvor zu machen."
+      }
+    },
+    "howItWorks": {
+      "title": "Wie Es Funktioniert",
+      "subtitle": "Einfache Schritte zum Verbinden und Erfolg",
+      "step1": {
+        "title": "Registrieren",
+        "description": "Erstellen Sie Ihr kostenloses Konto in Minuten"
+      },
+      "step2": {
+        "title": "Wählen Sie Ihren Weg",
+        "description": "Dienste anbieten oder Jobs veröffentlichen - Sie entscheiden"
+      },
+      "step3": {
+        "title": "Verbinden & Vereinbaren",
+        "description": "Nachrichten, Details besprechen und Bedingungen festlegen"
+      },
+      "step4": {
+        "title": "Abschließen & Bewerten",
+        "description": "Erledigen Sie es und teilen Sie Ihre Erfahrung"
+      }
+    },
+    "impact": {
+      "title": "Einen Unterschied Machen",
+      "subtitle": "Echte Auswirkungen in marokkanischen Gemeinschaften",
+      "earners": {
+        "title": "Verdienstmöglichkeiten",
+        "description": "Menschen in ganz Marokko helfen, ihre Fähigkeiten in Einkommen umzuwandeln"
+      },
+      "services": {
+        "title": "Zugängliche Dienste",
+        "description": "Qualitativ hochwertige Dienstleistungen für alle überall verfügbar machen"
+      },
+      "local": {
+        "title": "Lokale Unterstützung",
+        "description": "Aufbau einer Plattform, die lokale Volkswirtschaften und Gemeinschaften stärkt"
+      }
+    },
+    "future": {
+      "title": "Was Kommt Als Nächstes",
+      "subtitle": "Unsere Vision für die Zukunft",
+      "description": "Wir fangen gerade erst an. Während wir wachsen, werden wir weiterhin unserer Gemeinschaft zuhören, unsere Plattform verbessern und Möglichkeiten für alle in Marokko erweitern. Ihr Erfolg ist unser Erfolg, und zusammen bauen wir etwas Besonderes.",
+      "joinUs": "Begleiten Sie uns auf dieser Reise"
+    },
+    "cta": {
+      "title": "Seien Sie Teil Unserer Geschichte",
+      "description": "Ob Sie Ihre Fähigkeiten anbieten möchten oder Hilfe bei Aufgaben benötigen, ManzelHelp ist für Sie da. Schließen Sie sich Tausenden von Marokkanern an, die sich bereits verbinden, verdienen und zusammen wachsen.",
+      "getStarted": "Loslegen",
+      "exploreServices": "Dienste Erkunden"
+    }
+  }
+}

@@ -1,6 +1,21 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Sparkles,
+  Heart,
+  TrendingUp,
+  Users,
+  Shield,
+  Zap,
+  Target,
+  ArrowRight,
+  Star,
+  MapPin,
+  Clock,
+} from "lucide-react";
 
 export async function generateMetadata({
   params,
@@ -8,14 +23,14 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Footer" });
+  const t = await getTranslations({ locale, namespace: "aboutUs" });
 
   return {
-    title: t("aboutUs"),
-    description: t("aboutDescription"),
+    title: `${t("hero.title")} - ManzelHelp`,
+    description: t("hero.description"),
     openGraph: {
-      title: t("aboutUs"),
-      description: t("aboutDescription"),
+      title: `${t("hero.title")} - ManzelHelp`,
+      description: t("hero.description"),
       locale: locale,
       type: "website",
     },
@@ -29,517 +44,351 @@ export default async function AboutUsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("aboutUs");
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-[var(--color-secondary)] rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--color-secondary)] rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+        </div>
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 border border-white/20">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm font-medium">{t("hero.subtitle")}</span>
+          </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-            Introducing ManzelHelp
+            {t("hero.title")}
           </h1>
-          <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto">
-            Your All-in-One Service Solution
-          </p>
-          <p className="text-base sm:text-lg opacity-90 leading-relaxed max-w-2xl mx-auto">
-            Welcome to ManzelHelp, your ultimate service marketplace. We bring
-            together a diverse range of services to cater to your needs, making
-            your life simpler and more enjoyable.
+          <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto opacity-90">
+            {t("hero.description")}
           </p>
         </div>
       </section>
 
-      {/* Evolution Story */}
+      {/* Journey Story */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-surface)]">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              From Cleaning Services to Comprehensive Solutions
+              {t("journey.title")}
             </h2>
+            <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-4">
+              {t("journey.subtitle")}
+            </p>
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-6">
-              <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)]">
-                <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
-                  Our Foundation
-                </h3>
-                <p className="text-[var(--color-text-secondary)] leading-relaxed">
-                  Our journey began with a focus on providing top-notch cleaning
-                  services, inspired by the successful model of Helpling. We
-                  successfully built a foundation of trust and excellence within
-                  this domain.
+          <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            {/* The Beginning */}
+            <Card className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] rounded-xl flex items-center justify-center">
+                    <Clock className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="inline-block bg-[var(--color-secondary)]/10 text-[var(--color-secondary)] text-xs font-semibold px-3 py-1 rounded-full mb-2">
+                      {t("journey.beginning.badge")}
+                    </div>
+                    <CardTitle className="text-[var(--color-text-primary)]">
+                      {t("journey.beginning.title")}
+                    </CardTitle>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[var(--color-text-secondary)] leading-relaxed mb-4">
+                  {t("journey.beginning.description")}
                 </p>
-              </div>
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+                    {t("journey.beginning.experience")}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)]">
-                <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
-                  Our Evolution
-                </h3>
-                <p className="text-[var(--color-text-secondary)] leading-relaxed">
-                  Looking ahead, we're excited to expand our offerings to
-                  encompass a wide spectrum of services. ManzelHelp is evolving
-                  into a comprehensive platform where your every need will be
-                  met with professionalism and care.
+            {/* Growth */}
+            <Card className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-[var(--color-secondary)]/5 rounded-full -translate-y-1/2 -translate-x-1/2"></div>
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-secondary-dark)] rounded-xl flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <CardTitle className="text-[var(--color-text-primary)]">
+                    {t("journey.growth.title")}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[var(--color-text-secondary)] leading-relaxed mb-4">
+                  {t("journey.growth.description")}
                 </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-full flex items-center justify-center text-white font-bold">
-                  1
-                </div>
-                <div>
-                  <h4 className="font-semibold text-[var(--color-text-primary)]">
-                    Cleaning Excellence
-                  </h4>
-                  <p className="text-[var(--color-text-secondary)] text-sm">
-                    Professional cleaning services for homes and offices
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+                    {t("journey.growth.vision")}
                   </p>
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-full flex items-center justify-center text-white font-bold">
-                  2
-                </div>
-                <div>
-                  <h4 className="font-semibold text-[var(--color-text-primary)]">
-                    TaskRabbit-like Services
-                  </h4>
-                  <p className="text-[var(--color-text-secondary)] text-sm">
-                    Furniture assembly, delivery, and maintenance
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-full flex items-center justify-center text-white font-bold">
-                  3
-                </div>
-                <div>
-                  <h4 className="font-semibold text-[var(--color-text-primary)]">
-                    Comprehensive Platform
-                  </h4>
-                  <p className="text-[var(--color-text-secondary)] text-sm">
-                    All your service needs in one trusted place
-                  </p>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Mission */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-secondary)]/5 dark:from-[var(--color-primary)]/10 dark:to-[var(--color-secondary)]/10 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Target className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+                    {t("journey.mission.title")}
+                  </h3>
+                  <p className="text-lg text-[var(--color-text-secondary)] leading-relaxed">
+                    {t("journey.mission.description")}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      {/* The ManzelHelp Advantage */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-bg)]">
-        <div className="max-w-4xl mx-auto">
+      {/* Values */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              Why Choose ManzelHelp?
+              {t("values.title")}
             </h2>
+            <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-4">
+              {t("values.subtitle")}
+            </p>
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-[var(--color-surface)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Easy Booking
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Simple scheduling and real-time availability
-              </p>
-            </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-[var(--color-primary)]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Heart className="h-8 w-8 text-[var(--color-primary)]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("values.community.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("values.community.description")}
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="bg-[var(--color-surface)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Verified Providers
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Skilled and trusted service professionals
-              </p>
-            </div>
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-[var(--color-secondary)]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-[var(--color-secondary)]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("values.trust.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("values.trust.description")}
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="bg-[var(--color-surface)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Transparent Pricing
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Clear rates with no hidden fees
-              </p>
-            </div>
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-8 w-8 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("values.opportunity.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("values.opportunity.description")}
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="bg-[var(--color-surface)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Secure Payments
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Safe and reliable payment options
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-surface)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Quality Experience
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                High-quality service delivery guaranteed
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-surface)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Community Focus
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Supporting local economy and neighbors
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Service Categories */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-surface)]">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              Explore Our Diverse Service Categories
-            </h2>
-            <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Cleaning Services
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Professional home and office cleaning
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Handyman & Repairs
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Furniture assembly and maintenance
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Pet Care
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Pet sitting and walking services
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Tutoring & Education
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Academic support and learning assistance
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Event Services
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Party planning and event assistance
-              </p>
-            </div>
-
-            <div className="bg-[var(--color-bg)] rounded-xl p-6 border border-[var(--color-border)] hover:shadow-lg transition-all duration-300">
-              <div className="w-12 h-12 bg-[var(--color-secondary)] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Technical Support
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                IT assistance and device setup
-              </p>
-            </div>
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Zap className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("values.innovation.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("values.innovation.description")}
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-bg)]">
-        <div className="max-w-4xl mx-auto">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-surface)]">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              How It Works
+              {t("howItWorks.title")}
             </h2>
+            <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-4">
+              {t("howItWorks.subtitle")}
+            </p>
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-xl">1</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Sign Up
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Create your free account as a helper or customer
-              </p>
-            </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">1</span>
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("howItWorks.step1.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {t("howItWorks.step1.description")}
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-xl">2</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Browse & Book
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Find services or post your needs
-              </p>
-            </div>
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-secondary-dark)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">2</span>
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("howItWorks.step2.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {t("howItWorks.step2.description")}
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-xl">3</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Connect
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Message and agree on terms
-              </p>
-            </div>
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">3</span>
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("howItWorks.step3.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {t("howItWorks.step3.description")}
+                </p>
+              </CardContent>
+            </Card>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-xl">4</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-                Complete
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm">
-                Get it done and leave reviews
-              </p>
+            <Card className="border-0 shadow-lg bg-white/95 dark:bg-[var(--color-surface)] text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-secondary-dark)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">4</span>
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  {t("howItWorks.step4.title")}
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {t("howItWorks.step4.description")}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Impact */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-[var(--color-secondary)]/10 backdrop-blur-sm rounded-full px-6 py-3 mb-6 border border-[var(--color-secondary)]/20">
+              <MapPin className="h-5 w-5 text-[var(--color-secondary)]" />
+              <span className="text-sm font-semibold text-[var(--color-secondary)]">
+                {t("impact.title")}
+              </span>
             </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
+              {t("impact.title")}
+            </h2>
+            <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+              {t("impact.subtitle")}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-[var(--color-primary)]/5 to-transparent dark:from-[var(--color-primary)]/10 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-[var(--color-primary)]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="h-10 w-10 text-[var(--color-primary)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-3">
+                  {t("impact.earners.title")}
+                </h3>
+                <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("impact.earners.description")}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-[var(--color-secondary)]/5 to-transparent dark:from-[var(--color-secondary)]/10 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-[var(--color-secondary)]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Zap className="h-10 w-10 text-[var(--color-secondary)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-3">
+                  {t("impact.services.title")}
+                </h3>
+                <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("impact.services.description")}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-green-100/50 to-transparent dark:from-green-900/20 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Users className="h-10 w-10 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-3">
+                  {t("impact.local.title")}
+                </h3>
+                <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("impact.local.description")}
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Future Vision */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-secondary-light)] text-white">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 border border-white/20">
+            <Star className="h-4 w-4" />
+            <span className="text-sm font-medium">{t("future.title")}</span>
+          </div>
           <h2 className="text-2xl sm:text-3xl font-bold mb-6">
-            Looking Ahead: Our Vision
+            {t("future.title")}
           </h2>
-          <p className="text-lg mb-8 leading-relaxed max-w-3xl mx-auto">
-            We're committed to continuously improving our platform based on user
-            feedback. Our vision is to make ManzelHelp the comprehensive,
-            one-stop solution for all your service needs.
+          <p className="text-lg mb-4 opacity-90 leading-relaxed max-w-3xl mx-auto">
+            {t("future.subtitle")}
           </p>
-          <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
-              <h3 className="font-semibold mb-2">Trust & Reliability</h3>
-              <p className="text-sm opacity-90">
-                Building lasting relationships with verified professionals
-              </p>
-            </div>
-            <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
-              <h3 className="font-semibold mb-2">Community Growth</h3>
-              <p className="text-sm opacity-90">
-                Supporting local economy and neighbor connections
-              </p>
-            </div>
+          <p className="text-lg mb-8 opacity-90 leading-relaxed max-w-3xl mx-auto">
+            {t("future.description")}
+          </p>
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-6 py-3 border border-white/20">
+            <Heart className="h-5 w-5" />
+            <span className="font-medium">{t("future.joinUs")}</span>
           </div>
         </div>
       </section>
@@ -548,27 +397,33 @@ export default async function AboutUsPage({
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-surface)]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-6">
-            Join ManzelHelp Today
+            {t("cta.title")}
           </h2>
-          <p className="text-lg text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto">
-            Whether you want to offer your skills or need a helping hand,
-            ManzelHelp is your go-to platform for safe, reliable, and local
-            services. Experience the convenience, quality, and reliability that
-            ManzelHelp offers.
+          <p className="text-lg text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto leading-relaxed">
+            {t("cta.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/sign-up"
-              className="inline-block bg-[var(--color-primary)] text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-[var(--color-primary-light)] transition-all duration-300 transform hover:scale-105"
+            <Button
+              size="lg"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white"
+              asChild
             >
-              Get Started
-            </Link>
-            <Link
-              href="/services"
-              className="inline-block bg-[var(--color-secondary)] text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-[var(--color-secondary-light)] transition-all duration-300 transform hover:scale-105"
+              <Link href="/sign-up">
+                {t("cta.getStarted")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+              asChild
             >
-              Explore Services
-            </Link>
+              <Link href="/search/services">
+                {t("cta.exploreServices")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

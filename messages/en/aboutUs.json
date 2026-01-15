@@ -1,0 +1,96 @@
+{
+  "aboutUs": {
+    "hero": {
+      "title": "Our Story: Building ManzelHelp",
+      "subtitle": "From a simple idea to empowering communities across Morocco",
+      "description": "Discover how we started, what we learned, and where we're heading in our mission to connect people and create opportunities."
+    },
+    "journey": {
+      "title": "Our Journey",
+      "subtitle": "A story of growth, learning, and community",
+      "beginning": {
+        "title": "The Beginning",
+        "badge": "Months Ago",
+        "description": "It all started months ago when we launched ManzelHelp at manzelhelp.com. We began with a simple focus: providing exceptional cleaning services to homes and businesses across Morocco.",
+        "experience": "We worked hard, learned from every interaction, and built meaningful relationships with our customers. The positive feedback and satisfied customers showed us we were on the right path."
+      },
+      "growth": {
+        "title": "A New Chapter",
+        "description": "That experience was just the beginning of our journey. Today, we're rolling out a completely new approach - opening our platform to everyone in Morocco.",
+        "vision": "Now, anyone can offer their services or post jobs. Whether you're looking to earn extra income or need help with any task, ManzelHelp makes it simple, modern, and accessible."
+      },
+      "mission": {
+        "title": "Our Mission",
+        "description": "We believe everyone deserves the opportunity to earn money and access quality services. In Morocco, where community and trust matter, we're building a platform that connects neighbors, supports local talent, and creates economic opportunities for all."
+      }
+    },
+    "values": {
+      "title": "What Drives Us",
+      "subtitle": "Values that guide everything we do",
+      "community": {
+        "title": "Community First",
+        "description": "We're building for Morocco, with Moroccans. Every feature, every decision, is made with our local community in mind."
+      },
+      "trust": {
+        "title": "Trust & Safety",
+        "description": "Verified profiles, secure payments, and transparent reviews ensure everyone feels safe and confident."
+      },
+      "opportunity": {
+        "title": "Economic Opportunity",
+        "description": "Creating ways for people to earn income while making services more accessible to everyone."
+      },
+      "innovation": {
+        "title": "Modern & Simple",
+        "description": "Using technology to make connections easier, faster, and more reliable than ever before."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Simple steps to connect and succeed",
+      "step1": {
+        "title": "Sign Up",
+        "description": "Create your free account in minutes"
+      },
+      "step2": {
+        "title": "Choose Your Path",
+        "description": "Offer services or post jobs - you decide"
+      },
+      "step3": {
+        "title": "Connect & Agree",
+        "description": "Message, discuss details, and set terms"
+      },
+      "step4": {
+        "title": "Complete & Review",
+        "description": "Get it done and share your experience"
+      }
+    },
+    "impact": {
+      "title": "Making a Difference",
+      "subtitle": "Real impact in Moroccan communities",
+      "earners": {
+        "title": "Earning Opportunities",
+        "description": "Helping people across Morocco turn their skills into income"
+      },
+      "services": {
+        "title": "Accessible Services",
+        "description": "Making quality services available to everyone, everywhere"
+      },
+      "local": {
+        "title": "Supporting Local",
+        "description": "Building a platform that strengthens local economies and communities"
+      }
+    },
+    "future": {
+      "title": "What's Next",
+      "subtitle": "Our vision for the future",
+      "description": "We're just getting started. As we grow, we'll continue listening to our community, improving our platform, and expanding opportunities for everyone in Morocco. Your success is our success, and together we're building something special.",
+      "joinUs": "Join us on this journey"
+    },
+    "cta": {
+      "title": "Be Part of Our Story",
+      "description": "Whether you want to offer your skills or need help with tasks, ManzelHelp is here for you. Join thousands of Moroccans who are already connecting, earning, and growing together.",
+      "getStarted": "Get Started",
+      "exploreServices": "Explore Services"
+    }
+  }
+}

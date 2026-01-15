@@ -1,0 +1,96 @@
+{
+  "aboutUs": {
+    "hero": {
+      "title": "Notre Histoire : Construire ManzelHelp",
+      "subtitle": "D'une simple idée à l'autonomisation des communautés à travers le Maroc",
+      "description": "Découvrez comment nous avons commencé, ce que nous avons appris et où nous nous dirigeons dans notre mission de connecter les gens et créer des opportunités."
+    },
+    "journey": {
+      "title": "Notre Parcours",
+      "subtitle": "Une histoire de croissance, d'apprentissage et de communauté",
+      "beginning": {
+        "title": "Le Début",
+        "badge": "Il y a des Mois",
+        "description": "Tout a commencé il y a des mois lorsque nous avons lancé ManzelHelp sur manzelhelp.com. Nous avons commencé avec un objectif simple : fournir des services de nettoyage exceptionnels aux foyers et entreprises à travers le Maroc.",
+        "experience": "Nous avons travaillé dur, appris de chaque interaction et construit des relations significatives avec nos clients. Les retours positifs et les clients satisfaits nous ont montré que nous étions sur la bonne voie."
+      },
+      "growth": {
+        "title": "Un Nouveau Chapitre",
+        "description": "Cette expérience n'était que le début de notre parcours. Aujourd'hui, nous lançons une approche complètement nouvelle - ouvrir notre plateforme à tous au Maroc.",
+        "vision": "Maintenant, n'importe qui peut offrir ses services ou publier des emplois. Que vous cherchiez à gagner un revenu supplémentaire ou ayez besoin d'aide pour n'importe quelle tâche, ManzelHelp le rend simple, moderne et accessible."
+      },
+      "mission": {
+        "title": "Notre Mission",
+        "description": "Nous croyons que tout le monde mérite l'opportunité de gagner de l'argent et d'accéder à des services de qualité. Au Maroc, où la communauté et la confiance comptent, nous construisons une plateforme qui connecte les voisins, soutient les talents locaux et crée des opportunités économiques pour tous."
+      }
+    },
+    "values": {
+      "title": "Ce Qui Nous Anime",
+      "subtitle": "Des valeurs qui guident tout ce que nous faisons",
+      "community": {
+        "title": "La Communauté d'Abord",
+        "description": "Nous construisons pour le Maroc, avec les Marocains. Chaque fonctionnalité, chaque décision, est prise en pensant à notre communauté locale."
+      },
+      "trust": {
+        "title": "Confiance et Sécurité",
+        "description": "Profils vérifiés, paiements sécurisés et avis transparents garantissent que chacun se sente en sécurité et en confiance."
+      },
+      "opportunity": {
+        "title": "Opportunité Économique",
+        "description": "Créer des moyens pour les gens de gagner un revenu tout en rendant les services plus accessibles à tous."
+      },
+      "innovation": {
+        "title": "Moderne et Simple",
+        "description": "Utiliser la technologie pour rendre les connexions plus faciles, plus rapides et plus fiables que jamais."
+      }
+    },
+    "howItWorks": {
+      "title": "Comment Ça Marche",
+      "subtitle": "Des étapes simples pour se connecter et réussir",
+      "step1": {
+        "title": "S'inscrire",
+        "description": "Créez votre compte gratuit en quelques minutes"
+      },
+      "step2": {
+        "title": "Choisissez Votre Chemin",
+        "description": "Offrez des services ou publiez des emplois - vous décidez"
+      },
+      "step3": {
+        "title": "Connectez et Convenez",
+        "description": "Messagerie, discutez des détails et fixez les conditions"
+      },
+      "step4": {
+        "title": "Terminez et Évaluez",
+        "description": "Faites-le et partagez votre expérience"
+      }
+    },
+    "impact": {
+      "title": "Faire une Différence",
+      "subtitle": "Impact réel dans les communautés marocaines",
+      "earners": {
+        "title": "Opportunités de Gains",
+        "description": "Aider les gens à travers le Maroc à transformer leurs compétences en revenus"
+      },
+      "services": {
+        "title": "Services Accessibles",
+        "description": "Rendre des services de qualité accessibles à tous, partout"
+      },
+      "local": {
+        "title": "Soutenir le Local",
+        "description": "Construire une plateforme qui renforce les économies et communautés locales"
+      }
+    },
+    "future": {
+      "title": "Et Après ?",
+      "subtitle": "Notre vision pour l'avenir",
+      "description": "Nous ne faisons que commencer. En grandissant, nous continuerons à écouter notre communauté, à améliorer notre plateforme et à élargir les opportunités pour tous au Maroc. Votre succès est notre succès, et ensemble nous construisons quelque chose de spécial.",
+      "joinUs": "Rejoignez-nous dans ce parcours"
+    },
+    "cta": {
+      "title": "Faites Partie de Notre Histoire",
+      "description": "Que vous souhaitiez offrir vos compétences ou ayez besoin d'aide pour des tâches, ManzelHelp est là pour vous. Rejoignez des milliers de Marocains qui se connectent déjà, gagnent et grandissent ensemble.",
+      "getStarted": "Commencer",
+      "exploreServices": "Explorer les Services"
+    }
+  }
+}
