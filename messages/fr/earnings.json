@@ -1,0 +1,76 @@
+{
+  "earnings": {
+    "hero": {
+      "title": "Calculateur de Gains",
+      "description": "Calculez vos gains potentiels en tant qu'assistant sur ManzelHelp. Découvrez combien vous pouvez gagner en fonction de vos compétences et de votre disponibilité."
+    },
+    "calculator": {
+      "title": "Calculez Vos Gains",
+      "selectServiceCategory": "Sélectionner une Catégorie de Service",
+      "hourlyRate": "Taux Horaire (MAD)",
+      "hoursPerWeek": "Heures par Semaine",
+      "weeksPerMonth": "Semaines par Mois",
+      "range": "Plage : {min} - {max} MAD",
+      "perHour": "MAD/heure"
+    },
+    "results": {
+      "title": "Vos Gains Potentiels",
+      "weekly": "Hebdomadaire",
+      "monthlyGross": "Mensuel (Brut)",
+      "monthlyNet": "Mensuel (Net)",
+      "yearlyNet": "Annuel (Net)",
+      "afterPlatformFee": "Après frais de plateforme de 10%"
+    },
+    "platformFee": {
+      "title": "Frais de Plateforme",
+      "description": "ManzelHelp facture des frais de plateforme de 10% pour couvrir le traitement des paiements, le support client et la maintenance de la plateforme."
+    },
+    "maximizeEarnings": {
+      "title": "Maximisez Vos Gains",
+      "buildReputation": {
+        "title": "Construisez Votre Réputation",
+        "description": "D'excellents avis et notes vous aident à facturer des tarifs premium et à obtenir plus de réservations."
+      },
+      "beAvailable": {
+        "title": "Soyez Disponible",
+        "description": "Répondez rapidement aux demandes et maintenez une disponibilité flexible pour obtenir plus de missions."
+      },
+      "expandSkills": {
+        "title": "Développez Vos Compétences",
+        "description": "Apprenez de nouvelles compétences et proposez des services supplémentaires pour augmenter votre potentiel de gains."
+      }
+    },
+    "cta": {
+      "title": "Prêt à Commencer à Gagner ?",
+      "description": "Rejoignez des milliers d'assistants qui gagnent déjà de l'argent sur ManzelHelp. Commencez votre parcours aujourd'hui !",
+      "becomeTasker": "Devenir Assistant",
+      "learnMore": "En Savoir Plus"
+    },
+    "services": {
+      "cleaning": {
+        "name": "Services de Nettoyage",
+        "description": "Nettoyage de maison, nettoyage en profondeur, nettoyage de bureau"
+      },
+      "handyman": {
+        "name": "Travaux de Bricolage",
+        "description": "Assemblage de meubles, réparations, maintenance"
+      },
+      "petcare": {
+        "name": "Soins aux Animaux",
+        "description": "Promenade de chiens, garde d'animaux, toilettage"
+      },
+      "tutoring": {
+        "name": "Tutorat",
+        "description": "Soutien académique, cours de langues"
+      },
+      "gardening": {
+        "name": "Jardinage",
+        "description": "Entretien de pelouse, maintenance de jardin, aménagement paysager"
+      },
+      "delivery": {
+        "name": "Services de Livraison",
+        "description": "Livraison de colis, courses"
+      }
+    }
+  }
+}

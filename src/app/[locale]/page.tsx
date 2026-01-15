@@ -422,7 +422,7 @@ export default async function HomePage({
 
           {/* Enhanced Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
-            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)]/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
+            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)] dark:border-[var(--color-border)] backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)]"></div>
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
@@ -437,7 +437,7 @@ export default async function HomePage({
               </div>
             </Card>
 
-            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)]/80 backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
+            <Card className="group p-6 sm:p-8 text-center hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 dark:bg-[var(--color-surface)] dark:border-[var(--color-border)] backdrop-blur-sm shadow-xl hover:scale-105 hover:-translate-y-2 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)]"></div>
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-secondary-light)] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">

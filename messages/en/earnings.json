@@ -1,0 +1,76 @@
+{
+  "earnings": {
+    "hero": {
+      "title": "Earnings Calculator",
+      "description": "Calculate your potential earnings as a tasker on ManzelHelp. See how much you can make based on your skills and availability."
+    },
+    "calculator": {
+      "title": "Calculate Your Earnings",
+      "selectServiceCategory": "Select Service Category",
+      "hourlyRate": "Hourly Rate (MAD)",
+      "hoursPerWeek": "Hours per Week",
+      "weeksPerMonth": "Weeks per Month",
+      "range": "Range: {min} - {max} MAD",
+      "perHour": "MAD/hour"
+    },
+    "results": {
+      "title": "Your Potential Earnings",
+      "weekly": "Weekly",
+      "monthlyGross": "Monthly (Gross)",
+      "monthlyNet": "Monthly (Net)",
+      "yearlyNet": "Yearly (Net)",
+      "afterPlatformFee": "After 10% platform fee"
+    },
+    "platformFee": {
+      "title": "Platform Fee",
+      "description": "ManzelHelp charges a 10% platform fee to cover payment processing, customer support, and platform maintenance."
+    },
+    "maximizeEarnings": {
+      "title": "Maximize Your Earnings",
+      "buildReputation": {
+        "title": "Build Your Reputation",
+        "description": "Excellent reviews and ratings help you charge premium rates and get more bookings."
+      },
+      "beAvailable": {
+        "title": "Be Available",
+        "description": "Respond quickly to requests and maintain flexible availability to get more jobs."
+      },
+      "expandSkills": {
+        "title": "Expand Your Skills",
+        "description": "Learn new skills and offer additional services to increase your earning potential."
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Earning?",
+      "description": "Join thousands of taskers who are already earning money on ManzelHelp. Start your journey today!",
+      "becomeTasker": "Become a Tasker",
+      "learnMore": "Learn More"
+    },
+    "services": {
+      "cleaning": {
+        "name": "Cleaning Services",
+        "description": "House cleaning, deep cleaning, office cleaning"
+      },
+      "handyman": {
+        "name": "Handyman Work",
+        "description": "Furniture assembly, repairs, maintenance"
+      },
+      "petcare": {
+        "name": "Pet Care",
+        "description": "Dog walking, pet sitting, grooming"
+      },
+      "tutoring": {
+        "name": "Tutoring",
+        "description": "Academic support, language lessons"
+      },
+      "gardening": {
+        "name": "Gardening",
+        "description": "Lawn care, garden maintenance, landscaping"
+      },
+      "delivery": {
+        "name": "Delivery Services",
+        "description": "Package delivery, grocery shopping"
+      }
+    }
+  }
+}

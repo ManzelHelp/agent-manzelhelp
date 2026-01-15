@@ -1,0 +1,76 @@
+{
+  "earnings": {
+    "hero": {
+      "title": "Verdienstrechner",
+      "description": "Berechnen Sie Ihr potenzielles Einkommen als Tasker auf ManzelHelp. Sehen Sie, wie viel Sie basierend auf Ihren Fähigkeiten und Ihrer Verfügbarkeit verdienen können."
+    },
+    "calculator": {
+      "title": "Berechnen Sie Ihr Einkommen",
+      "selectServiceCategory": "Servicekategorie Auswählen",
+      "hourlyRate": "Stundensatz (MAD)",
+      "hoursPerWeek": "Stunden pro Woche",
+      "weeksPerMonth": "Wochen pro Monat",
+      "range": "Bereich: {min} - {max} MAD",
+      "perHour": "MAD/Stunde"
+    },
+    "results": {
+      "title": "Ihr Potenzielles Einkommen",
+      "weekly": "Wöchentlich",
+      "monthlyGross": "Monatlich (Brutto)",
+      "monthlyNet": "Monatlich (Netto)",
+      "yearlyNet": "Jährlich (Netto)",
+      "afterPlatformFee": "Nach 10% Plattformgebühr"
+    },
+    "platformFee": {
+      "title": "Plattformgebühr",
+      "description": "ManzelHelp erhebt eine Plattformgebühr von 10% zur Deckung der Zahlungsabwicklung, des Kundensupports und der Plattformwartung."
+    },
+    "maximizeEarnings": {
+      "title": "Maximieren Sie Ihr Einkommen",
+      "buildReputation": {
+        "title": "Bauen Sie Ihren Ruf Auf",
+        "description": "Ausgezeichnete Bewertungen und Ratings helfen Ihnen, Premium-Preise zu verlangen und mehr Buchungen zu erhalten."
+      },
+      "beAvailable": {
+        "title": "Seien Sie Verfügbar",
+        "description": "Reagieren Sie schnell auf Anfragen und halten Sie flexible Verfügbarkeit aufrecht, um mehr Jobs zu bekommen."
+      },
+      "expandSkills": {
+        "title": "Erweitern Sie Ihre Fähigkeiten",
+        "description": "Lernen Sie neue Fähigkeiten und bieten Sie zusätzliche Dienstleistungen an, um Ihr Verdienstpotenzial zu steigern."
+      }
+    },
+    "cta": {
+      "title": "Bereit, Geld zu Verdienen?",
+      "description": "Schließen Sie sich Tausenden von Taskern an, die bereits Geld auf ManzelHelp verdienen. Beginnen Sie noch heute Ihre Reise!",
+      "becomeTasker": "Tasker Werden",
+      "learnMore": "Mehr Erfahren"
+    },
+    "services": {
+      "cleaning": {
+        "name": "Reinigungsdienste",
+        "description": "Hausreinigung, Tiefenreinigung, Büroreinigung"
+      },
+      "handyman": {
+        "name": "Handwerkerarbeiten",
+        "description": "Möbelmontage, Reparaturen, Wartung"
+      },
+      "petcare": {
+        "name": "Tierbetreuung",
+        "description": "Hundespaziergänge, Tiersitting, Pflege"
+      },
+      "tutoring": {
+        "name": "Nachhilfe",
+        "description": "Akademische Unterstützung, Sprachunterricht"
+      },
+      "gardening": {
+        "name": "Gartenarbeit",
+        "description": "Rasenpflege, Gartenwartung, Landschaftsgestaltung"
+      },
+      "delivery": {
+        "name": "Lieferdienste",
+        "description": "Paketzustellung, Einkaufen"
+      }
+    }
+  }
+}

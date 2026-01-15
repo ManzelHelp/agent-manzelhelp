@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,66 +13,71 @@ import {
   Users,
 } from "lucide-react";
 
-const SERVICE_CATEGORIES = [
-  {
-    id: "cleaning",
-    name: "Cleaning Services",
-    icon: "🧹",
-    baseRate: 20,
-    minRate: 15,
-    maxRate: 35,
-    description: "House cleaning, deep cleaning, office cleaning",
-  },
-  {
-    id: "handyman",
-    name: "Handyman Work",
-    icon: "🔧",
-    baseRate: 30,
-    minRate: 20,
-    maxRate: 50,
-    description: "Furniture assembly, repairs, maintenance",
-  },
-  {
-    id: "petcare",
-    name: "Pet Care",
-    icon: "🐕",
-    baseRate: 16,
-    minRate: 12,
-    maxRate: 25,
-    description: "Dog walking, pet sitting, grooming",
-  },
-  {
-    id: "tutoring",
-    name: "Tutoring",
-    icon: "📚",
-    baseRate: 30,
-    minRate: 20,
-    maxRate: 50,
-    description: "Academic support, language lessons",
-  },
-  {
-    id: "gardening",
-    name: "Gardening",
-    icon: "🌱",
-    baseRate: 18,
-    minRate: 15,
-    maxRate: 30,
-    description: "Lawn care, garden maintenance, landscaping",
-  },
-  {
-    id: "delivery",
-    name: "Delivery Services",
-    icon: "📦",
-    baseRate: 15,
-    minRate: 10,
-    maxRate: 25,
-    description: "Package delivery, grocery shopping",
-  },
-];
-
 export default function EarningsPage() {
-  const [selectedService, setSelectedService] = useState(SERVICE_CATEGORIES[0]);
-  const [hourlyRate, setHourlyRate] = useState(selectedService.baseRate);
+  const t = useTranslations("earnings");
+
+  const SERVICE_CATEGORIES = useMemo(
+    () => [
+      {
+        id: "cleaning",
+        name: t("services.cleaning.name"),
+        icon: "🧹",
+        baseRate: 20,
+        minRate: 15,
+        maxRate: 35,
+        description: t("services.cleaning.description"),
+      },
+      {
+        id: "handyman",
+        name: t("services.handyman.name"),
+        icon: "🔧",
+        baseRate: 30,
+        minRate: 20,
+        maxRate: 50,
+        description: t("services.handyman.description"),
+      },
+      {
+        id: "petcare",
+        name: t("services.petcare.name"),
+        icon: "🐕",
+        baseRate: 16,
+        minRate: 12,
+        maxRate: 25,
+        description: t("services.petcare.description"),
+      },
+      {
+        id: "tutoring",
+        name: t("services.tutoring.name"),
+        icon: "📚",
+        baseRate: 30,
+        minRate: 20,
+        maxRate: 50,
+        description: t("services.tutoring.description"),
+      },
+      {
+        id: "gardening",
+        name: t("services.gardening.name"),
+        icon: "🌱",
+        baseRate: 18,
+        minRate: 15,
+        maxRate: 30,
+        description: t("services.gardening.description"),
+      },
+      {
+        id: "delivery",
+        name: t("services.delivery.name"),
+        icon: "📦",
+        baseRate: 15,
+        minRate: 10,
+        maxRate: 25,
+        description: t("services.delivery.description"),
+      },
+    ],
+    [t]
+  );
+
+  const [selectedService, setSelectedService] = useState(() => SERVICE_CATEGORIES[0]);
+  const [hourlyRate, setHourlyRate] = useState(() => SERVICE_CATEGORIES[0].baseRate);
   const [hoursPerWeek, setHoursPerWeek] = useState(20);
   const [weeksPerMonth, setWeeksPerMonth] = useState(4);
 
@@ -96,11 +102,10 @@ export default function EarningsPage() {
             <Calculator className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Earnings Calculator
+            {t("hero.title")}
           </h1>
           <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto">
-            Calculate your potential earnings as a tasker on ManzelHelp. See how
-            much you can make based on your skills and availability.
+            {t("hero.description")}
           </p>
         </div>
       </section>
@@ -114,14 +119,14 @@ export default function EarningsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calculator className="w-5 h-5" />
-                  Calculate Your Earnings
+                  {t("calculator.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Service Selection */}
                 <div>
                   <label className="block text-sm font-medium mb-3 text-[var(--color-text-primary)]">
-                    Select Service Category
+                    {t("calculator.selectServiceCategory")}
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {SERVICE_CATEGORIES.map((service) => (
@@ -141,7 +146,7 @@ export default function EarningsPage() {
                               {service.name}
                             </div>
                             <div className="text-xs text-[var(--color-text-secondary)]">
-                              €{service.minRate}-{service.maxRate}/hour
+                              {service.minRate}-{service.maxRate} {t("calculator.perHour")}
                             </div>
                           </div>
                         </div>
@@ -153,7 +158,7 @@ export default function EarningsPage() {
                 {/* Hourly Rate */}
                 <div>
                   <label className="block text-sm font-medium mb-2 text-[var(--color-text-primary)]">
-                    Hourly Rate (€)
+                    {t("calculator.hourlyRate")}
                   </label>
                   <input
                     type="number"
@@ -164,15 +169,14 @@ export default function EarningsPage() {
                     className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                   />
                   <div className="text-xs text-[var(--color-text-secondary)] mt-1">
-                    Range: €{selectedService.minRate} - €
-                    {selectedService.maxRate}
+                    {t("calculator.range", { min: selectedService.minRate, max: selectedService.maxRate })}
                   </div>
                 </div>
 
                 {/* Hours Per Week */}
                 <div>
                   <label className="block text-sm font-medium mb-2 text-[var(--color-text-primary)]">
-                    Hours per Week
+                    {t("calculator.hoursPerWeek")}
                   </label>
                   <input
                     type="number"
@@ -187,7 +191,7 @@ export default function EarningsPage() {
                 {/* Weeks Per Month */}
                 <div>
                   <label className="block text-sm font-medium mb-2 text-[var(--color-text-primary)]">
-                    Weeks per Month
+                    {t("calculator.weeksPerMonth")}
                   </label>
                   <input
                     type="number"
@@ -206,7 +210,7 @@ export default function EarningsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
-                  Your Potential Earnings
+                  {t("results.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -214,12 +218,12 @@ export default function EarningsPage() {
                 <div className="bg-[var(--color-surface)] rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-[var(--color-text-secondary)]">
-                      Weekly
+                      {t("results.weekly")}
                     </span>
                     <Clock className="w-4 h-4 text-[var(--color-text-secondary)]" />
                   </div>
                   <div className="text-2xl font-bold text-[var(--color-primary)]">
-                    €{weeklyEarnings.toLocaleString()}
+                    {weeklyEarnings.toLocaleString()} MAD
                   </div>
                 </div>
 
@@ -227,26 +231,26 @@ export default function EarningsPage() {
                 <div className="bg-[var(--color-surface)] rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-[var(--color-text-secondary)]">
-                      Monthly (Gross)
+                      {t("results.monthlyGross")}
                     </span>
                     <DollarSign className="w-4 h-4 text-[var(--color-text-secondary)]" />
                   </div>
                   <div className="text-2xl font-bold text-[var(--color-primary)]">
-                    €{monthlyEarnings.toLocaleString()}
+                    {monthlyEarnings.toLocaleString()} MAD
                   </div>
                 </div>
 
                 {/* Monthly Net Earnings */}
                 <div className="bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-light)] rounded-lg p-4 text-white">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm opacity-90">Monthly (Net)</span>
+                    <span className="text-sm opacity-90">{t("results.monthlyNet")}</span>
                     <Star className="w-4 h-4" />
                   </div>
                   <div className="text-2xl font-bold">
-                    €{netMonthlyEarnings.toLocaleString()}
+                    {netMonthlyEarnings.toLocaleString()} MAD
                   </div>
                   <div className="text-xs opacity-75 mt-1">
-                    After 10% platform fee
+                    {t("results.afterPlatformFee")}
                   </div>
                 </div>
 
@@ -254,12 +258,12 @@ export default function EarningsPage() {
                 <div className="bg-[var(--color-surface)] rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-[var(--color-text-secondary)]">
-                      Yearly (Net)
+                      {t("results.yearlyNet")}
                     </span>
                     <TrendingUp className="w-4 h-4 text-[var(--color-text-secondary)]" />
                   </div>
                   <div className="text-2xl font-bold text-[var(--color-primary)]">
-                    €{netYearlyEarnings.toLocaleString()}
+                    {netYearlyEarnings.toLocaleString()} MAD
                   </div>
                 </div>
 
@@ -268,12 +272,11 @@ export default function EarningsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="w-4 h-4 text-blue-600" />
                     <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      Platform Fee
+                      {t("platformFee.title")}
                     </span>
                   </div>
                   <p className="text-xs text-blue-700 dark:text-blue-300">
-                    ManzelHelp charges a 10% platform fee to cover payment
-                    processing, customer support, and platform maintenance.
+                    {t("platformFee.description")}
                   </p>
                 </div>
               </CardContent>
@@ -287,7 +290,7 @@ export default function EarningsPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              Maximize Your Earnings
+              {t("maximizeEarnings.title")}
             </h2>
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
@@ -298,11 +301,10 @@ export default function EarningsPage() {
                 <Star className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                Build Your Reputation
+                {t("maximizeEarnings.buildReputation.title")}
               </h3>
               <p className="text-[var(--color-text-secondary)] text-sm">
-                Excellent reviews and ratings help you charge premium rates and
-                get more bookings.
+                {t("maximizeEarnings.buildReputation.description")}
               </p>
             </Card>
 
@@ -311,11 +313,10 @@ export default function EarningsPage() {
                 <Clock className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                Be Available
+                {t("maximizeEarnings.beAvailable.title")}
               </h3>
               <p className="text-[var(--color-text-secondary)] text-sm">
-                Respond quickly to requests and maintain flexible availability
-                to get more jobs.
+                {t("maximizeEarnings.beAvailable.description")}
               </p>
             </Card>
 
@@ -324,11 +325,10 @@ export default function EarningsPage() {
                 <TrendingUp className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                Expand Your Skills
+                {t("maximizeEarnings.expandSkills.title")}
               </h3>
               <p className="text-[var(--color-text-secondary)] text-sm">
-                Learn new skills and offer additional services to increase your
-                earning potential.
+                {t("maximizeEarnings.expandSkills.description")}
               </p>
             </Card>
           </div>
@@ -339,25 +339,24 @@ export default function EarningsPage() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-6">
-            Ready to Start Earning?
+            {t("cta.title")}
           </h2>
           <p className="text-lg text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto">
-            Join thousands of taskers who are already earning money on
-            ManzelHelp. Start your journey today!
+            {t("cta.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
               className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
             >
-              Become a Tasker
+              {t("cta.becomeTasker")}
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
             >
-              Learn More
+              {t("cta.learnMore")}
             </Button>
           </div>
         </div>

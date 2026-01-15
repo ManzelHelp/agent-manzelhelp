@@ -178,7 +178,7 @@ function SignUpForm() {
                 }
               }}
             />
-            <div className="h-11 px-5 flex items-center justify-center rounded-2xl border-2 border-transparent bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-md text-sm font-semibold text-gray-800 dark:text-gray-100 cursor-pointer
+            <div className="h-11 px-5 flex items-center justify-center rounded-2xl border-2 border-transparent bg-white/80 dark:bg-[var(--color-surface)] backdrop-blur-sm shadow-md text-sm font-semibold text-gray-800 dark:text-[var(--color-text-primary)] cursor-pointer
                 transition-all duration-300 ease-out
                 peer-checked:border-[#48bb93] peer-checked:bg-gradient-to-r peer-checked:from-[#48bb93] peer-checked:to-[#3da682] peer-checked:text-white peer-checked:shadow-2xl peer-checked:shadow-[#48bb93]/50 peer-checked:scale-105 peer-checked:ring-4 peer-checked:ring-[#48bb93]/30
                 hover:border-[#48bb93]/50 hover:bg-[#48bb93]/10 dark:hover:bg-[#48bb93]/20 hover:shadow-xl hover:scale-[1.02] hover:ring-2 hover:ring-[#48bb93]/20">
@@ -208,7 +208,7 @@ function SignUpForm() {
                 }
               }}
             />
-            <div className="h-11 px-5 flex items-center justify-center rounded-2xl border-2 border-transparent bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-md text-sm font-semibold text-gray-800 dark:text-gray-100 cursor-pointer
+            <div className="h-11 px-5 flex items-center justify-center rounded-2xl border-2 border-transparent bg-white/80 dark:bg-[var(--color-surface)] backdrop-blur-sm shadow-md text-sm font-semibold text-gray-800 dark:text-[var(--color-text-primary)] cursor-pointer
                 transition-all duration-300 ease-out
                 peer-checked:border-[#48bb93] peer-checked:bg-gradient-to-r peer-checked:from-[#48bb93] peer-checked:to-[#3da682] peer-checked:text-white peer-checked:shadow-2xl peer-checked:shadow-[#48bb93]/50 peer-checked:scale-105 peer-checked:ring-4 peer-checked:ring-[#48bb93]/30
                 hover:border-[#48bb93]/50 hover:bg-[#48bb93]/10 dark:hover:bg-[#48bb93]/20 hover:shadow-xl hover:scale-[1.02] hover:ring-2 hover:ring-[#48bb93]/20">

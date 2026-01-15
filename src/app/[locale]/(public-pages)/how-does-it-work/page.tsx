@@ -313,11 +313,11 @@ export default function HowItWorksPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Customer Overview */}
-          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-[var(--color-text-primary)]">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Target className="h-5 w-5 text-blue-600" />
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                  <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 For Customers
               </CardTitle>
@@ -328,20 +328,20 @@ export default function HowItWorksPage() {
                 directly from taskers.
               </p>
               <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Post detailed job requests under "My Jobs"
                 </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Review multiple tasker applications
                 </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Message taskers offering services directly
                 </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Pay securely when satisfied
                 </li>
               </ul>
@@ -349,11 +349,11 @@ export default function HowItWorksPage() {
           </Card>
 
           {/* Tasker Overview */}
-          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-[var(--color-text-primary)]">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Heart className="h-5 w-5 text-green-600" />
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />
                 </div>
                 For Taskers
               </CardTitle>
@@ -364,20 +364,20 @@ export default function HowItWorksPage() {
                 services.
               </p>
               <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Get approved after verification
                 </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Apply to customer job postings
                 </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Offer services under "My Services"
                 </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <li className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   Enjoy customer privileges too
                 </li>
               </ul>
@@ -401,14 +401,14 @@ export default function HowItWorksPage() {
           {customerSteps.map((step, index) => (
             <Card
               key={index}
-              className="border-0 shadow-xl bg-white/95 backdrop-blur-sm"
+              className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm"
             >
               <CardContent className="p-6 sm:p-8">
                 <div className="flex items-start gap-4">
                   <div
-                    className={`inline-flex items-center justify-center w-12 h-12 ${step.bgColor} rounded-full flex-shrink-0`}
+                    className={`inline-flex items-center justify-center w-12 h-12 ${step.bgColor} dark:bg-opacity-20 rounded-full flex-shrink-0`}
                   >
-                    <step.icon className={`h-6 w-6 ${step.color}`} />
+                    <step.icon className={`h-6 w-6 ${step.color} dark:opacity-80`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -456,14 +456,14 @@ export default function HowItWorksPage() {
           {taskerSteps.map((step, index) => (
             <Card
               key={index}
-              className="border-0 shadow-xl bg-white/95 backdrop-blur-sm"
+              className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm"
             >
               <CardContent className="p-6 sm:p-8">
                 <div className="flex items-start gap-4">
                   <div
-                    className={`inline-flex items-center justify-center w-12 h-12 ${step.bgColor} rounded-full flex-shrink-0`}
+                    className={`inline-flex items-center justify-center w-12 h-12 ${step.bgColor} dark:bg-opacity-20 rounded-full flex-shrink-0`}
                   >
-                    <step.icon className={`h-6 w-6 ${step.color}`} />
+                    <step.icon className={`h-6 w-6 ${step.color} dark:opacity-80`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -511,7 +511,7 @@ export default function HowItWorksPage() {
           {customerFeatures.map((feature, index) => (
             <Card
               key={index}
-              className="border-0 shadow-xl bg-white/95 backdrop-blur-sm"
+              className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm"
             >
               <CardContent className="p-6">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-[var(--color-secondary)]/10 rounded-full mb-4">
@@ -529,7 +529,7 @@ export default function HowItWorksPage() {
                       key={benefitIndex}
                       className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]"
                     >
-                      <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />
+                      <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400 flex-shrink-0" />
                       {benefit}
                     </li>
                   ))}
@@ -555,7 +555,7 @@ export default function HowItWorksPage() {
           {taskerFeatures.map((feature, index) => (
             <Card
               key={index}
-              className="border-0 shadow-xl bg-white/95 backdrop-blur-sm"
+              className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm"
             >
               <CardContent className="p-6">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-[var(--color-secondary)]/10 rounded-full mb-4">
@@ -573,7 +573,7 @@ export default function HowItWorksPage() {
                       key={benefitIndex}
                       className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]"
                     >
-                      <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />
+                      <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400 flex-shrink-0" />
                       {benefit}
                     </li>
                   ))}
@@ -630,11 +630,11 @@ export default function HowItWorksPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Job Posting Method */}
-          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-[var(--color-text-primary)]">
-                <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
-                  <FileText className="h-5 w-5 text-blue-600" />
+                <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                  <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 Post a Job (Customer)
               </CardTitle>
@@ -666,11 +666,11 @@ export default function HowItWorksPage() {
           </Card>
 
           {/* Direct Booking Method */}
-          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white/95 dark:bg-[var(--color-surface)] backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-[var(--color-text-primary)]">
-                <div className="inline-flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
-                  <MessageCircle className="h-5 w-5 text-green-600" />
+                <div className="inline-flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full">
+                  <MessageCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                 </div>
                 Book Directly (Customer)
               </CardTitle>
