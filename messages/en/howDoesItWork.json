@@ -147,11 +147,11 @@
         },
         "securePayments": {
           "title": "Secure Payments",
-          "description": "Pay safely through our platform with money-back guarantee",
+          "description": "Service payments are made in cash on delivery. Wallet payments are processed securely through bank transfers and payment points",
           "benefits": [
-            "Protected transactions",
-            "Dispute resolution",
-            "Refund protection"
+            "Cash payments on delivery",
+            "Secure wallet transactions",
+            "Multiple payment options"
           ]
         },
         "qualityAssurance": {
@@ -213,7 +213,7 @@
       "features": {
         "secureSafe": {
           "title": "Secure & Safe",
-          "description": "All transactions are protected with our secure payment system"
+          "description": "Service payments are cash on delivery. Wallet transactions are protected through secure bank transfers and payment points"
         },
         "qualityAssured": {
           "title": "Quality Assured",

@@ -147,11 +147,11 @@
         },
         "securePayments": {
           "title": "Paiements Sécurisés",
-          "description": "Payez en toute sécurité via notre plateforme avec garantie de remboursement",
+          "description": "Les paiements de services se font en espèces à la livraison. Les paiements du portefeuille sont traités de manière sécurisée via les virements bancaires et les points de paiement",
           "benefits": [
-            "Transactions protégées",
-            "Résolution des litiges",
-            "Protection de remboursement"
+            "Paiements en espèces à la livraison",
+            "Transactions de portefeuille sécurisées",
+            "Plusieurs options de paiement"
           ]
         },
         "qualityAssurance": {
@@ -213,7 +213,7 @@
       "features": {
         "secureSafe": {
           "title": "Sécurisé et Sûr",
-          "description": "Toutes les transactions sont protégées avec notre système de paiement sécurisé"
+          "description": "Les paiements de services se font en espèces à la livraison. Les transactions du portefeuille sont protégées via des virements bancaires sécurisés et des points de paiement"
         },
         "qualityAssured": {
           "title": "Qualité Assurée",

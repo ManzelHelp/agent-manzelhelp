@@ -46,15 +46,15 @@
           "questions": {
             "howPaymentsWork": {
               "question": "Wie funktionieren Zahlungen?",
-              "answer": "Zahlungen werden sicher über unsere Plattform abgewickelt. Kunden zahlen im Voraus, und Helfer erhalten die Zahlung nach Abschluss der Dienstleistung."
+              "answer": "Reguläre Servicezahlungen erfolgen bar zum Zeitpunkt der Serviceerbringung. Für das Wallet-System können Helfer im Voraus per Banküberweisung oder an Zahlungspunkten bezahlen, um Guthaben auf ihr Wallet aufzuladen."
             },
             "paymentMethods": {
               "question": "Welche Zahlungsmethoden akzeptieren Sie?",
-              "answer": "Wir akzeptieren alle gängigen Kreditkarten, PayPal und Banküberweisungen in unterstützten Regionen."
+              "answer": "Servicezahlungen erfolgen bar bei Lieferung. Das Wallet-System (für Helfer) akzeptiert Banküberweisungen und Zahlungen an verschiedenen Zahlungspunkten in ganz Marokko."
             },
             "whenGetPaid": {
               "question": "Wann werde ich bezahlt?",
-              "answer": "Helfer erhalten die Zahlung innerhalb von 2-3 Werktagen, nachdem der Kunde die Dienstleistung bestätigt hat."
+              "answer": "Helfer erhalten die Zahlung bar sofort nach Abschluss der Dienstleistung. Für Wallet-Guthaben werden diese sofort nach Zahlungsbestätigung am Zahlungspunkt hinzugefügt."
             }
           }
         },

@@ -46,15 +46,15 @@
           "questions": {
             "howPaymentsWork": {
               "question": "Comment fonctionnent les paiements ?",
-              "answer": "Les paiements sont traités en toute sécurité via notre plateforme. Les clients paient à l'avance et les assistants reçoivent le paiement après la fin du service."
+              "answer": "Les paiements de services réguliers se font en espèces au moment de la livraison du service. Pour le système de portefeuille, les assistants peuvent prépayer via des virements bancaires ou des points de paiement pour ajouter des crédits à leur portefeuille."
             },
             "paymentMethods": {
               "question": "Quels modes de paiement acceptez-vous ?",
-              "answer": "Nous acceptons toutes les principales cartes de crédit, PayPal et les virements bancaires dans les régions prises en charge."
+              "answer": "Les paiements de services se font en espèces à la livraison. Le système de portefeuille (pour les assistants) accepte les virements bancaires et les paiements dans divers points de paiement à travers le Maroc."
             },
             "whenGetPaid": {
               "question": "Quand suis-je payé ?",
-              "answer": "Les assistants reçoivent le paiement dans les 2-3 jours ouvrables après que le client ait confirmé la fin du service."
+              "answer": "Les assistants reçoivent le paiement en espèces immédiatement après l'achèvement du service. Pour les crédits du portefeuille, ils sont ajoutés instantanément après la confirmation du paiement au point de paiement."
             }
           }
         },

@@ -1,8 +1,9 @@
 import React from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { Sparkles, Check, ArrowRight } from "lucide-react";
 import GetStartedButton from "./GetStartedButton";
 
 interface FindAHelperPageProps {
@@ -62,95 +63,112 @@ export default async function FindAHelperPage({
     },
   ];
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col items-center px-4 py-8">
+    <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Hero Section */}
-      <section className="w-full max-w-3xl text-center mb-12">
-        <h1
-          className="text-4xl md:text-5xl font-bold mb-4"
-          style={{ color: "var(--primary)" }}
-        >
-          {t("hero.title")}
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-6">
-          {t("hero.description")}
-        </p>
-        <Link href="/search/services">
-          <Button size="lg" className="rounded-full px-8 py-4 text-lg">
-            {t("hero.startSearching")}
+      <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-[var(--color-secondary)] rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--color-secondary)] rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+        </div>
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 border border-white/20">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm font-medium">{t("hero.title")}</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+            {t("hero.title")}
+          </h1>
+          <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto opacity-90">
+            {t("hero.description")}
+          </p>
+          <Button
+            size="lg"
+            className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
+            asChild
+          >
+            <Link href="/search/services">
+              {t("hero.startSearching")}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
-        </Link>
+        </div>
       </section>
 
       {/* Advantages Section */}
-      <section className="w-full max-w-4xl grid gap-6 md:grid-cols-3 mb-16">
-        {ADVANTAGES.map((adv, idx) => (
-          <Card
-            key={idx}
-            className="flex flex-col items-center p-6 text-center shadow-md h-full"
-          >
-            <div className="text-4xl mb-3" aria-hidden>
-              {adv.icon}
-            </div>
-            <h2
-              className="text-xl font-semibold mb-2"
-              style={{ color: "var(--primary)" }}
-            >
-              {adv.title}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-surface)]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
+              {t("advantages.title")}
             </h2>
-            <p className="text-base text-muted-foreground">{adv.description}</p>
-          </Card>
-        ))}
+            <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {ADVANTAGES.map((adv, idx) => (
+              <Card
+                key={idx}
+                className="p-6 text-center hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0"
+              >
+                <div className="text-4xl mb-4" aria-hidden>
+                  {adv.icon}
+                </div>
+                <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
+                  {adv.title}
+                </h3>
+                <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+                  {adv.description}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Pricing Section */}
-      <section className="w-full max-w-2xl mb-16">
-        <Card className="p-8">
-          <h2
-            className="text-2xl font-bold mb-4"
-            style={{ color: "var(--primary)" }}
-          >
-            {t("pricing.title")}
-          </h2>
-          <p className="mb-6 text-muted-foreground">
-            {t("pricing.description")}
-          </p>
-          <div className="space-y-4">
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
+              {t("pricing.title")}
+            </h2>
+            <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-4">
+              {t("pricing.description")}
+            </p>
+            <div className="w-20 h-1 bg-[var(--color-primary)] mx-auto rounded-full"></div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
             {PRICING_ESTIMATES.map((item, idx) => (
-              <div
+              <Card
                 key={idx}
-                className="bg-accent/30 rounded-lg p-5 sm:p-6 border border-border/50"
+                className="p-6 hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3">
-                  {/* Service Name */}
-                  <h3 className="font-semibold text-lg sm:text-xl text-foreground">
-                    {item.service}
-                  </h3>
-                  
-                  {/* Price Range */}
-                  <div className="flex-shrink-0">
-                    <span className="text-primary font-bold text-lg sm:text-xl">
-                      {item.range}
-                    </span>
-                  </div>
+                <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
+                  {item.service}
+                </h3>
+                <div className="mb-4">
+                  <span className="text-[var(--color-primary)] font-bold text-xl">
+                    {item.range}
+                  </span>
                 </div>
-                
-                {/* Note */}
-                <p className="text-sm text-muted-foreground leading-relaxed pt-2 border-t border-border/30">
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed pt-3 border-t border-[var(--color-border)]">
                   {item.note}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
-        </Card>
+        </div>
       </section>
 
       {/* Call to Action */}
-      <section className="w-full max-w-2xl text-center">
-        <h3 className="text-xl font-semibold mb-4">
-          {t("cta.title")}
-        </h3>
-        <GetStartedButton locale={locale} />
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-surface)]">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-6">
+            {t("cta.title")}
+          </h2>
+          <GetStartedButton locale={locale} />
+        </div>
       </section>
-    </main>
+    </div>
   );
 }

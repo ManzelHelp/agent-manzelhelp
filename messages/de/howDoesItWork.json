@@ -147,11 +147,11 @@
         },
         "securePayments": {
           "title": "Sichere Zahlungen",
-          "description": "Sicher über unsere Plattform mit Geld-zurück-Garantie bezahlen",
+          "description": "Servicezahlungen erfolgen bar bei Lieferung. Wallet-Zahlungen werden sicher über Banküberweisungen und Zahlungspunkte verarbeitet",
           "benefits": [
-            "Geschützte Transaktionen",
-            "Streitbeilegung",
-            "Rückerstattungsschutz"
+            "Barzahlungen bei Lieferung",
+            "Sichere Wallet-Transaktionen",
+            "Mehrere Zahlungsoptionen"
           ]
         },
         "qualityAssurance": {
@@ -213,7 +213,7 @@
       "features": {
         "secureSafe": {
           "title": "Sicher & Geschützt",
-          "description": "Alle Transaktionen sind mit unserem sicheren Zahlungssystem geschützt"
+          "description": "Servicezahlungen erfolgen bar bei Lieferung. Wallet-Transaktionen sind durch sichere Banküberweisungen und Zahlungspunkte geschützt"
         },
         "qualityAssured": {
           "title": "Qualität Gewährleistet",

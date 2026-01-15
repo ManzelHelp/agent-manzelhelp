@@ -46,15 +46,15 @@
           "questions": {
             "howPaymentsWork": {
               "question": "How do payments work?",
-              "answer": "Payments are processed securely through our platform. Customers pay upfront, and Helpers receive payment after service completion."
+              "answer": "Regular service payments are made in cash at the time of service delivery. For the wallet system, taskers can pre-pay through bank transfers or payment points to add credits to their wallet."
             },
             "paymentMethods": {
               "question": "What payment methods do you accept?",
-              "answer": "We accept all major credit cards, PayPal, and bank transfers in supported regions."
+              "answer": "Service payments are made in cash on delivery. The wallet system (for taskers) accepts bank transfers and payment at various payment points across Morocco."
             },
             "whenGetPaid": {
               "question": "When do I get paid?",
-              "answer": "Helpers receive payment within 2-3 business days after the customer confirms service completion."
+              "answer": "Taskers receive payment in cash immediately upon service completion. For wallet credits, they are added instantly after payment confirmation at the payment point."
             }
           }
         },
