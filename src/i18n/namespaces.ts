@@ -45,4 +45,5 @@ export const namespaces = [
   "privacyPolicy",
   "termsOfService",
   "earnings",
+  "pricing",
 ] as const;

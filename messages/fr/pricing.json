@@ -1,0 +1,157 @@
+{
+  "pricing": {
+    "hero": {
+      "title": "Tarification Équitable et Transparente",
+      "description": "Vous fixez vos prix. Nous fournissons la plateforme. Commencez à gagner ou obtenez de l'aide dès aujourd'hui avec notre modèle de tarification simple et transparent.",
+      "findServices": "Trouver des Services",
+      "becomeTasker": "Devenir Assistant"
+    },
+    "howItWorks": {
+      "title": "Comment Fonctionne la Tarification",
+      "subtitle": "Simple, transparent et équitable pour tous",
+      "forCustomers": {
+        "title": "Pour les Clients",
+        "description": "Vous avez le contrôle total sur ce que vous payez",
+        "setYourBudget": {
+          "title": "Fixez Votre Budget",
+          "description": "Lors de la publication d'un emploi, vous choisissez le prix que vous êtes prêt à payer. Les assistants postulent avec leurs propositions."
+        },
+        "bookDirectly": {
+          "title": "Réservez des Services Directement",
+          "description": "Parcourez les services des assistants avec leurs prix fixés. Réservez instantanément au prix affiché."
+        },
+        "noFees": {
+          "title": "Aucun Frais de Plateforme",
+          "description": "Les clients ne paient aucun frais. Vous ne payez que le prix convenu pour le travail terminé."
+        }
+      },
+      "forTaskers": {
+        "title": "Pour les Assistants",
+        "description": "Fixez vos propres prix et gagnez ce que vous méritez",
+        "setYourPrices": {
+          "title": "Fixez Vos Propres Prix",
+          "description": "Vous décidez combien facturer pour vos services. Fixez des prix compétitifs basés sur vos compétences et votre expérience."
+        },
+        "applyToJobs": {
+          "title": "Postuler aux Emplois Clients",
+          "description": "Consultez les budgets des clients et soumettez vos propositions. Remportez des emplois qui correspondent à vos tarifs."
+        },
+        "platformFee": {
+          "title": "Frais de Plateforme de 10%",
+          "description": "Nous facturons 10% sur vos gains. Cela couvre le traitement des paiements, la maintenance de la plateforme et le support client."
+        }
+      }
+    },
+    "walletSystem": {
+      "title": "Système de Portefeuille pour Assistants",
+      "subtitle": "Commencez à travailler immédiatement avec notre système basé sur le portefeuille",
+      "description": "Les assistants ont besoin de crédits dans leur portefeuille avant d'accepter des emplois ou des réservations. Cela garantit des transactions fluides et protège les deux parties.",
+      "freeCredits": {
+        "title": "50 MAD Gratuits pour les Premiers Assistants",
+        "badge": "Offre Limitée",
+        "description": "Les 200 premiers assistants enregistrés reçoivent 50 MAD gratuits dans leur portefeuille ! Commencez à explorer la plateforme et complétez vos premiers emplois sans aucun paiement initial.",
+        "remaining": "Il ne reste que {count} places",
+        "claimNow": "Réclamez Vos Crédits Gratuits"
+      },
+      "howItWorks": {
+        "title": "Comment Fonctionne le Portefeuille",
+        "step1": {
+          "title": "Demander un Code de Paiement",
+          "description": "Allez sur votre page de portefeuille et demandez un code de paiement unique pour le montant que vous souhaitez ajouter."
+        },
+        "step2": {
+          "title": "Payer à Tout Point de Paiement",
+          "description": "Utilisez le code pour payer à tout point de paiement (comme InDrive). Plusieurs méthodes de paiement disponibles dans tout le Maroc."
+        },
+        "step3": {
+          "title": "Crédits Ajoutés Instantanément",
+          "description": "Une fois le paiement confirmé, les crédits sont ajoutés à votre portefeuille immédiatement. Commencez à accepter des emplois tout de suite !"
+        }
+      },
+      "benefits": {
+        "title": "Pourquoi Utiliser le Portefeuille ?",
+        "secure": {
+          "title": "Transactions Sécurisées",
+          "description": "Tous les paiements sont traités de manière sécurisée via la plateforme"
+        },
+        "instant": {
+          "title": "Accès Instantané",
+          "description": "Les crédits sont disponibles immédiatement après la confirmation du paiement"
+        },
+        "flexible": {
+          "title": "Paiements Flexibles",
+          "description": "Ajoutez des crédits quand vous en avez besoin, pour n'importe quel montant"
+        },
+        "transparent": {
+          "title": "Transparence Totale",
+          "description": "Suivez toutes vos transactions et le solde de votre portefeuille en temps réel"
+        }
+      }
+    },
+    "pricingModel": {
+      "title": "Notre Modèle de Tarification",
+      "subtitle": "Équitable pour tous, transparent pour tous",
+      "customerModel": {
+        "title": "Tarification Client",
+        "description": "Vous contrôlez les coûts",
+        "postJob": {
+          "title": "Publier un Emploi",
+          "description": "Fixez votre budget lors de la publication. Les assistants voient votre budget et postulent avec des propositions.",
+          "example": "Exemple : Publiez un emploi de nettoyage avec un budget de 200 MAD"
+        },
+        "bookService": {
+          "title": "Réserver un Service",
+          "description": "Parcourez les services avec des prix fixes fixés par les assistants. Réservez au prix indiqué.",
+          "example": "Exemple : Réservez un service de nettoyage à 150 MAD/heure"
+        },
+        "noFees": {
+          "title": "Zéro Frais",
+          "description": "Aucun frais de réservation, aucun frais caché. Payez uniquement pour le travail terminé."
+        }
+      },
+      "taskerModel": {
+        "title": "Tarification Assistant",
+        "description": "Vous fixez vos tarifs",
+        "servicePrices": {
+          "title": "Fixer les Prix des Services",
+          "description": "Lors de la création d'une annonce de service, fixez votre tarif horaire ou fixe. Les clients voient et réservent à votre prix.",
+          "example": "Exemple : Fixez votre service de nettoyage à 150 MAD/heure"
+        },
+        "jobProposals": {
+          "title": "Soumettre des Propositions d'Emploi",
+          "description": "Consultez les budgets des clients et soumettez votre proposition. Remportez des emplois qui correspondent à vos tarifs.",
+          "example": "Exemple : Proposez 180 MAD pour un emploi avec un budget de 200 MAD"
+        },
+        "platformFee": {
+          "title": "Frais de Plateforme de 10%",
+          "description": "Nous facturons 10% sur vos gains. Ceci est déduit automatiquement lorsque vous recevez le paiement.",
+          "example": "Exemple : Gagnez 200 MAD, recevez 180 MAD (10% = 20 MAD de frais)"
+        }
+      }
+    },
+    "examples": {
+      "title": "Exemples Réels",
+      "subtitle": "Découvrez comment fonctionne la tarification en pratique",
+      "example1": {
+        "title": "Un Client Publie un Emploi",
+        "scenario": "Client publie : 'Besoin de nettoyage de maison, budget : 200 MAD'",
+        "taskers": "Les assistants postulent avec des propositions : 180 MAD, 200 MAD, 220 MAD",
+        "customer": "Le client choisit la meilleure proposition et paie 200 MAD",
+        "tasker": "L'assistant reçoit 180 MAD (200 MAD - 10% = 20 MAD de frais de plateforme)"
+      },
+      "example2": {
+        "title": "Un Client Réserve un Service",
+        "scenario": "Client réserve : 'Service de nettoyage à 150 MAD/heure pendant 3 heures'",
+        "total": "Total : 450 MAD",
+        "customer": "Le client paie 450 MAD",
+        "tasker": "L'assistant reçoit 405 MAD (450 MAD - 10% = 45 MAD de frais de plateforme)"
+      }
+    },
+    "cta": {
+      "title": "Prêt à Commencer ?",
+      "description": "Rejoignez des milliers d'utilisateurs qui font confiance à ManzelHelp. Tarification transparente, service de qualité et tranquillité d'esprit.",
+      "findHelper": "Trouver un Assistant",
+      "becomeTasker": "Devenir Assistant"
+    }
+  }
+}

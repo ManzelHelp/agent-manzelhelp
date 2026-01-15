@@ -1,0 +1,157 @@
+{
+  "pricing": {
+    "hero": {
+      "title": "Faire und Transparente Preisgestaltung",
+      "description": "Sie legen Ihre Preise fest. Wir stellen die Plattform bereit. Beginnen Sie noch heute zu verdienen oder erhalten Sie Hilfe mit unserem einfachen, transparenten Preismodell.",
+      "findServices": "Dienste Finden",
+      "becomeTasker": "Tasker Werden"
+    },
+    "howItWorks": {
+      "title": "Wie die Preisgestaltung Funktioniert",
+      "subtitle": "Einfach, transparent und fair für alle",
+      "forCustomers": {
+        "title": "Für Kunden",
+        "description": "Sie haben die volle Kontrolle über das, was Sie zahlen",
+        "setYourBudget": {
+          "title": "Legen Sie Ihr Budget Fest",
+          "description": "Beim Veröffentlichen eines Jobs wählen Sie den Preis, den Sie zu zahlen bereit sind. Tasker bewerben sich mit ihren Vorschlägen."
+        },
+        "bookDirectly": {
+          "title": "Buchen Sie Dienste Direkt",
+          "description": "Durchsuchen Sie Tasker-Dienste mit ihren festgelegten Preisen. Buchen Sie sofort zum angezeigten Preis."
+        },
+        "noFees": {
+          "title": "Keine Plattformgebühren",
+          "description": "Kunden zahlen keine Gebühren. Sie zahlen nur den vereinbarten Preis für abgeschlossene Arbeiten."
+        }
+      },
+      "forTaskers": {
+        "title": "Für Tasker",
+        "description": "Legen Sie Ihre eigenen Preise fest und verdienen Sie, was Sie verdienen",
+        "setYourPrices": {
+          "title": "Legen Sie Ihre Eigenen Preise Fest",
+          "description": "Sie entscheiden, wie viel Sie für Ihre Dienste verlangen. Preisgestaltung wettbewerbsfähig basierend auf Ihren Fähigkeiten und Ihrer Erfahrung."
+        },
+        "applyToJobs": {
+          "title": "Bewerben Sie sich auf Kundenjobs",
+          "description": "Sehen Sie Kundenbudgets und reichen Sie Ihre Vorschläge ein. Gewinnen Sie Jobs, die Ihren Tarifen entsprechen."
+        },
+        "platformFee": {
+          "title": "10% Plattformgebühr",
+          "description": "Wir erheben eine Gebühr von 10% auf Ihre Einnahmen. Dies deckt die Zahlungsabwicklung, die Plattformwartung und den Kundensupport ab."
+        }
+      }
+    },
+    "walletSystem": {
+      "title": "Tasker-Wallet-System",
+      "subtitle": "Beginnen Sie sofort mit unserem Wallet-basierten System zu arbeiten",
+      "description": "Tasker benötigen Guthaben in ihrer Wallet, bevor sie Jobs oder Buchungen annehmen. Dies gewährleistet reibungslose Transaktionen und schützt beide Parteien.",
+      "freeCredits": {
+        "title": "50 MAD Kostenlos für Frühe Tasker",
+        "badge": "Begrenztes Angebot",
+        "description": "Die ersten 200 registrierten Tasker erhalten 50 MAD kostenlos in ihrer Wallet! Beginnen Sie, die Plattform zu erkunden und Ihre ersten Jobs ohne Vorauszahlung abzuschließen.",
+        "remaining": "Nur noch {count} Plätze verfügbar",
+        "claimNow": "Holen Sie sich Ihre Kostenlosen Credits"
+      },
+      "howItWorks": {
+        "title": "Wie die Wallet Funktioniert",
+        "step1": {
+          "title": "Zahlungscode Anfordern",
+          "description": "Gehen Sie zu Ihrer Wallet-Seite und fordern Sie einen eindeutigen Zahlungscode für den Betrag an, den Sie hinzufügen möchten."
+        },
+        "step2": {
+          "title": "An Jeder Zahlungsstelle Zahlen",
+          "description": "Verwenden Sie den Code, um an jeder Zahlungsstelle zu zahlen (wie InDrive). Mehrere Zahlungsmethoden in ganz Marokko verfügbar."
+        },
+        "step3": {
+          "title": "Guthaben Sofort Hinzugefügt",
+          "description": "Sobald die Zahlung bestätigt ist, wird das Guthaben sofort zu Ihrer Wallet hinzugefügt. Beginnen Sie sofort, Jobs anzunehmen!"
+        }
+      },
+      "benefits": {
+        "title": "Warum die Wallet Verwenden?",
+        "secure": {
+          "title": "Sichere Transaktionen",
+          "description": "Alle Zahlungen werden sicher über die Plattform verarbeitet"
+        },
+        "instant": {
+          "title": "Sofortiger Zugriff",
+          "description": "Guthaben ist sofort nach Zahlungsbestätigung verfügbar"
+        },
+        "flexible": {
+          "title": "Flexible Zahlungen",
+          "description": "Fügen Sie Guthaben hinzu, wann immer Sie es benötigen, in jedem Betrag Ihrer Wahl"
+        },
+        "transparent": {
+          "title": "Volle Transparenz",
+          "description": "Verfolgen Sie alle Ihre Transaktionen und den Wallet-Saldo in Echtzeit"
+        }
+      }
+    },
+    "pricingModel": {
+      "title": "Unser Preismodell",
+      "subtitle": "Fair für alle, transparent für alle",
+      "customerModel": {
+        "title": "Kundenpreisgestaltung",
+        "description": "Sie kontrollieren die Kosten",
+        "postJob": {
+          "title": "Job Veröffentlichen",
+          "description": "Legen Sie Ihr Budget beim Veröffentlichen fest. Tasker sehen Ihr Budget und bewerben sich mit Vorschlägen.",
+          "example": "Beispiel: Veröffentlichen Sie einen Reinigungsjob mit einem Budget von 200 MAD"
+        },
+        "bookService": {
+          "title": "Service Buchen",
+          "description": "Durchsuchen Sie Dienste mit festen Preisen, die von Taskern festgelegt wurden. Buchen Sie zum angegebenen Preis.",
+          "example": "Beispiel: Buchen Sie einen Reinigungsservice zu 150 MAD/Stunde"
+        },
+        "noFees": {
+          "title": "Null Gebühren",
+          "description": "Keine Buchungsgebühren, keine versteckten Gebühren. Zahlen Sie nur für abgeschlossene Arbeiten."
+        }
+      },
+      "taskerModel": {
+        "title": "Tasker-Preisgestaltung",
+        "description": "Sie legen Ihre Tarife fest",
+        "servicePrices": {
+          "title": "Servicepreise Festlegen",
+          "description": "Beim Erstellen einer Serviceanzeige legen Sie Ihren Stunden- oder Festpreis fest. Kunden sehen und buchen zu Ihrem Preis.",
+          "example": "Beispiel: Legen Sie Ihren Reinigungsservice auf 150 MAD/Stunde fest"
+        },
+        "jobProposals": {
+          "title": "Jobvorschläge Einreichen",
+          "description": "Sehen Sie Kundenbudgets und reichen Sie Ihren Vorschlag ein. Gewinnen Sie Jobs, die Ihren Tarifen entsprechen.",
+          "example": "Beispiel: Schlagen Sie 180 MAD für einen Job mit einem Budget von 200 MAD vor"
+        },
+        "platformFee": {
+          "title": "10% Plattformgebühr",
+          "description": "Wir erheben 10% auf Ihre Einnahmen. Dies wird automatisch abgezogen, wenn Sie die Zahlung erhalten.",
+          "example": "Beispiel: Verdienen Sie 200 MAD, erhalten Sie 180 MAD (10% = 20 MAD Gebühr)"
+        }
+      }
+    },
+    "examples": {
+      "title": "Echte Beispiele",
+      "subtitle": "Sehen Sie, wie die Preisgestaltung in der Praxis funktioniert",
+      "example1": {
+        "title": "Kunde Veröffentlicht einen Job",
+        "scenario": "Kunde veröffentlicht: 'Brauche Hausreinigung, Budget: 200 MAD'",
+        "taskers": "Tasker bewerben sich mit Vorschlägen: 180 MAD, 200 MAD, 220 MAD",
+        "customer": "Kunde wählt den besten Vorschlag und zahlt 200 MAD",
+        "tasker": "Tasker erhält 180 MAD (200 MAD - 10% = 20 MAD Plattformgebühr)"
+      },
+      "example2": {
+        "title": "Kunde Bucht einen Service",
+        "scenario": "Kunde bucht: 'Reinigungsservice zu 150 MAD/Stunde für 3 Stunden'",
+        "total": "Gesamt: 450 MAD",
+        "customer": "Kunde zahlt 450 MAD",
+        "tasker": "Tasker erhält 405 MAD (450 MAD - 10% = 45 MAD Plattformgebühr)"
+      }
+    },
+    "cta": {
+      "title": "Bereit zum Starten?",
+      "description": "Schließen Sie sich Tausenden von Nutzern an, die ManzelHelp vertrauen. Transparente Preisgestaltung, qualitativ hochwertiger Service und Seelenfrieden.",
+      "findHelper": "Helfer Finden",
+      "becomeTasker": "Tasker Werden"
+    }
+  }
+}

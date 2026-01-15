@@ -1,0 +1,157 @@
+{
+  "pricing": {
+    "hero": {
+      "title": "Fair & Transparent Pricing",
+      "description": "You set your prices. We provide the platform. Start earning or get help today with our simple, transparent pricing model.",
+      "findServices": "Find Services",
+      "becomeTasker": "Become a Tasker"
+    },
+    "howItWorks": {
+      "title": "How Pricing Works",
+      "subtitle": "Simple, transparent, and fair for everyone",
+      "forCustomers": {
+        "title": "For Customers",
+        "description": "You have full control over what you pay",
+        "setYourBudget": {
+          "title": "Set Your Budget",
+          "description": "When posting a job, you choose the price you're willing to pay. Taskers apply with their proposals."
+        },
+        "bookDirectly": {
+          "title": "Book Services Directly",
+          "description": "Browse tasker services with their set prices. Book instantly at the price shown."
+        },
+        "noFees": {
+          "title": "No Platform Fees",
+          "description": "Customers pay zero fees. You only pay the agreed price for completed work."
+        }
+      },
+      "forTaskers": {
+        "title": "For Taskers",
+        "description": "Set your own prices and earn what you deserve",
+        "setYourPrices": {
+          "title": "Set Your Own Prices",
+          "description": "You decide how much to charge for your services. Price competitively based on your skills and experience."
+        },
+        "applyToJobs": {
+          "title": "Apply to Customer Jobs",
+          "description": "See customer budgets and submit your proposals. Win jobs that match your rates."
+        },
+        "platformFee": {
+          "title": "10% Platform Fee",
+          "description": "We charge a 10% fee on your earnings. This covers payment processing, platform maintenance, and customer support."
+        }
+      }
+    },
+    "walletSystem": {
+      "title": "Tasker Wallet System",
+      "subtitle": "Start working immediately with our wallet-based system",
+      "description": "Taskers need credits in their wallet before accepting jobs or bookings. This ensures smooth transactions and protects both parties.",
+      "freeCredits": {
+        "title": "50 MAD Free for Early Taskers",
+        "badge": "Limited Offer",
+        "description": "The first 200 registered taskers receive 50 MAD free in their wallet! Start exploring the platform and complete your first jobs without any upfront payment.",
+        "remaining": "Only {count} spots remaining",
+        "claimNow": "Claim Your Free Credits"
+      },
+      "howItWorks": {
+        "title": "How the Wallet Works",
+        "step1": {
+          "title": "Request Payment Code",
+          "description": "Go to your wallet page and request a unique payment code for the amount you want to add."
+        },
+        "step2": {
+          "title": "Pay at Any Payment Point",
+          "description": "Use the code to pay at any payment point (like InDrive). Multiple payment methods available across Morocco."
+        },
+        "step3": {
+          "title": "Credits Added Instantly",
+          "description": "Once payment is confirmed, credits are added to your wallet immediately. Start accepting jobs right away!"
+        }
+      },
+      "benefits": {
+        "title": "Why Use the Wallet?",
+        "secure": {
+          "title": "Secure Transactions",
+          "description": "All payments are processed securely through the platform"
+        },
+        "instant": {
+          "title": "Instant Access",
+          "description": "Credits are available immediately after payment confirmation"
+        },
+        "flexible": {
+          "title": "Flexible Payments",
+          "description": "Add credits whenever you need, in any amount you choose"
+        },
+        "transparent": {
+          "title": "Full Transparency",
+          "description": "Track all your transactions and wallet balance in real-time"
+        }
+      }
+    },
+    "pricingModel": {
+      "title": "Our Pricing Model",
+      "subtitle": "Fair for everyone, transparent for all",
+      "customerModel": {
+        "title": "Customer Pricing",
+        "description": "You control the costs",
+        "postJob": {
+          "title": "Post a Job",
+          "description": "Set your budget when posting. Taskers see your budget and apply with proposals.",
+          "example": "Example: Post a cleaning job with a 200 MAD budget"
+        },
+        "bookService": {
+          "title": "Book a Service",
+          "description": "Browse services with fixed prices set by taskers. Book at the listed price.",
+          "example": "Example: Book a 150 MAD/hour cleaning service"
+        },
+        "noFees": {
+          "title": "Zero Fees",
+          "description": "No booking fees, no hidden charges. Pay only for completed work."
+        }
+      },
+      "taskerModel": {
+        "title": "Tasker Pricing",
+        "description": "You set your rates",
+        "servicePrices": {
+          "title": "Set Service Prices",
+          "description": "When creating a service listing, set your hourly or fixed rate. Customers see and book at your price.",
+          "example": "Example: Set your cleaning service at 150 MAD/hour"
+        },
+        "jobProposals": {
+          "title": "Submit Job Proposals",
+          "description": "See customer budgets and submit your proposal. Win jobs that match your rates.",
+          "example": "Example: Propose 180 MAD for a 200 MAD budget job"
+        },
+        "platformFee": {
+          "title": "10% Platform Fee",
+          "description": "We charge 10% on your earnings. This is deducted automatically when you receive payment.",
+          "example": "Example: Earn 200 MAD, receive 180 MAD (10% = 20 MAD fee)"
+        }
+      }
+    },
+    "examples": {
+      "title": "Real Examples",
+      "subtitle": "See how pricing works in practice",
+      "example1": {
+        "title": "Customer Posts a Job",
+        "scenario": "Customer posts: 'Need house cleaning, budget: 200 MAD'",
+        "taskers": "Taskers apply with proposals: 180 MAD, 200 MAD, 220 MAD",
+        "customer": "Customer chooses the best proposal and pays 200 MAD",
+        "tasker": "Tasker receives 180 MAD (200 MAD - 10% = 20 MAD platform fee)"
+      },
+      "example2": {
+        "title": "Customer Books a Service",
+        "scenario": "Customer books: 'Cleaning service at 150 MAD/hour for 3 hours'",
+        "total": "Total: 450 MAD",
+        "customer": "Customer pays 450 MAD",
+        "tasker": "Tasker receives 405 MAD (450 MAD - 10% = 45 MAD platform fee)"
+      }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "description": "Join thousands of users who trust ManzelHelp. Transparent pricing, quality service, and peace of mind.",
+      "findHelper": "Find a Helper",
+      "becomeTasker": "Become a Tasker"
+    }
+  }
+}
