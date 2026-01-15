@@ -1,0 +1,104 @@
+{
+  "careers": {
+    "hero": {
+      "title": "Join Our Team",
+      "description": "Help us build the future of local services. Join a passionate team that's making a real difference in communities around the world.",
+      "viewPositions": "View Open Positions"
+    },
+    "whyWorkWithUs": {
+      "title": "Why Work With Us?",
+      "benefits": {
+        "healthWellness": {
+          "title": "Health & Wellness",
+          "description": "Comprehensive health insurance and wellness programs"
+        },
+        "flexibleWork": {
+          "title": "Flexible Work",
+          "description": "Remote work options and flexible schedules"
+        },
+        "globalImpact": {
+          "title": "Global Impact",
+          "description": "Make a difference in communities worldwide"
+        },
+        "careerGrowth": {
+          "title": "Career Growth",
+          "description": "Professional development and advancement opportunities"
+        },
+        "greatCulture": {
+          "title": "Great Culture",
+          "description": "Collaborative environment with amazing colleagues"
+        },
+        "teamBuilding": {
+          "title": "Team Building",
+          "description": "Regular team events and company retreats"
+        }
+      }
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "At ManzelHelp, we believe in the power of community and the value of human connection. We're building a platform that brings people together, creates economic opportunities, and makes life easier for everyone. Join us in creating a world where help is always just a click away.",
+      "stats": {
+        "activeHelpers": "Active Helpers",
+        "happyCustomers": "Happy Customers",
+        "servicesCompleted": "Services Completed"
+      }
+    },
+    "openPositions": {
+      "title": "Open Positions",
+      "positions": {
+        "seniorFrontend": {
+          "title": "Senior Frontend Developer",
+          "department": "Engineering",
+          "location": "Remote",
+          "type": "Full-time",
+          "description": "Build amazing user experiences with React and Next.js"
+        },
+        "productManager": {
+          "title": "Product Manager",
+          "department": "Product",
+          "location": "Berlin, Germany",
+          "type": "Full-time",
+          "description": "Shape the future of our platform and user experience"
+        },
+        "customerSuccess": {
+          "title": "Customer Success Manager",
+          "department": "Operations",
+          "location": "Remote",
+          "type": "Full-time",
+          "description": "Help our users succeed and grow our community"
+        },
+        "marketingSpecialist": {
+          "title": "Marketing Specialist",
+          "department": "Marketing",
+          "location": "Remote",
+          "type": "Full-time",
+          "description": "Drive growth and brand awareness across channels"
+        }
+      },
+      "applyNow": "Apply Now",
+      "noPositionFit": "Don't see a position that fits? We're always looking for talented people.",
+      "sendResume": "Send Us Your Resume"
+    },
+    "culture": {
+      "title": "Our Culture & Values",
+      "values": {
+        "innovation": {
+          "title": "Innovation",
+          "description": "We embrace new ideas and technologies to solve real-world problems and improve user experiences."
+        },
+        "community": {
+          "title": "Community",
+          "description": "We believe in the power of community and work to strengthen connections between people."
+        },
+        "trust": {
+          "title": "Trust",
+          "description": "We build trust through transparency, reliability, and putting our users first in everything we do."
+        },
+        "growth": {
+          "title": "Growth",
+          "description": "We're committed to personal and professional growth for our team members and our community."
+        }
+      }
+    }
+  }
+}

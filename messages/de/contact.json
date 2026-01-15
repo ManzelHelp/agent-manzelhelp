@@ -1,43 +1,38 @@
 {
   "contact": {
-    "form": {
-      "fields": {
-        "firstName": "Vorname",
-        "lastName": "Nachname",
-        "email": "E-Mail",
-        "subject": "Betreff",
-        "subjectPlaceholder": "Betreff auswählen",
-        "message": "Nachricht",
-        "messagePlaceholder": "Teilen Sie uns mit, wie wir Ihnen helfen können...",
-        "characters": "Zeichen"
+    "hero": {
+      "title": "Kontaktieren Sie Uns",
+      "description": "Wir sind hier, um zu helfen! Kontaktieren Sie unser Team für Support, Fragen oder Feedback."
+    },
+    "contactInfo": {
+      "title": "Kontaktieren Sie Uns",
+      "email": {
+        "title": "E-Mail",
+        "description": "Senden Sie uns eine E-Mail",
+        "address": "info@manzelhelp.com"
       },
-      "subjects": {
-        "general": "Allgemeine Anfrage",
-        "support": "Technischer Support",
-        "billing": "Rechnungsfrage",
-        "feedback": "Feedback",
-        "partnership": "Partnerschaft"
+      "phone": {
+        "title": "Telefon",
+        "description": "Rufen Sie uns direkt an",
+        "number": "06 07 50 57 22"
       },
-      "submit": "Nachricht senden",
-      "submitting": "Wird gesendet...",
-      "success": {
-        "title": "Nachricht erfolgreich gesendet",
-        "description": "Wir werden uns so schnell wie möglich bei Ihnen melden."
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Kontaktieren Sie uns über WhatsApp",
+        "button": "Über WhatsApp Kontaktieren"
       },
-      "errors": {
-        "firstNameRequired": "Vorname ist erforderlich",
-        "lastNameRequired": "Nachname ist erforderlich",
-        "emailRequired": "E-Mail ist erforderlich",
-        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
-        "subjectRequired": "Betreff ist erforderlich",
-        "messageRequired": "Nachricht ist erforderlich",
-        "messageTooShort": "Nachricht muss mindestens 10 Zeichen enthalten",
-        "messageTooLong": "Nachricht darf 5000 Zeichen nicht überschreiten",
-        "submitFailed": "Fehler beim Senden der Nachricht"
+      "address": {
+        "title": "Büroadresse",
+        "description": "Besuchen Sie uns in unserem Büro",
+        "fullAddress": "Avenue Mokhtar Jazoulit, immeuble n° 41, Océan, Rabat"
       }
     },
+    "note": {
+      "title": "Hinweis",
+      "description": "Wir bieten keinen Live-Chat-Support an. Bitte verwenden Sie E-Mail, Telefon oder WhatsApp, um uns zu erreichen."
+    },
     "support": {
-      "title": "Support kontaktieren",
+      "title": "Support Kontaktieren",
       "description": "Senden Sie uns eine Nachricht und wir werden uns so schnell wie möglich bei Ihnen melden."
     }
   }

@@ -1,44 +1,39 @@
 {
   "contact": {
+    "hero": {
+      "title": "Contact Us",
+      "description": "We're here to help! Get in touch with our team for support, questions, or feedback."
+    },
+    "contactInfo": {
+      "title": "Get in Touch",
+      "email": {
+        "title": "Email",
+        "description": "Send us an email",
+        "address": "info@manzelhelp.com"
+      },
+      "phone": {
+        "title": "Phone",
+        "description": "Call us directly",
+        "number": "06 07 50 57 22"
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Contact us via WhatsApp",
+        "button": "Contact via WhatsApp"
+      },
+      "address": {
+        "title": "Office Address",
+        "description": "Visit us at our office",
+        "fullAddress": "Avenue Mokhtar Jazoulit, immeuble n° 41, Océan, Rabat"
+      }
+    },
+    "note": {
+      "title": "Note",
+      "description": "We don't offer live chat support. Please use email, phone, or WhatsApp to reach us."
+    },
     "support": {
       "title": "Contact Support",
       "description": "Send us a message and we'll get back to you as soon as possible."
-    },
-    "form": {
-      "fields": {
-        "firstName": "First Name",
-        "lastName": "Last Name",
-        "email": "Email",
-        "subject": "Subject",
-        "subjectPlaceholder": "Select a subject",
-        "message": "Message",
-        "messagePlaceholder": "Tell us how we can help you...",
-        "characters": "characters"
-      },
-      "subjects": {
-        "general": "General Inquiry",
-        "support": "Technical Support",
-        "billing": "Billing Question",
-        "feedback": "Feedback",
-        "partnership": "Partnership"
-      },
-      "submit": "Send Message",
-      "submitting": "Sending...",
-      "success": {
-        "title": "Message sent successfully",
-        "description": "We'll get back to you as soon as possible."
-      },
-      "errors": {
-        "firstNameRequired": "First name is required",
-        "lastNameRequired": "Last name is required",
-        "emailRequired": "Email is required",
-        "emailInvalid": "Please enter a valid email address",
-        "subjectRequired": "Subject is required",
-        "messageRequired": "Message is required",
-        "messageTooShort": "Message must be at least 10 characters",
-        "messageTooLong": "Message must not exceed 5000 characters",
-        "submitFailed": "Failed to send message"
-      }
     }
   }
 }

@@ -9,6 +9,7 @@ import {
   Users,
   CreditCard,
   Shield,
+  Sparkles,
 } from "lucide-react";
 import HelpPageContent from "@/components/help/HelpPageContent";
 import FAQSectionWrapper from "@/components/help/FAQSectionWrapper";
@@ -119,7 +120,7 @@ export default async function HelpPage({
       description: t("contact.email.description"),
       action: t("contact.email.action"),
       available: t("contact.email.available"),
-      href: "mailto:Info@manzelhelp.com",
+      href: "mailto:info@manzelhelp.com",
     },
   ];
 
@@ -127,12 +128,21 @@ export default async function HelpPage({
     <HelpSearchProvider>
       <div className="min-h-screen bg-[var(--color-bg)]">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+        <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-64 h-64 bg-[var(--color-secondary)] rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--color-secondary)] rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+          </div>
+          <div className="relative max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 border border-white/20">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm font-medium">{t("hero.title")}</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
               {t("hero.title")}
             </h1>
-            <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto opacity-90">
               {t("hero.description")}
             </p>
 
@@ -157,18 +167,18 @@ export default async function HelpPage({
             {CONTACT_OPTIONS.map((option, index) => (
               <Card
                 key={index}
-                className="p-6 text-center hover:shadow-lg transition-shadow"
+                className="p-6 text-center hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0"
               >
-                <div className="w-12 h-12 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4 text-white">
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] rounded-2xl flex items-center justify-center mx-auto mb-4 text-white">
                   {option.icon}
                 </div>
                 <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
                   {option.title}
                 </h3>
-                <p className="text-[var(--color-text-secondary)] mb-4">
+                <p className="text-[var(--color-text-secondary)] mb-3 leading-relaxed">
                   {option.description}
                 </p>
-                <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+                <p className="text-sm text-[var(--color-text-secondary)] mb-4 opacity-75">
                   {option.available}
                 </p>
                 <Button variant="outline" className="w-full" asChild>
@@ -198,13 +208,15 @@ export default async function HelpPage({
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <BookOpen className="w-8 h-8 text-[var(--color-primary)] mx-auto mb-4" />
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <Card className="p-6 text-center hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0">
+              <div className="w-12 h-12 bg-[var(--color-primary)]/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-6 h-6 text-[var(--color-primary)]" />
+              </div>
               <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
                 {t("resources.userGuide.title")}
               </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm mb-4">
+              <p className="text-[var(--color-text-secondary)] text-sm mb-4 leading-relaxed">
                 {t("resources.userGuide.description")}
               </p>
               <Button variant="outline" size="sm">
@@ -212,42 +224,18 @@ export default async function HelpPage({
               </Button>
             </Card>
 
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <Users className="w-8 h-8 text-[var(--color-primary)] mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                {t("resources.communityForum.title")}
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm mb-4">
-                {t("resources.communityForum.description")}
-              </p>
-              <Button variant="outline" size="sm">
-                {t("resources.communityForum.action")}
-              </Button>
-            </Card>
-
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <Shield className="w-8 h-8 text-[var(--color-primary)] mx-auto mb-4" />
+            <Card className="p-6 text-center hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0">
+              <div className="w-12 h-12 bg-[var(--color-primary)]/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-6 h-6 text-[var(--color-primary)]" />
+              </div>
               <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
                 {t("resources.safetyTips.title")}
               </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm mb-4">
+              <p className="text-[var(--color-text-secondary)] text-sm mb-4 leading-relaxed">
                 {t("resources.safetyTips.description")}
               </p>
               <Button variant="outline" size="sm">
                 {t("resources.safetyTips.action")}
-              </Button>
-            </Card>
-
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <MessageCircle className="w-8 h-8 text-[var(--color-primary)] mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                {t("resources.videoTutorials.title")}
-              </h3>
-              <p className="text-[var(--color-text-secondary)] text-sm mb-4">
-                {t("resources.videoTutorials.description")}
-              </p>
-              <Button variant="outline" size="sm">
-                {t("resources.videoTutorials.action")}
               </Button>
             </Card>
           </div>

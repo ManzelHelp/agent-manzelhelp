@@ -116,14 +116,6 @@ function Footer() {
                   {t("contact")}
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="hover:text-[var(--color-primary)] transition-colors"
-                >
-                  {t("blog")}
-                </Link>
-              </li>
             </ul>
           </div>
 

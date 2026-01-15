@@ -1,44 +1,39 @@
 {
   "contact": {
+    "hero": {
+      "title": "اتصل بنا",
+      "description": "نحن هنا لمساعدتك! تواصل مع فريقنا للحصول على الدعم أو الأسئلة أو الملاحظات."
+    },
+    "contactInfo": {
+      "title": "تواصل معنا",
+      "email": {
+        "title": "البريد الإلكتروني",
+        "description": "أرسل لنا بريداً إلكترونياً",
+        "address": "info@manzelhelp.com"
+      },
+      "phone": {
+        "title": "الهاتف",
+        "description": "اتصل بنا مباشرة",
+        "number": "06 07 50 57 22"
+      },
+      "whatsapp": {
+        "title": "واتساب",
+        "description": "تواصل معنا عبر واتساب",
+        "button": "التواصل عبر واتساب"
+      },
+      "address": {
+        "title": "عنوان المكتب",
+        "description": "زرنا في مكتبنا",
+        "fullAddress": "شارع المختار الجازولي، عمارة رقم 41، المحيط، الرباط"
+      }
+    },
+    "note": {
+      "title": "ملاحظة",
+      "description": "نحن لا نقدم دعم الدردشة المباشرة. يرجى استخدام البريد الإلكتروني أو الهاتف أو واتساب للتواصل معنا."
+    },
     "support": {
       "title": "اتصل بالدعم",
       "description": "أرسل لنا رسالة وسنعاود الاتصال بك في أقرب وقت ممكن."
-    },
-    "form": {
-      "fields": {
-        "firstName": "الاسم الأول",
-        "lastName": "اسم العائلة",
-        "email": "البريد الإلكتروني",
-        "subject": "الموضوع",
-        "subjectPlaceholder": "اختر موضوعاً",
-        "message": "الرسالة",
-        "messagePlaceholder": "أخبرنا كيف يمكننا مساعدتك...",
-        "characters": "أحرف"
-      },
-      "subjects": {
-        "general": "استفسار عام",
-        "support": "دعم فني",
-        "billing": "سؤال الفواتير",
-        "feedback": "ملاحظات",
-        "partnership": "شراكة"
-      },
-      "submit": "إرسال الرسالة",
-      "submitting": "جارٍ الإرسال...",
-      "success": {
-        "title": "تم إرسال الرسالة بنجاح",
-        "description": "سنتواصل معك في أقرب وقت ممكن."
-      },
-      "errors": {
-        "firstNameRequired": "الاسم الأول مطلوب",
-        "lastNameRequired": "اسم العائلة مطلوب",
-        "emailRequired": "البريد الإلكتروني مطلوب",
-        "emailInvalid": "الرجاء إدخال عنوان بريد إلكتروني صحيح",
-        "subjectRequired": "الموضوع مطلوب",
-        "messageRequired": "الرسالة مطلوبة",
-        "messageTooShort": "يجب أن تكون الرسالة على الأقل 10 أحرف",
-        "messageTooLong": "لا يمكن أن تتجاوز الرسالة 5000 حرف",
-        "submitFailed": "خطأ في إرسال الرسالة"
-      }
     }
   }
 }

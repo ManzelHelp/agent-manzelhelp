@@ -1,44 +1,39 @@
 {
   "contact": {
+    "hero": {
+      "title": "Contactez-nous",
+      "description": "Nous sommes là pour vous aider ! Contactez notre équipe pour le support, les questions ou les commentaires."
+    },
+    "contactInfo": {
+      "title": "Contactez-nous",
+      "email": {
+        "title": "Email",
+        "description": "Envoyez-nous un email",
+        "address": "info@manzelhelp.com"
+      },
+      "phone": {
+        "title": "Téléphone",
+        "description": "Appelez-nous directement",
+        "number": "06 07 50 57 22"
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Contactez-nous via WhatsApp",
+        "button": "Contacter via WhatsApp"
+      },
+      "address": {
+        "title": "Adresse du Bureau",
+        "description": "Visitez-nous à notre bureau",
+        "fullAddress": "Avenue Mokhtar Jazoulit, immeuble n° 41, Océan, Rabat"
+      }
+    },
+    "note": {
+      "title": "Note",
+      "description": "Nous n'offrons pas de chat en direct. Veuillez utiliser l'email, le téléphone ou WhatsApp pour nous contacter."
+    },
     "support": {
       "title": "Contacter le Support",
       "description": "Envoyez-nous un message et nous vous répondrons dans les plus brefs délais."
-    },
-    "form": {
-      "fields": {
-        "firstName": "Prénom",
-        "lastName": "Nom",
-        "email": "E-mail",
-        "subject": "Sujet",
-        "subjectPlaceholder": "Sélectionner un sujet",
-        "message": "Message",
-        "messagePlaceholder": "Dites-nous comment nous pouvons vous aider...",
-        "characters": "caractères"
-      },
-      "subjects": {
-        "general": "Demande générale",
-        "support": "Support technique",
-        "billing": "Question de facturation",
-        "feedback": "Commentaires",
-        "partnership": "Partenariat"
-      },
-      "submit": "Envoyer le message",
-      "submitting": "Envoi en cours...",
-      "success": {
-        "title": "Message envoyé avec succès",
-        "description": "Nous vous répondrons dans les plus brefs délais."
-      },
-      "errors": {
-        "firstNameRequired": "Le prénom est requis",
-        "lastNameRequired": "Le nom est requis",
-        "emailRequired": "L'e-mail est requis",
-        "emailInvalid": "Veuillez entrer une adresse e-mail valide",
-        "subjectRequired": "Le sujet est requis",
-        "messageRequired": "Le message est requis",
-        "messageTooShort": "Le message doit contenir au moins 10 caractères",
-        "messageTooLong": "Le message ne doit pas dépasser 5000 caractères",
-        "submitFailed": "Erreur lors de l'envoi du message"
-      }
     }
   }
 }

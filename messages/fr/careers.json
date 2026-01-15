@@ -1,0 +1,104 @@
+{
+  "careers": {
+    "hero": {
+      "title": "Rejoignez Notre Équipe",
+      "description": "Aidez-nous à construire l'avenir des services locaux. Rejoignez une équipe passionnée qui fait une vraie différence dans les communautés du monde entier.",
+      "viewPositions": "Voir les Postes Ouverts"
+    },
+    "whyWorkWithUs": {
+      "title": "Pourquoi Travailler Avec Nous ?",
+      "benefits": {
+        "healthWellness": {
+          "title": "Santé et Bien-être",
+          "description": "Assurance maladie complète et programmes de bien-être"
+        },
+        "flexibleWork": {
+          "title": "Travail Flexible",
+          "description": "Options de travail à distance et horaires flexibles"
+        },
+        "globalImpact": {
+          "title": "Impact Mondial",
+          "description": "Faites une différence dans les communautés du monde entier"
+        },
+        "careerGrowth": {
+          "title": "Croissance de Carrière",
+          "description": "Développement professionnel et opportunités d'avancement"
+        },
+        "greatCulture": {
+          "title": "Excellente Culture",
+          "description": "Environnement collaboratif avec des collègues formidables"
+        },
+        "teamBuilding": {
+          "title": "Renforcement d'Équipe",
+          "description": "Événements d'équipe réguliers et retraites d'entreprise"
+        }
+      }
+    },
+    "mission": {
+      "title": "Notre Mission",
+      "description": "Chez ManzelHelp, nous croyons en la puissance de la communauté et à la valeur de la connexion humaine. Nous construisons une plateforme qui rassemble les gens, crée des opportunités économiques et facilite la vie de tous. Rejoignez-nous pour créer un monde où l'aide est toujours à un clic.",
+      "stats": {
+        "activeHelpers": "Aides Actifs",
+        "happyCustomers": "Clients Heureux",
+        "servicesCompleted": "Services Complétés"
+      }
+    },
+    "openPositions": {
+      "title": "Postes Ouverts",
+      "positions": {
+        "seniorFrontend": {
+          "title": "Développeur Frontend Senior",
+          "department": "Ingénierie",
+          "location": "Distant",
+          "type": "Temps plein",
+          "description": "Construisez des expériences utilisateur incroyables avec React et Next.js"
+        },
+        "productManager": {
+          "title": "Chef de Produit",
+          "department": "Produit",
+          "location": "Berlin, Allemagne",
+          "type": "Temps plein",
+          "description": "Façonnez l'avenir de notre plateforme et de l'expérience utilisateur"
+        },
+        "customerSuccess": {
+          "title": "Responsable Succès Client",
+          "department": "Opérations",
+          "location": "Distant",
+          "type": "Temps plein",
+          "description": "Aidez nos utilisateurs à réussir et développez notre communauté"
+        },
+        "marketingSpecialist": {
+          "title": "Spécialiste Marketing",
+          "department": "Marketing",
+          "location": "Distant",
+          "type": "Temps plein",
+          "description": "Développez la croissance et la notoriété de la marque sur tous les canaux"
+        }
+      },
+      "applyNow": "Postuler Maintenant",
+      "noPositionFit": "Vous ne voyez pas de poste qui vous convient ? Nous recherchons toujours des personnes talentueuses.",
+      "sendResume": "Envoyez-nous Votre CV"
+    },
+    "culture": {
+      "title": "Notre Culture et Valeurs",
+      "values": {
+        "innovation": {
+          "title": "Innovation",
+          "description": "Nous adoptons de nouvelles idées et technologies pour résoudre les problèmes du monde réel et améliorer les expériences utilisateur."
+        },
+        "community": {
+          "title": "Communauté",
+          "description": "Nous croyons en la puissance de la communauté et travaillons à renforcer les liens entre les gens."
+        },
+        "trust": {
+          "title": "Confiance",
+          "description": "Nous construisons la confiance grâce à la transparence, la fiabilité et en mettant nos utilisateurs en premier dans tout ce que nous faisons."
+        },
+        "growth": {
+          "title": "Croissance",
+          "description": "Nous nous engageons à la croissance personnelle et professionnelle de nos membres d'équipe et de notre communauté."
+        }
+      }
+    }
+  }
+}
