@@ -15,6 +15,7 @@ function SignUpForm() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
   const t = useTranslations("auth");
+  const tErrors = useTranslations("errors");
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
@@ -58,25 +59,18 @@ function SignUpForm() {
           });
           router.replace("/wait-for-confirmation");
         } else {
-          const errorMessage =
-            result.errorMessage || "Une erreur est survenue";
-          let title = "Erreur";
-          if (
-            errorMessage.includes("déjà utilisé") ||
-            errorMessage.includes("already")
-          ) {
-            title = "Email déjà utilisé";
-          }
+          const errorMessage = result.errorMessage;
+          
           toast({
             variant: "destructive",
-            title,
-            description: errorMessage,
+            title: t("pages.signUp.unexpectedError"),
+            description: errorMessage?.startsWith("errors.") ? tErrors(errorMessage as any) : errorMessage,
           });
         }
       } catch {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: t("pages.signUp.unexpectedError"),
           description: t("pages.signUp.unexpectedError"),
         });
       }

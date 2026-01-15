@@ -68,6 +68,23 @@
     "minDuration": "Min. {duration}h",
     "loading": "Lädt...",
     "category": "Kategorie",
-    "service": "Service"
+    "service": "Service",
+    "unknownDate": "Unbekanntes Datum",
+    "serviceAvailableForBooking": "Service ist zur Buchung verfügbar",
+    "errors": {
+      "loadFailed": "Fehler beim Laden der Services"
+    },
+    "startServiceJourney": "Starten Sie Ihre Service-Reise",
+    "createFirstServiceDescription": "Erstellen Sie Ihr erstes Service-Angebot und treten Sie mit Kunden in Kontakt, die Ihr Fachwissen benötigen. Bauen Sie Ihr professionelles Portfolio auf und lassen Sie Ihr Unternehmen wachsen.",
+    "createFirstService": "Erstellen Sie Ihren ersten Service",
+    "loadMore": "Mehr laden",
+    "oopsSomethingWentWrong": "Hoppla! Etwas ist schief gelaufen",
+    "couldntLoadServices": "Wir konnten Ihre Services derzeit nicht laden. Bitte versuchen Sie, die Seite zu aktualisieren oder kontaktieren Sie den Support, wenn das Problem weiterhin besteht.",
+    "tryAgain": "Erneut versuchen",
+    "accessRequired": "Zugang erforderlich",
+    "pleaseSignIn": "Bitte melden Sie sich an, um auf Ihr Service-Management-Dashboard zuzugreifen und Ihr professionelles Portfolio aufzubauen.",
+    "signIn": "Anmelden",
+    "failedToLoadData": "Fehler beim Laden der Daten",
+    "pleaseCompleteProfile": "Bitte vervollständigen Sie Ihr Profil, um fortzufahren"
   }
 }

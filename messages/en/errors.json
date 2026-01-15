@@ -72,6 +72,15 @@
       "failedToAccept": "Failed to accept booking",
       "failedToConfirm": "Failed to confirm booking",
       "failedToComplete": "Failed to complete booking"
+    },
+    "supabase": {
+      "invalid_credentials": "No account found with this email or incorrect password",
+      "email_already_used": "This email is already in use",
+      "password_too_short": "Password must be at least 6 characters long",
+      "unexpected": "An unexpected database error occurred",
+      "session_expired": "Your session has expired. Please log in again.",
+      "rate_limit": "Too many requests. Please try again later.",
+      "user_not_found": "User not found"
     }
   }
 }

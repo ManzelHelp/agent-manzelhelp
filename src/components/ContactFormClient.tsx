@@ -21,6 +21,7 @@ interface ContactFormClientProps {
 export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as ContactFormClientProps) {
   const t = useTranslations("contact.form");
   const tCommon = useTranslations("common");
+  const tErrors = useTranslations("errors");
   const { user } = useUserStore();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -95,10 +96,11 @@ export function ContactFormClient({ onSuccess }: ContactFormClientProps = {} as 
             onSuccess();
           }
         } else {
+          const errorMessage = result.errorMessage;
           toast({
             variant: "destructive",
             title: tCommon("error"),
-            description: result.errorMessage || t("errors.submitFailed"),
+            description: errorMessage?.startsWith("errors.") ? tErrors(errorMessage as any) : (errorMessage || t("errors.submitFailed")),
           });
         }
       } catch (error) {

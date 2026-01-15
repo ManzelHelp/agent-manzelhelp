@@ -9,7 +9,7 @@ import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackButton } from "@/components/ui/BackButton";
-import { getServices } from "@/actions/services";
+import { getServiceCategories } from "@/actions/services";
 import {
   PricingType,
   ServiceStatus,
@@ -107,9 +107,9 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
-  // Fetch categories from database instead of hardcoded ones
-  const categoriesResult = await getServices();
-  const categories = categoriesResult.success ? categoriesResult.services || [] : [];
+  // Fetch categories from database
+  const categoriesResult = await getServiceCategories();
+  const categories = categoriesResult.success ? categoriesResult.categories || [] : [];
 
   // Fetch services using the service_listing_view which has all the data we need
   // Only show active and verified services
@@ -126,7 +126,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   }
 
   if (resolvedSearchParams.category) {
-    query = query.eq("service_id", parseInt(resolvedSearchParams.category));
+    query = query.eq("category_id", parseInt(resolvedSearchParams.category));
   }
 
   if (resolvedSearchParams.minPrice) {

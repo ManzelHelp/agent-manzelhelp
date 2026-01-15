@@ -13,12 +13,12 @@ export const handleError = (error: unknown) => {
     const supabaseError = error as any;
     const errorCode = supabaseError?.code || supabaseError?.status;
     
-    // Traduire les erreurs Supabase Auth en messages clairs en français
+    // Auth errors
     if (errorMessage.includes("Invalid login credentials") || 
         errorMessage.includes("Invalid credentials") ||
         errorMessage.includes("Email not confirmed") ||
         errorCode === "invalid_credentials") {
-      return { errorMessage: "Aucun compte trouvé avec cet email ou mot de passe incorrect" };
+      return { errorMessage: "errors.supabase.invalid_credentials" };
     }
     
     if (errorMessage.includes("User already registered") || 
@@ -28,16 +28,25 @@ export const handleError = (error: unknown) => {
         errorMessage.includes("duplicate key value") ||
         errorCode === "user_already_registered" ||
         errorCode === "signup_disabled") {
-      return { errorMessage: "Cet email est déjà utilisé" };
+      return { errorMessage: "errors.supabase.email_already_used" };
     }
     
     if (errorMessage.includes("Password should be at least")) {
-      return { errorMessage: "Le mot de passe doit contenir au moins 6 caractères" };
+      return { errorMessage: "errors.supabase.password_too_short" };
+    }
+
+    if (errorCode === "rate_limit" || errorMessage.includes("rate limit")) {
+      return { errorMessage: "errors.supabase.rate_limit" };
+    }
+
+    if (errorMessage.includes("session_expired") || errorMessage.includes("JWT expired")) {
+      return { errorMessage: "errors.supabase.session_expired" };
     }
     
-    // Retourner le message d'erreur original si pas de traduction spécifique
+    // Return original message if no specific translation key
+    // We prefix with "raw:" to indicate it's not a translation key
     return { errorMessage: errorMessage };
   } else {
-    return { errorMessage: "Une erreur est survenue" };
+    return { errorMessage: "errors.general.unexpected" };
   }
 };

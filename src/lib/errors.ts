@@ -2,7 +2,7 @@
 
 import { getUserLocale, getTranslatedString, type Locale } from "./i18n-server";
 
-export type ErrorCategory = "general" | "walletRefunds" | "jobs" | "messages" | "reviews" | "bookings";
+export type ErrorCategory = "general" | "walletRefunds" | "jobs" | "messages" | "reviews" | "bookings" | "supabase";
 
 export type WalletRefundError =
   | "notAuthenticated"

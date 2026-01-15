@@ -4,29 +4,26 @@
     "loading": "Buchungsdetails werden geladen...",
     "notFound": "Buchung nicht gefunden",
     "backToBookings": "Zurück zu Buchungen",
-
     "waitingForTasker": "Warten auf die Antwort des Dienstleisters auf Ihre Buchungsanfrage.",
     "taskerAccepted": "Großartig! Der Dienstleister hat Ihre Buchungsanfrage angenommen.",
     "bookingConfirmed": "Ihre Buchung ist bestätigt! Der Dienstleister wird den Service zur geplanten Zeit starten.",
     "taskerWorking": "Der Dienstleister arbeitet derzeit an Ihrem Service.",
-
     "unauthorizedAccess": "Unbefugter Zugriff",
     "pleaseWait": "Bitte warten Sie, während wir Ihre Buchungsdetails abrufen...",
     "bookingNotFound": "Die Buchung, nach der Sie suchen, existiert nicht oder Sie haben keine Berechtigung, sie anzuzeigen.",
-
     "success": {
       "statusUpdated": "Buchungsstatus erfolgreich aktualisiert",
       "copiedToClipboard": "Buchungs-ID in die Zwischenablage kopiert",
-      "linkCopied": "Link in die Zwischenablage kopiert"
+      "linkCopied": "Link in die Zwischenablage kopiert",
+      "confirmed": "Buchung erfolgreich bestätigt"
     },
-
     "errors": {
       "updateFailed": "Buchungsstatus konnte nicht aktualisiert werden",
-      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
+      "taskerInfoNotAvailable": "Tasker-Informationen nicht verfügbar",
+      "confirmFailed": "Abschluss der Buchung konnte nicht bestätigt werden"
     },
-
     "service": "Service",
-
     "status": {
       "pending": "Ausstehend",
       "accepted": "Angenommen",
@@ -36,7 +33,6 @@
       "cancelled": "Storniert",
       "unknown": "Unbekannt"
     },
-
     "statusDescriptions": {
       "pending": "Warten auf Antwort",
       "accepted": "Buchung wurde angenommen",
@@ -46,13 +42,11 @@
       "cancelled": "Buchung wurde storniert",
       "unknown": "Status unbekannt"
     },
-
     "bookingType": {
       "instant": "Sofort",
       "scheduled": "Geplant",
       "recurring": "Wiederkehrend"
     },
-
     "sections": {
       "customerInfo": "Kundeninformationen",
       "taskerInfo": "Tasker-Informationen",
@@ -63,7 +57,6 @@
       "actions": "Aktionen",
       "timeline": "Buchungszeitlinie"
     },
-
     "customer": "Kunde",
     "tasker": "Tasker",
     "agreedPrice": "Vereinbarter Preis",
@@ -73,11 +66,9 @@
     "time": "Zeit",
     "type": "Typ",
     "payment": "Zahlung",
-
     "addressNotSpecified": "Adresse nicht angegeben",
     "noRequirements": "Keine spezifischen Anforderungen angegeben.",
     "timeNotSpecified": "Zeit nicht angegeben",
-
     "actions": {
       "acceptRequest": "Anfrage annehmen",
       "declineRequest": "Anfrage ablehnen",
@@ -90,9 +81,9 @@
       "callCustomer": "Kunde anrufen",
       "callTasker": "Tasker anrufen",
       "copyBookingId": "Buchungs-ID kopieren",
-      "share": "Teilen"
+      "share": "Teilen",
+      "leaveReview": "Bewertung hinterlassen"
     },
-
     "timeline": {
       "bookingCreated": "Buchung erstellt",
       "bookingAccepted": "Buchung angenommen",
@@ -100,13 +91,10 @@
       "taskStarted": "Aufgabe gestartet",
       "taskCompleted": "Aufgabe abgeschlossen"
     },
-
     "completed": "Diese Buchung wurde erfolgreich abgeschlossen.",
     "cancelled": "Diese Buchung wurde storniert.",
-
     "messagingComingSoon": "Messaging-Funktion kommt bald!",
     "phoneNotAvailable": "Telefonnummer nicht verfügbar",
-
     "cancellation": {
       "title": "Buchung stornieren",
       "description": "Bitte teilen Sie uns mit, warum Sie diese Buchung stornieren",
@@ -129,7 +117,6 @@
         "customCommentRequired": "Bitte geben Sie einen benutzerdefinierten Kommentar an"
       }
     },
-
     "confirmations": {
       "accept": {
         "title": "Buchungsanfrage annehmen",

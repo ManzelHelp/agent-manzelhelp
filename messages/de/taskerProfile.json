@@ -182,7 +182,8 @@
       "languages": {
         "en": "Englisch",
         "de": "Deutsch",
-        "fr": "Französisch"
+        "fr": "Französisch",
+        "ar": "Arabisch"
       },
       "timezones": {
         "GMT": "GMT (Greenwich Mean Time)",

@@ -13,6 +13,7 @@ import { Label } from "@radix-ui/react-label";
 export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: any) {
   const { toast } = useToast();
   const t = useTranslations("reviews");
+  const tToasts = useTranslations("toasts");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     overallRating: 0,
@@ -64,15 +65,27 @@ export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: an
 
       if (result.success) {
         // Succès serveur - Toast
-        toast({ variant: "success", title: "Merci !", description: "Votre avis a été publié." });
+        toast({ 
+          variant: "success", 
+          title: t("thankYou"), 
+          description: t("reviewPublished") 
+        });
         if (onSuccess) onSuccess();
       } else {
         // Erreur serveur (back-end) - Toast uniquement
-        toast({ variant: "destructive", description: result.error || "Une erreur est survenue." });
+        toast({ 
+          variant: "destructive", 
+          title: tToasts("error"),
+          description: result.error || tToasts("anErrorOccurred") 
+        });
       }
     } catch (error) {
       // Erreur serveur (back-end) - Toast uniquement
-      toast({ variant: "destructive", description: "Une erreur est survenue." });
+      toast({ 
+        variant: "destructive", 
+        title: tToasts("error"),
+        description: tToasts("anErrorOccurred") 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +96,7 @@ export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: an
       <div className="space-y-6">
         {/* Note Globale */}
         <div className="space-y-4">
-          <Label className="text-lg font-bold">Votre note globale *</Label>
+          <Label className="text-lg font-bold">{t("overallRating")}</Label>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button 
@@ -127,11 +140,11 @@ export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: an
 
         {/* Notes Spécifiques */}
         <div className="space-y-4">
-          <Label className="text-base font-semibold">Notes détaillées (Optionnel)</Label>
+          <Label className="text-base font-semibold">{t("detailedRatings")}</Label>
           
           {/* Qualité */}
           <div className="space-y-2">
-            <Label className="text-sm text-gray-600 dark:text-gray-400">Qualité du travail</Label>
+            <Label className="text-sm text-gray-600 dark:text-gray-400">{t("qualityOfWork")}</Label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button 
@@ -151,7 +164,7 @@ export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: an
 
           {/* Communication */}
           <div className="space-y-2">
-            <Label className="text-sm text-gray-600 dark:text-gray-400">Communication</Label>
+            <Label className="text-sm text-gray-600 dark:text-gray-400">{t("communication")}</Label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button 
@@ -171,7 +184,7 @@ export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: an
 
           {/* Ponctualité */}
           <div className="space-y-2">
-            <Label className="text-sm text-gray-600 dark:text-gray-400">Ponctualité</Label>
+            <Label className="text-sm text-gray-600 dark:text-gray-400">{t("timeliness")}</Label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button 
@@ -192,9 +205,9 @@ export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: an
       </div>
 
       <div className="space-y-2">
-        <Label>Commentaire (Optionnel)</Label>
+        <Label>{t("commentOptional")}</Label>
         <Textarea 
-          placeholder="Racontez votre expérience..." 
+          placeholder={t("tellYourExperience")} 
           value={form.comment} 
           onChange={(e) => {
             setForm({...form, comment: e.target.value});
@@ -214,14 +227,14 @@ export default function ReviewForm({ jobId, bookingId, onSuccess, onCancel }: an
           <p className="text-sm text-red-600 dark:text-red-400">{formErrors.comment}</p>
         )}
         {!formErrors.comment && form.comment.length > 0 && (
-          <p className="text-xs text-gray-500">{form.comment.length}/2000 caractères</p>
+          <p className="text-xs text-gray-500">{t("characterCount2000", { count: form.comment.length })}</p>
         )}
       </div>
 
       <div className="flex gap-3 justify-end">
-        {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Annuler</Button>}
+        {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>{t("cancel")}</Button>}
         <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-          {isSubmitting ? <Loader2 className="animate-spin" /> : "Publier l'avis"}
+          {isSubmitting ? <Loader2 className="animate-spin" /> : t("publishReview")}
         </Button>
       </div>
     </form>

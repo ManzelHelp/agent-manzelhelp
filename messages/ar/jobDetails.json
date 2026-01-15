@@ -1,7 +1,7 @@
 {
   "jobDetails": {
     "title": "عنوان الوظيفة",
-    "description": "وصف الوظيفة",
+    "description": "الوصف",
     "descriptionPlaceholder": "اكتب وصف الوظيفة هنا...",
     "estimatedDuration": "المدة التقديرية",
     "category": "الفئة",
@@ -20,7 +20,6 @@
     "jobStatus": "حالة الوظيفة",
     "completed": "مكتملة",
     "postedOn": "تم النشر في {date}",
-    "description": "الوصف",
     "preferredDate": "التاريخ المفضل",
     "preferredTime": "الوقت المفضل",
     "location": "الموقع",
@@ -53,7 +52,9 @@
       "in_progress": "قيد التنفيذ",
       "completed": "مكتملة",
       "cancelled": "ملغاة",
-      "unknown": "غير معروفة"
+      "unknown": "غير معروفة",
+      "underReview": "قيد المراجعة",
+      "inProgress": "قيد التنفيذ"
     }
   }
 }

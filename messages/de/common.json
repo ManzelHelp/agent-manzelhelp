@@ -45,6 +45,14 @@
     "getStartedToday": "Heute Loslegen",
     "getStartedNow": "Jetzt Loslegen",
     "delete": "Löschen",
-    "error": "Fehler"
+    "error": "Fehler",
+    "languages": {
+      "en": "Englisch",
+      "de": "Deutsch",
+      "fr": "Französisch",
+      "ar": "Arabisch"
+    },
+    "cash": "Barzahlung",
+    "escrow": "Treuhand"
   }
 }

@@ -85,7 +85,14 @@
         "enableAtLeastOneDay": "يرجى تفعيل يوم واحد على الأقل",
         "setStartEndTimes": "يرجى تعيين أوقات البدء والانتهاء",
         "endTimeAfterStart": "يجب أن يكون وقت الانتهاء بعد وقت البدء",
-        "updateFailed": "فشل تحديث التوفر"
+        "updateFailed": "فشل تحديث التوفر",
+        "profileNotFound": "لم يتم العثور على الملف الشخصي. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+        "invalidDataFormat": "صيغة بيانات التوفر غير صالحة",
+        "invalidTimeFormat": "صيغة الوقت غير صالحة. يرجى استخدام صيغة HH:MM (مثال: 09:00)"
+      },
+      "unavailable": "غير متاح",
+      "success": {
+        "updated": "تم تحديث التوفر بنجاح"
       }
     },
     "verification": {

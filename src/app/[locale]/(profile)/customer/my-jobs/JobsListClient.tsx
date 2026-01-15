@@ -88,7 +88,7 @@ function JobCard({
               <Badge className={getStatusColor(job.status)}>
                 <span className="flex items-center gap-1">
                   {getStatusIcon(job.status)}
-                  {job.status?.replace("_", " ") || "Unknown"}
+                  {t(`status.${job.status || "unknown"}`)}
                 </span>
               </Badge>
             </div>

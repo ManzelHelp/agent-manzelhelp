@@ -28,8 +28,8 @@ export default function PaymentSection({ missingFields }: PaymentSectionProps) {
   const handleAddPaymentClick = () => {
     // Intégration Toast Premium pour informer l'utilisateur
     toast({
-      title: t("sections.payment.comingSoon"),
-      description: t("sections.payment.comingSoonDescription"),
+      title: t("comingSoon"),
+      description: t("comingSoonDescription"),
     });
   };
 

@@ -96,6 +96,7 @@
         "applicationSubmittedSuccess": "Bewerbung erfolgreich eingereicht!",
         "failedToSubmitApplication": "Fehler beim Einreichen der Bewerbung"
       }
-    }
+    },
+    "contactInitialMessage": "Hallo! Ich interessiere mich für Ihren Job: \"{jobTitle}\". Ich würde gerne die Details mit Ihnen besprechen."
   }
 }

@@ -42,6 +42,7 @@
     },
     "results": {
       "showing": "عرض {current} من {total} حجز"
-    }
+    },
+    "dateNotSet": "لم يتم تحديد تاريخ"
   }
 }

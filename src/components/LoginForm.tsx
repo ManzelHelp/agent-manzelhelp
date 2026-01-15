@@ -24,6 +24,7 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [forgotPasswordError, setForgotPasswordError] = useState("");
   const t = useTranslations("auth");
+  const tErrors = useTranslations("errors");
   const [isPending, startTransition] = useTransition();
 
   // Toast de bienvenue si on vient du Sign-up
@@ -31,7 +32,7 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
     if (showToast) {
       toast({
         variant: "success",
-        title: "Compte créé !",
+        title: t("pages.login.accountCreated"),
         description: t("pages.login.accountCreated"),
       });
     }
@@ -84,7 +85,7 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
             // TOAST SUCCÈS PREMIUM
             toast({
               variant: "success",
-              title: "Heureux de vous revoir !",
+              title: t("pages.login.loginSuccessful"),
               description: t("pages.login.loginSuccessful"),
             });
             
@@ -92,21 +93,12 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
           }
         } else {
           // Erreur serveur (back-end) - Toast uniquement
-          // Exemples : "Aucun compte trouvé avec cet email", "Mot de passe incorrect", etc.
-          const errorMessage = result.errorMessage || "Vérifiez vos identifiants.";
-          
-          // Messages spécifiques pour améliorer l'UX
-          let title = "Échec de connexion";
-          if (errorMessage.includes("Aucun compte trouvé")) {
-            title = "Compte introuvable";
-          } else if (errorMessage.includes("mot de passe incorrect")) {
-            title = "Mot de passe incorrect";
-          }
+          const errorMessage = result.errorMessage;
           
           toast({
             variant: "destructive",
-            title: title,
-            description: errorMessage,
+            title: t("pages.login.unexpectedError"),
+            description: errorMessage?.startsWith("errors.") ? tErrors(errorMessage as any) : errorMessage,
           });
         }
       } catch (error) {
@@ -144,16 +136,23 @@ function LoginForm({ showToast }: { showToast?: boolean }) {
           // Succès serveur - Toast
           toast({
             variant: "success",
-            title: "E-mail envoyé !",
-            description: t("forgotPassword.resetEmailSent"),
+            title: t("pages.login.emailSent"),
+            description: t("pages.login.resetEmailSent"),
           });
           setIsForgotPassword(false);
         } else {
           // Erreur serveur (back-end) - Toast uniquement
-          toast({ variant: "destructive", description: result.errorMessage });
+          const errorMessage = result.errorMessage;
+          toast({ 
+            variant: "destructive", 
+            description: errorMessage?.startsWith("errors.") ? tErrors(errorMessage as any) : errorMessage 
+          });
         }
       } catch (error) {
-        toast({ variant: "destructive", description: "Une erreur est survenue." });
+        toast({ 
+          variant: "destructive", 
+          description: t("pages.login.unexpectedError") 
+        });
       }
     });
   };

@@ -8,7 +8,7 @@ import SearchFilters from "@/components/filters/SearchFilters";
 import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getServices } from "@/actions/services";
+import { getServiceCategories } from "@/actions/services";
 import { BackButton } from "@/components/ui/BackButton";
 
 interface SearchPageProps {
@@ -101,9 +101,9 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
-  // Fetch categories from database instead of hardcoded ones
-  const categoriesResult = await getServices();
-  const categories = categoriesResult.success ? categoriesResult.services || [] : [];
+  // Fetch categories from database
+  const categoriesResult = await getServiceCategories();
+  const categories = categoriesResult.success ? categoriesResult.categories || [] : [];
 
   // Get current user if logged in to exclude their own jobs
   const {
@@ -166,7 +166,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   }
 
   if (resolvedSearchParams.category) {
-    query = query.eq("service_id", parseInt(resolvedSearchParams.category));
+    // Joining with services to filter by category_id
+    query = query.eq("service.category_id", parseInt(resolvedSearchParams.category));
   }
 
   if (resolvedSearchParams.minPrice) {
@@ -529,14 +530,14 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                         d="M15 19l-7-7 7-7"
                       />
                     </svg>
-                    <span className="hidden sm:inline">Previous</span>
-                    <span className="sm:hidden">Prev</span>
+                    <span className="hidden sm:inline">{t("previous")}</span>
+                    <span className="sm:hidden">{t("prev")}</span>
                   </Link>
                 )}
 
                 <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl shadow-sm">
                   <span className="text-[var(--color-text-primary)] font-medium text-sm sm:text-base">
-                    Page {page} of {Math.ceil((count || 0) / limit)}
+                    {t("pageOf", { page, total: Math.ceil((count || 0) / limit) })}
                   </span>
                 </div>
 
@@ -548,8 +549,8 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
                     }).toString()}`}
                     className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg sm:rounded-xl hover:bg-[var(--color-secondary)] hover:text-white hover:border-[var(--color-secondary)] transition-all duration-200 font-medium shadow-sm hover:shadow-md text-sm sm:text-base"
                   >
-                    <span className="hidden sm:inline">Next</span>
-                    <span className="sm:hidden">Next</span>
+                    <span className="hidden sm:inline">{t("next")}</span>
+                    <span className="sm:hidden">{t("next")}</span>
                     <svg
                       className="w-4 h-4 ml-1 sm:ml-2"
                       fill="none"

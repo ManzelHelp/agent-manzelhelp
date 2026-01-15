@@ -36,6 +36,16 @@
     "client": "Client",
     "reviewCountPlural": "{count} reviews",
     "charactersCount": "{count}/1000 characters",
+    "leaveReview": "Leave a Review",
+    "overallRating": "Your overall rating *",
+    "detailedRatings": "Detailed ratings (Optional)",
+    "qualityOfWork": "Quality of work",
+    "commentOptional": "Comment (Optional)",
+    "tellYourExperience": "Tell us about your experience...",
+    "publishReview": "Publish Review",
+    "reviewPublished": "Your review has been published.",
+    "characterCount2000": "{count}/2000 characters",
+    "thankYou": "Thank you!",
     "success": {
       "replySubmitted": "Reply submitted successfully!"
     }

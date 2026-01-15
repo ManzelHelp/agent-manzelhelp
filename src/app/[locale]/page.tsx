@@ -24,6 +24,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { getParentCategoriesForSearch } from "@/lib/categories";
+import { getServiceCategories } from "@/actions/services";
 import Footer from "@/components/Footer";
 
 export async function generateMetadata({
@@ -75,6 +76,10 @@ export default async function HomePage({
     // Fallback to a function that returns empty string
     t = () => "";
   }
+
+  // Fetch real categories from database for the Morocco market
+  const categoriesResult = await getServiceCategories();
+  const dbCategories = (categoriesResult.success ? categoriesResult.categories || [] : []).slice(0, 8);
 
   const supabase = await createClient();
 
@@ -314,7 +319,13 @@ export default async function HomePage({
 
       {/* Popular Services Section */}
       <PopularServices
-        categories={getParentCategoriesForSearch()}
+        categories={dbCategories.map(cat => ({
+          id: cat.id,
+          name_en: cat.name_en,
+          name_fr: cat.name_fr,
+          name_ar: cat.name_ar,
+          name_de: cat.name_en, // Fallback for DE since it's not in db yet
+        }))}
         locale={locale}
       />
 

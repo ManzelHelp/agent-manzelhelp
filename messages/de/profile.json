@@ -377,6 +377,9 @@
     "default": "Standard",
     "home": "Zuhause",
     "work": "Arbeit",
-    "other": "Andere"
+    "other": "Andere",
+    "userNotFound": "Benutzer nicht gefunden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+    "comingSoon": "Demnächst",
+    "comingSoonDescription": "Zahlungsmethoden werden in Kürze verfügbar sein"
   }
 }

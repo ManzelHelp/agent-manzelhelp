@@ -24,7 +24,9 @@
       "goBack": "Zurück",
       "tryAgain": "Erneut versuchen",
       "refresh": "Aktualisieren",
-      "refreshing": "Wird aktualisiert..."
+      "refreshing": "Wird aktualisiert...",
+      "loadOlder": "Ältere Nachrichten laden",
+      "loading": "Wird geladen..."
     },
     "input": {
       "placeholder": "Schreibe eine Nachricht...",

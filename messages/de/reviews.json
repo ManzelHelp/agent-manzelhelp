@@ -38,6 +38,16 @@
     "charactersCount": "{count}/1000 Zeichen",
     "success": {
       "replySubmitted": "Antwort erfolgreich gesendet!"
-    }
+    },
+    "leaveReview": "Bewertung hinterlassen",
+    "overallRating": "Ihre Gesamtbewertung *",
+    "detailedRatings": "Detaillierte Bewertungen (Optional)",
+    "qualityOfWork": "Qualität der Arbeit",
+    "commentOptional": "Kommentar (Optional)",
+    "tellYourExperience": "Erzählen Sie uns von Ihrer Erfahrung...",
+    "publishReview": "Bewertung veröffentlichen",
+    "reviewPublished": "Ihre Bewertung wurde veröffentlicht.",
+    "characterCount2000": "{count}/2000 Zeichen",
+    "thankYou": "Vielen Dank!"
   }
 }

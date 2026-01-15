@@ -72,6 +72,15 @@
       "failedToAccept": "Buchung konnte nicht angenommen werden",
       "failedToConfirm": "Buchung konnte nicht bestätigt werden",
       "failedToComplete": "Buchung konnte nicht abgeschlossen werden"
+    },
+    "supabase": {
+      "invalid_credentials": "Kein Konto mit dieser E-Mail gefunden oder falsches Passwort",
+      "email_already_used": "Diese E-Mail-Adresse wird bereits verwendet",
+      "password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",
+      "unexpected": "Ein unerwarteter Datenbankfehler ist aufgetreten",
+      "session_expired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+      "rate_limit": "Zu viele Anfragen. Bitte versuchen Sie es später erneut.",
+      "user_not_found": "Benutzer nicht gefunden"
     }
   }
 }

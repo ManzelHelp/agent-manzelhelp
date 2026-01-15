@@ -12,6 +12,22 @@ import {
   Heart,
   Shield,
   CheckCircle,
+  Wand2,
+  Hammer,
+  Wrench,
+  Leaf,
+  PawPrint,
+  BookOpen,
+  Truck,
+  Car,
+  PartyPopper,
+  Sprout,
+  Droplets,
+  Brush,
+  SprayCan,
+  Flower2,
+  Scissors,
+  Package,
 } from "lucide-react";
 import { getCategoryName } from "@/lib/categories";
 import { Category } from "@/lib/categories";
@@ -25,31 +41,31 @@ interface PopularServicesProps {
   locale: string;
 }
 
-// Icon mapping for different service categories
+// Icon mapping corrigé selon votre capture d'écran (IDs 1 à 8 au Maroc)
 const categoryIcons: Record<
   number,
   React.ComponentType<{ className?: string }>
 > = {
-  1: Users, // House Cleaning
-  2: Zap, // Handyman Services
-  3: Heart, // Gardening
-  4: Heart, // Pet Care
-  5: Star, // Tutoring
-  6: Users, // Moving & Packing
-  7: Zap, // Car Services
-  8: Sparkles, // Event Planning
+  1: Sparkles,     // Nettoyage (Effet propre/brillant)
+  2: Hammer,       // Bricolage (Outils de construction)
+  3: Droplets,     // Plomberie (Eau/Tuyauterie)
+  4: Zap,          // Électricité (Énergie/Courant)
+  5: Leaf,         // Jardinage (Nature/Plantes)
+  6: Truck,        // Déménagement
+  7: Package,      // Livraison / Colis
+  8: Flower2,      // Beauté & Bien-être
 };
 
-// Color mapping for different service categories
+// Color mapping pour une harmonie visuelle
 const categoryColors: Record<number, string> = {
-  1: "from-[var(--color-primary)] to-[var(--color-primary-light)]", // House Cleaning
-  2: "from-[var(--color-secondary)] to-[var(--color-secondary-light)]", // Handyman Services
-  3: "from-[var(--color-accent)] to-[var(--color-accent-light)]", // Gardening
-  4: "from-[var(--color-primary)] to-[var(--color-primary-light)]", // Pet Care
-  5: "from-[var(--color-secondary)] to-[var(--color-secondary-light)]", // Tutoring
-  6: "from-[var(--color-accent)] to-[var(--color-accent-light)]", // Moving & Packing
-  7: "from-[var(--color-primary)] to-[var(--color-primary-light)]", // Car Services
-  8: "from-[var(--color-secondary)] to-[var(--color-secondary-light)]", // Event Planning
+  1: "from-blue-400 to-cyan-300",     // Nettoyage (Frais)
+  2: "from-orange-600 to-amber-500",  // Bricolage (Robuste)
+  3: "from-blue-600 to-blue-400",     // Plomberie (Eau)
+  4: "from-yellow-400 to-orange-400", // Électricité (Énergie)
+  5: "from-green-500 to-emerald-400", // Jardinage (Nature)
+  6: "from-slate-500 to-gray-400",    // Déménagement
+  7: "from-indigo-500 to-blue-500",   // Livraison
+  8: "from-pink-500 to-rose-400",     // Beauté (Soin)
 };
 
 function PopularServices({ categories, locale }: PopularServicesProps) {

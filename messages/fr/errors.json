@@ -72,6 +72,15 @@
       "failedToAccept": "Échec de l'acceptation de la réservation",
       "failedToConfirm": "Échec de la confirmation de la réservation",
       "failedToComplete": "Échec de la finalisation de la réservation"
+    },
+    "supabase": {
+      "invalid_credentials": "Aucun compte trouvé avec cet e-mail ou mot de passe incorrect",
+      "email_already_used": "Cet e-mail est déjà utilisé",
+      "password_too_short": "Le mot de passe doit contenir au moins 6 caractères",
+      "unexpected": "Une erreur inattendue de base de données s'est produite",
+      "session_expired": "Votre session a expiré. Veuillez vous reconnecter.",
+      "rate_limit": "Trop de tentatives. Veuillez réessayer plus tard.",
+      "user_not_found": "Utilisateur introuvable"
     }
   }
 }

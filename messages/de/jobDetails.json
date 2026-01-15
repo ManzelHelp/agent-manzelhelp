@@ -36,7 +36,9 @@
       "in_progress": "In Bearbeitung",
       "completed": "Abgeschlossen",
       "cancelled": "Storniert",
-      "unknown": "Unbekannt"
+      "unknown": "Unbekannt",
+      "underReview": "In Prüfung",
+      "inProgress": "In Bearbeitung"
     }
   }
 }

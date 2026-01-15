@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "i18n:check": "node scripts/check-i18n.js",
+    "i18n:fix": "node scripts/fix-i18n.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
