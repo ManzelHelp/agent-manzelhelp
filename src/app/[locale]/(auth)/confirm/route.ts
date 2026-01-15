@@ -74,6 +74,12 @@ export async function GET(request: NextRequest) {
       try {
         // Check if user already exists
         const serviceClient = createServiceRoleClient();
+        if (!serviceClient) {
+          console.error("[Confirm Route] ❌ Service role client not available");
+          redirectTo.pathname = `/${locale}/error`;
+          redirectTo.searchParams.set("error", "service_unavailable");
+          return Response.redirect(redirectTo.toString());
+        }
         const { data: existingUser } = await serviceClient
           .from("users")
           .select("id")

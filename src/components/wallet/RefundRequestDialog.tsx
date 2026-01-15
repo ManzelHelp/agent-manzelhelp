@@ -83,7 +83,7 @@ export function RefundRequestDialog({
     if (value && !isNaN(numValue)) {
       const validation = refundRequestSchema.safeParse({ amount: numValue });
       if (!validation.success) {
-        setAmountError(validation.error.errors[0]?.message || null);
+        setAmountError(validation.error.issues[0]?.message || null);
       } else if (walletBalance !== null && numValue > walletBalance) {
         setAmountError(t("errors.insufficientBalance"));
       } else {
@@ -100,7 +100,7 @@ export function RefundRequestDialog({
     // Validate with Zod
     const validation = refundRequestSchema.safeParse({ amount });
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0]?.message || t("errors.invalidAmount");
+      const errorMessage = validation.error.issues[0]?.message || t("errors.invalidAmount");
       setAmountError(errorMessage);
       toast({
         variant: "destructive",

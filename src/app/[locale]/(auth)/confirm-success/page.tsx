@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
 import { getUserProfileAction } from "@/actions/auth";
@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
-export default function ConfirmSuccessPage() {
+function ConfirmSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setUser = useUserStore((state) => state.setUser);
@@ -158,5 +158,24 @@ export default function ConfirmSuccessPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ConfirmSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="flex flex-col items-center space-y-4 p-8">
+              <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+              <p className="text-gray-600">Loading...</p>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <ConfirmSuccessContent />
+    </Suspense>
   );
 }

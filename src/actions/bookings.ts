@@ -74,6 +74,9 @@ export interface BookingWithDetails {
   } | null;
 }
 
+// Alias for tasker-specific booking details (same structure)
+export type TaskerBookingWithDetails = BookingWithDetails;
+
 export interface CreateBookingData {
   tasker_id: string; // AJOUTÉ POUR FIXER L'ERREUR TYPESCRIPT
   tasker_service_id: string;
@@ -261,7 +264,7 @@ export async function getBookingById(bookingId: string): Promise<BookingWithDeta
   } as BookingWithDetails;
 }
 
-export async function getCustomerBookings(limit: number = 10, offset: number = 0, p0: boolean) {
+export async function getCustomerBookings(limit: number = 10, offset: number = 0, includeTotal: boolean = false) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
@@ -270,8 +273,8 @@ export async function getCustomerBookings(limit: number = 10, offset: number = 0
 }
 
 // FONCTIONS POUR ÉVITER LES BUILD ERRORS
-export async function getTaskerAsCustomerBookings(limit: number = 10, offset: number = 0) {
-  return getCustomerBookings(limit, offset);
+export async function getTaskerAsCustomerBookings(limit: number = 10, offset: number = 0, includeTotal: boolean = false) {
+  return getCustomerBookings(limit, offset, includeTotal);
 }
 
 export async function getTaskerJobApplications(limit: number = 10, offset: number = 0, includeTotal: boolean = false) {

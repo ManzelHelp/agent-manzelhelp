@@ -11,6 +11,7 @@ export const serviceStep1Schema = z.object({
     if (typeof val === "number") return val !== 0;
     return false;
   }, "Veuillez sélectionner une adresse"),
+  serviceArea: z.string().optional(),
 });
 
 // Validation pour l'Étape 2

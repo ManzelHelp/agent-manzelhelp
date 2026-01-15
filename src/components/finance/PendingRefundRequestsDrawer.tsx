@@ -108,7 +108,7 @@ export function PendingRefundRequestsDrawer({
   };
 
   const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
+    const statusMap: Record<string, { variant: "default" | "secondary" | "outline"; label: string }> = {
       pending: { variant: "secondary", label: t("status.pending", { default: "Pending" }) },
       payment_confirmed: { variant: "default", label: t("status.payment_confirmed", { default: "Payment Confirmed" }) },
       admin_verifying: { variant: "default", label: t("status.admin_verifying", { default: "Under Review" }) },

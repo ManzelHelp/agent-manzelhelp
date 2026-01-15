@@ -260,7 +260,7 @@ export async function getTaskerServices(
         hourly_rate: service.pricing_type === "hourly" ? Number(service.price || 0) : null,
         price: Number(service.price || 0),
         pricing_type: service.pricing_type || "fixed",
-        minimum_duration: service.minimum_duration ? Number(service.minimum_duration) : null,
+        minimum_duration: service.minimum_duration ? Number(service.minimum_duration) : undefined,
         service_area: service.service_area ? (typeof service.service_area === 'object' ? service.service_area : (() => {
           try {
             return JSON.parse(String(service.service_area));
@@ -270,7 +270,7 @@ export async function getTaskerServices(
             return { text: String(service.service_area) };
           }
         })()) : null,
-        extra_fees: service.extra_fees ? Number(service.extra_fees) : null,
+        extra_fees: service.extra_fees ? Number(service.extra_fees) : undefined,
         portfolio_images: service.portfolio_images ? (Array.isArray(service.portfolio_images) ? service.portfolio_images : (() => {
           try {
             return JSON.parse(String(service.portfolio_images));

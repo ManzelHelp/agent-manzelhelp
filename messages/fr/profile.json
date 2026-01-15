@@ -80,6 +80,18 @@
     "missing": "{count} manquant(s)",
     "edit": "Modifier",
     "available": "Vérifié",
-    "role": "Rôle"
+    "role": "Rôle",
+    "errors": {
+      "notLoggedIn": "Non connecté",
+      "loginRequired": "Veuillez vous connecter pour voir votre profil",
+      "updateProfile": "Échec de la mise à jour du profil",
+      "fetchAddresses": "Échec du chargement des adresses",
+      "addAddress": "Échec de l'ajout de l'adresse",
+      "deleteAddress": "Échec de la suppression de l'adresse",
+      "loadProfileData": "Échec du chargement des données du profil",
+      "loadFailed": "Échec du chargement des données du profil",
+      "userNotFound": "Utilisateur introuvable. Veuillez actualiser la page et réessayer.",
+      "failedToAdd": "Échec de l'ajout de l'adresse"
+    }
   }
 }

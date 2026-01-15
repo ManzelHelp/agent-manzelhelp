@@ -2,10 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { createClient } from "@/supabase/client";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface ChannelSubscription {
   channelName: string;
-  channel: ReturnType<typeof createClient>["channel"];
+  channel: RealtimeChannel;
   subscribers: Set<string>;
 }
 
@@ -50,7 +51,9 @@ class RealtimeManager {
       // Set up postgres_changes listeners
       const events = config.events || ["INSERT", "UPDATE", "DELETE"];
       events.forEach((event) => {
-        channel.on(
+        // Use type assertion to handle dynamic event subscription
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (channel as any).on(
           "postgres_changes",
           {
             event,
@@ -58,9 +61,9 @@ class RealtimeManager {
             table: config.table,
             filter: config.filter,
           },
-          (payload) => {
+          (payload: unknown) => {
             // Notify all subscribers
-            channelSub?.subscribers.forEach((subId) => {
+            channelSub?.subscribers.forEach(() => {
               // Each subscriber will handle the callback
               config.callback(payload);
             });

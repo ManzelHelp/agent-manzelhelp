@@ -146,6 +146,7 @@ function JobCard({
 export default function JobsListClient({ customerId }: { customerId: string }) {
   const t = useTranslations("myJobs");
   const { user } = useUserStore();
+  const { toast } = useToast();
   const [jobs, setJobs] = useState<JobWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

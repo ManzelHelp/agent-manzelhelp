@@ -4,6 +4,9 @@ import { handleError } from "@/lib/utils";
 import { createClient, createServiceRoleClient } from "@/supabase/server";
 import type { ContactMessage, ContactMessageStatus } from "@/types/supabase";
 
+// Re-export types for convenience
+export type { ContactMessage, ContactMessageStatus };
+
 export interface SubmitContactMessageData {
   first_name: string;
   last_name: string;

@@ -35,6 +35,7 @@ import {
   Crown,
   Shield,
   Eye,
+  ArrowLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -434,9 +435,10 @@ export default function ApplicationsPage() {
     try {
       // Get tasker services to redirect to first service if available
       // This is a temporary solution until we have a public tasker profile page
-      const services = await getTaskerServices(taskerId);
+      const result = await getTaskerServices(taskerId);
+      const services = result?.services || [];
       
-      if (services && services.length > 0) {
+      if (services.length > 0) {
         // Redirect to the first service (most recent)
         router.push(`/service-offer/${services[0].id}`);
       } else {
@@ -555,8 +557,6 @@ export default function ApplicationsPage() {
               variant="outline"
               className="mb-4 border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)]"
             />
-              Back
-            </Button>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">
               {t("applications.title")}
             </h1>
@@ -579,8 +579,6 @@ export default function ApplicationsPage() {
               variant="outline"
               className="mb-4 border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-light)]"
             />
-              Back
-            </Button>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">
               {t("applications.title")}
             </h1>

@@ -180,7 +180,7 @@ export function JobApplicationCard({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                {formatDate(application.preferred_date)}
+                {formatDate(application.preferred_date ?? null)}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
                 {t("labels.preferredDate")}

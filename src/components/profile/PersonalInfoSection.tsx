@@ -126,7 +126,7 @@ export default function PersonalInfoSection({
     first_name: string;
     last_name: string;
     phone: string;
-    date_of_birth: string;
+    date_of_birth?: string;
   }) => {
     if (!user?.id) return;
 

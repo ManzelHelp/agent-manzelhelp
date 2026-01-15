@@ -81,6 +81,12 @@ const getNotificationIcon = (type: NotificationType) => {
     service_updated: <Settings className="h-4 w-4" />,
     payment_confirmed: <CreditCard className="h-4 w-4" />,
     payment_pending: <AlertTriangle className="h-4 w-4" />,
+    wallet_refund_request_created: <CreditCard className="h-4 w-4" />,
+    wallet_refund_payment_confirmed: <CheckCircle className="h-4 w-4" />,
+    wallet_refund_verifying: <Clock className="h-4 w-4" />,
+    wallet_refund_approved: <CheckCircle2 className="h-4 w-4" />,
+    wallet_refund_rejected: <XCircle className="h-4 w-4" />,
+    wallet_low_balance: <AlertTriangle className="h-4 w-4" />,
   };
   return iconMap[type] || <BellDot className="h-4 w-4" />;
 };

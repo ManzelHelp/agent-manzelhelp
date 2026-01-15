@@ -15,6 +15,48 @@ const storeState = (set: (partial: Partial<UserState> | ((state: UserState) => P
   clearUser: () => set({ user: null }),
 });
 
+// No-op storage for SSR - prevents any localStorage access during server-side rendering
+const noopStorage = {
+  getItem: (): string | null => null,
+  setItem: (): void => {},
+  removeItem: (): void => {},
+};
+
+// Safe storage factory that returns appropriate storage based on environment
+// This function is only called when Zustand actually needs to access storage
+const getStorage = () => {
+  // Always check for window before accessing localStorage
+  if (typeof window === "undefined" || typeof window.localStorage === "undefined") {
+    return noopStorage;
+  }
+  
+  // On client side, return a safe wrapper around localStorage
+  // This wrapper ensures we never directly expose localStorage to Zustand
+  return {
+    getItem: (name: string): string | null => {
+      try {
+        return window.localStorage.getItem(name);
+      } catch {
+        return null;
+      }
+    },
+    setItem: (name: string, value: string): void => {
+      try {
+        window.localStorage.setItem(name, value);
+      } catch {
+        // Ignore errors (e.g., quota exceeded)
+      }
+    },
+    removeItem: (name: string): void => {
+      try {
+        window.localStorage.removeItem(name);
+      } catch {
+        // Ignore errors
+      }
+    },
+  };
+};
+
 // Create store conditionally - this is the key fix for Next.js 15 + React 19
 export const useUserStore = (() => {
   if (typeof window === "undefined") {
@@ -23,7 +65,8 @@ export const useUserStore = (() => {
   }
   
   // Client: use persist middleware
-  // Use require() inside the conditional to prevent SSR evaluation
+  // Dynamically import to prevent SSR evaluation
+  // This ensures the middleware is only loaded on the client
   const { persist, createJSONStorage } = require("zustand/middleware");
   
   // Create store with persist middleware for client-side only
@@ -32,7 +75,7 @@ export const useUserStore = (() => {
   const store = create<UserState>()(
     persist(storeState, {
       name: "user-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(getStorage),
       partialize: (state: UserState) => ({ user: state.user }),
       skipHydration: true, // Prevents hydration mismatch between server and client
       onRehydrateStorage: () => (state: UserState | undefined) => {

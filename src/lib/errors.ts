@@ -68,10 +68,7 @@ export type BookingError =
 
 export type GeneralError = "notAuthenticated" | "unexpected" | "failedToFetchUser";
 
-interface ErrorParams {
-  status?: string;
-  [key: string]: string | number | undefined;
-}
+type ErrorParams = Record<string, string | number>;
 
 /**
  * Gets a translated error message

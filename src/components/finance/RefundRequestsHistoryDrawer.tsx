@@ -163,12 +163,12 @@ export function RefundRequestsHistoryDrawer({
   };
 
   const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
+    const statusMap: Record<string, { variant: "default" | "secondary" | "outline"; label: string }> = {
       pending: { variant: "secondary", label: t("status.pending", { default: "Pending" }) },
       payment_confirmed: { variant: "default", label: t("status.payment_confirmed", { default: "Payment Confirmed" }) },
       admin_verifying: { variant: "default", label: t("status.admin_verifying", { default: "Under Review" }) },
       approved: { variant: "default", label: t("status.approved", { default: "Approved" }) },
-      rejected: { variant: "destructive", label: t("status.rejected", { default: "Rejected" }) },
+      rejected: { variant: "outline", label: t("status.rejected", { default: "Rejected" }) },
     };
 
     const statusInfo = statusMap[status] || { variant: "outline" as const, label: status };

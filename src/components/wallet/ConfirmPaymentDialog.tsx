@@ -64,7 +64,7 @@ export function ConfirmPaymentDialog({
     // Validate with Zod
     const validation = receiptFileSchema.safeParse(file);
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0]?.message || "Fichier invalide";
+      const errorMessage = validation.error.issues[0]?.message || "Fichier invalide";
       setFileError(errorMessage);
       toast({
         variant: "destructive",
@@ -116,7 +116,7 @@ export function ConfirmPaymentDialog({
     // Validate file again before submission
     const validation = receiptFileSchema.safeParse(receiptFile);
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0]?.message || "Fichier invalide";
+      const errorMessage = validation.error.issues[0]?.message || "Fichier invalide";
       setFileError(errorMessage);
       toast({
         variant: "destructive",

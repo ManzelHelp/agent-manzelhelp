@@ -318,3 +318,33 @@ export const resetPasswordAction = async (email: string) => {
     return handleError(error);
   }
 };
+
+/**
+ * Create related records for a new user (user_stats)
+ * This is called after user creation to initialize statistics
+ */
+export const createUserRecordsAction = async (userId: string) => {
+  try {
+    const supabase = await createClient();
+    
+    // Create user_stats record with default values
+    // All fields have defaults in the database schema
+    const { error } = await supabase
+      .from("user_stats")
+      .upsert(
+        { id: userId },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    
+    if (error) {
+      console.error("Failed to create user_stats record:", error);
+      // Don't throw - this is a non-critical operation
+      return { success: false, errorMessage: error.message };
+    }
+    
+    return { success: true, errorMessage: null };
+  } catch (error) {
+    console.error("Error in createUserRecordsAction:", error);
+    return { success: false, ...handleError(error) };
+  }
+};

@@ -6,6 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { serviceStep1Schema, serviceStep2Schema } from "@/lib/schemas/services";
+import { z } from "zod";
+
+// Infer types from Zod schemas (recommended approach)
+type BasicInfoData = z.infer<typeof serviceStep1Schema>;
+type PricingDataSchema = z.infer<typeof serviceStep2Schema>;
 import { cn } from "@/lib/utils";
 import { hasTaskerCompletedProfileAction } from "@/actions/auth";
 import Image from "next/image";
@@ -67,24 +72,12 @@ import type {
 } from "@/types/supabase";
 import { convertOperationHoursToSlots } from "@/lib/availability-utils";
 
-// Form data interfaces
-interface BasicInfoData {
-  title: string;
-  description: string;
-  categoryId: number;
-  serviceId: number;
-  selectedAddressId: string;
-  serviceArea?: string;
-}
-
-interface PricingData {
-  pricingType: PricingType;
+// PricingData uses schema-inferred type
+type PricingData = PricingDataSchema & {
   basePrice: number;
   hourlyRate: number;
-  minimumBookingHours?: number;
   extras: { name: string; price: number }[];
-  estimatedDuration?: number;
-}
+};
 
 interface OfferFormData {
   basicInfo: BasicInfoData;
@@ -161,15 +154,17 @@ export default function CreateOfferPage() {
   const [avatarError, setAvatarError] = useState(false);
 
   // React Hook Form for Step 1
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const step1Form = useForm<BasicInfoData>({
-    resolver: zodResolver(serviceStep1Schema),
+    resolver: zodResolver(serviceStep1Schema) as any,
     defaultValues: INITIAL_BASIC_INFO,
     mode: "onChange",
   });
 
   // React Hook Form for Step 2
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const step2Form = useForm<PricingData>({
-    resolver: zodResolver(serviceStep2Schema),
+    resolver: zodResolver(serviceStep2Schema) as any,
     defaultValues: INITIAL_PRICING_DATA,
     mode: "onChange",
   });

@@ -2039,8 +2039,8 @@ export async function confirmJobCompletion(
         console.error("❌ CRITICAL: Error updating tasker wallet balance:", {
           error: walletUpdateError,
           errorMessage: walletUpdateError.message,
-          errorCode: walletUpdateError.code,
-          errorDetails: walletUpdateError.details,
+          errorCode: (walletUpdateError as any).code,
+          errorDetails: (walletUpdateError as any).details,
           taskerId,
           currentBalance: taskerWalletBalance,
           platformFee,
@@ -2065,6 +2065,13 @@ export async function confirmJobCompletion(
         );
         try {
           const verifySupabase = createServiceRoleClient();
+          if (!verifySupabase) {
+            console.error("❌ CRITICAL: Could not create service role client for verification");
+            return {
+              success: false,
+              error: "Service role client not available for verification",
+            };
+          }
           const { data: verifyData, error: verifyError } = await verifySupabase
             .from("users")
             .select("wallet_balance")
@@ -2648,6 +2655,7 @@ export interface JobWithCustomerDetails {
   assigned_tasker_id: string | null;
   started_at: string | null;
   completed_at: string | null;
+  customer_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
   images: string[] | null;

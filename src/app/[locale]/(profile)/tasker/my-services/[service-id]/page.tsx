@@ -72,7 +72,7 @@ export default function TaskerServiceDetailPage() {
     pricing_type: "fixed" as "fixed" | "hourly" | "per_item",
       minimum_duration: undefined as number | undefined,
     service_area: "",
-    service_status: "active" as ServiceStatus,
+    service_status: "active" as "active" | "paused",
     },
   });
 
@@ -103,6 +103,10 @@ export default function TaskerServiceDetailPage() {
         setData(serviceData);
 
         // Initialize edit form with react-hook-form
+        // Only allow "active" or "paused" status in the form
+        const formStatus = (serviceData.service_status === "active" || serviceData.service_status === "paused") 
+          ? serviceData.service_status 
+          : "active";
         editForm.reset({
           title: serviceData.title || "",
           description: serviceData.description || "",
@@ -115,7 +119,7 @@ export default function TaskerServiceDetailPage() {
               : serviceData.service_area
               ? JSON.stringify(serviceData.service_area)
               : "",
-          service_status: serviceData.service_status || "active",
+          service_status: formStatus,
         });
       } catch (err) {
         console.error("Error fetching service data:", err);
@@ -166,7 +170,10 @@ export default function TaskerServiceDetailPage() {
       const refreshResult = await getServiceDetails(data.tasker_service_id);
       if (refreshResult.success && refreshResult.data) {
         setData(refreshResult.data);
-        // Reset form with new data
+        // Reset form with new data - only allow "active" or "paused" status
+        const newFormStatus = (refreshResult.data.service_status === "active" || refreshResult.data.service_status === "paused") 
+          ? refreshResult.data.service_status 
+          : "active";
         editForm.reset({
           title: refreshResult.data.title || "",
           description: refreshResult.data.description || "",
@@ -179,7 +186,7 @@ export default function TaskerServiceDetailPage() {
               : refreshResult.data.service_area
               ? JSON.stringify(refreshResult.data.service_area)
               : "",
-          service_status: refreshResult.data.service_status || "active",
+          service_status: newFormStatus,
         });
       }
 
@@ -202,6 +209,10 @@ export default function TaskerServiceDetailPage() {
 
   const handleCancel = () => {
     if (data) {
+      // Ensure service_status is only "active" | "paused" for form
+      const cancelFormStatus = (data.service_status === "active" || data.service_status === "paused") 
+        ? data.service_status 
+        : "active";
       editForm.reset({
         title: data.title || "",
         description: data.description || "",
@@ -214,7 +225,7 @@ export default function TaskerServiceDetailPage() {
             : data.service_area
             ? JSON.stringify(data.service_area)
             : "",
-        service_status: data.service_status || "active",
+        service_status: cancelFormStatus,
       });
     }
     editForm.clearErrors();

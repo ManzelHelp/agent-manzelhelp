@@ -101,7 +101,7 @@ export default function DashboardPage() {
         // Check profile completion (non-blocking)
         if (!profileCheck.hasCompleted) {
           toast({
-            variant: "info",
+            variant: "default",
             title: t("completeProfileSetup"),
           });
           router.replace("/finish-signUp");

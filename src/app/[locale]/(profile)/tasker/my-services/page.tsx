@@ -28,6 +28,7 @@ import { formatDateShort } from "@/lib/date-utils";
 import ServiceDeleteButton from "@/components/services/ServiceDeleteButton";
 import { User } from "@/types/supabase";
 import { BackButton } from "@/components/ui/BackButton";
+import { Button } from "@/components/ui/button";
 import { useTranslations, useLocale } from "next-intl";
 
 // Enhanced loading component with modern design
@@ -238,7 +239,7 @@ function ServiceCard({
                 service.verification_status
               )}`}
               title={
-                service.verification_status === "pending"
+                service.verification_status === "under_review"
                   ? t("verificationStatus.pending", { default: "Pending verification by admin" })
                   : service.verification_status === "verified"
                   ? t("verificationStatus.verified", { default: "Service verified and approved by admin" })
@@ -284,6 +285,7 @@ function ServiceCard({
 // Services list component with enhanced design
 function ServicesList({ taskerId }: { taskerId: string }) {
   const t = useTranslations("services");
+  const { toast } = useToast();
   const [services, setServices] = useState<ServiceWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -551,7 +553,7 @@ export default function MyServicesPage() {
         // Check profile completion (non-blocking)
         if (!profileCheck.hasCompleted) {
           toast({
-            variant: "info",
+            variant: "default",
             title: t("pleaseCompleteProfile"),
           });
           router.replace("/finish-signUp");

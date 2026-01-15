@@ -85,6 +85,18 @@
     "editPersonalInformation": "تعديل المعلومات الشخصية",
     "updatePersonalInformation": "قم بتحديث معلوماتك وصورة ملفك الشخصي",
     "available": "موثق",
-    "role": "الدور"
+    "role": "الدور",
+    "errors": {
+      "notLoggedIn": "غير مسجل الدخول",
+      "loginRequired": "يرجى تسجيل الدخول لعرض ملفك الشخصي",
+      "updateProfile": "فشل تحديث الملف الشخصي",
+      "fetchAddresses": "فشل تحميل العناوين",
+      "addAddress": "فشل إضافة العنوان",
+      "deleteAddress": "فشل حذف العنوان",
+      "loadProfileData": "فشل تحميل بيانات الملف الشخصي",
+      "loadFailed": "فشل تحميل بيانات الملف الشخصي",
+      "userNotFound": "لم يتم العثور على المستخدم. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+      "failedToAdd": "فشل إضافة العنوان"
+    }
   }
 }

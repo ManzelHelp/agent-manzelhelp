@@ -164,8 +164,15 @@ export async function getNotificationTranslations(
       messageKey = "notifications.messages.general";
   }
 
-  // Prepare parameters for interpolation
-  const messageParams: Record<string, string | number> = { ...(params || {}) };
+  // Prepare parameters for interpolation - filter out undefined values
+  const messageParams: Record<string, string | number> = {};
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        messageParams[key] = value;
+      }
+    });
+  }
 
   // Format context for message_received
   if (type === "message_received") {
@@ -188,8 +195,18 @@ export async function getNotificationTranslations(
   // Format context for review_received - already handled in messageKey selection above
   // No need to add context param here as it's part of the message template
 
+  // Filter out undefined values from params for title translation
+  const titleParams: Record<string, string | number> = {};
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        titleParams[key] = value;
+      }
+    });
+  }
+
   const [title, message] = await Promise.all([
-    getTranslatedString(locale, titleKey, params),
+    getTranslatedString(locale, titleKey, titleParams),
     getTranslatedString(locale, messageKey, messageParams),
   ]);
 
