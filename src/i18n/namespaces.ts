@@ -48,4 +48,5 @@ export const namespaces = [
   "pricing",
   "aboutUs",
   "howDoesItWork",
+  "services",
 ] as const;

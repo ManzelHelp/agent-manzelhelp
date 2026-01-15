@@ -1,93 +1,28 @@
 {
   "services": {
-    "serviceManagementHub": "Centre de Gestion des Services",
-    "buildAndManage": "Créez et gérez votre portefeuille de services professionnels. Créez des offres convaincantes, suivez les performances et développez votre entreprise avec nos outils puissants.",
-    "performanceTracking": "Suivi des Performances",
-    "customerInsights": "Insights Clients",
-    "qualityControl": "Contrôle Qualité",
-    "totalServices": "Total des Services",
-    "active": "Actif",
-    "bookings": "Réservations",
-    "verified": "Vérifié",
-    "yourServicePortfolio": "Votre Portefeuille de Services",
-    "manageAndShowcase": "Gérez et présentez vos services professionnels",
-    "addNewService": "Ajouter un Nouveau Service",
-    "areaNotSpecified": "Zone non spécifiée",
-    "edit": "Modifier",
-    "available": "Disponible",
-    "unverified": "non vérifié",
-    "deleteService": "Supprimer le Service",
-    "serviceDetails": "Détails du Service",
-    "manageServiceOffer": "Gérez votre offre de service",
-    "paused": "En pause",
-    "pending": "En attente",
-    "rejected": "Rejeté",
-    "underReview": "En révision",
-    "multipleAreas": "Plusieurs zones",
-    "promoted": "Promu",
-    "actions": {
-      "edit": "Modifier le service",
-      "delete": "Supprimer le Service",
-      "save": "Enregistrer",
-      "cancel": "Annuler"
+    "hero": {
+      "title": "Nos Services",
+      "description": "Découvrez des services professionnels adaptés à vos besoins. De l'entretien de la maison aux soins personnels, nous avons ce qu'il vous faut.",
+      "searchPlaceholder": "Rechercher des services..."
     },
-    "noDescription": "Aucune description disponible",
-    "hours": "heures",
-    "serviceRadius": "Rayon de service",
-    "lastUpdated": "Dernière mise à jour",
-    "unavailable": "Indisponible",
-    "deleteServiceConfirmation": {
-      "title": "Supprimer le Service",
-      "description": "Êtes-vous sûr de vouloir supprimer ce service ? Cette action ne peut pas être annulée. S'il y a des réservations actives pour ce service, il ne peut pas être supprimé.",
-      "cancel": "Annuler",
-      "confirm": "Supprimer le Service",
-      "deleting": "Suppression...",
-      "success": "Service supprimé avec succès",
-      "failed": "Échec de la suppression du service",
-      "unexpectedError": "Une erreur inattendue s'est produite"
+    "categories": {
+      "title": "Catégories de Services",
+      "servicesCount": "{count} services"
     },
-    "verificationStatus": {
-      "pending": "En attente de vérification par l'admin",
-      "verified": "Service vérifié et approuvé par l'admin",
-      "rejected": "Service rejeté par l'admin",
-      "title": "Statut de vérification"
+    "servicesGrid": {
+      "title": "Services {category}",
+      "description": "Services {category} professionnels fournis par des experts vérifiés dans votre région.",
+      "rating": "4.8",
+      "duration": "2-4 heures",
+      "location": "Local",
+      "viewServices": "Voir les Services"
     },
-    "pricingType": {
-      "title": "Type de tarification",
-      "hourly": "Tarif horaire",
-      "perItem": "Par article",
-      "fixed": "Prix fixe",
-      "hourlyWithCurrency": "Tarif horaire (€)",
-      "basePrice": "Prix de base (€)"
+    "cta": {
+      "title": "Prêt à Commencer ?",
+      "description": "Connectez-vous avec des professionnels vérifiés dans votre région et faites le travail correctement.",
+      "findHelper": "Trouver un Aide",
+      "becomeHelper": "Devenir un Aide"
     },
-    "listedOn": "Listé le",
-    "description": "Description",
-    "serviceArea": "Zone de service",
-    "serviceAreaPlaceholder": "ex: Berlin, Allemagne",
-    "minimumDuration": "Durée minimale (heures)",
-    "minDuration": "Min. {duration}h",
-    "unknownDate": "Date inconnue",
-    "service": "Service",
-    "category": "Catégorie",
-    "serviceAvailableForBooking": "Le service est disponible pour réservation",
-    "errors": {
-      "invalidServiceId": "ID de service invalide",
-      "loadFailed": "Échec du chargement du service",
-      "serviceNotFound": "Données du service non trouvées",
-      "loadServiceFailed": "Échec du chargement du service. Veuillez réessayer plus tard."
-    },
-    "startServiceJourney": "Commencer Votre Parcours de Service",
-    "createFirstServiceDescription": "Créez votre première offre de service et commencez à vous connecter avec des clients qui ont besoin de votre expertise. Construisez votre portefeuille professionnel et développez votre entreprise.",
-    "createFirstService": "Créer Votre Premier Service",
-    "loading": "Chargement...",
-    "loadMore": "Charger plus",
-    "oopsSomethingWentWrong": "Oups! Quelque chose s'est mal passé",
-    "couldntLoadServices": "Nous n'avons pas pu charger vos services pour le moment. Veuillez rafraîchir la page ou contacter le support si le problème persiste.",
-    "tryAgain": "Réessayer",
-    "accessRequired": "Accès Requis",
-    "pleaseSignIn": "Veuillez vous connecter pour accéder à votre tableau de bord de gestion de services et commencer à créer votre portefeuille professionnel.",
-    "signIn": "Se connecter",
-    "failedToLoadData": "Échec du chargement des données",
-    "pleaseCompleteProfile": "Veuillez terminer la configuration de votre profil pour continuer"
+    "loading": "Chargement des services..."
   }
 }
