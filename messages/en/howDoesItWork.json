@@ -1,0 +1,271 @@
+{
+  "howDoesItWork": {
+    "hero": {
+      "title": "How It Works",
+      "subtitle": "Welcome to ManzelHelp",
+      "description": "Connecting people who need help with those who can provide it. Simple, secure, and community-driven.",
+      "getStarted": "Get Started",
+      "goToDashboard": "Go to Dashboard"
+    },
+    "overview": {
+      "title": "How ManzelHelp Works",
+      "subtitle": "Two ways to connect: Post jobs for taskers to apply, or browse and book services directly",
+      "forCustomers": {
+        "title": "For Customers",
+        "description": "Get help with any task by posting jobs or booking services directly from taskers.",
+        "features": [
+          "Post detailed job requests under \"My Jobs\"",
+          "Review multiple tasker applications",
+          "Message taskers offering services directly",
+          "Pay securely when satisfied"
+        ]
+      },
+      "forTaskers": {
+        "title": "For Taskers",
+        "description": "Earn money by applying to customer jobs and offering your own services.",
+        "features": [
+          "Get approved after verification",
+          "Apply to customer job postings",
+          "Offer services under \"My Services\"",
+          "Enjoy customer privileges too"
+        ]
+      }
+    },
+    "customerGuide": {
+      "title": "Customer Guide: How to Get Help",
+      "subtitle": "Follow these steps to find the perfect tasker for your needs",
+      "steps": {
+        "postJob": {
+          "title": "Post Your Job",
+          "description": "Create a detailed job posting under 'My Jobs' with requirements, budget, and timeline",
+          "details": [
+            "Describe what you need help with",
+            "Set your budget range",
+            "Specify location and timing",
+            "Add any special requirements"
+          ]
+        },
+        "reviewApplications": {
+          "title": "Review Applications",
+          "description": "Taskers will apply to your job posting. Review their profiles, ratings, and proposals",
+          "details": [
+            "Compare multiple tasker applications",
+            "Check ratings and reviews",
+            "Read their proposals and pricing",
+            "View their portfolio and experience"
+          ]
+        },
+        "connectDiscuss": {
+          "title": "Connect & Discuss",
+          "description": "Message selected taskers to discuss details, ask questions, and finalize arrangements",
+          "details": [
+            "Chat directly with taskers",
+            "Clarify job requirements",
+            "Negotiate pricing if needed",
+            "Schedule the service"
+          ]
+        },
+        "getItDone": {
+          "title": "Get It Done",
+          "description": "Tasker completes the work, you review and pay securely through the platform",
+          "details": [
+            "Tasker completes the service",
+            "Review the completed work",
+            "Pay securely through ManzelHelp",
+            "Leave a rating and review"
+          ]
+        }
+      }
+    },
+    "taskerGuide": {
+      "title": "Tasker Guide: How to Start Earning",
+      "subtitle": "Follow these steps to become a successful ManzelHelp tasker",
+      "steps": {
+        "signUp": {
+          "title": "Sign Up & Get Approved",
+          "description": "Create your account, complete your profile, and wait for platform approval",
+          "details": [
+            "Create your ManzelHelp account",
+            "Complete your profile with skills and experience",
+            "Upload verification documents",
+            "Wait for approval (usually 24-48 hours)"
+          ]
+        },
+        "setUpServices": {
+          "title": "Set Up Your Services",
+          "description": "Create service listings under 'My Services' and apply to customer job postings",
+          "details": [
+            "List your services with descriptions and pricing",
+            "Set your availability and service areas",
+            "Browse and apply to customer job postings",
+            "Create compelling proposals for jobs"
+          ]
+        },
+        "communicateBook": {
+          "title": "Communicate & Book",
+          "description": "Respond to customer messages, discuss job details, and secure bookings",
+          "details": [
+            "Respond quickly to customer inquiries",
+            "Answer questions about your services",
+            "Negotiate terms and pricing",
+            "Confirm bookings and schedules"
+          ]
+        },
+        "completeGetPaid": {
+          "title": "Complete & Get Paid",
+          "description": "Deliver excellent service, get paid securely, and build your reputation",
+          "details": [
+            "Complete the service to customer satisfaction",
+            "Get paid securely through the platform",
+            "Receive ratings and reviews",
+            "Build your reputation for future jobs"
+          ]
+        }
+      }
+    },
+    "customerBenefits": {
+      "title": "Customer Benefits",
+      "subtitle": "Everything you need to find reliable help for any task",
+      "features": {
+        "postJobs": {
+          "title": "Post Jobs",
+          "description": "Create detailed job postings and let taskers apply to you",
+          "benefits": [
+            "Multiple applications to choose from",
+            "Compare pricing and experience",
+            "Set your own timeline"
+          ]
+        },
+        "directMessaging": {
+          "title": "Direct Messaging",
+          "description": "Message any tasker offering services to discuss and book directly",
+          "benefits": [
+            "Instant communication",
+            "Ask questions before booking",
+            "Build relationships"
+          ]
+        },
+        "securePayments": {
+          "title": "Secure Payments",
+          "description": "Pay safely through our platform with money-back guarantee",
+          "benefits": [
+            "Protected transactions",
+            "Dispute resolution",
+            "Refund protection"
+          ]
+        },
+        "qualityAssurance": {
+          "title": "Quality Assurance",
+          "description": "All taskers are verified with reviews and ratings",
+          "benefits": [
+            "Background checks",
+            "Customer reviews",
+            "Quality ratings"
+          ]
+        }
+      }
+    },
+    "taskerBenefits": {
+      "title": "Tasker Benefits",
+      "subtitle": "Maximize your earning potential with dual opportunities",
+      "features": {
+        "dualOpportunities": {
+          "title": "Dual Opportunities",
+          "description": "Apply to customer jobs AND offer your own services",
+          "benefits": [
+            "Multiple income streams",
+            "Flexible work options",
+            "Customer privileges too"
+          ]
+        },
+        "verificationProcess": {
+          "title": "Verification Process",
+          "description": "Get approved to build trust with customers",
+          "benefits": [
+            "Background verification",
+            "Skill assessment",
+            "Profile verification"
+          ]
+        },
+        "flexibleSchedule": {
+          "title": "Flexible Schedule",
+          "description": "Set your own availability and work when you want",
+          "benefits": [
+            "Choose your hours",
+            "Work part-time or full-time",
+            "Take breaks when needed"
+          ]
+        },
+        "secureEarnings": {
+          "title": "Secure Earnings",
+          "description": "Get paid quickly and securely for completed work",
+          "benefits": [
+            "Fast payments",
+            "Secure transactions",
+            "No payment delays"
+          ]
+        }
+      }
+    },
+    "platformFeatures": {
+      "title": "Why Choose ManzelHelp?",
+      "subtitle": "Built with trust, security, and community in mind",
+      "features": {
+        "secureSafe": {
+          "title": "Secure & Safe",
+          "description": "All transactions are protected with our secure payment system"
+        },
+        "qualityAssured": {
+          "title": "Quality Assured",
+          "description": "Verified taskers with reviews and ratings from real customers"
+        },
+        "quickEasy": {
+          "title": "Quick & Easy",
+          "description": "Find help or get hired in minutes, not days"
+        },
+        "communityDriven": {
+          "title": "Community Driven",
+          "description": "Join thousands of users helping each other succeed"
+        }
+      }
+    },
+    "twoWays": {
+      "title": "Two Ways to Connect",
+      "subtitle": "Choose the method that works best for your needs",
+      "postJob": {
+        "title": "Post a Job (Customer)",
+        "description": "Create a detailed job posting and let taskers apply to you. Perfect when you want to compare multiple options.",
+        "benefits": [
+          "Multiple taskers compete for your job",
+          "Compare proposals and pricing",
+          "Choose the best fit for your needs",
+          "Set your own timeline and budget"
+        ]
+      },
+      "bookDirectly": {
+        "title": "Book Directly (Customer)",
+        "description": "Browse tasker services and message them directly. Perfect when you know what you need and want to book quickly.",
+        "benefits": [
+          "Browse available services instantly",
+          "Message taskers directly",
+          "Book immediately if available",
+          "Build ongoing relationships"
+        ]
+      }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "description": "Join thousands of users who are already connecting, helping, and earning on ManzelHelp",
+      "needHelp": {
+        "title": "Need Help?",
+        "description": "Post a job or browse services to find the perfect tasker",
+        "button": "Sign Up as Customer"
+      },
+      "wantToEarn": {
+        "title": "Want to Earn?",
+        "description": "Apply to jobs and offer services to start earning money",
+        "button": "Become a Tasker"
+      }
+    }
+  }
+}

@@ -1,0 +1,271 @@
+{
+  "howDoesItWork": {
+    "hero": {
+      "title": "Wie Es Funktioniert",
+      "subtitle": "Willkommen bei ManzelHelp",
+      "description": "Menschen verbinden, die Hilfe brauchen, mit denen, die sie bieten können. Einfach, sicher und gemeinschaftsorientiert.",
+      "getStarted": "Loslegen",
+      "goToDashboard": "Zum Dashboard Gehen"
+    },
+    "overview": {
+      "title": "Wie ManzelHelp Funktioniert",
+      "subtitle": "Zwei Wege zur Verbindung: Jobs veröffentlichen, damit Tasker sich bewerben, oder Dienste direkt durchsuchen und buchen",
+      "forCustomers": {
+        "title": "Für Kunden",
+        "description": "Erhalten Sie Hilfe bei jeder Aufgabe, indem Sie Jobs veröffentlichen oder Dienste direkt von Taskern buchen.",
+        "features": [
+          "Detaillierte Jobanfragen unter \"Meine Jobs\" veröffentlichen",
+          "Mehrere Tasker-Bewerbungen überprüfen",
+          "Tasker, die Dienste anbieten, direkt kontaktieren",
+          "Sicher bezahlen, wenn Sie zufrieden sind"
+        ]
+      },
+      "forTaskers": {
+        "title": "Für Tasker",
+        "description": "Verdienen Sie Geld, indem Sie sich auf Kundenjobs bewerben und Ihre eigenen Dienste anbieten.",
+        "features": [
+          "Nach Überprüfung genehmigt werden",
+          "Sich auf Kundenjobanzeigen bewerben",
+          "Dienste unter \"Meine Dienste\" anbieten",
+          "Auch Kundenprivilegien genießen"
+        ]
+      }
+    },
+    "customerGuide": {
+      "title": "Kundenleitfaden: Wie Man Hilfe Bekommt",
+      "subtitle": "Folgen Sie diesen Schritten, um den perfekten Tasker für Ihre Bedürfnisse zu finden",
+      "steps": {
+        "postJob": {
+          "title": "Ihren Job Veröffentlichen",
+          "description": "Erstellen Sie eine detaillierte Jobanzeige unter 'Meine Jobs' mit Anforderungen, Budget und Zeitplan",
+          "details": [
+            "Beschreiben Sie, wobei Sie Hilfe brauchen",
+            "Legen Sie Ihr Budget fest",
+            "Geben Sie Standort und Zeitpunkt an",
+            "Fügen Sie besondere Anforderungen hinzu"
+          ]
+        },
+        "reviewApplications": {
+          "title": "Bewerbungen Überprüfen",
+          "description": "Tasker bewerben sich auf Ihre Jobanzeige. Überprüfen Sie ihre Profile, Bewertungen und Vorschläge",
+          "details": [
+            "Mehrere Tasker-Bewerbungen vergleichen",
+            "Bewertungen und Rezensionen prüfen",
+            "Ihre Vorschläge und Preise lesen",
+            "Ihr Portfolio und Erfahrung ansehen"
+          ]
+        },
+        "connectDiscuss": {
+          "title": "Verbinden & Diskutieren",
+          "description": "Nachrichten an ausgewählte Tasker senden, um Details zu besprechen, Fragen zu stellen und Vereinbarungen abzuschließen",
+          "details": [
+            "Direkt mit Taskern chatten",
+            "Jobanforderungen klären",
+            "Preis verhandeln, falls nötig",
+            "Den Service planen"
+          ]
+        },
+        "getItDone": {
+          "title": "Erledigen Lassen",
+          "description": "Tasker erledigt die Arbeit, Sie überprüfen und zahlen sicher über die Plattform",
+          "details": [
+            "Tasker erledigt den Service",
+            "Die abgeschlossene Arbeit überprüfen",
+            "Sicher über ManzelHelp bezahlen",
+            "Eine Bewertung und Rezension hinterlassen"
+          ]
+        }
+      }
+    },
+    "taskerGuide": {
+      "title": "Tasker-Leitfaden: Wie Man Mit Dem Verdienen Beginnt",
+      "subtitle": "Folgen Sie diesen Schritten, um ein erfolgreicher ManzelHelp-Tasker zu werden",
+      "steps": {
+        "signUp": {
+          "title": "Anmelden & Genehmigung Erhalten",
+          "description": "Erstellen Sie Ihr Konto, vervollständigen Sie Ihr Profil und warten Sie auf die Plattformgenehmigung",
+          "details": [
+            "Ihr ManzelHelp-Konto erstellen",
+            "Ihr Profil mit Fähigkeiten und Erfahrung vervollständigen",
+            "Verifizierungsdokumente hochladen",
+            "Auf Genehmigung warten (normalerweise 24-48 Stunden)"
+          ]
+        },
+        "setUpServices": {
+          "title": "Ihre Dienste Einrichten",
+          "description": "Dienstlisten unter 'Meine Dienste' erstellen und sich auf Kundenjobanzeigen bewerben",
+          "details": [
+            "Ihre Dienste mit Beschreibungen und Preisen auflisten",
+            "Ihre Verfügbarkeit und Servicebereiche festlegen",
+            "Kundenjobanzeigen durchsuchen und sich bewerben",
+            "Überzeugende Vorschläge für Jobs erstellen"
+          ]
+        },
+        "communicateBook": {
+          "title": "Kommunizieren & Buchen",
+          "description": "Auf Kundennachrichten antworten, Jobdetails besprechen und Buchungen sichern",
+          "details": [
+            "Schnell auf Kundenanfragen antworten",
+            "Fragen zu Ihren Diensten beantworten",
+            "Bedingungen und Preise verhandeln",
+            "Buchungen und Zeitpläne bestätigen"
+          ]
+        },
+        "completeGetPaid": {
+          "title": "Abschließen & Bezahlt Werden",
+          "description": "Exzellenten Service liefern, sicher bezahlt werden und Ihren Ruf aufbauen",
+          "details": [
+            "Service zur Kundenzufriedenheit abschließen",
+            "Sicher über die Plattform bezahlt werden",
+            "Bewertungen und Rezensionen erhalten",
+            "Ihren Ruf für zukünftige Jobs aufbauen"
+          ]
+        }
+      }
+    },
+    "customerBenefits": {
+      "title": "Kundenvorteile",
+      "subtitle": "Alles, was Sie brauchen, um zuverlässige Hilfe für jede Aufgabe zu finden",
+      "features": {
+        "postJobs": {
+          "title": "Jobs Veröffentlichen",
+          "description": "Erstellen Sie detaillierte Jobanzeigen und lassen Sie Tasker sich bewerben",
+          "benefits": [
+            "Mehrere Bewerbungen zur Auswahl",
+            "Preise und Erfahrung vergleichen",
+            "Ihren eigenen Zeitplan festlegen"
+          ]
+        },
+        "directMessaging": {
+          "title": "Direkte Nachrichten",
+          "description": "Jeden Tasker kontaktieren, der Dienste anbietet, um direkt zu diskutieren und zu buchen",
+          "benefits": [
+            "Sofortige Kommunikation",
+            "Fragen vor der Buchung stellen",
+            "Beziehungen aufbauen"
+          ]
+        },
+        "securePayments": {
+          "title": "Sichere Zahlungen",
+          "description": "Sicher über unsere Plattform mit Geld-zurück-Garantie bezahlen",
+          "benefits": [
+            "Geschützte Transaktionen",
+            "Streitbeilegung",
+            "Rückerstattungsschutz"
+          ]
+        },
+        "qualityAssurance": {
+          "title": "Qualitätssicherung",
+          "description": "Alle Tasker sind mit Bewertungen und Rezensionen verifiziert",
+          "benefits": [
+            "Hintergrundprüfungen",
+            "Kundenrezensionen",
+            "Qualitätsbewertungen"
+          ]
+        }
+      }
+    },
+    "taskerBenefits": {
+      "title": "Tasker-Vorteile",
+      "subtitle": "Maximieren Sie Ihr Verdienstpotenzial mit doppelten Möglichkeiten",
+      "features": {
+        "dualOpportunities": {
+          "title": "Doppelte Möglichkeiten",
+          "description": "Sich auf Kundenjobs bewerben UND Ihre eigenen Dienste anbieten",
+          "benefits": [
+            "Mehrere Einkommensquellen",
+            "Flexible Arbeitsoptionen",
+            "Auch Kundenprivilegien"
+          ]
+        },
+        "verificationProcess": {
+          "title": "Verifizierungsprozess",
+          "description": "Genehmigung erhalten, um Vertrauen bei Kunden aufzubauen",
+          "benefits": [
+            "Hintergrundverifizierung",
+            "Fähigkeitsbewertung",
+            "Profilverifizierung"
+          ]
+        },
+        "flexibleSchedule": {
+          "title": "Flexibler Zeitplan",
+          "description": "Ihre eigene Verfügbarkeit festlegen und arbeiten, wann Sie wollen",
+          "benefits": [
+            "Ihre Stunden wählen",
+            "Teilzeit oder Vollzeit arbeiten",
+            "Pausen nehmen, wenn nötig"
+          ]
+        },
+        "secureEarnings": {
+          "title": "Sichere Einnahmen",
+          "description": "Schnell und sicher für abgeschlossene Arbeit bezahlt werden",
+          "benefits": [
+            "Schnelle Zahlungen",
+            "Sichere Transaktionen",
+            "Keine Zahlungsverzögerungen"
+          ]
+        }
+      }
+    },
+    "platformFeatures": {
+      "title": "Warum ManzelHelp Wählen?",
+      "subtitle": "Gebaut mit Vertrauen, Sicherheit und Gemeinschaft im Sinn",
+      "features": {
+        "secureSafe": {
+          "title": "Sicher & Geschützt",
+          "description": "Alle Transaktionen sind mit unserem sicheren Zahlungssystem geschützt"
+        },
+        "qualityAssured": {
+          "title": "Qualität Gewährleistet",
+          "description": "Verifizierte Tasker mit Bewertungen und Rezensionen von echten Kunden"
+        },
+        "quickEasy": {
+          "title": "Schnell & Einfach",
+          "description": "Hilfe finden oder eingestellt werden in Minuten, nicht Tagen"
+        },
+        "communityDriven": {
+          "title": "Gemeinschaftsorientiert",
+          "description": "Tausenden von Nutzern beitreten, die sich gegenseitig zum Erfolg verhelfen"
+        }
+      }
+    },
+    "twoWays": {
+      "title": "Zwei Wege Zur Verbindung",
+      "subtitle": "Wählen Sie die Methode, die am besten für Ihre Bedürfnisse funktioniert",
+      "postJob": {
+        "title": "Job Veröffentlichen (Kunde)",
+        "description": "Erstellen Sie eine detaillierte Jobanzeige und lassen Sie Tasker sich bewerben. Perfekt, wenn Sie mehrere Optionen vergleichen möchten.",
+        "benefits": [
+          "Mehrere Tasker konkurrieren um Ihren Job",
+          "Vorschläge und Preise vergleichen",
+          "Die beste Passung für Ihre Bedürfnisse wählen",
+          "Ihren eigenen Zeitplan und Budget festlegen"
+        ]
+      },
+      "bookDirectly": {
+        "title": "Direkt Buchen (Kunde)",
+        "description": "Tasker-Dienste durchsuchen und sie direkt kontaktieren. Perfekt, wenn Sie wissen, was Sie brauchen und schnell buchen möchten.",
+        "benefits": [
+          "Verfügbare Dienste sofort durchsuchen",
+          "Tasker direkt kontaktieren",
+          "Sofort buchen, wenn verfügbar",
+          "Laufende Beziehungen aufbauen"
+        ]
+      }
+    },
+    "cta": {
+      "title": "Bereit Loszulegen?",
+      "description": "Tausenden von Nutzern beitreten, die sich bereits verbinden, helfen und auf ManzelHelp verdienen",
+      "needHelp": {
+        "title": "Brauchen Sie Hilfe?",
+        "description": "Einen Job veröffentlichen oder Dienste durchsuchen, um den perfekten Tasker zu finden",
+        "button": "Als Kunde Anmelden"
+      },
+      "wantToEarn": {
+        "title": "Möchten Sie Verdienen?",
+        "description": "Sich auf Jobs bewerben und Dienste anbieten, um Geld zu verdienen",
+        "button": "Tasker Werden"
+      }
+    }
+  }
+}

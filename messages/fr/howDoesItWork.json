@@ -1,0 +1,271 @@
+{
+  "howDoesItWork": {
+    "hero": {
+      "title": "Comment Ça Marche",
+      "subtitle": "Bienvenue sur ManzelHelp",
+      "description": "Connecter les personnes qui ont besoin d'aide avec celles qui peuvent la fournir. Simple, sécurisé et axé sur la communauté.",
+      "getStarted": "Commencer",
+      "goToDashboard": "Aller au Tableau de Bord"
+    },
+    "overview": {
+      "title": "Comment ManzelHelp Fonctionne",
+      "subtitle": "Deux façons de se connecter : Publier des emplois pour que les taskers postulent, ou parcourir et réserver des services directement",
+      "forCustomers": {
+        "title": "Pour les Clients",
+        "description": "Obtenez de l'aide pour toute tâche en publiant des emplois ou en réservant des services directement auprès des taskers.",
+        "features": [
+          "Publiez des demandes d'emploi détaillées sous \"Mes Emplois\"",
+          "Examinez plusieurs candidatures de taskers",
+          "Messagerie directement avec les taskers offrant des services",
+          "Payez en toute sécurité lorsque vous êtes satisfait"
+        ]
+      },
+      "forTaskers": {
+        "title": "Pour les Taskers",
+        "description": "Gagnez de l'argent en postulant à des emplois clients et en offrant vos propres services.",
+        "features": [
+          "Obtenez l'approbation après vérification",
+          "Postulez aux offres d'emploi clients",
+          "Offrez des services sous \"Mes Services\"",
+          "Profitez aussi des privilèges clients"
+        ]
+      }
+    },
+    "customerGuide": {
+      "title": "Guide Client : Comment Obtenir de l'Aide",
+      "subtitle": "Suivez ces étapes pour trouver le tasker parfait pour vos besoins",
+      "steps": {
+        "postJob": {
+          "title": "Publiez Votre Emploi",
+          "description": "Créez une offre d'emploi détaillée sous 'Mes Emplois' avec les exigences, le budget et le calendrier",
+          "details": [
+            "Décrivez ce dont vous avez besoin",
+            "Définissez votre fourchette budgétaire",
+            "Spécifiez l'emplacement et le timing",
+            "Ajoutez toute exigence spéciale"
+          ]
+        },
+        "reviewApplications": {
+          "title": "Examinez les Candidatures",
+          "description": "Les taskers postuleront à votre offre d'emploi. Examinez leurs profils, évaluations et propositions",
+          "details": [
+            "Comparez plusieurs candidatures de taskers",
+            "Vérifiez les évaluations et avis",
+            "Lisez leurs propositions et tarifs",
+            "Consultez leur portfolio et expérience"
+          ]
+        },
+        "connectDiscuss": {
+          "title": "Connectez et Discutez",
+          "description": "Messagerie avec les taskers sélectionnés pour discuter des détails, poser des questions et finaliser les arrangements",
+          "details": [
+            "Chattez directement avec les taskers",
+            "Clarifiez les exigences du travail",
+            "Négociez le prix si nécessaire",
+            "Planifiez le service"
+          ]
+        },
+        "getItDone": {
+          "title": "Faites-le Faire",
+          "description": "Le tasker termine le travail, vous examinez et payez en toute sécurité via la plateforme",
+          "details": [
+            "Le tasker termine le service",
+            "Examinez le travail terminé",
+            "Payez en toute sécurité via ManzelHelp",
+            "Laissez une évaluation et un avis"
+          ]
+        }
+      }
+    },
+    "taskerGuide": {
+      "title": "Guide Tasker : Comment Commencer à Gagner",
+      "subtitle": "Suivez ces étapes pour devenir un tasker ManzelHelp réussi",
+      "steps": {
+        "signUp": {
+          "title": "Inscrivez-vous et Obtenez l'Approbation",
+          "description": "Créez votre compte, complétez votre profil et attendez l'approbation de la plateforme",
+          "details": [
+            "Créez votre compte ManzelHelp",
+            "Complétez votre profil avec compétences et expérience",
+            "Téléchargez les documents de vérification",
+            "Attendez l'approbation (généralement 24-48 heures)"
+          ]
+        },
+        "setUpServices": {
+          "title": "Configurez Vos Services",
+          "description": "Créez des listes de services sous 'Mes Services' et postulez aux offres d'emploi clients",
+          "details": [
+            "Listez vos services avec descriptions et tarifs",
+            "Définissez votre disponibilité et zones de service",
+            "Parcourez et postulez aux offres d'emploi clients",
+            "Créez des propositions convaincantes pour les emplois"
+          ]
+        },
+        "communicateBook": {
+          "title": "Communiquez et Réservez",
+          "description": "Répondez aux messages clients, discutez des détails du travail et sécurisez les réservations",
+          "details": [
+            "Répondez rapidement aux demandes clients",
+            "Répondez aux questions sur vos services",
+            "Négociez les conditions et tarifs",
+            "Confirmez les réservations et horaires"
+          ]
+        },
+        "completeGetPaid": {
+          "title": "Terminez et Recevez le Paiement",
+          "description": "Livrez un excellent service, recevez le paiement en toute sécurité et construisez votre réputation",
+          "details": [
+            "Terminez le service à la satisfaction du client",
+            "Recevez le paiement en toute sécurité via la plateforme",
+            "Recevez des évaluations et avis",
+            "Construisez votre réputation pour les futurs emplois"
+          ]
+        }
+      }
+    },
+    "customerBenefits": {
+      "title": "Avantages Clients",
+      "subtitle": "Tout ce dont vous avez besoin pour trouver une aide fiable pour toute tâche",
+      "features": {
+        "postJobs": {
+          "title": "Publier des Emplois",
+          "description": "Créez des offres d'emploi détaillées et laissez les taskers postuler",
+          "benefits": [
+            "Plusieurs candidatures parmi lesquelles choisir",
+            "Comparez les tarifs et l'expérience",
+            "Définissez votre propre calendrier"
+          ]
+        },
+        "directMessaging": {
+          "title": "Messagerie Directe",
+          "description": "Messagerie avec tout tasker offrant des services pour discuter et réserver directement",
+          "benefits": [
+            "Communication instantanée",
+            "Posez des questions avant de réserver",
+            "Construisez des relations"
+          ]
+        },
+        "securePayments": {
+          "title": "Paiements Sécurisés",
+          "description": "Payez en toute sécurité via notre plateforme avec garantie de remboursement",
+          "benefits": [
+            "Transactions protégées",
+            "Résolution des litiges",
+            "Protection de remboursement"
+          ]
+        },
+        "qualityAssurance": {
+          "title": "Assurance Qualité",
+          "description": "Tous les taskers sont vérifiés avec avis et évaluations",
+          "benefits": [
+            "Vérifications de fond",
+            "Avis clients",
+            "Évaluations de qualité"
+          ]
+        }
+      }
+    },
+    "taskerBenefits": {
+      "title": "Avantages Taskers",
+      "subtitle": "Maximisez votre potentiel de gains avec des opportunités doubles",
+      "features": {
+        "dualOpportunities": {
+          "title": "Opportunités Doubles",
+          "description": "Postulez aux emplois clients ET offrez vos propres services",
+          "benefits": [
+            "Plusieurs sources de revenus",
+            "Options de travail flexibles",
+            "Privilèges clients aussi"
+          ]
+        },
+        "verificationProcess": {
+          "title": "Processus de Vérification",
+          "description": "Obtenez l'approbation pour construire la confiance avec les clients",
+          "benefits": [
+            "Vérification de fond",
+            "Évaluation des compétences",
+            "Vérification du profil"
+          ]
+        },
+        "flexibleSchedule": {
+          "title": "Horaire Flexible",
+          "description": "Définissez votre propre disponibilité et travaillez quand vous voulez",
+          "benefits": [
+            "Choisissez vos heures",
+            "Travaillez à temps partiel ou plein temps",
+            "Prenez des pauses quand nécessaire"
+          ]
+        },
+        "secureEarnings": {
+          "title": "Gains Sécurisés",
+          "description": "Recevez le paiement rapidement et en toute sécurité pour le travail terminé",
+          "benefits": [
+            "Paiements rapides",
+            "Transactions sécurisées",
+            "Aucun retard de paiement"
+          ]
+        }
+      }
+    },
+    "platformFeatures": {
+      "title": "Pourquoi Choisir ManzelHelp ?",
+      "subtitle": "Construit avec confiance, sécurité et communauté à l'esprit",
+      "features": {
+        "secureSafe": {
+          "title": "Sécurisé et Sûr",
+          "description": "Toutes les transactions sont protégées avec notre système de paiement sécurisé"
+        },
+        "qualityAssured": {
+          "title": "Qualité Assurée",
+          "description": "Taskers vérifiés avec avis et évaluations de vrais clients"
+        },
+        "quickEasy": {
+          "title": "Rapide et Facile",
+          "description": "Trouvez de l'aide ou embauchez en minutes, pas en jours"
+        },
+        "communityDriven": {
+          "title": "Axé sur la Communauté",
+          "description": "Rejoignez des milliers d'utilisateurs qui s'entraident pour réussir"
+        }
+      }
+    },
+    "twoWays": {
+      "title": "Deux Façons de Se Connecter",
+      "subtitle": "Choisissez la méthode qui fonctionne le mieux pour vos besoins",
+      "postJob": {
+        "title": "Publier un Emploi (Client)",
+        "description": "Créez une offre d'emploi détaillée et laissez les taskers postuler. Parfait quand vous voulez comparer plusieurs options.",
+        "benefits": [
+          "Plusieurs taskers concourent pour votre emploi",
+          "Comparez les propositions et tarifs",
+          "Choisissez le meilleur ajustement pour vos besoins",
+          "Définissez votre propre calendrier et budget"
+        ]
+      },
+      "bookDirectly": {
+        "title": "Réserver Directement (Client)",
+        "description": "Parcourez les services des taskers et messagerie-les directement. Parfait quand vous savez ce dont vous avez besoin et voulez réserver rapidement.",
+        "benefits": [
+          "Parcourez les services disponibles instantanément",
+          "Messagerie directement avec les taskers",
+          "Réservez immédiatement si disponible",
+          "Construisez des relations continues"
+        ]
+      }
+    },
+    "cta": {
+      "title": "Prêt à Commencer ?",
+      "description": "Rejoignez des milliers d'utilisateurs qui se connectent déjà, s'entraident et gagnent sur ManzelHelp",
+      "needHelp": {
+        "title": "Besoin d'Aide ?",
+        "description": "Publiez un emploi ou parcourez les services pour trouver le tasker parfait",
+        "button": "S'inscrire en tant que Client"
+      },
+      "wantToEarn": {
+        "title": "Voulez Gagner ?",
+        "description": "Postulez aux emplois et offrez des services pour commencer à gagner de l'argent",
+        "button": "Devenir un Tasker"
+      }
+    }
+  }
+}
