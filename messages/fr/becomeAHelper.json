@@ -49,6 +49,10 @@
       "makeConnections": {
         "title": "Créez des Connexions",
         "description": "Construisez des relations durables avec des clients qui valorisent votre travail"
+      },
+      "walletSystem": {
+        "title": "Système de Portefeuille",
+        "description": "Gérez vos gains facilement. Recevez vos paiements directement dans votre portefeuille ManzelHelp et retirez-les en toute sécurité."
       }
     },
     "howItWorks": {

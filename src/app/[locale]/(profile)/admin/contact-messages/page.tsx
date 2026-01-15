@@ -9,9 +9,8 @@ import { Loader2, Mail, Filter, Eye, Archive, Reply, X } from "lucide-react";
 import {
   getContactMessages,
   updateContactMessageStatus,
-  type ContactMessage,
-  type ContactMessageStatus,
 } from "@/actions/contact";
+import type { ContactMessage, ContactMessageStatus } from "@/types/supabase";
 import { formatDistanceToNow } from "date-fns";
 
 export default function AdminContactMessagesPage() {

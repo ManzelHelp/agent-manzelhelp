@@ -6,6 +6,10 @@
       "startSearching": "Commencer la Recherche"
     },
     "advantages": {
+      "freeForCustomers": {
+        "title": "Gratuit pour les Clients",
+        "description": "L'utilisation de la plateforme et le dépôt d'annonces sont 100% gratuits pour les clients."
+      },
       "verifiedTrusted": {
         "title": "Assistants Vérifiés et de Confiance",
         "description": "Tous nos agents de service sont vérifiés et examinés par la communauté."

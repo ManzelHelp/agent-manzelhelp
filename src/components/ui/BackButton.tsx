@@ -10,6 +10,7 @@ interface BackButtonProps {
   variant?: "default" | "ghost" | "outline";
   size?: "default" | "sm" | "lg" | "icon";
   onClick?: () => void;
+  currentLocale?: string; // langue actuelle
 }
 
 export function BackButton({
@@ -17,6 +18,7 @@ export function BackButton({
   variant = "ghost",
   size = "sm",
   onClick,
+  currentLocale = "en",
 }: BackButtonProps) {
   const router = useRouter();
 
@@ -24,7 +26,13 @@ export function BackButton({
     if (onClick) {
       onClick();
     } else {
-      router.back();
+      // Vérifie si l'historique du navigateur permet un retour
+      if (window.history.length > 1) {
+        router.back();
+      } else {
+        // Fallback : redirige vers la page d'accueil de la locale actuelle
+        router.push(`/${currentLocale}`);
+      }
     }
   };
 
@@ -43,4 +51,3 @@ export function BackButton({
     </Button>
   );
 }
-

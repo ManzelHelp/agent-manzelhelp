@@ -62,40 +62,58 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const supabase = await createClient();
-
+  
   // Enable static rendering
   setRequestLocale(locale);
 
   // Get translations for the page content
-  const t = await getTranslations({ locale, namespace: "homepage" });
+  let t;
+  try {
+    t = await getTranslations({ locale, namespace: "homepage" });
+  } catch (error) {
+    console.error("Error loading translations:", error);
+    // Fallback to a function that returns empty string
+    t = () => "";
+  }
+
+  const supabase = await createClient();
 
   // Fetch featured tasker services with tasker information
-  const { data: featuredServices } = await supabase
-    .from("tasker_services")
-    .select(
-      `
-      id,
-      title,
-      description,
-      price,
-      pricing_type,
-      service_area,
-      is_promoted,
-      tasker_id,
-      service_id,
-      users!inner (
+  let featuredServices;
+  try {
+    const result = await supabase
+      .from("tasker_services")
+      .select(
+        `
         id,
-        first_name,
-        last_name,
-        avatar_url
+        title,
+        description,
+        price,
+        pricing_type,
+        service_area,
+        is_promoted,
+        tasker_id,
+        service_id,
+        users!inner (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `
       )
-    `
-    )
-    .eq("service_status", "active")
-    .eq("verification_status", "verified")
-    .order("is_promoted", { ascending: false })
-    .limit(6);
+      .eq("service_status", "active")
+      .eq("verification_status", "verified")
+      .order("is_promoted", { ascending: false })
+      .limit(6);
+    featuredServices = result.data;
+    if (result.error) {
+      console.error("Error fetching featured services:", result.error);
+    }
+  } catch (error) {
+    console.error("Error fetching featured services:", error);
+    featuredServices = null;
+  }
 
   // Transform the data to match the expected format
   const transformedServices =
@@ -115,37 +133,47 @@ export default async function HomePage({
     })) || [];
 
   // Fetch featured jobs with customer information
-  const { data: featuredJobs } = await supabase
-    .from("jobs")
-    .select(
-      `
-      id,
-      title,
-      description,
-      customer_budget,
-      currency,
-      estimated_duration,
-      preferred_date,
-      is_flexible,
-      is_promoted,
-      current_applications,
-      max_applications,
-      created_at,
-      customer_id,
-      users!customer_id (
+  let featuredJobs;
+  try {
+    const result = await supabase
+      .from("jobs")
+      .select(
+        `
         id,
-        email,
-        first_name,
-        last_name,
-        avatar_url,
-        verification_status
+        title,
+        description,
+        customer_budget,
+        currency,
+        estimated_duration,
+        preferred_date,
+        is_flexible,
+        is_promoted,
+        current_applications,
+        max_applications,
+        created_at,
+        customer_id,
+        users!customer_id (
+          id,
+          email,
+          first_name,
+          last_name,
+          avatar_url,
+          verification_status
+        )
+      `
       )
-    `
-    )
-    .in("status", ["under_review", "active"])
-    .order("is_promoted", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(6);
+      .in("status", ["under_review", "active"])
+      .order("is_promoted", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(6);
+    featuredJobs = result.data;
+    if (result.error) {
+      console.error("Error fetching featured jobs:", result.error);
+    }
+  } catch (error) {
+    console.error("Error fetching featured jobs:", error);
+    featuredJobs = null;
+  }
 
   // Transform the jobs data to match the expected format
   const transformedJobs =

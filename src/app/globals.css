@@ -227,6 +227,35 @@
   .flex, [class*="grid"] {
     min-width: 0;
   }
+
+  /* RTL Support - Tailwind CSS v4 automatically handles most RTL, but we add specific fixes */
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  [dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+  }
+
+  /* RTL-specific fixes for common patterns */
+  [dir="rtl"] .text-left {
+    text-align: right;
+  }
+
+  [dir="rtl"] .text-right {
+    text-align: left;
+  }
+
+  /* Ensure proper text alignment in RTL */
+  [dir="rtl"] body {
+    text-align: right;
+  }
+
+  [dir="ltr"] body {
+    text-align: left;
+  }
 }
 
 /* Mobile-specific improvements */

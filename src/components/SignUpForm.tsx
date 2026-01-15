@@ -184,7 +184,7 @@ function SignUpForm() {
                 hover:border-[#48bb93]/50 hover:bg-[#48bb93]/10 dark:hover:bg-[#48bb93]/20 hover:shadow-xl hover:scale-[1.02] hover:ring-2 hover:ring-[#48bb93]/20">
               <div className="flex items-center">
                 <Search className="mr-2 h-5 w-5 text-[#48bb93] group-hover:scale-110 transition-transform peer-checked:text-white" />
-                <span>Je cherche un service</span>
+                <span>{t("pages.signUp.findHelp")}</span>
                 <Check className="ml-2 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity text-white" />
               </div>
             </div>
@@ -214,7 +214,7 @@ function SignUpForm() {
                 hover:border-[#48bb93]/50 hover:bg-[#48bb93]/10 dark:hover:bg-[#48bb93]/20 hover:shadow-xl hover:scale-[1.02] hover:ring-2 hover:ring-[#48bb93]/20">
               <div className="flex items-center">
                 <Briefcase className="mr-2 h-5 w-5 text-[#48bb93] group-hover:scale-110 transition-transform peer-checked:text-white" />
-                <span>Je propose mes services</span>
+                <span>{t("pages.signUp.becomeHelper")}</span>
                 <Check className="ml-2 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity text-white" />
               </div>
             </div>

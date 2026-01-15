@@ -136,22 +136,24 @@ function Header() {
             </>
           )}
           {!user && (
-            <>
-              <Link
-                href="/become-a-helper"
-                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+            <div className="flex items-center space-x-4">
+              <Button
+                asChild
+                variant="default"
+                size="sm"
+                className="font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
               >
-                {t("become_helper")}
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-              </Link>
-              <Link
-                href="/find-a-helper"
-                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
+                <Link href="/find-a-helper">{t("find_service")}</Link>
+              </Button>
+              <Button
+                asChild
+                variant="default"
+                size="sm"
+                className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
               >
-                {t("find_helper")}
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-              </Link>
-            </>
+                <Link href="/become-a-helper">{t("post_service")}</Link>
+              </Button>
+            </div>
           )}
         </div>
 
@@ -388,22 +390,24 @@ function Header() {
               </>
             )}
             {!user && (
-              <>
-                <Link
-                  href="/become-a-helper"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+              <div className="space-y-3">
+                <Button
+                  asChild
+                  variant="default"
+                  className="w-full justify-center font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {t("become_helper")}
-                </Link>
-                <Link
-                  href="/find-a-helper"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  <Link href="/find-a-helper">{t("find_service")}</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="default"
+                  className="w-full justify-center font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {t("find_helper")}
-                </Link>
-              </>
+                  <Link href="/become-a-helper">{t("post_service")}</Link>
+                </Button>
+              </div>
             )}
           </div>
 

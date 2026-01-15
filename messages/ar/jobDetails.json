@@ -1,5 +1,8 @@
 {
   "jobDetails": {
+    "title": "عنوان الوظيفة",
+    "description": "وصف الوظيفة",
+    "descriptionPlaceholder": "اكتب وصف الوظيفة هنا...",
     "estimatedDuration": "المدة التقديرية",
     "category": "الفئة",
     "applicationsLimit": "عدد الطلبات",
@@ -32,6 +35,8 @@
     "requirements": "المتطلبات",
     "flexibleTiming": "توقيت مرن",
     "openToScheduleAdjustments": "منفتح على تعديل المواعيد",
+    "minCharacters": "حروف على الأقل",
+    "remaining": "متبقي {remaining} حروف",
     "actions": {
       "startJob": "بدء العمل",
       "completeJob": "إكمال العمل",
@@ -50,6 +55,5 @@
       "cancelled": "ملغاة",
       "unknown": "غير معروفة"
     }
-    
   }
 }

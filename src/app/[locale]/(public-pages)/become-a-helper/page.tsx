@@ -59,6 +59,11 @@ export default async function BecomeAHelperPage({
       title: t("benefits.makeConnections.title"),
       description: t("benefits.makeConnections.description"),
     },
+    {
+      icon: DollarSign,
+      title: t("benefits.walletSystem.title"),
+      description: t("benefits.walletSystem.description"),
+    },
   ];
 
   const steps = [

@@ -585,7 +585,7 @@ export default function TaskerFinancePage() {
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle className="text-lg sm:text-xl">
-                {t("transactionHistory")}
+              {t("transactionHistory.title")}
               </CardTitle>
               <CardDescription className="text-sm">
                 {t("transactionHistoryDescription")}

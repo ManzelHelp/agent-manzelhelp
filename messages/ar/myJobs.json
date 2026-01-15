@@ -49,7 +49,10 @@
       "cloneConfirm": "نسخ الوظيفة",
       "cancel": "إلغاء",
       "cloneSuccess": "تم نسخ الوظيفة بنجاح",
-      "cloneError": "فشل نسخ الوظيفة"
+      "cloneError": "فشل نسخ الوظيفة",
+      "viewDetailsBtn": "عرض التفاصيل",
+      "editJobBtn": "تعديل الوظيفة",
+      "deleteJobBtn": "حذف الوظيفة"
     },
 
     "status": {

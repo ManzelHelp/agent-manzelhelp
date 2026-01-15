@@ -7,8 +7,9 @@ export default function RootLayout({
 }) {
   // Next.js requires html and body tags in the root layout
   // suppressHydrationWarning is crucial for ThemeProvider
+  // lang and dir will be updated dynamically by the locale layout script
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <meta
           name="viewport"

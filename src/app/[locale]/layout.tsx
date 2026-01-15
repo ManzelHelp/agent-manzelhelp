@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import { LogoutListener } from "@/components/auth/LogoutListener";
 import { SessionSync } from "@/components/auth/SessionSync";
 import { Toaster } from "@/components/ui/toaster";
+import { localeDirection } from "@/i18n/config";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -20,12 +21,20 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
+
   setRequestLocale(locale);
 
-  const messages = await getMessages();
+  let messages;
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    console.error("Error loading messages:", error);
+    messages = {};
+  }
 
   const getTimezoneForLocale = (locale: string) => {
     const timezoneMap: Record<string, string> = {
@@ -38,21 +47,25 @@ export default async function LocaleLayout({
   };
 
   const stableNow = new Date();
+  const direction = localeDirection[locale] ?? "ltr";
 
+  // ✅ Ici on applique RTL/LTR via un div racine
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <NextIntlClientProvider
-        messages={messages}
-        locale={locale}
-        timeZone={getTimezoneForLocale(locale)}
-        now={stableNow}
-      >
-        <SessionSync />
-        <LogoutListener />
-        <Header />
-        {children}
-        <Toaster />
-      </NextIntlClientProvider>
-    </ThemeProvider>
+    <div dir={direction} lang={locale}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <NextIntlClientProvider
+          messages={messages}
+          locale={locale}
+          timeZone={getTimezoneForLocale(locale)}
+          now={stableNow}
+        >
+          <SessionSync />
+          <LogoutListener />
+          <Header />
+          {children}
+          <Toaster />
+        </NextIntlClientProvider>
+      </ThemeProvider>
+    </div>
   );
 }

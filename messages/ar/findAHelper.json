@@ -6,6 +6,10 @@
       "startSearching": "ابدأ البحث"
     },
     "advantages": {
+      "freeForCustomers": {
+        "title": "مجاني للعملاء",
+        "description": "استخدام المنصة ونشر الوظائف مجاني 100% للعملاء."
+      },
       "verifiedTrusted": {
         "title": "مساعدون موثوقون ومتحقق منهم",
         "description": "جميع وكلاء الخدمة لدينا يتم فحصهم ومراجعتهم من قبل المجتمع."

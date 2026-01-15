@@ -105,6 +105,25 @@
     "invalidFormat": "تنسيق غير صالح",
     "thankYou": "شكراً لك!",
     "reviewPublished": "تم نشر تقييمك.",
-    "serviceRemoved": "تمت إزالة الخدمة بنجاح."
+    "serviceRemoved": "تمت إزالة الخدمة بنجاح.",
+    
+    "errors": {
+      "fetchingData": "حدث خطأ أثناء تحميل البيانات.",
+      "failedToLoadFormData": "فشل تحميل بيانات النموذج.",
+      "validationError": "هناك أخطاء في التحقق.",
+      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة.",
+      "titleRequired": "العنوان مطلوب.",
+      "categoryRequired": "الفئة مطلوبة.",
+      "serviceRequired": "الخدمة مطلوبة.",
+      "dateRequired": "يرجى اختيار تاريخ.",
+      "durationGreaterThanZero": "يجب أن تكون مدة التقدير أكبر من صفر.",
+      "maxApplicationsGreaterThanZero": "يجب أن يكون الحد الأقصى لطلبات التقديم أكبر من صفر.",
+      "budgetGreaterThanZero": "يجب أن يكون الميزانية أكبر من صفر.",
+      "jobCreationFailed": "فشل إنشاء الوظيفة.",
+      "error": "حدث خطأ."
+    },
+    "success": {
+      "jobPosted": "تم نشر الوظيفة بنجاح!"
+    }
   }
 }

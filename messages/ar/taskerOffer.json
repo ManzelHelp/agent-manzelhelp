@@ -34,7 +34,7 @@
     "serviceNotFound": "لم يتم العثور على الخدمة",
     "failedToLoad": "فشل تحميل عرض الخدمة. يرجى المحاولة مرة أخرى لاحقًا.",
     "goToDashboard": "الذهاب إلى لوحة التحكم",
-    "listedOn": "تم الإدراج في",
+    "listedOn": "نُشر في",
     "minDuration": "الحد الأدنى {hours} ساعة",
     "noDescriptionAvailable": "لا يوجد وصف متاح",
     "notAvailable": "غير متاح",

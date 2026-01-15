@@ -8,7 +8,7 @@ import SearchFilters from "@/components/filters/SearchFilters";
 import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getParentCategoriesForSearch } from "@/lib/categories";
+import { getServices } from "@/actions/services";
 import { BackButton } from "@/components/ui/BackButton";
 
 interface SearchPageProps {
@@ -101,13 +101,14 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
+  // Fetch categories from database instead of hardcoded ones
+  const categoriesResult = await getServices();
+  const categories = categoriesResult.success ? categoriesResult.services || [] : [];
+
   // Get current user if logged in to exclude their own jobs
   const {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
-
-  // Use centralized categories - get all parent categories for search
-  const categories = getParentCategoriesForSearch();
 
   // Fetch jobs with related data using proper joins
   // Note: RLS policies must allow reading jobs with status 'active' or 'in_progress'
@@ -117,6 +118,16 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
     .select(
       `
       *,
+      service:services!service_id (
+        name_en,
+        name_fr,
+        name_ar,
+        category:service_categories!category_id (
+          name_en,
+          name_fr,
+          name_ar
+        )
+      ),
       users!customer_id (
         first_name,
         last_name,
@@ -251,21 +262,7 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   // Transform the data to match our interface
   const transformedJobs = (jobs || []).map(
     (
-      job: JobListing & {
-        users: {
-          first_name: string;
-          last_name: string;
-          avatar_url: string;
-          verification_status: string;
-        } | null;
-        addresses: {
-          street_address: string;
-          city: string;
-          region: string;
-          postal_code: string;
-          country: string;
-        } | null;
-      }
+      job: any
     ) => ({
       ...job,
       customer_first_name: job.users?.first_name || "Anonymous",
@@ -273,9 +270,9 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
       customer_avatar_url: job.users?.avatar_url || null,
       customer_verification_status:
         job.users?.verification_status || "pending",
-      category_name_en: "", // Category info not available in jobs table
-      category_name_de: "", // Category info not available in jobs table
-      category_name_fr: "", // Category info not available in jobs table
+      category_name_en: job.service?.name_en || "",
+      category_name_fr: job.service?.name_fr || "",
+      category_name_ar: job.service?.name_ar || "",
       street_address: job.addresses?.street_address || "",
       city: job.addresses?.city || "",
       region: job.addresses?.region || "",

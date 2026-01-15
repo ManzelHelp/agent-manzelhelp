@@ -49,6 +49,10 @@
       "makeConnections": {
         "title": "أنشئ علاقات",
         "description": "ابنِ علاقات دائمة مع العملاء الذين يقدرون عملك"
+      },
+      "walletSystem": {
+        "title": "نظام المحفظة",
+        "description": "إدارة أرباحك بسهولة. استلم مدفوعاتك مباشرة في محفظة ManzelHelp واسحبها بأمان."
       }
     },
     "howItWorks": {

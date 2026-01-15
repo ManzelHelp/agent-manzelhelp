@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/hooks/use-toast"; // CHANGEMENT
 import { useTranslations } from "next-intl";
 import { useUserStore } from "@/stores/userStore";

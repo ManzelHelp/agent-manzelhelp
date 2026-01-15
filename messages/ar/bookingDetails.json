@@ -1,25 +1,35 @@
 {
   "bookingDetails": {
-    "cancelled": "تم إلغاء هذا الحجز",
     "title": "تفاصيل الحجز",
-    "loading": "جاري التحميل...",
-    "pleaseWait": "يرجى الانتظار بينما نجلب تفاصيل حجزك...",
+    "loading": "جاري تحميل تفاصيل الحجز...",
     "notFound": "الحجز غير موجود",
-    "bookingNotFound": "الحجز الذي تبحث عنه غير موجود أو ليس لديك إذن لعرضه.",
     "backToBookings": "العودة إلى حجوزاتي",
+
+    "waitingForTasker": "في انتظار رد مقدم الخدمة على طلب الحجز الخاص بك.",
+    "taskerAccepted": "رائع! قبل مقدم الخدمة طلب الحجز الخاص بك.",
+    "bookingConfirmed": "تم تأكيد الحجز! سيبدأ مقدم الخدمة العمل في الوقت المحدد.",
+    "taskerWorking": "مقدم الخدمة يعمل حالياً على خدمتك.",
+
+    "unauthorizedAccess": "وصول غير مصرح به",
+    "pleaseWait": "يرجى الانتظار بينما نقوم بجلب تفاصيل حجزك...",
+    "bookingNotFound": "الحجز الذي تبحث عنه غير موجود أو ليس لديك صلاحية لعرضه.",
+
+    "success": {
+      "statusUpdated": "تم تحديث حالة الحجز بنجاح",
+      "copiedToClipboard": "تم نسخ رقم الحجز",
+      "linkCopied": "تم نسخ الرابط",
+      "confirmed": "تم تأكيد الحجز بنجاح"
+    },
+
+    "errors": {
+      "updateFailed": "تعذر تحديث حالة الحجز",
+      "unexpectedError": "حدث خطأ غير متوقع",
+      "taskerInfoNotAvailable": "معلومات مقدم الخدمة غير متوفرة",
+      "confirmFailed": "فشل في تأكيد إتمام الحجز"
+    },
+
     "service": "الخدمة",
-    "tasker": "الحرفي",
-    "customer": "الزبون",
-    "agreedPrice": "السعر المتفق عليه",
-    "price": "السعر",
-    "duration": "المدة",
-    "date": "التاريخ",
-    "time": "الوقت",
-    "type": "النوع",
-    "payment": "الدفع",
-    "addressNotSpecified": "العنوان غير محدد",
-    "noRequirements": "لا توجد متطلبات خاصة محددة.",
-    "timeNotSpecified": "الوقت غير محدد",
+
     "status": {
       "pending": "معلق",
       "accepted": "مقبول",
@@ -29,37 +39,64 @@
       "cancelled": "ملغي",
       "unknown": "غير معروف"
     },
+
     "statusDescriptions": {
-      "pending": "في انتظار رد الحرفي",
-      "accepted": "تم قبول طلبك من طرف الحرفي",
+      "pending": "في انتظار الرد",
+      "accepted": "تم قبول الحجز",
       "confirmed": "الحجز مؤكد وجاهز",
       "in_progress": "الخدمة قيد التنفيذ حالياً",
-      "completed": "تم إنجاز الخدمة بنجاح",
-      "cancelled": "تم إلغاء هذا الحجز",
+      "completed": "تم إنجاز الخدمة",
+      "cancelled": "تم إلغاء الحجز",
       "unknown": "حالة غير معروفة"
     },
+
     "bookingType": {
       "instant": "حجز فوري",
       "scheduled": "موعد محدد",
       "recurring": "متكرر"
     },
+
     "sections": {
       "customerInfo": "معلومات الزبون",
-      "taskerInfo": "معلومات الحرفي",
+      "taskerInfo": "معلومات مقدم الخدمة",
       "serviceDetails": "تفاصيل الخدمة",
       "bookingInfo": "معلومات الحجز",
       "location": "الموقع",
       "requirements": "المتطلبات",
       "actions": "الإجراءات",
-      "timeline": "سجل الأحداث"
+      "timeline": "سجل الحجز"
     },
+
+    "customer": "الزبون",
+    "tasker": "مقدم الخدمة",
+    "agreedPrice": "السعر المتفق عليه",
+    "price": "السعر",
+    "duration": "المدة",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "type": "النوع",
+    "payment": "الدفع",
+
+    "addressNotSpecified": "العنوان غير محدد",
+    "noRequirements": "لا توجد متطلبات خاصة.",
+    "timeNotSpecified": "الوقت غير محدد",
+
     "actions": {
+      "acceptRequest": "قبول الطلب",
+      "declineRequest": "رفض الطلب",
+      "confirmBooking": "تأكيد الحجز",
       "cancelBooking": "إلغاء الحجز",
-      "messageTasker": "مراسلة الحرفي",
+      "startTask": "بدء المهمة",
+      "completeTask": "إنهاء المهمة",
+      "messageCustomer": "مراسلة الزبون",
+      "messageTasker": "مراسلة مقدم الخدمة",
+      "callCustomer": "الاتصال بالزبون",
+      "callTasker": "الاتصال بمقدم الخدمة",
       "copyBookingId": "نسخ رقم الحجز",
       "share": "مشاركة",
       "leaveReview": "ترك تقييم"
     },
+
     "timeline": {
       "bookingCreated": "تم إنشاء الحجز",
       "bookingAccepted": "تم قبول الحجز",
@@ -67,28 +104,72 @@
       "taskStarted": "بدأت الخدمة",
       "taskCompleted": "انتهت الخدمة"
     },
-    "completion": {
-      "awaitingTitle": "اكتملت الخدمة - في انتظار تأكيدك",
-      "awaitingDescription": "لقد حدد الحرفي هذه الخدمة كمكتملة. يرجى مراجعة العمل وتأكيد الإتمام.",
-      "completedOn": "اكتمل في:",
-      "confirmBtn": "تأكيد إتمام الحجز",
+
+    "completed": "تم إتمام هذا الحجز بنجاح.",
+    "cancelled": "تم إلغاء هذا الحجز.",
+
+    "messagingComingSoon": "ميزة المراسلة ستتوفر قريباً!",
+    "phoneNotAvailable": "رقم الهاتف غير متوفر",
+
+    "cancellation": {
+      "title": "إلغاء الحجز",
+      "description": "يرجى توضيح سبب إلغاء هذا الحجز",
+      "reasonLabel": "سبب الإلغاء",
+      "customCommentLabel": "يرجى إدخال التفاصيل",
+      "customCommentPlaceholder": "أخبرنا بسبب الإلغاء...",
+      "cancel": "إلغاء",
+      "confirm": "تأكيد الإلغاء",
       "confirming": "جاري التأكيد...",
-      "confirmedTitle": "تم تأكيد الحجز",
-      "confirmedDescription": "لقد أكدت أن هذا الحجز قد اكتمل بنجاح. تم معالجة الدفع.",
-      "confirmedOn": "تم التأكيد في:",
-      "alreadyReviewed": "✓ لقد قمت بالفعل بتقييم هذا الحجز"
+      "reasons": {
+        "changed_my_mind": "غيرت رأيي",
+        "found_another_tasker": "وجدت مقدم خدمة آخر",
+        "no_longer_needed": "لم أعد بحاجة إلى الخدمة",
+        "scheduling_conflict": "تعارض في المواعيد",
+        "price_too_high": "السعر مرتفع",
+        "other": "سبب آخر"
+      },
+      "errors": {
+        "reasonRequired": "يرجى اختيار سبب الإلغاء",
+        "customCommentRequired": "يرجى إدخال تعليق توضيحي"
+      }
     },
-    "success": {
-      "statusUpdated": "تم تحديث حالة الحجز بنجاح",
-      "copiedToClipboard": "تم نسخ رقم الحجز",
-      "linkCopied": "تم نسخ الرابط",
-      "confirmed": "تم تأكيد الحجز بنجاح"
-    },
-    "errors": {
-      "updateFailed": "فشل تحديث الحالة",
-      "unexpectedError": "حدث خطأ غير متوقع",
-      "taskerInfoNotAvailable": "معلومات الحرفي غير متوفرة",
-      "confirmFailed": "فشل في تأكيد إتمام الحجز"
+
+    "confirmations": {
+      "accept": {
+        "title": "قبول طلب الحجز",
+        "description": "هل أنت متأكد من قبول طلب الحجز هذا؟ سيتم إشعار الزبون.",
+        "confirmText": "قبول الطلب"
+      },
+      "decline": {
+        "title": "رفض طلب الحجز",
+        "description": "هل أنت متأكد من رفض طلب الحجز؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirmText": "رفض الطلب"
+      },
+      "confirm": {
+        "title": "تأكيد الحجز",
+        "description": "هل أنت متأكد من تأكيد هذا الحجز؟",
+        "confirmText": "تأكيد الحجز"
+      },
+      "start": {
+        "title": "بدء المهمة",
+        "description": "هل أنت مستعد لبدء المهمة؟ سيتم إشعار الزبون.",
+        "confirmText": "بدء المهمة"
+      },
+      "complete": {
+        "title": "إنهاء المهمة",
+        "description": "هل أنت متأكد من وضع علامة على المهمة كمكتملة؟",
+        "confirmText": "إنهاء المهمة"
+      },
+      "cancel": {
+        "title": "إلغاء الحجز",
+        "description": "هل أنت متأكد من إلغاء هذا الحجز؟ لا يمكن التراجع عن هذا الإجراء.",
+        "confirmText": "إلغاء الحجز"
+      },
+      "cancelCustomer": {
+        "title": "إلغاء الحجز",
+        "description": "هل أنت متأكد من إلغاء هذا الحجز؟ قد يؤثر ذلك على سجل حجوزاتك.",
+        "confirmText": "إلغاء الحجز"
+      }
     }
   }
 }

@@ -3,10 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { jobFormSchema } from "@/lib/schemas/jobs"; // ✅ Import du schéma
+import { formatDateShort, formatTimeShort, formatDateTimeShort, formatCurrency } from "@/lib/date-utils";
+
+
+import { jobFormSchema } from "@/lib/schemas/jobs"; 
 import Image from "next/image";
 import {
   Card,
@@ -77,6 +81,7 @@ const STEPS = [
 
 export default function PostJobPage() {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("postJob");
   const { user } = useUserStore();
   const { toast } = useToast();
@@ -113,22 +118,17 @@ export default function PostJobPage() {
     mode: "onChange",
   });
 
-  // ✅ CORRECTION MAJEURE : On utilise 'any' ici pour éviter les erreurs "Type 'unknown' is not assignable to type 'ReactNode'"
-  // Cela permet à formData d'être lu dans le JSX sans que TypeScript ne bloque.
   const formData = form.watch() as any;
   const { errors } = form.formState;
 
-  // Data from database
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
 
-  // Fetch initial data
   const fetchInitialData = React.useCallback(async () => {
     setLoading(true);
 
     try {
-      // 1. Categories
       const categoriesResult = await getServiceCategories();
       if (categoriesResult.success && categoriesResult.categories) {
         setCategories(categoriesResult.categories as ServiceCategory[]);
@@ -143,7 +143,6 @@ export default function PostJobPage() {
         setCategories(localCategories);
       }
 
-      // 2. Services
       const servicesResult = await getServices();
       if (servicesResult.success && servicesResult.services) {
         setServices(servicesResult.services as Service[]);
@@ -163,16 +162,13 @@ export default function PostJobPage() {
         setServices(allServices);
       }
 
-      // 3. Addresses
       const addressesResult = await getUserAddresses();
       if (addressesResult.success && addressesResult.addresses) {
         setAddresses(addressesResult.addresses);
 
-        // Auto-select first address
         if (addressesResult.addresses.length > 0) {
           const firstAddressId = addressesResult.addresses[0].id;
           if (firstAddressId) {
-            // On set la valeur sans déclencher de validation bloquante
             form.setValue("jobDetails.selectedAddressId", firstAddressId);
           }
         }
@@ -181,30 +177,26 @@ export default function PostJobPage() {
       console.error("Error fetching initial data:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to load form data.",
+        title: t("errors.fetchingData"),
+        description: t("errors.failedToLoadFormData"),
       });
     } finally {
       setLoading(false);
     }
-  }, [form, toast]);
+  }, [form, toast, t]);
 
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
 
-  // Navigation functions
   const goToNextStep = async () => {
     if (currentStep === 1) {
-      // ✅ CORRECTION : J'ai retiré "jobDetails.selectedAddressId" de la liste ci-dessous.
-      // Zod ne bloquera plus la navigation si l'adresse pose problème.
       const isValid = await form.trigger([
         "jobDetails.title",
         "jobDetails.description",
         "jobDetails.categoryId",
         "jobDetails.serviceId",
       ]);
-      
       if (isValid) setCurrentStep(2);
     } else if (currentStep === 2) {
       const isValid = await form.trigger([
@@ -230,21 +222,14 @@ export default function PostJobPage() {
     );
   }, [services, formData.jobDetails?.categoryId]);
 
-  // Submit function
   const handleSubmit = async () => {
-    // Trigger validation for all fields
     const isValid = await form.trigger();
-    
+
     if (!isValid) {
-      // Get form errors from react-hook-form
       const errors = form.formState.errors;
-      
-      // Find first error message
       const findFirstError = (errorObj: any): string | null => {
         for (const key in errorObj) {
-          if (errorObj[key]?.message) {
-            return errorObj[key].message;
-          }
+          if (errorObj[key]?.message) return errorObj[key].message;
           if (typeof errorObj[key] === 'object' && errorObj[key] !== null) {
             const nested = findFirstError(errorObj[key]);
             if (nested) return nested;
@@ -252,20 +237,19 @@ export default function PostJobPage() {
         }
         return null;
       };
-      
       const firstError = findFirstError(errors);
-      
+
       if (firstError) {
         toast({
           variant: "destructive",
-          title: "Erreur de validation",
+          title: t("errors.validationError"),
           description: firstError,
         });
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur de validation",
-          description: "Veuillez remplir tous les champs requis",
+          title: t("errors.validationError"),
+          description: t("errors.fillRequiredFields"),
         });
       }
       return;
@@ -274,15 +258,12 @@ export default function PostJobPage() {
     setSubmitting(true);
 
     try {
-      // Get validated data from form (already validated by react-hook-form with Zod)
       const data = form.getValues();
 
-      // Ensure selectedAddressId is a string
       if (data.jobDetails.selectedAddressId && typeof data.jobDetails.selectedAddressId !== 'string') {
         data.jobDetails.selectedAddressId = String(data.jobDetails.selectedAddressId);
       }
 
-      // Additional Zod validation as a safety check
       const validation = jobFormSchema.safeParse(data);
       if (!validation.success) {
         console.error("Validation errors:", validation.error.issues);
@@ -291,22 +272,17 @@ export default function PostJobPage() {
           const path = issue.path.join(".");
           errors[path] = issue.message;
         });
-        
-        // Set errors in form - react-hook-form will handle nested paths automatically
+
         Object.entries(errors).forEach(([path, message]) => {
           const pathArray = path.split(".");
-          if (pathArray.length === 2) {
-            // Use type assertion for nested paths
-            form.setError(pathArray as any, { message });
-          }
+          if (pathArray.length === 2) form.setError(pathArray as any, { message });
         });
-        
-        // Show first error
+
         const firstError = Object.values(errors)[0];
         if (firstError) {
           toast({
             variant: "destructive",
-            title: "Erreur de validation",
+            title: t("errors.validationError"),
             description: firstError,
           });
         }
@@ -314,7 +290,6 @@ export default function PostJobPage() {
         return;
       }
 
-      // Use validated data
       const validatedData = validation.data;
 
       const jobData: CreateJobData = {
@@ -345,7 +320,7 @@ export default function PostJobPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: t("errors.error"),
           description: result.error || t("errors.jobCreationFailed"),
         });
       }
@@ -353,7 +328,7 @@ export default function PostJobPage() {
       console.error("Error creating job:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("errors.error"),
         description: t("errors.jobCreationFailed"),
       });
     } finally {
@@ -364,7 +339,7 @@ export default function PostJobPage() {
   if (loading && categories.length === 0) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
-        <div className="text-center">Loading...</div>
+        <div className="text-center">{t("loading")}</div>
       </div>
     );
   }
@@ -420,7 +395,6 @@ export default function PostJobPage() {
             ))}
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Card className="bg-[var(--color-surface)] shadow-xl rounded-2xl border border-[var(--color-border)]">
@@ -459,6 +433,7 @@ export default function PostJobPage() {
                         {...form.register("jobDetails.description")} 
                         rows={4} 
                         maxLength={5000}
+                        placeholder={t("jobDetails.descriptionPlaceholder")}
                         className={`w-full p-3 border rounded-xl ${errors.jobDetails?.description ? "border-red-500" : "border-[var(--color-border)]"}`} 
                       />
                       <div className="flex items-center justify-end">
@@ -469,9 +444,9 @@ export default function PostJobPage() {
                             ? "text-orange-500"
                             : "text-[var(--color-text-secondary)]"
                         }`}>
-                          {formData.jobDetails?.description?.length || 0} / 80 caractères minimum
+                          {formData.jobDetails?.description?.length || 0} {t("jobDetails.minCharacters")}
                           {formData.jobDetails?.description && formData.jobDetails.description.length < 80 && (
-                            <span className="ml-1">({80 - formData.jobDetails.description.length} restants)</span>
+                            <span className="ml-1">{t("jobDetails.remaining", { remaining: 80 - formData.jobDetails.description.length })}</span>
                           )}
                         </p>
                       </div>
@@ -483,7 +458,7 @@ export default function PostJobPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="outline" className={`w-full justify-between ${errors.jobDetails?.categoryId ? "border-red-500" : ""}`}>
-                              {formData.jobDetails?.categoryId ? categories.find(c => c.id === formData.jobDetails.categoryId)?.name_en : "Select category"}
+                              {formData.jobDetails?.categoryId ? categories.find(c => c.id === formData.jobDetails.categoryId)?.[`name_${locale}` as keyof ServiceCategory] ?? categories.find(c => c.id === formData.jobDetails.categoryId)?.name_en : t("jobDetails.selectCategoryPlaceholder")}
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -493,7 +468,7 @@ export default function PostJobPage() {
                                 form.setValue("jobDetails.categoryId", category.id, { shouldValidate: true });
                                 form.setValue("jobDetails.serviceId", 0);
                               }}>
-                                {category.name_en}
+                                {category[`name_${locale}` as keyof ServiceCategory] ?? category.name_en}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -506,14 +481,14 @@ export default function PostJobPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="outline" className={`w-full justify-between ${errors.jobDetails?.serviceId ? "border-red-500" : ""}`} disabled={!formData.jobDetails?.categoryId}>
-                              {formData.jobDetails?.serviceId ? services.find(s => s.id === formData.jobDetails.serviceId)?.name_en : "Select service"}
+                              {formData.jobDetails?.serviceId ? services.find(s => s.id === formData.jobDetails.serviceId)?.[`name_${locale}` as keyof Service] ?? services.find(s => s.id === formData.jobDetails.serviceId)?.name_en : t("jobDetails.selectServicePlaceholder")}
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="w-full">
                             {filteredServices.map((service) => (
                               <DropdownMenuItem key={service.id} onClick={() => form.setValue("jobDetails.serviceId", service.id, { shouldValidate: true })}>
-                                {service.name_en}
+                                {service[`name_${locale}` as keyof Service] ?? service.name_en}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -531,7 +506,7 @@ export default function PostJobPage() {
                               <span className="truncate">
                                 {formData.jobDetails?.selectedAddressId
                                   ? addresses.find(a => a.id === formData.jobDetails.selectedAddressId)?.street_address + ", " + addresses.find(a => a.id === formData.jobDetails.selectedAddressId)?.city
-                                  : "Select location"}
+                                  : t("jobDetails.selectLocationPlaceholder")}
                               </span>
                               <MapPin className="h-4 w-4 opacity-50" />
                             </Button>
@@ -546,8 +521,8 @@ export default function PostJobPage() {
                         </DropdownMenu>
                       ) : (
                         <div className="p-4 border border-dashed rounded text-center">
-                          <p className="text-sm mb-2">No addresses found.</p>
-                          <Button variant="outline" size="sm" onClick={() => router.push("/customer/profile?section=addresses")}>Add Address</Button>
+                          <p className="text-sm mb-2">{t("jobDetails.noAddressesFound")}</p>
+                          <Button variant="outline" size="sm" onClick={() => router.push("/customer/profile?section=addresses")}>{t("buttons.addAddress")}</Button>
                         </div>
                       )}
                       {/* Pas d'erreur affichée ici car on suppose l'auto-selection */}
@@ -583,11 +558,11 @@ export default function PostJobPage() {
                     {!formData.scheduleBudget?.isFlexible && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-3">
-                          <Label>{t("scheduleBudget.preferredTime")} (Start)</Label>
+                          <Label>{t("scheduleBudget.preferredTime")} ({t("scheduleBudget.preferredTimeStart")})</Label>
                           <Input type="time" {...form.register("scheduleBudget.preferredTimeStart")} />
                         </div>
                         <div className="space-y-3">
-                          <Label>{t("scheduleBudget.preferredTime")} (End)</Label>
+                          <Label>{t("scheduleBudget.preferredTime")} ({t("scheduleBudget.preferredTimeEnd")})</Label>
                           <Input type="time" {...form.register("scheduleBudget.preferredTimeEnd")} />
                         </div>
                       </div>
@@ -619,68 +594,91 @@ export default function PostJobPage() {
               )}
 
               {/* STEP 3 - REVIEW */}
-              {currentStep === 3 && (
-                <>
-                  <CardHeader className="bg-[var(--color-purple-light)] border-b border-[var(--color-border)]">
-                    <CardTitle className="text-xl font-bold">{t("review.title")}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-6">
-                    <div className="bg-[var(--color-surface)] border rounded-xl p-4">
-                      <h4 className="font-bold text-lg mb-2">{formData.jobDetails?.title}</h4>
-                      <p className="text-sm text-gray-500 mb-3">{formData.jobDetails?.description}</p>
-                      <div className="flex gap-2">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                          {categories.find(c => c.id === formData.jobDetails?.categoryId)?.name_en}
-                        </span>
-                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                          {services.find(s => s.id === formData.jobDetails?.serviceId)?.name_en}
-                        </span>
-                      </div>
-                    </div>
+              {/* STEP 3 - REVIEW */}
+{currentStep === 3 && (
+  <>
+    <CardHeader className="bg-[var(--color-purple-light)] border-b border-[var(--color-border)]">
+      <CardTitle className="text-xl font-bold">{t("review.title")}</CardTitle>
+    </CardHeader>
+    <CardContent className="p-6 space-y-6">
+      <div className="bg-[var(--color-surface)] border rounded-xl p-4">
+        <h4 className="font-bold text-lg mb-2">{formData.jobDetails?.title}</h4>
+        <p className="text-sm text-gray-500 mb-3">
+          {/* Description – rien n'est affiché si vide */}
+{formData.jobDetails?.description?.trim() && (
+  <div 
+    className={`
+      text-sm text-gray-700 mb-4
+      whitespace-pre-wrap break-words
+      leading-relaxed
+    `}
+  >
+    {formData.jobDetails.description}
+  </div>
+)}
+        </p>
+        <div className="flex gap-2">
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+            {categories.find(c => c.id === formData.jobDetails?.categoryId)?.[`name_${locale}` as keyof ServiceCategory] ?? categories.find(c => c.id === formData.jobDetails.categoryId)?.name_en}
+          </span>
+          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+            {services.find(s => s.id === formData.jobDetails?.serviceId)?.[`name_${locale}` as keyof Service] ?? services.find(s => s.id === formData.jobDetails.serviceId)?.name_en}
+          </span>
+        </div>
+      </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="border rounded-xl p-4">
-                        <h4 className="font-bold mb-2 flex items-center gap-2"><Calendar className="h-4 w-4" /> Schedule</h4>
-                        <p className="text-sm">
-                          <strong>Date:</strong> {formData.scheduleBudget?.preferredDate}
-                        </p>
-                        <p className="text-sm">
-                          <strong>Duration:</strong> {String(formData.scheduleBudget?.estimatedDuration)} hours
-                        </p>
-                      </div>
-                      <div className="border rounded-xl p-4">
-                        <h4 className="font-bold mb-2 flex items-center gap-2"><DollarSign className="h-4 w-4" /> Budget</h4>
-                        <p className="text-2xl font-bold text-green-600">
-                          {String(formData.scheduleBudget?.customerBudget)} {String(formData.scheduleBudget?.currency)}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Max applications: {String(formData.scheduleBudget?.maxApplications)}
-                        </p>
-                      </div>
-                    </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Schedule */}
+        <div className="border rounded-xl p-4">
+          <h4 className="font-bold mb-2 flex items-center gap-2"><Calendar className="h-4 w-4" /> {t("review.scheduleSection")}</h4>
+          <p className="text-sm">
+            <strong>{t("review.dateLabel")}</strong> {formatDateShort(formData.scheduleBudget?.preferredDate, locale)}
+          </p>
+          {!formData.scheduleBudget?.isFlexible && (
+            <p className="text-sm">
+              <strong>{t("review.preferredTimeLabel")}</strong> {formatTimeShort(formData.scheduleBudget?.preferredTimeStart, locale)} - {formatTimeShort(formData.scheduleBudget?.preferredTimeEnd, locale)}
+            </p>
+          )}
+          <p className="text-sm">
+            <strong>{t("review.durationLabel")}</strong> {String(formData.scheduleBudget?.estimatedDuration)} {t("review.hoursUnit")}
+          </p>
+        </div>
 
-                    <div className="border rounded-xl p-4">
-                      <h4 className="font-bold mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> Location</h4>
-                      <p className="text-sm">
-                        {addresses.find(a => a.id === formData.jobDetails?.selectedAddressId)?.street_address}, 
-                        {addresses.find(a => a.id === formData.jobDetails?.selectedAddressId)?.city}
-                      </p>
-                    </div>
-                  </CardContent>
-                </>
-              )}
+        {/* Budget */}
+        <div className="border rounded-xl p-4">
+          <h4 className="font-bold mb-2 flex items-center gap-2"><DollarSign className="h-4 w-4" /> {t("review.budgetSection")}</h4>
+          <p className="text-2xl font-bold text-green-600">
+            {formatCurrency(formData.scheduleBudget?.customerBudget || 0, formData.scheduleBudget?.currency, locale)}
+          </p>
+          <p className="text-sm text-gray-500">
+            {t("review.maxApplicationsLabel")} {String(formData.scheduleBudget?.maxApplications)}
+          </p>
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="border rounded-xl p-4">
+        <h4 className="font-bold mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> {t("review.locationSection")}</h4>
+        <p className="text-sm">
+          {addresses.find(a => a.id === formData.jobDetails?.selectedAddressId)?.street_address}, {addresses.find(a => a.id === formData.jobDetails?.selectedAddressId)?.city}
+        </p>
+      </div>
+    </CardContent>
+  </>
+)}
+
 
               <CardFooter className="flex gap-4 p-6 border-t">
                 <Button variant="outline" onClick={goToPreviousStep} disabled={currentStep === 1 || loading}>
-                  <ChevronLeft className="h-4 w-4 mr-2" /> Previous
+                  <ChevronLeft className="h-4 w-4 mr-2" /> {t("buttons.previous")}
                 </Button>
                 {currentStep < STEPS.length ? (
                   <Button onClick={goToNextStep} disabled={loading} className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white">
-                    Next <ChevronRight className="h-4 w-4 ml-2" />
+                    {t("buttons.next")} <ChevronRight className="h-4 w-4 ml-2" />
                   </Button>
                 ) : (
                   <Button onClick={handleSubmit} disabled={submitting} className="bg-green-600 hover:bg-green-700 text-white">
-                    {submitting ? "Publishing..." : "Publish Job"} <Sparkles className="h-4 w-4 ml-2" />
+                    {submitting ? t("buttons.publishing") : t("buttons.publishJob")} <Sparkles className="h-4 w-4 ml-2" />
                   </Button>
                 )}
               </CardFooter>
@@ -690,11 +688,11 @@ export default function PostJobPage() {
           <div className="lg:col-span-1">
             <Card className="shadow-lg rounded-2xl border">
               <CardHeader>
-                <CardTitle className="text-lg">Need Help?</CardTitle>
+                <CardTitle className="text-lg">{t("needHelp")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-500 mb-4">Our support team is here to help.</p>
-                <Button variant="outline" className="w-full" onClick={() => setShowContactDialog(true)}>Contact Support</Button>
+                <p className="text-sm text-gray-500 mb-4">{t("supportDescription")}</p>
+                <Button variant="outline" className="w-full" onClick={() => setShowContactDialog(true)}>{t("buttons.contactSupport")}</Button>
               </CardContent>
             </Card>
           </div>

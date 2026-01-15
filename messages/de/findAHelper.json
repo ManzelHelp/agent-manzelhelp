@@ -6,6 +6,10 @@
       "startSearching": "Suche Starten"
     },
     "advantages": {
+      "freeForCustomers": {
+        "title": "Kostenlos für Kunden",
+        "description": "Die Nutzung der Plattform und das Aufgeben von Jobs ist für Kunden 100 % kostenlos."
+      },
       "verifiedTrusted": {
         "title": "Verifizierte und Vertrauenswürdige Helfer",
         "description": "Alle unsere Service-Agenten werden überprüft und von der Community bewertet."

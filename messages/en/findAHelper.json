@@ -6,6 +6,10 @@
       "startSearching": "Start Searching"
     },
     "advantages": {
+      "freeForCustomers": {
+        "title": "Free for Customers",
+        "description": "Using the platform and posting jobs is 100% free for customers."
+      },
       "verifiedTrusted": {
         "title": "Verified & Trusted Helpers",
         "description": "All our service agents are background-checked and reviewed by the community."

@@ -18,6 +18,11 @@ export default async function FindAHelperPage({
 
   const ADVANTAGES = [
     {
+      title: t("advantages.freeForCustomers.title"),
+      description: t("advantages.freeForCustomers.description"),
+      icon: "🎁",
+    },
+    {
       title: t("advantages.verifiedTrusted.title"),
       description: t("advantages.verifiedTrusted.description"),
       icon: "✅",

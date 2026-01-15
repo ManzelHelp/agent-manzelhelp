@@ -49,6 +49,10 @@
       "makeConnections": {
         "title": "Verbindungen Knüpfen",
         "description": "Bauen Sie dauerhafte Beziehungen zu Kunden auf, die Ihre Arbeit schätzen"
+      },
+      "walletSystem": {
+        "title": "Brieftaschen-System",
+        "description": "Verwalten Sie Ihre Einnahmen ganz einfach. Erhalten Sie Zahlungen direkt in Ihr ManzelHelp-Wallet und lassen Sie sich diese sicher auszahlen."
       }
     },
     "howItWorks": {

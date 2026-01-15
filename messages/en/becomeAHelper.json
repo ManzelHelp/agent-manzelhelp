@@ -49,6 +49,10 @@
       "makeConnections": {
         "title": "Make Connections",
         "description": "Build lasting relationships with clients who value your work"
+      },
+      "walletSystem": {
+        "title": "Wallet System",
+        "description": "Manage your earnings easily. Receive payments directly into your ManzelHelp wallet and withdraw them securely."
       }
     },
     "howItWorks": {

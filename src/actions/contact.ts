@@ -4,8 +4,8 @@ import { handleError } from "@/lib/utils";
 import { createClient, createServiceRoleClient } from "@/supabase/server";
 import type { ContactMessage, ContactMessageStatus } from "@/types/supabase";
 
-// Re-export types for convenience
-export type { ContactMessage, ContactMessageStatus };
+// Note: Types cannot be re-exported from server actions in Next.js
+// Import ContactMessage and ContactMessageStatus directly from @/types/supabase where needed
 
 export interface SubmitContactMessageData {
   first_name: string;

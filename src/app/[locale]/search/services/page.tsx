@@ -9,6 +9,7 @@ import MobileFiltersDropdown from "@/components/filters/MobileFiltersDropdown";
 import SortDropdown from "@/components/SortDropdown";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackButton } from "@/components/ui/BackButton";
+import { getServices } from "@/actions/services";
 import {
   PricingType,
   ServiceStatus,
@@ -106,8 +107,9 @@ async function SearchPage({ searchParams, params }: SearchPageProps) {
   const supabase = await createClient();
   const t = await getTranslations("search");
 
-  // Use centralized categories - get all parent categories for search
-  const categories = getParentCategoriesForSearch();
+  // Fetch categories from database instead of hardcoded ones
+  const categoriesResult = await getServices();
+  const categories = categoriesResult.success ? categoriesResult.services || [] : [];
 
   // Fetch services using the service_listing_view which has all the data we need
   // Only show active and verified services
