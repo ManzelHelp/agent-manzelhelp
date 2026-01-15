@@ -25,6 +25,8 @@
     "notifications": "Notifications",
     "tasker": "Tasker",
     "customer": "Customer",
-    "contactSupport": "Contact Support"
+    "contactSupport": "Contact Support",
+    "postJob": "Post a Job",
+    "postService": "Post a Service"
   }
 }

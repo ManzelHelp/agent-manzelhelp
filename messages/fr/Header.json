@@ -25,6 +25,8 @@
     "notifications": "Notifications",
     "tasker": "Assistant",
     "customer": "Client",
-    "contactSupport": "Contacter le Support"
+    "contactSupport": "Contacter le Support",
+    "postJob": "Publier un Emploi",
+    "postService": "Publier un Service"
   }
 }

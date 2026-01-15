@@ -97,6 +97,28 @@
       "loadFailed": "فشل تحميل بيانات الملف الشخصي",
       "userNotFound": "لم يتم العثور على المستخدم. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
       "failedToAdd": "فشل إضافة العنوان"
-    }
+    },
+    "actions": {
+      "edit": "تعديل",
+      "cancel": "إلغاء",
+      "save": "حفظ التغييرات",
+      "saving": "جاري الحفظ...",
+      "delete": "حذف"
+    },
+    "availability": {
+      "title": "التوفر",
+      "setWorkingHours": "حدد ساعات عملك"
+    },
+    "profileSettings": "إعدادات الملف الشخصي",
+    "manageAccountInformation": "إدارة معلومات حسابك وتفضيلاتك",
+    "profileCompletion": "إكمال الملف الشخصي",
+    "fieldsRemaining": "يتبقى {count} حقول",
+    "complete": "تم إكمال {percentage}%",
+    "manageBasicDetails": "إدارة تفاصيل ملفك الشخصي الأساسية",
+    "bioExperience": "السيرة والخبرة",
+    "tellCustomers": "أخبر العملاء عن مهاراتك",
+    "manageServiceAreas": "إدارة مناطق خدمتك",
+    "paymentMethods": "طرق الدفع",
+    "managePaymentInfo": "إدارة معلومات الدفع الخاصة بك"
   }
 }

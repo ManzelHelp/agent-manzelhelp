@@ -18,6 +18,7 @@
         "lastName": "Nom",
         "email": "Email",
         "phoneNumber": "Téléphone",
+        "phonePlaceholder": "+212 6XX XXX XXX",
         "dateOfBirth": "Date de naissance",
         "emailReadOnly": "L'email ne peut pas être modifié ici",
         "profilePhoto": "Photo de profil",
@@ -92,6 +93,30 @@
       "loadFailed": "Échec du chargement des données du profil",
       "userNotFound": "Utilisateur introuvable. Veuillez actualiser la page et réessayer.",
       "failedToAdd": "Échec de l'ajout de l'adresse"
-    }
+    },
+    "actions": {
+      "edit": "Modifier",
+      "cancel": "Annuler",
+      "save": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "delete": "Supprimer"
+    },
+    "availability": {
+      "title": "Disponibilité",
+      "setWorkingHours": "Définissez vos heures de travail"
+    },
+    "profileSettings": "Paramètres du Profil",
+    "manageAccountInformation": "Gérez vos informations de compte et préférences",
+    "profileCompletion": "Complétion du Profil",
+    "fieldsRemaining": "{count} champs restants",
+    "complete": "{percentage}% complété",
+    "manageBasicDetails": "Gérez vos détails de profil de base",
+    "bioExperience": "Bio et Expérience",
+    "tellCustomers": "Parlez aux clients de vos compétences",
+    "manageServiceAreas": "Gérez vos zones de service",
+    "paymentMethods": "Modes de Paiement",
+    "managePaymentInfo": "Gérez vos informations de paiement",
+    "editPersonalInformation": "Modifier les Informations Personnelles",
+    "updatePersonalInformation": "Mettez à jour vos informations personnelles et photo de profil"
   }
 }

@@ -23,7 +23,14 @@
       "requirements": "Special Requirements (Optional)",
       "requirementsPlaceholder": "Any special instructions, materials needed, or specific requirements...",
       "images": "Add Photos (Optional)",
-      "imagesDescription": "Upload photos to help taskers understand the job better"
+      "imagesDescription": "Upload photos to help taskers understand the job better",
+      "minCharacters": "characters minimum",
+      "selectCategoryPlaceholder": "Select Category",
+      "selectServicePlaceholder": "Select Service",
+      "noAddressesFound": "No addresses found",
+      "selectLocation": "Select Location",
+      "addAddress": "Add Address",
+      "selectLocationPlaceholder": "Select Location"
     },
     "scheduleBudget": {
       "preferredDate": "Preferred Date",
@@ -72,6 +79,20 @@
       "tip2": "Include photos to help taskers understand the job better",
       "tip3": "Set a realistic budget based on market rates",
       "tip4": "Be flexible with timing to get more applications"
-    }
+    },
+    "buttons": {
+      "previous": "Previous",
+      "next": "Next",
+      "publishJob": "Publish Job",
+      "publishing": "Publishing...",
+      "addAddress": "Add Address",
+      "contactSupport": "Contact Support"
+    },
+    "backButton": "Back",
+    "needHelp": "Need Help?",
+    "supportDescription": "Our support team is here to help you.",
+    "loading": "Loading...",
+    "selectCategoryPlaceholder": "Select Category",
+    "selectServicePlaceholder": "Select Service"
   }
 }

@@ -23,7 +23,14 @@
       "requirements": "Exigences Spéciales (Optionnel)",
       "requirementsPlaceholder": "Instructions spéciales, matériaux nécessaires ou exigences spécifiques...",
       "images": "Ajouter des Photos (Optionnel)",
-      "imagesDescription": "Téléchargez des photos pour aider les assistants à mieux comprendre l'emploi"
+      "imagesDescription": "Téléchargez des photos pour aider les assistants à mieux comprendre l'emploi",
+      "minCharacters": "caractères minimum",
+      "selectCategoryPlaceholder": "Sélectionner une Catégorie",
+      "selectServicePlaceholder": "Sélectionner un Service",
+      "noAddressesFound": "Aucune adresse trouvée",
+      "selectLocation": "Sélectionner un Lieu",
+      "addAddress": "Ajouter une Adresse",
+      "selectLocationPlaceholder": "Sélectionner un Lieu"
     },
     "scheduleBudget": {
       "preferredDate": "Date Préférée",
@@ -72,6 +79,20 @@
       "tip2": "Incluez des photos pour aider les assistants à mieux comprendre l'emploi",
       "tip3": "Définissez un budget réaliste basé sur les tarifs du marché",
       "tip4": "Soyez flexible avec le timing pour obtenir plus de candidatures"
-    }
+    },
+    "buttons": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "publishJob": "Publier l'Emploi",
+      "publishing": "Publication...",
+      "addAddress": "Ajouter une Adresse",
+      "contactSupport": "Contacter le Support"
+    },
+    "backButton": "Retour",
+    "needHelp": "Besoin d'Aide ?",
+    "supportDescription": "Notre équipe de support est là pour vous aider.",
+    "loading": "Chargement...",
+    "selectCategoryPlaceholder": "Sélectionner une Catégorie",
+    "selectServicePlaceholder": "Sélectionner un Service"
   }
 }

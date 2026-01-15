@@ -25,6 +25,8 @@
     "notifications": "الإشعارات",
     "tasker": "المساعد",
     "customer": "العميل",
-    "contactSupport": "اتصل بالدعم"
+    "contactSupport": "اتصل بالدعم",
+    "postJob": "نشر وظيفة",
+    "postService": "نشر خدمة"
   }
 }
