@@ -100,6 +100,15 @@
       "unknown": "Unbekannt"
     },
     "actions": {
+      "startJob": "Job starten",
+      "starting": "Startet...",
+      "completeJob": "Job abschließen",
+      "completing": "Wird abgeschlossen...",
+      "jobStarted": "Job erfolgreich gestartet",
+      "jobCompleted": "Job abgeschlossen",
+      "waitingConfirmation": "Warten auf Kundenbestätigung",
+      "jobConfirmed": "Job bestätigt",
+      "customerConfirmed": "Vom Kunden bestätigt am {date}",
       "edit": "Bearbeiten",
       "clone": "Klonen",
       "save": "Speichern",
@@ -123,7 +132,6 @@
       "cancelling": "Storniere...",
       "success": "Job wurde erfolgreich storniert.",
       "error": "Job konnte nicht storniert werden."
-    }
     }
   }
 }

@@ -1,5 +1,8 @@
 {
   "cookiePolicy": {
+    "common": {
+      "note": "La désactivation de certains cookies peut affecter la fonctionnalité de notre site Web et votre expérience utilisateur."
+    },
     "metadata": {
       "title": "Politique des Cookies - ManzelHelp",
       "description": "Découvrez comment ManzelHelp utilise les cookies et technologies similaires pour améliorer votre expérience sur notre plateforme."

@@ -2,6 +2,7 @@
   "profile": {
     "title": "Profile",
     "subtitle": "Manage your account information and preferences",
+    "bioHint": "Write a short bio to help others understand who you are.",
     "navigation": {
       "title": "Profile Settings"
     },

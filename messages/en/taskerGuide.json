@@ -1,5 +1,8 @@
 {
   "taskerGuide": {
+    "common": {
+      "step": "Step"
+    },
     "metadata": {
       "title": "Tasker Getting Started Guide - ManzelHelp",
       "description": "Complete guide for new taskers on ManzelHelp. Learn how to set up your profile, find customers, and start earning money in Morocco."

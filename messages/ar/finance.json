@@ -213,6 +213,7 @@
         "serviceTitle": "عنوان الخدمة",
         "bookingStatus": "حالة الحجز",
         "bookingId": "رقم الحجز",
+        "jobId": "رقم الوظيفة",
         "feeBreakdown": "تفصيل الرسوم",
         "grossAmount": "المبلغ الإجمالي",
         "platformFee": "رسوم المنصة",

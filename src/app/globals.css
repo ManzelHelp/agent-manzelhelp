@@ -397,6 +397,9 @@
   }
 }
 
+/* RTL fixes for shared shadcn Dialog close button positioning
+   (Now handled via logical property `end-4` in the component) */
+
 /* Mobile-specific improvements */
 @layer utilities {
   /* Improved touch targets for mobile */

@@ -63,6 +63,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
+import { localeDirection } from "@/i18n/config";
+import type { Service, ServiceCategory } from "@/types/supabase";
 
 interface JobDetailsData {
   id: string;
@@ -116,6 +119,9 @@ export default function JobDetailPage() {
   const { toast } = useToast();
   const t = useTranslations("jobDetails");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
+  const direction = localeDirection[locale] ?? "ltr";
+  const isRTL = direction === "rtl";
   const [data, setData] = useState<JobDetailsData | null>(null);
   const [applications, setApplications] = useState<JobApplicationWithDetails[]>(
     []
@@ -667,10 +673,12 @@ export default function JobDetailPage() {
 
         {/* Cancel Job Dialog */}
         <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-lg" dir={direction}>
             <DialogHeader>
-              <DialogTitle>{t("cancelJob.title", { default: "Cancel job" })}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className={isRTL ? "text-right" : "text-left"}>
+                {t("cancelJob.title", { default: "Cancel job" })}
+              </DialogTitle>
+              <DialogDescription className={isRTL ? "text-right" : "text-left"}>
                 {t("cancelJob.description", {
                   default:
                     "Tell us why you want to cancel. This will unassign the tasker and mark the job as cancelled so you can clone/repost it.",
@@ -678,11 +686,21 @@ export default function JobDetailPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
+            <div className={isRTL ? "space-y-4 text-right" : "space-y-4 text-left"}>
               <div className="space-y-2">
                 <Label>{t("cancelJob.reasonLabel", { default: "Reason" })}</Label>
-                <RadioGroup value={cancelReason} onValueChange={setCancelReason} className="gap-3">
-                  <label className="flex items-center gap-2">
+                <RadioGroup
+                  value={cancelReason}
+                  onValueChange={setCancelReason}
+                  className={isRTL ? "gap-3 items-start" : "gap-3 items-start"}
+                >
+                  <label
+                    className={
+                      isRTL
+                        ? "flex w-full items-center justify-start gap-2 text-right"
+                        : "flex w-full items-center justify-start gap-2 text-left"
+                    }
+                  >
                     <RadioGroupItem value="tasker_no_show" />
                     <span className="text-sm">
                       {t("cancelJob.reasons.tasker_no_show", {
@@ -690,7 +708,13 @@ export default function JobDetailPage() {
                       })}
                     </span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label
+                    className={
+                      isRTL
+                        ? "flex w-full items-center justify-start gap-2 text-right"
+                        : "flex w-full items-center justify-start gap-2 text-left"
+                    }
+                  >
                     <RadioGroupItem value="schedule_change" />
                     <span className="text-sm">
                       {t("cancelJob.reasons.schedule_change", {
@@ -698,7 +722,13 @@ export default function JobDetailPage() {
                       })}
                     </span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label
+                    className={
+                      isRTL
+                        ? "flex w-full items-center justify-start gap-2 text-right"
+                        : "flex w-full items-center justify-start gap-2 text-left"
+                    }
+                  >
                     <RadioGroupItem value="found_other_tasker" />
                     <span className="text-sm">
                       {t("cancelJob.reasons.found_other_tasker", {
@@ -706,7 +736,13 @@ export default function JobDetailPage() {
                       })}
                     </span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label
+                    className={
+                      isRTL
+                        ? "flex w-full items-center justify-start gap-2 text-right"
+                        : "flex w-full items-center justify-start gap-2 text-left"
+                    }
+                  >
                     <RadioGroupItem value="other" />
                     <span className="text-sm">
                       {t("cancelJob.reasons.other", { default: "Other" })}
@@ -723,11 +759,17 @@ export default function JobDetailPage() {
                   placeholder={t("cancelJob.detailsPlaceholder", {
                     default: "Add more context (optional)",
                   })}
-                  className="min-h-[100px]"
+                  className={isRTL ? "min-h-[100px] text-right" : "min-h-[100px] text-left"}
                 />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+              <div
+                className={
+                  isRTL
+                    ? "flex flex-col sm:flex-row-reverse gap-2 sm:justify-start"
+                    : "flex flex-col sm:flex-row gap-2 sm:justify-end"
+                }
+              >
                 <Button
                   variant="outline"
                   onClick={() => setIsCancelDialogOpen(false)}
@@ -1214,10 +1256,24 @@ export default function JobDetailPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {category?.[`name_${params.locale}` as keyof ServiceCategory] || category?.name_en || t("category")}
+                          {category
+                            ? params.locale === "ar"
+                              ? category.name_ar
+                              : params.locale === "fr"
+                                ? category.name_fr
+                                : params.locale === "de"
+                                  ? category.name_de
+                                  : category.name_en
+                            : t("category")}
                         </p>
                         <p className="text-sm text-[var(--color-text-secondary)]">
-                          {service?.[`name_${params.locale}` as keyof Service] || service?.name_en || data.service_name_en || t("service")}
+                          {service
+                            ? params.locale === "ar"
+                              ? service.name_ar
+                              : params.locale === "fr"
+                                ? service.name_fr
+                                : service.name_en
+                            : data.service_name_en || t("service")}
                         </p>
                       </div>
                     </div>
@@ -1466,7 +1522,7 @@ export default function JobDetailPage() {
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-2">
                             <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                              {application.currency || "MAD"} {application.proposed_price}
+                              {data?.currency || "MAD"} {application.proposed_price}
                             </span>
                           </div>
                           {application.estimated_duration && (

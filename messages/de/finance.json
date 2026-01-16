@@ -224,6 +224,7 @@
         "serviceTitle": "Service-Titel",
         "bookingStatus": "Buchungsstatus",
         "bookingId": "Buchungs-ID",
+        "jobId": "Job-ID",
         "feeBreakdown": "Gebührenaufschlüsselung",
         "grossAmount": "Bruttobetrag",
         "platformFee": "Plattformgebühr",

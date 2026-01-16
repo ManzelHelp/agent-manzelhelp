@@ -1241,6 +1241,10 @@ export async function getCustomerTransactionHistory(
         const amount = parseFloat(String(transaction.amount || "0")) || 0;
         const platformFee = parseFloat(String(transaction.platform_fee || "0")) || 0;
         
+        const bookingStatus: BookingStatus | null = transaction.booking_id
+          ? ((status ? String(status) : null) as BookingStatus | null)
+          : null;
+
         return {
           id: String(transaction.id || ""),
           amount: Number(amount),
@@ -1252,8 +1256,10 @@ export async function getCustomerTransactionHistory(
           createdAt: transaction.created_at ? new Date(transaction.created_at).toISOString() : new Date().toISOString(),
           processedAt: transaction.processed_at ? new Date(transaction.processed_at).toISOString() : (transaction.created_at ? new Date(transaction.created_at).toISOString() : null),
           bookingId: transaction.booking_id ? String(transaction.booking_id) : null,
+          jobId: transaction.job_id ? String(transaction.job_id) : null,
           serviceTitle: String(title || "Service"),
-          bookingStatus: (status ? String(status) : null) as BookingStatus | null,
+          relatedTitle: String(title || "Service"),
+          bookingStatus,
           currency: "MAD", // Default, could be made dynamic
         };
       });
@@ -1301,7 +1307,9 @@ export async function getCustomerTransactionHistory(
         createdAt: booking.created_at ? new Date(booking.created_at).toISOString() : new Date().toISOString(),
         processedAt: booking.completed_at ? new Date(booking.completed_at).toISOString() : null,
         bookingId: String(booking.id || ""),
+        jobId: null,
         serviceTitle: String(serviceTitleMap[booking.tasker_service_id] || "Service"),
+        relatedTitle: String(serviceTitleMap[booking.tasker_service_id] || "Service"),
         bookingStatus: String(booking.status || "") as BookingStatus,
         currency: String(booking.currency || "MAD"),
       };

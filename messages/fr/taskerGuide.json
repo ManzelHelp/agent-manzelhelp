@@ -1,5 +1,8 @@
 {
   "taskerGuide": {
+    "common": {
+      "step": "Étape"
+    },
     "metadata": {
       "title": "Guide de Démarrage pour les Assistants - ManzelHelp",
       "description": "Guide complet pour les nouveaux assistants sur ManzelHelp. Apprenez comment configurer votre profil, trouver des clients et commencer à gagner de l'argent au Maroc."

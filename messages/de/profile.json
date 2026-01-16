@@ -2,6 +2,7 @@
   "profile": {
     "title": "Profil",
     "subtitle": "Verwalten Sie Ihre Kontoinformationen und Einstellungen",
+    "bioHint": "Fügen Sie eine kurze Bio hinzu, damit andere Sie besser kennenlernen.",
     "navigation": {
       "title": "Profil-Einstellungen"
     },

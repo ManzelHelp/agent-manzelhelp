@@ -672,7 +672,8 @@ export const markMessagesAsReadAction = async (
     };
   } catch (error) {
     console.error("Error marking messages as read:", error);
-    return { success: false, ...handleError(error) };
+    const { errorMessage } = handleError(error);
+    return { success: false, errorMessage, updatedCount: 0 };
   }
 };
 

@@ -222,6 +222,7 @@
         "serviceTitle": "Service Title",
         "bookingStatus": "Booking Status",
         "bookingId": "Booking ID",
+        "jobId": "Job ID",
         "feeBreakdown": "Fee Breakdown",
         "grossAmount": "Gross Amount",
         "platformFee": "Platform Fee",

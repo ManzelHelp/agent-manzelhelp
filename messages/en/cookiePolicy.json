@@ -1,5 +1,8 @@
 {
   "cookiePolicy": {
+    "common": {
+      "note": "Disabling certain cookies may affect the functionality of our website and your user experience."
+    },
     "metadata": {
       "title": "Cookie Policy - ManzelHelp",
       "description": "Learn about how ManzelHelp uses cookies and similar technologies to improve your experience on our platform."

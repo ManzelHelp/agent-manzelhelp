@@ -1,5 +1,8 @@
 {
   "cookiePolicy": {
+    "common": {
+      "note": "Das Deaktivieren bestimmter Cookies kann die Funktionalität unserer Website und Ihre Benutzererfahrung beeinträchtigen."
+    },
     "metadata": {
       "title": "Cookie-Richtlinie - ManzelHelp",
       "description": "Erfahren Sie, wie ManzelHelp Cookies und ähnliche Technologien verwendet, um Ihre Erfahrung auf unserer Plattform zu verbessern."

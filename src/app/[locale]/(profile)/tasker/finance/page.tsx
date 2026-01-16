@@ -379,7 +379,7 @@ export default function TaskerFinancePage() {
         <BackButton />
       </div>
       {/* Header */}
-      <div className="text-center sm:text-left">
+      <div className="text-center sm:text-start">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text">
           {t("title")}
         </h1>

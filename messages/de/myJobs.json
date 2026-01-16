@@ -59,12 +59,15 @@
       "cloneError": "Job konnte nicht geklont werden"
     },
     "status": {
+      "active": "Offen",
       "open": "Offen",
       "under_review": "In Prüfung",
       "assigned": "Zugewiesen",
       "in_progress": "In Bearbeitung",
       "completed": "Abgeschlossen",
       "cancelled": "Storniert",
+      "disputed": "Streitfall",
+      "draft": "Entwurf",
       "unknown": "Unbekannt"
     },
     "actions": {

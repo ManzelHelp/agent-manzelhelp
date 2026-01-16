@@ -15,8 +15,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { cancellationReasonSchema } from "@/lib/schemas/messages";
 import { useToast } from "@/hooks/use-toast";
+import { localeDirection } from "@/i18n/config";
 
 interface CancellationReasonDialogProps {
   isOpen: boolean;
@@ -41,6 +43,9 @@ export function CancellationReasonDialog({
   isLoading = false,
 }: CancellationReasonDialogProps) {
   const t = useTranslations("bookingDetails.cancellation");
+  const locale = useLocale();
+  const direction = localeDirection[locale] ?? "ltr";
+  const isRTL = direction === "rtl";
   const { toast } = useToast();
   const [selectedReason, setSelectedReason] = useState<string>("");
   const [customComment, setCustomComment] = useState<string>("");
@@ -83,20 +88,26 @@ export function CancellationReasonDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg" dir={direction}>
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <div
+            className={
+              isRTL
+                ? "flex w-full flex-row-reverse items-center justify-end gap-3 text-right"
+                : "flex w-full items-center justify-start gap-3 text-left"
+            }
+          >
             <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
-            <DialogTitle className="text-lg font-semibold">
+            <DialogTitle className={isRTL ? "text-lg font-semibold text-right" : "text-lg font-semibold text-left"}>
               {t("title") || "Cancel Booking"}
             </DialogTitle>
           </div>
-          <DialogDescription>
+          <DialogDescription className={isRTL ? "text-right" : "text-left"}>
             {t("description") || "Please tell us why you're canceling this booking"}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className={isRTL ? "space-y-4 py-4 text-right" : "space-y-4 py-4 text-left"}>
           <div className="space-y-3">
             <Label className="text-base font-semibold">
               {t("reasonLabel") || "Reason for cancellation"} *
@@ -128,7 +139,14 @@ export function CancellationReasonDialog({
               className="space-y-3"
             >
               {PREDEFINED_REASONS.map((reason) => (
-                <div key={reason} className="flex items-start space-x-3">
+                <div
+                  key={reason}
+                  className={
+                    isRTL
+                      ? "flex w-full items-start justify-start gap-3"
+                      : "flex w-full items-start justify-start gap-3"
+                  }
+                >
                   <RadioGroupItem
                     value={reason}
                     id={reason}
@@ -136,7 +154,11 @@ export function CancellationReasonDialog({
                   />
                   <Label
                     htmlFor={reason}
-                    className="flex-1 cursor-pointer font-normal leading-tight"
+                    className={
+                      isRTL
+                        ? "flex-1 cursor-pointer font-normal leading-tight text-right"
+                        : "flex-1 cursor-pointer font-normal leading-tight text-left"
+                    }
                   >
                     {t.has(`reasons.${reason}`) ? t(`reasons.${reason}`) : reason.replace(/_/g, " ")}
                   </Label>

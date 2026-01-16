@@ -40,8 +40,6 @@ export function TransactionDetailDrawer({
   isOpen,
   onClose,
 }: TransactionDetailDrawerProps) {
-  if (!transaction) return null;
-
   const t = useTranslations("finance.walletRefund.transactionDetail");
   const tFinance = useTranslations("finance");
   const locale = useLocale();
@@ -51,6 +49,8 @@ export function TransactionDetailDrawer({
   }>({});
 
   React.useEffect(() => {
+    if (!isOpen || !transaction) return;
+    const tx = transaction;
     let cancelled = false;
 
     async function loadRelated() {
@@ -58,14 +58,14 @@ export function TransactionDetailDrawer({
         const supabase = createClient();
 
         const [jobRes, bookingRes] = await Promise.all([
-          transaction.jobId
-            ? supabase.from("jobs").select("id, title").eq("id", transaction.jobId).maybeSingle()
+          tx.jobId
+            ? supabase.from("jobs").select("id, title").eq("id", tx.jobId).maybeSingle()
             : Promise.resolve({ data: null, error: null } as any),
-          transaction.bookingId
+          tx.bookingId
             ? supabase
                 .from("service_bookings")
                 .select("id, tasker_service_id, tasker_services(title)")
-                .eq("id", transaction.bookingId)
+                .eq("id", tx.bookingId)
                 .maybeSingle()
             : Promise.resolve({ data: null, error: null } as any),
         ]);
@@ -88,14 +88,12 @@ export function TransactionDetailDrawer({
       }
     }
 
-    if (isOpen) {
-      loadRelated();
-    }
+    loadRelated();
 
     return () => {
       cancelled = true;
     };
-  }, [isOpen, transaction.bookingId, transaction.jobId]);
+  }, [isOpen, transaction?.bookingId, transaction?.jobId]);
 
   const formatCurrency = (amount: number, currency: string = "MAD") => {
     return formatCurrencyUtil(amount, currency, locale);
@@ -142,13 +140,17 @@ export function TransactionDetailDrawer({
     return t(`transactionTypes.${type}`, { default: type });
   };
 
+  // Important: hooks must run on every render; only return null AFTER hooks.
+  if (!transaction) return null;
+  const tx = transaction;
+
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()} direction="bottom">
       <DrawerContent className="max-h-[90vh] flex flex-col overflow-hidden">
         <DrawerHeader className="border-b flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {getStatusIcon(transaction.paymentStatus)}
+              {getStatusIcon(tx.paymentStatus)}
               <div>
                 <DrawerTitle className="text-xl font-bold">
                   {t("title", { default: "Transaction Details" })}
@@ -173,20 +175,20 @@ export function TransactionDetailDrawer({
               <div>
                 <p className="text-sm text-muted-foreground mb-1">{t("amount", { default: "Amount" })}</p>
                 <p className="text-3xl font-bold text-primary">
-                  {formatCurrency(transaction.netAmount, transaction.currency)}
+                  {formatCurrency(tx.netAmount, tx.currency)}
                 </p>
-                {transaction.platformFee > 0 && (
+                {tx.platformFee > 0 && (
                   <p className="text-sm text-muted-foreground mt-1">
-                    {t("gross", { default: "Gross" })}: {formatCurrency(transaction.amount, transaction.currency)} 
+                    {t("gross", { default: "Gross" })}: {formatCurrency(tx.amount, tx.currency)} 
                     {" - "}
-                    {t("fee", { default: "Fee" })}: {formatCurrency(transaction.platformFee, transaction.currency)}
+                    {t("fee", { default: "Fee" })}: {formatCurrency(tx.platformFee, tx.currency)}
                   </p>
                 )}
               </div>
               <div className="text-right">
-                {getStatusBadge(transaction.paymentStatus)}
+                {getStatusBadge(tx.paymentStatus)}
                 <p className="text-xs text-muted-foreground mt-2">
-                  {getTransactionTypeLabel(transaction.transactionType)}
+                  {getTransactionTypeLabel(tx.transactionType)}
                 </p>
               </div>
             </div>
@@ -203,12 +205,12 @@ export function TransactionDetailDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t("transactionId", { default: "Transaction ID" })}</p>
-                <p className="font-mono text-sm font-medium">{transaction.id}</p>
+                <p className="font-mono text-sm font-medium">{tx.id}</p>
               </div>
 
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t("type", { default: "Type" })}</p>
-                <p className="font-medium">{getTransactionTypeLabel(transaction.transactionType)}</p>
+                <p className="font-medium">{getTransactionTypeLabel(tx.transactionType)}</p>
               </div>
 
               <div className="space-y-1">
@@ -216,35 +218,35 @@ export function TransactionDetailDrawer({
                   <Calendar className="h-3 w-3" />
                   {t("createdAt", { default: "Created At" })}
                 </p>
-                <p className="font-medium">{formatDate(transaction.createdAt)}</p>
+                <p className="font-medium">{formatDate(tx.createdAt)}</p>
               </div>
 
-              {transaction.processedAt && (
+              {tx.processedAt && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" />
                     {t("processedAt", { default: "Processed At" })}
                   </p>
-                  <p className="font-medium">{formatDate(transaction.processedAt)}</p>
+                  <p className="font-medium">{formatDate(tx.processedAt)}</p>
                 </div>
               )}
 
-              {transaction.paymentMethod && (
+              {tx.paymentMethod && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{t("paymentMethod", { default: "Payment Method" })}</p>
-                  <p className="font-medium">{tFinance(`status.${transaction.paymentMethod?.toLowerCase()}`, { default: transaction.paymentMethod })}</p>
+                  <p className="font-medium">{tFinance(`status.${tx.paymentMethod?.toLowerCase()}`, { default: tx.paymentMethod })}</p>
                 </div>
               )}
 
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t("currency", { default: "Currency" })}</p>
-                <p className="font-medium">{transaction.currency}</p>
+                <p className="font-medium">{tx.currency}</p>
               </div>
             </div>
           </div>
 
           {/* Service/Job Information */}
-          {(transaction.relatedTitle || relatedInfo.jobTitle || relatedInfo.serviceTitle || transaction.bookingId || transaction.jobId) && (
+          {(tx.relatedTitle || relatedInfo.jobTitle || relatedInfo.serviceTitle || tx.bookingId || tx.jobId) && (
             <>
               <Separator />
               <div className="space-y-4">
@@ -258,31 +260,31 @@ export function TransactionDetailDrawer({
                     <p className="font-medium">
                       {relatedInfo.jobTitle ||
                         relatedInfo.serviceTitle ||
-                        transaction.relatedTitle ||
-                        transaction.serviceTitle ||
+                        tx.relatedTitle ||
+                        tx.serviceTitle ||
                         "—"}
                     </p>
                   </div>
-                  {transaction.bookingStatus && (
+                  {tx.bookingStatus && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">{t("bookingStatus", { default: "Booking Status" })}</p>
                       <Badge variant="outline" className="capitalize">
-                        {tFinance(`bookingStatuses.${transaction.bookingStatus}`, {
-                          default: transaction.bookingStatus,
+                        {tFinance(`bookingStatuses.${tx.bookingStatus}`, {
+                          default: tx.bookingStatus,
                         })}
                       </Badge>
                     </div>
                   )}
-                  {transaction.bookingId && (
+                  {tx.bookingId && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">{t("bookingId", { default: "Booking ID" })}</p>
-                      <p className="font-mono text-sm">{transaction.bookingId}</p>
+                      <p className="font-mono text-sm">{tx.bookingId}</p>
                     </div>
                   )}
-                  {transaction.jobId && (
+                  {tx.jobId && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">{t("jobId", { default: "Job ID" })}</p>
-                      <p className="font-mono text-sm">{transaction.jobId}</p>
+                      <p className="font-mono text-sm">{tx.jobId}</p>
                     </div>
                   )}
                 </div>
@@ -291,7 +293,7 @@ export function TransactionDetailDrawer({
           )}
 
           {/* Fee Breakdown */}
-          {transaction.platformFee > 0 && (
+          {tx.platformFee > 0 && (
             <>
               <Separator />
               <div className="space-y-4">
@@ -300,20 +302,20 @@ export function TransactionDetailDrawer({
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">{t("grossAmount", { default: "Gross Amount" })}</span>
                     <span className="font-medium">
-                      {formatCurrency(transaction.amount, transaction.currency)}
+                      {formatCurrency(tx.amount, tx.currency)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">{t("platformFee", { default: "Platform Fee" })}</span>
                     <span className="font-medium text-red-600">
-                      - {formatCurrency(transaction.platformFee, transaction.currency)}
+                      - {formatCurrency(tx.platformFee, tx.currency)}
                     </span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold">
                     <span>{t("netAmount", { default: "Net Amount" })}</span>
                     <span className="text-primary">
-                      {formatCurrency(transaction.netAmount, transaction.currency)}
+                      {formatCurrency(tx.netAmount, tx.currency)}
                     </span>
                   </div>
                 </div>

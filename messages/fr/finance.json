@@ -222,6 +222,7 @@
         "serviceTitle": "Titre du Service",
         "bookingStatus": "Statut de la Réservation",
         "bookingId": "ID de Réservation",
+        "jobId": "ID du Job",
         "feeBreakdown": "Détail des Frais",
         "grossAmount": "Montant Brut",
         "platformFee": "Frais de Plateforme",
