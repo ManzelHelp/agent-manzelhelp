@@ -27,6 +27,8 @@
     "city": "City",
     "region": "Region",
     "postalCode": "Postal Code",
+    "step": "Step",
+    "note": "Note",
     "enterStreetAddress": "Enter street address",
     "enterCity": "Enter city",
     "enterRegion": "Enter region",

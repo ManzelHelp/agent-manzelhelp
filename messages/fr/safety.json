@@ -1,0 +1,131 @@
+{
+  "safety": {
+    "metadata": {
+      "title": "Sécurité et Confiance - ManzelHelp",
+      "description": "Découvrez les mesures de sécurité sur la plateforme ManzelHelp. Important : ManzelHelp est une plateforme qui connecte les utilisateurs et les assistants. Les utilisateurs et les assistants sont entièrement responsables de leurs interactions."
+    },
+    "hero": {
+      "title": "Sécurité et Confiance",
+      "description": "ManzelHelp est une plateforme qui connecte les clients aux assistants. Nous fournissons des outils et des fonctionnalités pour vous aider à prendre des décisions éclairées, mais tous les utilisateurs et assistants sont entièrement responsables de leurs interactions et transactions.",
+      "reportIssue": "Signaler un Problème",
+      "learnMore": "En Savoir Plus"
+    },
+    "platformDisclaimer": {
+      "title": "Avertissement Important sur la Plateforme",
+      "description": "ManzelHelp est une plateforme technologique qui facilite les connexions entre clients et assistants. Nous ne fournissons pas d'assurance, de protection ou de garantie de services.",
+      "points": [
+        "ManzelHelp est uniquement une plateforme - nous connectons les utilisateurs, nous ne fournissons pas de services",
+        "Les utilisateurs et assistants sont entièrement responsables de leurs interactions",
+        "Nous ne fournissons pas d'assurance ou de couverture de protection",
+        "Toutes les transactions se font directement entre utilisateurs et assistants",
+        "Les utilisateurs doivent vérifier les assistants et les assistants doivent vérifier les clients avant de s'engager",
+        "Tous les litiges doivent être résolus directement entre les parties concernées"
+      ]
+    },
+    "safetyFeatures": {
+      "title": "Comment Nous Vous Aidons à Rester en Sécurité",
+      "subtitle": "Outils et fonctionnalités pour vous aider à prendre des décisions éclairées",
+      "verification": {
+        "title": "Vérification d'Identité",
+        "description": "Les assistants peuvent vérifier leur identité via notre plateforme",
+        "details": [
+          "Vérification des documents d'identité",
+          "Vérification du profil",
+          "Vérification des informations de contact"
+        ]
+      },
+      "reviews": {
+        "title": "Avis de la Communauté",
+        "description": "Lisez les avis d'autres utilisateurs pour prendre des décisions éclairées",
+        "details": [
+          "Avis et évaluations des clients",
+          "Commentaires sur la qualité du service",
+          "Informations sur le temps de réponse"
+        ]
+      },
+      "communication": {
+        "title": "Communication Sécurisée",
+        "description": "Communiquez via notre système de messagerie de plateforme",
+        "details": [
+          "Messagerie dans la plateforme",
+          "Documentation des détails du service",
+          "Enregistrements des transactions"
+        ]
+      },
+      "support": {
+        "title": "Support de la Plateforme",
+        "description": "Notre équipe de support aide avec les questions liées à la plateforme",
+        "details": [
+          "Assistance à l'utilisation de la plateforme",
+          "Support technique",
+          "Aide à la gestion de compte"
+        ]
+      }
+    },
+    "verificationProcess": {
+      "title": "Processus de Vérification des Assistants",
+      "description": "Les assistants peuvent vérifier leurs profils via notre plateforme (la vérification ne garantit pas la qualité du service ni ne fournit d'assurance)",
+      "steps": {
+        "identity": {
+          "title": "Vérification d'Identité",
+          "description": "Soumettre une pièce d'identité délivrée par le gouvernement (CIN) pour vérification"
+        },
+        "profile": {
+          "title": "Complétion du Profil",
+          "description": "Complétez votre profil avec des informations précises"
+        },
+        "skills": {
+          "title": "Informations sur les Compétences",
+          "description": "Fournissez des informations sur vos compétences et votre expérience"
+        },
+        "contact": {
+          "title": "Vérification du Contact",
+          "description": "Vérifiez votre numéro de téléphone et votre adresse e-mail"
+        }
+      }
+    },
+    "safetyTips": {
+      "title": "Conseils de Sécurité",
+      "forCustomers": {
+        "title": "Pour les Clients",
+        "tips": [
+          "Communiquez toujours via notre plateforme avant de vous rencontrer",
+          "Vérifiez l'identité de l'assistant et lisez attentivement les avis",
+          "Rencontrez-vous dans des lieux publics pour les consultations initiales lorsque c'est possible",
+          "Gardez les objets de valeur en sécurité pendant le service",
+          "Signalez immédiatement toute préoccupation via notre plateforme",
+          "Assurez-vous d'avoir une couverture d'assurance appropriée pour votre propriété si nécessaire"
+        ]
+      },
+      "forTaskers": {
+        "title": "Pour les Assistants",
+        "tips": [
+          "Vérifiez l'identité du client et les exigences du service",
+          "Rencontrez-vous dans des lieux publics pour les consultations initiales lorsque c'est possible",
+          "Informez quelqu'un de votre horaire de travail et de votre emplacement",
+          "Faites confiance à votre instinct - si quelque chose ne va pas, ne continuez pas",
+          "Gardez les contacts d'urgence facilement accessibles",
+          "Documentez votre travail avec des photos lorsque c'est approprié",
+          "Assurez-vous d'avoir une couverture d'assurance appropriée pour votre travail si nécessaire"
+        ]
+      }
+    },
+    "legalDisclaimer": {
+      "title": "Avertissement Légal",
+      "description": "Informations importantes sur la responsabilité de la plateforme et la responsabilité de l'utilisateur",
+      "content": "ManzelHelp est une plateforme technologique qui facilite les connexions entre les clients recherchant des services et les assistants fournissant des services. ManzelHelp ne fournit, ne garantit ni n'assure aucun service. Tous les services sont fournis directement par les assistants aux clients. Les utilisateurs et assistants sont seuls responsables de leurs interactions, transactions et de tout litige qui pourrait survenir. ManzelHelp n'est pas responsable des dommages, pertes ou blessures qui pourraient survenir à la suite de l'utilisation de la plateforme. Les utilisateurs sont invités à obtenir une couverture d'assurance appropriée et à se conformer à toutes les lois et réglementations marocaines applicables."
+    },
+    "contact": {
+      "title": "Besoin d'Aide ?",
+      "description": "Contactez notre équipe de support pour les questions liées à la plateforme",
+      "reportIssue": "Signaler un Problème",
+      "contactSupport": "Contacter le Support"
+    },
+    "cta": {
+      "title": "Utilisez la Plateforme de Manière Responsable",
+      "description": "ManzelHelp fournit des outils pour vous aider à vous connecter en toute sécurité. Vérifiez toujours les utilisateurs, lisez les avis et utilisez votre meilleur jugement lors de l'interaction avec d'autres sur la plateforme.",
+      "getStarted": "Commencer",
+      "learnMore": "En Savoir Plus"
+    }
+  }
+}

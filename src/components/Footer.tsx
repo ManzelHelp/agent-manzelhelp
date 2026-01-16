@@ -204,22 +204,6 @@ function Footer() {
                   {t("earningsCalculator")}
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/tasker-resources"
-                  className="hover:text-[var(--color-primary)] transition-colors"
-                >
-                  {t("resources")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/success-stories"
-                  className="hover:text-[var(--color-primary)] transition-colors"
-                >
-                  {t("successStories")}
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -262,14 +246,6 @@ function Footer() {
                   className="hover:text-[var(--color-primary)] transition-colors"
                 >
                   {t("cookiePolicy")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/newsletter"
-                  className="hover:text-[var(--color-primary)] transition-colors"
-                >
-                  {t("newsletter")}
                 </Link>
               </li>
             </ul>

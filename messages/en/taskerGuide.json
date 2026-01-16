@@ -1,0 +1,150 @@
+{
+  "taskerGuide": {
+    "metadata": {
+      "title": "Tasker Getting Started Guide - ManzelHelp",
+      "description": "Complete guide for new taskers on ManzelHelp. Learn how to set up your profile, find customers, and start earning money in Morocco."
+    },
+    "hero": {
+      "title": "Getting Started as a Tasker",
+      "description": "Your complete guide to becoming a successful tasker on ManzelHelp. Learn how to set up your profile, find customers, and start earning money in Morocco.",
+      "startJourney": "Start Your Journey",
+      "downloadGuide": "Download Guide"
+    },
+    "gettingStarted": {
+      "title": "Your Journey to Success",
+      "description": "Follow these steps to become a successful tasker on our platform",
+      "steps": {
+        "createAccount": {
+          "title": "Create Your Account",
+          "description": "Sign up with your email and basic information",
+          "details": [
+            "Choose a strong password",
+            "Verify your email address",
+            "Complete your profile setup",
+            "Select your service categories"
+          ]
+        },
+        "verification": {
+          "title": "Complete Verification",
+          "description": "Go through our verification process to build trust",
+          "details": [
+            "Submit government ID (CIN)",
+            "Complete profile information",
+            "Verify your contact information",
+            "Add your skills and experience"
+          ]
+        },
+        "buildProfile": {
+          "title": "Build Your Profile",
+          "description": "Create an attractive profile that stands out",
+          "details": [
+            "Add professional photos",
+            "Write compelling descriptions in Arabic and French",
+            "Set competitive pricing in MAD",
+            "Define your service area in Morocco"
+          ]
+        },
+        "startEarning": {
+          "title": "Start Earning",
+          "description": "Begin accepting jobs and building your reputation",
+          "details": [
+            "Respond to job requests quickly",
+            "Deliver excellent service",
+            "Collect positive reviews",
+            "Build repeat customers"
+          ]
+        }
+      }
+    },
+    "successTips": {
+      "title": "Tips for Success",
+      "beResponsive": {
+        "title": "Be Responsive",
+        "description": "Reply to messages within 2 hours to increase your chances of getting hired"
+      },
+      "maintainQuality": {
+        "title": "Maintain Quality",
+        "description": "Consistently deliver excellent service to build a strong reputation"
+      },
+      "buildRelationships": {
+        "title": "Build Relationships",
+        "description": "Focus on building long-term relationships with repeat customers"
+      },
+      "stayActive": {
+        "title": "Stay Active",
+        "description": "Regularly update your availability and respond to new opportunities"
+      }
+    },
+    "earningPotential": {
+      "title": "Earning Potential",
+      "description": "See how much you can earn with different services (based on 40 hours/week). Prices are in MAD and vary based on experience and location in Morocco.",
+      "perHour": "per hour",
+      "monthlyPotential": "monthly potential",
+      "services": {
+        "cleaning": {
+          "name": "Cleaning Services",
+          "description": "Regular and deep cleaning services",
+          "hourlyRate": "15-25 MAD",
+          "monthlyPotential": "2,400-4,000 MAD"
+        },
+        "handyman": {
+          "name": "Handyman Work",
+          "description": "Furniture assembly, repairs, and maintenance",
+          "hourlyRate": "20-40 MAD",
+          "monthlyPotential": "3,200-6,400 MAD"
+        },
+        "petcare": {
+          "name": "Pet Care",
+          "description": "Dog walking, pet sitting, and grooming",
+          "hourlyRate": "12-20 MAD",
+          "monthlyPotential": "1,920-3,200 MAD"
+        },
+        "tutoring": {
+          "name": "Tutoring",
+          "description": "Academic support and skill development",
+          "hourlyRate": "20-40 MAD",
+          "monthlyPotential": "3,200-6,400 MAD"
+        }
+      }
+    },
+    "requirements": {
+      "title": "Requirements to Get Started",
+      "basic": {
+        "title": "Basic Requirements",
+        "items": [
+          "Be at least 18 years old",
+          "Have a valid Moroccan government-issued ID (CIN)",
+          "Complete profile verification",
+          "Have relevant skills and experience"
+        ]
+      },
+      "whatYouNeed": {
+        "title": "What You'll Need",
+        "items": [
+          "Smartphone with camera",
+          "Reliable transportation",
+          "Bank account for payments (cash payments on delivery)",
+          "Professional references (optional but recommended)"
+        ]
+      }
+    },
+    "importantNotes": {
+      "title": "Important Notes",
+      "description": "Please read these important points before starting",
+      "points": [
+        "ManzelHelp is a platform only - you are responsible for your services",
+        "Payments are made in cash on delivery",
+        "You must comply with all applicable Moroccan laws and regulations",
+        "You are responsible for obtaining any necessary licenses or permits",
+        "You should have appropriate insurance coverage for your work if needed",
+        "All disputes must be resolved directly between you and the customer"
+      ]
+    },
+    "cta": {
+      "title": "Ready to Start Earning?",
+      "description": "Join thousands of successful taskers who are already earning money doing what they love in Morocco. Start your journey today!",
+      "becomeTasker": "Become a Tasker",
+      "learnMore": "Learn More"
+    }
+  }
+}

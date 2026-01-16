@@ -1,0 +1,150 @@
+{
+  "taskerGuide": {
+    "metadata": {
+      "title": "Helfer-Startanleitung - ManzelHelp",
+      "description": "Vollständige Anleitung für neue Helfer auf ManzelHelp. Erfahren Sie, wie Sie Ihr Profil einrichten, Kunden finden und in Marokko Geld verdienen."
+    },
+    "hero": {
+      "title": "Als Helfer Beginnen",
+      "description": "Ihre vollständige Anleitung, um ein erfolgreicher Helfer auf ManzelHelp zu werden. Erfahren Sie, wie Sie Ihr Profil einrichten, Kunden finden und in Marokko Geld verdienen.",
+      "startJourney": "Ihre Reise Beginnen",
+      "downloadGuide": "Anleitung Herunterladen"
+    },
+    "gettingStarted": {
+      "title": "Ihre Reise zum Erfolg",
+      "description": "Folgen Sie diesen Schritten, um ein erfolgreicher Helfer auf unserer Plattform zu werden",
+      "steps": {
+        "createAccount": {
+          "title": "Ihr Konto Erstellen",
+          "description": "Registrieren Sie sich mit Ihrer E-Mail und grundlegenden Informationen",
+          "details": [
+            "Wählen Sie ein starkes Passwort",
+            "Bestätigen Sie Ihre E-Mail-Adresse",
+            "Vervollständigen Sie Ihre Profil-Einstellungen",
+            "Wählen Sie Ihre Service-Kategorien"
+          ]
+        },
+        "verification": {
+          "title": "Verifizierung Abschließen",
+          "description": "Durchlaufen Sie unseren Verifizierungsprozess, um Vertrauen aufzubauen",
+          "details": [
+            "Amtlichen Ausweis (CIN) einreichen",
+            "Profilinformationen vervollständigen",
+            "Ihre Kontaktinformationen verifizieren",
+            "Ihre Fähigkeiten und Erfahrung hinzufügen"
+          ]
+        },
+        "buildProfile": {
+          "title": "Ihr Profil Aufbauen",
+          "description": "Erstellen Sie ein attraktives Profil, das sich abhebt",
+          "details": [
+            "Fügen Sie professionelle Fotos hinzu",
+            "Schreiben Sie überzeugende Beschreibungen auf Arabisch und Französisch",
+            "Legen Sie wettbewerbsfähige Preise in MAD fest",
+            "Definieren Sie Ihr Servicegebiet in Marokko"
+          ]
+        },
+        "startEarning": {
+          "title": "Mit dem Verdienen Beginnen",
+          "description": "Beginnen Sie, Jobs anzunehmen und Ihren Ruf aufzubauen",
+          "details": [
+            "Reagieren Sie schnell auf Jobanfragen",
+            "Liefern Sie exzellenten Service",
+            "Sammeln Sie positive Bewertungen",
+            "Bauen Sie Stammkunden auf"
+          ]
+        }
+      }
+    },
+    "successTips": {
+      "title": "Tipps für den Erfolg",
+      "beResponsive": {
+        "title": "Seien Sie Reaktionsschnell",
+        "description": "Antworten Sie auf Nachrichten innerhalb von 2 Stunden, um Ihre Chancen auf Einstellung zu erhöhen"
+      },
+      "maintainQuality": {
+        "title": "Qualität Beibehalten",
+        "description": "Liefern Sie kontinuierlich exzellenten Service, um einen starken Ruf aufzubauen"
+      },
+      "buildRelationships": {
+        "title": "Beziehungen Aufbauen",
+        "description": "Konzentrieren Sie sich auf den Aufbau langfristiger Beziehungen mit Stammkunden"
+      },
+      "stayActive": {
+        "title": "Bleiben Sie Aktiv",
+        "description": "Aktualisieren Sie regelmäßig Ihre Verfügbarkeit und reagieren Sie auf neue Möglichkeiten"
+      }
+    },
+    "earningPotential": {
+      "title": "Verdienstpotenzial",
+      "description": "Sehen Sie, wie viel Sie mit verschiedenen Dienstleistungen verdienen können (basierend auf 40 Stunden/Woche). Die Preise sind in MAD und variieren je nach Erfahrung und Standort in Marokko.",
+      "perHour": "pro Stunde",
+      "monthlyPotential": "monatliches Potenzial",
+      "services": {
+        "cleaning": {
+          "name": "Reinigungsdienste",
+          "description": "Regelmäßige und Tiefenreinigung",
+          "hourlyRate": "15-25 MAD",
+          "monthlyPotential": "2,400-4,000 MAD"
+        },
+        "handyman": {
+          "name": "Handwerkerarbeiten",
+          "description": "Möbelmontage, Reparaturen und Wartung",
+          "hourlyRate": "20-40 MAD",
+          "monthlyPotential": "3,200-6,400 MAD"
+        },
+        "petcare": {
+          "name": "Tierpflege",
+          "description": "Hundespaziergänge, Tierbetreuung und Pflege",
+          "hourlyRate": "12-20 MAD",
+          "monthlyPotential": "1,920-3,200 MAD"
+        },
+        "tutoring": {
+          "name": "Nachhilfe",
+          "description": "Akademische Unterstützung und Kompetenzentwicklung",
+          "hourlyRate": "20-40 MAD",
+          "monthlyPotential": "3,200-6,400 MAD"
+        }
+      }
+    },
+    "requirements": {
+      "title": "Anforderungen zum Start",
+      "basic": {
+        "title": "Grundanforderungen",
+        "items": [
+          "Mindestens 18 Jahre alt sein",
+          "Einen gültigen marokkanischen amtlichen Ausweis (CIN) haben",
+          "Profilverifizierung abschließen",
+          "Relevante Fähigkeiten und Erfahrung haben"
+        ]
+      },
+      "whatYouNeed": {
+        "title": "Was Sie Benötigen",
+        "items": [
+          "Smartphone mit Kamera",
+          "Zuverlässiges Transportmittel",
+          "Bankkonto für Zahlungen (Barzahlungen bei Lieferung)",
+          "Professionelle Referenzen (optional, aber empfohlen)"
+        ]
+      }
+    },
+    "importantNotes": {
+      "title": "Wichtige Hinweise",
+      "description": "Bitte lesen Sie diese wichtigen Punkte vor dem Start",
+      "points": [
+        "ManzelHelp ist nur eine Plattform - Sie sind für Ihre Dienstleistungen verantwortlich",
+        "Zahlungen erfolgen bar bei Lieferung",
+        "Sie müssen alle geltenden marokkanischen Gesetze und Vorschriften einhalten",
+        "Sie sind verantwortlich für die Beschaffung aller notwendigen Lizenzen oder Genehmigungen",
+        "Sie sollten eine angemessene Versicherungsdeckung für Ihre Arbeit haben, falls erforderlich",
+        "Alle Streitigkeiten müssen direkt zwischen Ihnen und dem Kunden gelöst werden"
+      ]
+    },
+    "cta": {
+      "title": "Bereit, mit dem Verdienen zu Beginnen?",
+      "description": "Schließen Sie sich Tausenden erfolgreichen Helfern an, die bereits Geld verdienen, indem sie das tun, was sie in Marokko lieben. Beginnen Sie Ihre Reise heute!",
+      "becomeTasker": "Helfer Werden",
+      "learnMore": "Mehr Erfahren"
+    }
+  }
+}

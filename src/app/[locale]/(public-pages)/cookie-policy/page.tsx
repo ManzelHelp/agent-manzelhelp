@@ -1,5 +1,6 @@
 import React from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Sparkles } from "lucide-react";
 
 /**
  * HYDRATION-SAFE DATE
@@ -7,11 +8,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
  * Use a stable date to prevent hydration mismatches.
  * The date is captured once during server-side rendering.
  */
-const LAST_UPDATED_DATE = new Date("2024-12-23").toLocaleDateString("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+const LAST_UPDATED_DATE = "2024-12-23";
 
 export async function generateMetadata({
   params,
@@ -19,16 +16,14 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Footer" });
+  const t = await getTranslations({ locale, namespace: "cookiePolicy" });
 
   return {
-    title: t("cookiePolicy"),
-    description:
-      "ManzelHelp Cookie Policy - Learn about how we use cookies and similar technologies.",
+    title: t("metadata.title"),
+    description: t("metadata.description"),
     openGraph: {
-      title: t("cookiePolicy"),
-      description:
-        "ManzelHelp Cookie Policy - Learn about how we use cookies and similar technologies.",
+      title: t("metadata.title"),
+      description: t("metadata.description"),
       locale: locale,
       type: "website",
     },
@@ -42,203 +37,199 @@ export default async function CookiePolicyPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("cookiePolicy");
+
+  // Format date according to locale
+  const formattedDate = new Date(LAST_UPDATED_DATE).toLocaleDateString(locale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const cookieTypes = [
+    {
+      title: t("typesOfCookies.essential.title"),
+      description: t("typesOfCookies.essential.description"),
+    },
+    {
+      title: t("typesOfCookies.performance.title"),
+      description: t("typesOfCookies.performance.description"),
+    },
+    {
+      title: t("typesOfCookies.functionality.title"),
+      description: t("typesOfCookies.functionality.description"),
+    },
+    {
+      title: t("typesOfCookies.marketing.title"),
+      description: t("typesOfCookies.marketing.description"),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Cookie Policy
+      <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-[var(--color-secondary)] rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--color-secondary)] rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+        </div>
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 border border-white/20">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm font-medium">{t("hero.title")}</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+            {t("hero.title")}
           </h1>
-          <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto">
-            Learn about how we use cookies and similar technologies to improve
-            your experience.
+          <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto opacity-90">
+            {t("hero.description")}
           </p>
-          <p className="text-sm opacity-90">
-            Last updated: {LAST_UPDATED_DATE}
+          <p className="text-sm opacity-75">
+            {t("hero.lastUpdated", { date: formattedDate })}
           </p>
         </div>
       </section>
 
       {/* Content */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto prose prose-lg">
-          <div className="bg-[var(--color-surface)] rounded-xl p-8 border border-[var(--color-border)]">
-            <h2 className="text-2xl font-bold mb-6 text-[var(--color-text-primary)]">
-              What Are Cookies?
-            </h2>
-            <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>
-                Cookies are small text files that are placed on your computer or
-                mobile device when you visit our website. They help us provide
-                you with a better experience by remembering your preferences and
-                enabling certain functionality.
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-[var(--color-surface)] rounded-xl p-8 border border-[var(--color-border)] space-y-8">
+            {/* What Are Cookies */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">
+                {t("whatAreCookies.title")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                {t("whatAreCookies.description")}
               </p>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              How We Use Cookies
-            </h2>
-            <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>We use cookies for several purposes:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>To remember your login status and preferences</li>
-                <li>
-                  To analyze how you use our website and improve our services
-                </li>
-                <li>To provide personalized content and recommendations</li>
-                <li>To ensure the security of our platform</li>
-                <li>To enable social media features and advertising</li>
+            {/* How We Use Cookies */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">
+                {t("howWeUseCookies.title")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                {t("howWeUseCookies.description")}
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-[var(--color-text-secondary)]">
+                {t.raw("howWeUseCookies.purposes").map((purpose: string, index: number) => (
+                  <li key={index} className="leading-relaxed">{purpose}</li>
+                ))}
               </ul>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              Types of Cookies We Use
-            </h2>
-            <div className="space-y-6 text-[var(--color-text-secondary)]">
-              <div>
-                <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                  Essential Cookies
-                </h3>
-                <p>
-                  These cookies are necessary for the website to function
-                  properly. They enable basic functions like page navigation,
-                  access to secure areas, and remembering your login status. The
-                  website cannot function properly without these cookies.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                  Performance Cookies
-                </h3>
-                <p>
-                  These cookies collect information about how visitors use our
-                  website, such as which pages are visited most often. This
-                  helps us improve how our website works and provide a better
-                  user experience.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                  Functionality Cookies
-                </h3>
-                <p>
-                  These cookies allow the website to remember choices you make
-                  (such as your username, language, or region) and provide
-                  enhanced, more personal features.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                  Marketing Cookies
-                </h3>
-                <p>
-                  These cookies are used to track visitors across websites. The
-                  intention is to display ads that are relevant and engaging for
-                  individual users and thereby more valuable for publishers and
-                  third-party advertisers.
-                </p>
+            {/* Types of Cookies */}
+            <div>
+              <h2 className="text-2xl font-bold mb-6 text-[var(--color-text-primary)]">
+                {t("typesOfCookies.title")}
+              </h2>
+              <div className="space-y-6">
+                {cookieTypes.map((type, index) => (
+                  <div key={index}>
+                    <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
+                      {type.title}
+                    </h3>
+                    <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                      {type.description}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              Third-Party Cookies
-            </h2>
-            <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>
-                We may also use third-party cookies from trusted partners to
-                help us analyze website usage, provide social media features,
-                and deliver relevant advertisements. These third parties may
-                include:
+            {/* Third-Party Cookies */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">
+                {t("thirdPartyCookies.title")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                {t("thirdPartyCookies.description")}
               </p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Google Analytics for website analytics</li>
-                <li>Social media platforms for sharing features</li>
-                <li>Advertising networks for targeted advertising</li>
-                <li>Payment processors for secure transactions</li>
+              <ul className="list-disc pl-6 space-y-2 text-[var(--color-text-secondary)]">
+                {t.raw("thirdPartyCookies.partners").map((partner: string, index: number) => (
+                  <li key={index} className="leading-relaxed">{partner}</li>
+                ))}
               </ul>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              Managing Your Cookie Preferences
-            </h2>
-            <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>You have several options for managing cookies:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>
-                  Use our cookie preference center to customize your settings
-                </li>
-                <li>
-                  Configure your browser settings to block or delete cookies
-                </li>
-                <li>Use browser extensions that block tracking cookies</li>
-                <li>Opt out of specific third-party advertising cookies</li>
+            {/* Managing Cookies */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">
+                {t("managingCookies.title")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                {t("managingCookies.description")}
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-[var(--color-text-secondary)] mb-4">
+                {t.raw("managingCookies.options").map((option: string, index: number) => (
+                  <li key={index} className="leading-relaxed">{option}</li>
+                ))}
               </ul>
-              <p className="mt-4">
-                <strong>Note:</strong> Disabling certain cookies may affect the
-                functionality of our website and your user experience.
+              <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                <strong className="text-[var(--color-text-primary)]">
+                  {t("common.note")}:
+                </strong> {t("managingCookies.note")}
               </p>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              Browser Settings
-            </h2>
-            <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>
-                Most web browsers allow you to control cookies through their
-                settings. Here's how to manage cookies in popular browsers:
+            {/* Browser Settings */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">
+                {t("browserSettings.title")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                {t("browserSettings.description")}
               </p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>
-                  <strong>Chrome:</strong> Settings → Privacy and security →
-                  Cookies and other site data
+              <ul className="space-y-2 text-[var(--color-text-secondary)]">
+                <li className="leading-relaxed">
+                  <strong className="text-[var(--color-text-primary)]">Chrome:</strong>{" "}
+                  {t("browserSettings.browsers.chrome")}
                 </li>
-                <li>
-                  <strong>Firefox:</strong> Options → Privacy & Security →
-                  Cookies and Site Data
+                <li className="leading-relaxed">
+                  <strong className="text-[var(--color-text-primary)]">Firefox:</strong>{" "}
+                  {t("browserSettings.browsers.firefox")}
                 </li>
-                <li>
-                  <strong>Safari:</strong> Preferences → Privacy → Manage
-                  Website Data
+                <li className="leading-relaxed">
+                  <strong className="text-[var(--color-text-primary)]">Safari:</strong>{" "}
+                  {t("browserSettings.browsers.safari")}
                 </li>
-                <li>
-                  <strong>Edge:</strong> Settings → Cookies and site permissions
-                  → Cookies and site data
+                <li className="leading-relaxed">
+                  <strong className="text-[var(--color-text-primary)]">Edge:</strong>{" "}
+                  {t("browserSettings.browsers.edge")}
                 </li>
               </ul>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              Updates to This Policy
-            </h2>
-            <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>
-                We may update this Cookie Policy from time to time to reflect
-                changes in our practices or for other operational, legal, or
-                regulatory reasons. We will notify you of any significant
-                changes by posting the updated policy on our website.
+            {/* Updates */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">
+                {t("updates.title")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] leading-relaxed">
+                {t("updates.description")}
               </p>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6 mt-8 text-[var(--color-text-primary)]">
-              Contact Us
-            </h2>
-            <div className="space-y-4 text-[var(--color-text-secondary)]">
-              <p>
-                If you have any questions about our use of cookies or this
-                Cookie Policy, please contact us at:
+            {/* Contact */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">
+                {t("contact.title")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                {t("contact.description")}
               </p>
-              <div className="bg-[var(--color-bg)] p-4 rounded-lg">
-                <p>
-                  <strong>Email:</strong> privacy@manzelhelp.com
+              <div className="bg-[var(--color-bg)] p-4 rounded-lg border border-[var(--color-border)]">
+                <p className="text-[var(--color-text-secondary)] mb-2">
+                  <strong className="text-[var(--color-text-primary)]">
+                    {t("contact.email")}
+                  </strong>
                 </p>
-                <p>
-                  <strong>Address:</strong> ManzelHelp Privacy Team, [Your
-                  Address]
+                <p className="text-[var(--color-text-secondary)]">
+                  <strong className="text-[var(--color-text-primary)]">
+                    {t("contact.address")}
+                  </strong>
                 </p>
               </div>
             </div>

@@ -27,6 +27,8 @@
     "city": "المدينة",
     "region": "المنطقة",
     "postalCode": "الرمز البريدي",
+    "step": "الخطوة",
+    "note": "ملاحظة",
     "enterStreetAddress": "أدخل عنوان الشارع",
     "enterCity": "أدخل المدينة",
     "enterRegion": "أدخل المنطقة",

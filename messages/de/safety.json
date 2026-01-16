@@ -1,0 +1,131 @@
+{
+  "safety": {
+    "metadata": {
+      "title": "Sicherheit & Vertrauen - ManzelHelp",
+      "description": "Erfahren Sie mehr über Sicherheitsmaßnahmen auf der ManzelHelp-Plattform. Wichtig: ManzelHelp ist eine Plattform, die Benutzer und Helfer verbindet. Benutzer und Helfer sind vollständig für ihre Interaktionen verantwortlich."
+    },
+    "hero": {
+      "title": "Sicherheit & Vertrauen",
+      "description": "ManzelHelp ist eine Plattform, die Kunden mit Helfern verbindet. Wir bieten Tools und Funktionen, um Ihnen bei fundierten Entscheidungen zu helfen, aber alle Benutzer und Helfer sind vollständig für ihre Interaktionen und Transaktionen verantwortlich.",
+      "reportIssue": "Problem Melden",
+      "learnMore": "Mehr Erfahren"
+    },
+    "platformDisclaimer": {
+      "title": "Wichtiger Plattform-Haftungsausschluss",
+      "description": "ManzelHelp ist eine Technologieplattform, die Verbindungen zwischen Kunden und Helfern erleichtert. Wir bieten keine Versicherung, keinen Schutz oder keine Garantie für Dienstleistungen.",
+      "points": [
+        "ManzelHelp ist nur eine Plattform - wir verbinden Benutzer, wir bieten keine Dienstleistungen an",
+        "Benutzer und Helfer sind vollständig für ihre Interaktionen verantwortlich",
+        "Wir bieten keine Versicherung oder Schutzdeckung",
+        "Alle Transaktionen erfolgen direkt zwischen Benutzern und Helfern",
+        "Benutzer sollten Helfer überprüfen und Helfer sollten Kunden vor dem Engagement überprüfen",
+        "Alle Streitigkeiten müssen direkt zwischen den beteiligten Parteien gelöst werden"
+      ]
+    },
+    "safetyFeatures": {
+      "title": "Wie Wir Ihnen Helfen, Sicher zu Bleiben",
+      "subtitle": "Tools und Funktionen, um Ihnen bei fundierten Entscheidungen zu helfen",
+      "verification": {
+        "title": "Identitätsverifizierung",
+        "description": "Helfer können ihre Identität über unsere Plattform verifizieren",
+        "details": [
+          "Verifizierung von Identitätsdokumenten",
+          "Profilverifizierung",
+          "Verifizierung von Kontaktinformationen"
+        ]
+      },
+      "reviews": {
+        "title": "Community-Bewertungen",
+        "description": "Lesen Sie Bewertungen anderer Benutzer, um fundierte Entscheidungen zu treffen",
+        "details": [
+          "Kundenbewertungen und -bewertungen",
+          "Feedback zur Servicequalität",
+          "Informationen zur Antwortzeit"
+        ]
+      },
+      "communication": {
+        "title": "Sichere Kommunikation",
+        "description": "Kommunizieren Sie über unser Plattform-Messaging-System",
+        "details": [
+          "Messaging innerhalb der Plattform",
+          "Dokumentation von Servicedetails",
+          "Transaktionsaufzeichnungen"
+        ]
+      },
+      "support": {
+        "title": "Plattform-Support",
+        "description": "Unser Support-Team hilft bei plattformbezogenen Fragen",
+        "details": [
+          "Hilfe bei der Plattformnutzung",
+          "Technischer Support",
+          "Hilfe bei der Kontoverwaltung"
+        ]
+      }
+    },
+    "verificationProcess": {
+      "title": "Helfer-Verifizierungsprozess",
+      "description": "Helfer können ihre Profile über unsere Plattform verifizieren (Verifizierung garantiert keine Servicequalität oder bietet Versicherung)",
+      "steps": {
+        "identity": {
+          "title": "Identitätsverifizierung",
+          "description": "Vorlegen eines amtlichen Ausweises (CIN) zur Verifizierung"
+        },
+        "profile": {
+          "title": "Profilvervollständigung",
+          "description": "Vervollständigen Sie Ihr Profil mit genauen Informationen"
+        },
+        "skills": {
+          "title": "Fähigkeitsinformationen",
+          "description": "Geben Sie Informationen zu Ihren Fähigkeiten und Ihrer Erfahrung an"
+        },
+        "contact": {
+          "title": "Kontaktverifizierung",
+          "description": "Verifizieren Sie Ihre Telefonnummer und E-Mail-Adresse"
+        }
+      }
+    },
+    "safetyTips": {
+      "title": "Sicherheitstipps",
+      "forCustomers": {
+        "title": "Für Kunden",
+        "tips": [
+          "Kommunizieren Sie immer über unsere Plattform, bevor Sie sich treffen",
+          "Überprüfen Sie die Identität des Helfers und lesen Sie Bewertungen sorgfältig",
+          "Treffen Sie sich an öffentlichen Orten für erste Beratungen, wenn möglich",
+          "Bewahren Sie wertvolle Gegenstände während des Service sicher auf",
+          "Melden Sie Bedenken sofort über unsere Plattform",
+          "Stellen Sie sicher, dass Sie eine angemessene Versicherungsdeckung für Ihr Eigentum haben, falls erforderlich"
+        ]
+      },
+      "forTaskers": {
+        "title": "Für Helfer",
+        "tips": [
+          "Überprüfen Sie die Identität des Kunden und die Serviceanforderungen",
+          "Treffen Sie sich an öffentlichen Orten für erste Beratungen, wenn möglich",
+          "Informieren Sie jemanden über Ihren Arbeitsplan und Standort",
+          "Vertrauen Sie Ihrem Instinkt - wenn sich etwas falsch anfühlt, fahren Sie nicht fort",
+          "Halten Sie Notfallkontakte leicht verfügbar",
+          "Dokumentieren Sie Ihre Arbeit mit Fotos, wenn angemessen",
+          "Stellen Sie sicher, dass Sie eine angemessene Versicherungsdeckung für Ihre Arbeit haben, falls erforderlich"
+        ]
+      }
+    },
+    "legalDisclaimer": {
+      "title": "Rechtlicher Haftungsausschluss",
+      "description": "Wichtige Informationen zur Plattformhaftung und Benutzerverantwortung",
+      "content": "ManzelHelp ist eine Technologieplattform, die Verbindungen zwischen Kunden, die Dienstleistungen suchen, und Helfern, die Dienstleistungen anbieten, erleichtert. ManzelHelp bietet, garantiert oder versichert keine Dienstleistungen. Alle Dienstleistungen werden direkt von Helfern an Kunden erbracht. Benutzer und Helfer sind allein für ihre Interaktionen, Transaktionen und eventuelle Streitigkeiten verantwortlich. ManzelHelp haftet nicht für Schäden, Verluste oder Verletzungen, die durch die Nutzung der Plattform entstehen können. Benutzer werden aufgefordert, eine angemessene Versicherungsdeckung zu erhalten und alle geltenden marokkanischen Gesetze und Vorschriften einzuhalten."
+    },
+    "contact": {
+      "title": "Brauchen Sie Hilfe?",
+      "description": "Kontaktieren Sie unser Support-Team für plattformbezogene Fragen",
+      "reportIssue": "Problem Melden",
+      "contactSupport": "Support Kontaktieren"
+    },
+    "cta": {
+      "title": "Nutzen Sie die Plattform Verantwortungsvoll",
+      "description": "ManzelHelp bietet Tools, um Ihnen bei sicheren Verbindungen zu helfen. Überprüfen Sie immer Benutzer, lesen Sie Bewertungen und verwenden Sie Ihr bestes Urteilsvermögen bei der Interaktion mit anderen auf der Plattform.",
+      "getStarted": "Loslegen",
+      "learnMore": "Mehr Erfahren"
+    }
+  }
+}

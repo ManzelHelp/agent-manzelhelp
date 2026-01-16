@@ -50,4 +50,7 @@ export const namespaces = [
   "howDoesItWork",
   "services",
   "careers",
+  "safety",
+  "taskerGuide",
+  "cookiePolicy",
 ] as const;

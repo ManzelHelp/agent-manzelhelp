@@ -27,6 +27,8 @@
     "city": "Ville",
     "region": "Région",
     "postalCode": "Code postal",
+    "step": "Étape",
+    "note": "Note",
     "enterStreetAddress": "Entrez l'adresse",
     "enterCity": "Entrez la ville",
     "enterRegion": "Entrez la région",

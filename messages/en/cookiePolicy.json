@@ -1,0 +1,88 @@
+{
+  "cookiePolicy": {
+    "metadata": {
+      "title": "Cookie Policy - ManzelHelp",
+      "description": "Learn about how ManzelHelp uses cookies and similar technologies to improve your experience on our platform."
+    },
+    "hero": {
+      "title": "Cookie Policy",
+      "description": "Learn about how we use cookies and similar technologies to improve your experience on our platform.",
+      "lastUpdated": "Last updated: {date}"
+    },
+    "whatAreCookies": {
+      "title": "What Are Cookies?",
+      "description": "Cookies are small text files that are placed on your computer or mobile device when you visit our website. They help us provide you with a better experience by remembering your preferences and enabling certain functionality."
+    },
+    "howWeUseCookies": {
+      "title": "How We Use Cookies",
+      "description": "We use cookies for several purposes:",
+      "purposes": [
+        "To remember your login status and preferences",
+        "To analyze how you use our website and improve our services",
+        "To provide personalized content and recommendations",
+        "To ensure the security of our platform",
+        "To enable social media features and advertising"
+      ]
+    },
+    "typesOfCookies": {
+      "title": "Types of Cookies We Use",
+      "essential": {
+        "title": "Essential Cookies",
+        "description": "These cookies are necessary for the website to function properly. They enable basic functions like page navigation, access to secure areas, and remembering your login status. The website cannot function properly without these cookies."
+      },
+      "performance": {
+        "title": "Performance Cookies",
+        "description": "These cookies collect information about how visitors use our website, such as which pages are visited most often. This helps us improve how our website works and provide a better user experience."
+      },
+      "functionality": {
+        "title": "Functionality Cookies",
+        "description": "These cookies allow the website to remember choices you make (such as your username, language, or region) and provide enhanced, more personal features."
+      },
+      "marketing": {
+        "title": "Marketing Cookies",
+        "description": "These cookies are used to track visitors across websites. The intention is to display ads that are relevant and engaging for individual users and thereby more valuable for publishers and third-party advertisers."
+      }
+    },
+    "thirdPartyCookies": {
+      "title": "Third-Party Cookies",
+      "description": "We may also use third-party cookies from trusted partners to help us analyze website usage, provide social media features, and deliver relevant advertisements. These third parties may include:",
+      "partners": [
+        "Google Analytics for website analytics",
+        "Social media platforms for sharing features",
+        "Advertising networks for targeted advertising",
+        "Payment processors for secure transactions"
+      ]
+    },
+    "managingCookies": {
+      "title": "Managing Your Cookie Preferences",
+      "description": "You have several options for managing cookies:",
+      "options": [
+        "Use our cookie preference center to customize your settings",
+        "Configure your browser settings to block or delete cookies",
+        "Use browser extensions that block tracking cookies",
+        "Opt out of specific third-party advertising cookies"
+      ],
+      "note": "Disabling certain cookies may affect the functionality of our website and your user experience."
+    },
+    "browserSettings": {
+      "title": "Browser Settings",
+      "description": "Most web browsers allow you to control cookies through their settings. Here's how to manage cookies in popular browsers:",
+      "browsers": {
+        "chrome": "Chrome: Settings → Privacy and security → Cookies and other site data",
+        "firefox": "Firefox: Options → Privacy & Security → Cookies and Site Data",
+        "safari": "Safari: Preferences → Privacy → Manage Website Data",
+        "edge": "Edge: Settings → Cookies and site permissions → Cookies and site data"
+      }
+    },
+    "updates": {
+      "title": "Updates to This Policy",
+      "description": "We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any significant changes by posting the updated policy on our website."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "description": "If you have any questions about our use of cookies or this Cookie Policy, please contact us at:",
+      "email": "Email: privacy@manzelhelp.com",
+      "address": "Address: ManzelHelp Privacy Team, Avenue Mokhtar Jazoulit, immeuble n° 41, Océan, Rabat, Morocco"
+    }
+  }
+}

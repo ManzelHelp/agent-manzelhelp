@@ -1,0 +1,88 @@
+{
+  "cookiePolicy": {
+    "metadata": {
+      "title": "Politique des Cookies - ManzelHelp",
+      "description": "Découvrez comment ManzelHelp utilise les cookies et technologies similaires pour améliorer votre expérience sur notre plateforme."
+    },
+    "hero": {
+      "title": "Politique des Cookies",
+      "description": "Découvrez comment nous utilisons les cookies et technologies similaires pour améliorer votre expérience sur notre plateforme.",
+      "lastUpdated": "Dernière mise à jour : {date}"
+    },
+    "whatAreCookies": {
+      "title": "Qu'est-ce qu'un Cookie ?",
+      "description": "Les cookies sont de petits fichiers texte qui sont placés sur votre ordinateur ou appareil mobile lorsque vous visitez notre site Web. Ils nous aident à vous fournir une meilleure expérience en mémorisant vos préférences et en activant certaines fonctionnalités."
+    },
+    "howWeUseCookies": {
+      "title": "Comment Nous Utilisons les Cookies",
+      "description": "Nous utilisons les cookies à plusieurs fins :",
+      "purposes": [
+        "Pour mémoriser votre statut de connexion et vos préférences",
+        "Pour analyser comment vous utilisez notre site Web et améliorer nos services",
+        "Pour fournir du contenu et des recommandations personnalisés",
+        "Pour assurer la sécurité de notre plateforme",
+        "Pour activer les fonctionnalités des médias sociaux et la publicité"
+      ]
+    },
+    "typesOfCookies": {
+      "title": "Types de Cookies que Nous Utilisons",
+      "essential": {
+        "title": "Cookies Essentiels",
+        "description": "Ces cookies sont nécessaires au bon fonctionnement du site Web. Ils activent des fonctions de base comme la navigation entre les pages, l'accès aux zones sécurisées et la mémorisation de votre statut de connexion. Le site Web ne peut pas fonctionner correctement sans ces cookies."
+      },
+      "performance": {
+        "title": "Cookies de Performance",
+        "description": "Ces cookies collectent des informations sur la façon dont les visiteurs utilisent notre site Web, comme les pages les plus visitées. Cela nous aide à améliorer le fonctionnement de notre site Web et à fournir une meilleure expérience utilisateur."
+      },
+      "functionality": {
+        "title": "Cookies de Fonctionnalité",
+        "description": "Ces cookies permettent au site Web de mémoriser les choix que vous faites (comme votre nom d'utilisateur, votre langue ou votre région) et de fournir des fonctionnalités améliorées et plus personnelles."
+      },
+      "marketing": {
+        "title": "Cookies Marketing",
+        "description": "Ces cookies sont utilisés pour suivre les visiteurs sur les sites Web. L'intention est d'afficher des publicités pertinentes et engageantes pour les utilisateurs individuels et donc plus précieuses pour les éditeurs et les annonceurs tiers."
+      }
+    },
+    "thirdPartyCookies": {
+      "title": "Cookies Tiers",
+      "description": "Nous pouvons également utiliser des cookies tiers de partenaires de confiance pour nous aider à analyser l'utilisation du site Web, fournir des fonctionnalités de médias sociaux et diffuser des publicités pertinentes. Ces tiers peuvent inclure :",
+      "partners": [
+        "Google Analytics pour l'analyse du site Web",
+        "Plateformes de médias sociaux pour les fonctionnalités de partage",
+        "Réseaux publicitaires pour la publicité ciblée",
+        "Processeurs de paiement pour les transactions sécurisées"
+      ]
+    },
+    "managingCookies": {
+      "title": "Gérer Vos Préférences de Cookies",
+      "description": "Vous avez plusieurs options pour gérer les cookies :",
+      "options": [
+        "Utilisez notre centre de préférences de cookies pour personnaliser vos paramètres",
+        "Configurez les paramètres de votre navigateur pour bloquer ou supprimer les cookies",
+        "Utilisez des extensions de navigateur qui bloquent les cookies de suivi",
+        "Désinscrivez-vous des cookies publicitaires tiers spécifiques"
+      ],
+      "note": "La désactivation de certains cookies peut affecter la fonctionnalité de notre site Web et votre expérience utilisateur."
+    },
+    "browserSettings": {
+      "title": "Paramètres du Navigateur",
+      "description": "La plupart des navigateurs Web vous permettent de contrôler les cookies via leurs paramètres. Voici comment gérer les cookies dans les navigateurs populaires :",
+      "browsers": {
+        "chrome": "Chrome : Paramètres → Confidentialité et sécurité → Cookies et autres données de site",
+        "firefox": "Firefox : Options → Confidentialité et sécurité → Cookies et données de site",
+        "safari": "Safari : Préférences → Confidentialité → Gérer les données du site Web",
+        "edge": "Edge : Paramètres → Cookies et autorisations de site → Cookies et données de site"
+      }
+    },
+    "updates": {
+      "title": "Mises à Jour de Cette Politique",
+      "description": "Nous pouvons mettre à jour cette Politique des Cookies de temps à autre pour refléter les changements dans nos pratiques ou pour d'autres raisons opérationnelles, légales ou réglementaires. Nous vous informerons de tout changement important en publiant la politique mise à jour sur notre site Web."
+    },
+    "contact": {
+      "title": "Contactez-Nous",
+      "description": "Si vous avez des questions sur notre utilisation des cookies ou cette Politique des Cookies, veuillez nous contacter à :",
+      "email": "E-mail : privacy@manzelhelp.com",
+      "address": "Adresse : Équipe Confidentialité ManzelHelp, Avenue Mokhtar Jazoulit, immeuble n° 41, Océan, Rabat, Maroc"
+    }
+  }
+}

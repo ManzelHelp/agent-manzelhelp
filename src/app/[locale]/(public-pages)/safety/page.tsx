@@ -2,13 +2,15 @@ import React from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 import {
   Shield,
   CheckCircle,
   Users,
   AlertTriangle,
-  Phone,
   MessageCircle,
+  Sparkles,
+  Info,
 } from "lucide-react";
 
 export async function generateMetadata({
@@ -17,122 +19,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Footer" });
+  const t = await getTranslations({ locale, namespace: "safety" });
 
   return {
-    title: "Safety & Trust - ManzelHelp",
-    description:
-      "Learn about ManzelHelp's safety measures, verification process, and how we protect both customers and taskers.",
+    title: t("metadata.title"),
+    description: t("metadata.description"),
     openGraph: {
-      title: "Safety & Trust - ManzelHelp",
-      description:
-        "Learn about ManzelHelp's safety measures, verification process, and how we protect both customers and taskers.",
+      title: t("metadata.title"),
+      description: t("metadata.description"),
       locale: locale,
       type: "website",
     },
   };
 }
-
-const SAFETY_FEATURES = [
-  {
-    icon: <Shield className="w-6 h-6" />,
-    title: "Background Checks",
-    description: "All taskers undergo comprehensive background verification",
-    details: [
-      "Identity verification",
-      "Criminal background check",
-      "Reference verification",
-      "Skill assessment",
-    ],
-  },
-  {
-    icon: <Users className="w-6 h-6" />,
-    title: "Community Reviews",
-    description:
-      "Real reviews from verified customers help you choose the right tasker",
-    details: [
-      "Verified customer reviews",
-      "Rating system",
-      "Response time tracking",
-      "Service quality metrics",
-    ],
-  },
-  {
-    icon: <CheckCircle className="w-6 h-6" />,
-    title: "Secure Payments",
-    description: "Your payments are protected with industry-standard security",
-    details: [
-      "Encrypted transactions",
-      "Secure payment processing",
-      "Dispute resolution",
-      "Money-back guarantee",
-    ],
-  },
-  {
-    icon: <Phone className="w-6 h-6" />,
-    title: "24/7 Support",
-    description: "Our support team is always here to help with any concerns",
-    details: [
-      "Round-the-clock support",
-      "Emergency assistance",
-      "Dispute mediation",
-      "Safety incident response",
-    ],
-  },
-];
-
-const SAFETY_TIPS = [
-  {
-    title: "For Customers",
-    icon: "👥",
-    tips: [
-      "Always communicate through our platform",
-      "Verify tasker identity before service",
-      "Read reviews and ratings carefully",
-      "Keep valuable items secure during service",
-      "Report any concerns immediately",
-    ],
-  },
-  {
-    title: "For Taskers",
-    icon: "🔧",
-    tips: [
-      "Meet in public places for initial consultations",
-      "Inform someone about your work schedule",
-      "Trust your instincts - if something feels wrong, leave",
-      "Keep emergency contacts readily available",
-      "Document your work with photos when appropriate",
-    ],
-  },
-];
-
-const VERIFICATION_STEPS = [
-  {
-    step: "1",
-    title: "Identity Verification",
-    description: "Submit government-issued ID and proof of address",
-  },
-  {
-    step: "2",
-    title: "Background Check",
-    description: "Comprehensive criminal background verification",
-  },
-  {
-    step: "3",
-    title: "Skill Assessment",
-    description: "Demonstrate expertise in your service areas",
-  },
-  {
-    step: "4",
-    title: "Reference Check",
-    description: "Provide professional and personal references",
-  },
-  {
-    step: "5",
-    title: "Platform Training",
-    description: "Complete safety and service quality training",
-  },
-];
 
 export default async function SafetyPage({
   params,
@@ -141,37 +40,135 @@ export default async function SafetyPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("safety");
+
+  const safetyFeatures = [
+    {
+      icon: <Shield className="w-6 h-6" />,
+      title: t("safetyFeatures.verification.title"),
+      description: t("safetyFeatures.verification.description"),
+      details: t.raw("safetyFeatures.verification.details"),
+    },
+    {
+      icon: <Users className="w-6 h-6" />,
+      title: t("safetyFeatures.reviews.title"),
+      description: t("safetyFeatures.reviews.description"),
+      details: t.raw("safetyFeatures.reviews.details"),
+    },
+    {
+      icon: <MessageCircle className="w-6 h-6" />,
+      title: t("safetyFeatures.communication.title"),
+      description: t("safetyFeatures.communication.description"),
+      details: t.raw("safetyFeatures.communication.details"),
+    },
+    {
+      icon: <CheckCircle className="w-6 h-6" />,
+      title: t("safetyFeatures.support.title"),
+      description: t("safetyFeatures.support.description"),
+      details: t.raw("safetyFeatures.support.details"),
+    },
+  ];
+
+  const verificationSteps = [
+    {
+      step: "1",
+      title: t("verificationProcess.steps.identity.title"),
+      description: t("verificationProcess.steps.identity.description"),
+    },
+    {
+      step: "2",
+      title: t("verificationProcess.steps.profile.title"),
+      description: t("verificationProcess.steps.profile.description"),
+    },
+    {
+      step: "3",
+      title: t("verificationProcess.steps.skills.title"),
+      description: t("verificationProcess.steps.skills.description"),
+    },
+    {
+      step: "4",
+      title: t("verificationProcess.steps.contact.title"),
+      description: t("verificationProcess.steps.contact.description"),
+    },
+  ];
+
+  const safetyTips = [
+    {
+      title: t("safetyTips.forCustomers.title"),
+      icon: "👥",
+      tips: t.raw("safetyTips.forCustomers.tips"),
+    },
+    {
+      title: t("safetyTips.forTaskers.title"),
+      icon: "🔧",
+      tips: t.raw("safetyTips.forTaskers.tips"),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Shield className="w-8 h-8 text-white" />
+      <section className="relative bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-light)] to-[var(--color-primary-dark)] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-[var(--color-secondary)] rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--color-secondary)] rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+        </div>
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 border border-white/20">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm font-medium">{t("hero.title")}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Safety & Trust
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+            {t("hero.title")}
           </h1>
-          <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto">
-            Your safety is our top priority. We've built comprehensive safety
-            measures to protect both customers and taskers.
+          <p className="text-lg sm:text-xl mb-8 leading-relaxed max-w-3xl mx-auto opacity-90">
+            {t("hero.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
               className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)]"
+              asChild
             >
-              Report a Safety Issue
+              <Link href="/contact">{t("hero.reportIssue")}</Link>
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white/10"
+              asChild
             >
-              Learn More
+              <Link href="/help">{t("hero.learnMore")}</Link>
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Platform Disclaimer - Important */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-yellow-50 dark:bg-yellow-900/20 border-y-2 border-yellow-200 dark:border-yellow-800">
+        <div className="max-w-6xl mx-auto">
+          <Card className="border-2 border-yellow-400 dark:border-yellow-600 bg-yellow-100 dark:bg-yellow-900/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-yellow-900 dark:text-yellow-200">
+                <Info className="w-6 h-6" />
+                {t("platformDisclaimer.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-yellow-900 dark:text-yellow-200 mb-4 font-semibold">
+                {t("platformDisclaimer.description")}
+              </p>
+              <ul className="space-y-2 text-yellow-800 dark:text-yellow-300">
+                {t.raw("platformDisclaimer.points").map((point: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -180,28 +177,31 @@ export default async function SafetyPage({
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              How We Keep You Safe
+              {t("safetyFeatures.title")}
             </h2>
+            <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-4">
+              {t("safetyFeatures.subtitle")}
+            </p>
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SAFETY_FEATURES.map((feature, index) => (
+            {safetyFeatures.map((feature, index) => (
               <Card
                 key={index}
-                className="p-6 text-center hover:shadow-lg transition-shadow"
+                className="p-6 text-center hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0"
               >
-                <div className="w-12 h-12 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4 text-white">
+                <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] rounded-full flex items-center justify-center mx-auto mb-4 text-white">
                   {feature.icon}
                 </div>
                 <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
                   {feature.title}
                 </h3>
-                <p className="text-[var(--color-text-secondary)] text-sm mb-4">
+                <p className="text-[var(--color-text-secondary)] text-sm mb-4 leading-relaxed">
                   {feature.description}
                 </p>
                 <ul className="text-xs text-[var(--color-text-secondary)] space-y-1">
-                  {feature.details.map((detail, detailIndex) => (
+                  {feature.details.map((detail: string, detailIndex: number) => (
                     <li key={detailIndex} className="flex items-center gap-1">
                       <CheckCircle className="w-3 h-3 text-[var(--color-secondary)] flex-shrink-0" />
                       {detail}
@@ -219,26 +219,30 @@ export default async function SafetyPage({
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              Tasker Verification Process
+              {t("verificationProcess.title")}
             </h2>
             <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto">
-              Every tasker goes through our rigorous 5-step verification process
+              {t("verificationProcess.description")}
             </p>
+            <div className="w-20 h-1 bg-[var(--color-primary)] mx-auto rounded-full mt-4"></div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {VERIFICATION_STEPS.map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {verificationSteps.map((step, index) => (
+              <Card
+                key={index}
+                className="p-6 text-center hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
                   {step.step}
                 </div>
                 <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
                   {step.title}
                 </h3>
-                <p className="text-[var(--color-text-secondary)] text-sm">
+                <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
                   {step.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -249,26 +253,29 @@ export default async function SafetyPage({
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              Safety Tips
+              {t("safetyTips.title")}
             </h2>
             <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
-            {SAFETY_TIPS.map((section, index) => (
-              <Card key={index} className="p-6">
+            {safetyTips.map((section, index) => (
+              <Card
+                key={index}
+                className="p-6 hover:shadow-xl transition-all duration-300 bg-white dark:bg-[var(--color-surface)] border-0"
+              >
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
+                  <CardTitle className="flex items-center gap-3 text-[var(--color-text-primary)]">
                     <span className="text-2xl">{section.icon}</span>
                     {section.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {section.tips.map((tip, tipIndex) => (
+                    {section.tips.map((tip: string, tipIndex: number) => (
                       <li key={tipIndex} className="flex items-start gap-3">
                         <CheckCircle className="w-5 h-5 text-[var(--color-secondary)] flex-shrink-0 mt-0.5" />
-                        <span className="text-[var(--color-text-secondary)]">
+                        <span className="text-[var(--color-text-secondary)] leading-relaxed">
                           {tip}
                         </span>
                       </li>
@@ -281,126 +288,83 @@ export default async function SafetyPage({
         </div>
       </section>
 
-      {/* Emergency Support */}
+      {/* Legal Disclaimer */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--color-surface)]">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              Emergency Support
-            </h2>
-            <p className="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto">
-              If you ever feel unsafe or need immediate assistance, we're here
-              to help
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="p-6 text-center">
-              <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-[var(--color-text-primary)]">
-                Emergency Hotline
-              </h3>
-              <p className="text-[var(--color-text-secondary)] mb-4">
-                Available 24/7 for urgent safety concerns
+          <Card className="border-2 border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)]">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                {t("legalDisclaimer.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                {t("legalDisclaimer.description")}
               </p>
-              <Button className="bg-red-500 hover:bg-red-600 text-white">
-                Call Emergency Line
-              </Button>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="w-12 h-12 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4 text-white">
-                <MessageCircle className="w-6 h-6" />
+              <div className="bg-[var(--color-bg)] p-4 rounded-lg border border-[var(--color-border)]">
+                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  {t("legalDisclaimer.content")}
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-[var(--color-text-primary)]">
-                Report an Issue
-              </h3>
-              <p className="text-[var(--color-text-secondary)] mb-4">
-                Report safety concerns or inappropriate behavior
-              </p>
-              <Button
-                variant="outline"
-                className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
-              >
-                Report Issue
-              </Button>
-            </Card>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      {/* Trust Statistics */}
+      {/* Contact Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
-              Trusted by Thousands
-            </h2>
-            <div className="w-20 h-1 bg-[var(--color-secondary)] mx-auto rounded-full"></div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[var(--color-primary)] mb-2">
-                99.8%
-              </div>
-              <div className="text-sm text-[var(--color-text-secondary)]">
-                Safety Rating
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[var(--color-primary)] mb-2">
-                50K+
-              </div>
-              <div className="text-sm text-[var(--color-text-secondary)]">
-                Verified Taskers
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[var(--color-primary)] mb-2">
-                4.9★
-              </div>
-              <div className="text-sm text-[var(--color-text-secondary)]">
-                Average Rating
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[var(--color-primary)] mb-2">
-                24/7
-              </div>
-              <div className="text-sm text-[var(--color-text-secondary)]">
-                Support Available
-              </div>
-            </div>
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">
+            {t("contact.title")}
+          </h2>
+          <p className="text-lg text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto">
+            {t("contact.description")}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+              asChild
+            >
+              <Link href="/contact">{t("contact.contactSupport")}</Link>
+            </Button>
+            <Button
+              size="lg"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
+              asChild
+            >
+              <Link href="/help">{t("contact.reportIssue")}</Link>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-white">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-secondary-light)] text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6">
-            Feel Safe, Get Help
+            {t("cta.title")}
           </h2>
-          <p className="text-lg mb-8 text-[var(--color-accent-light)]">
-            Join our community of verified helpers and customers who trust
-            ManzelHelp for safe, reliable service.
+          <p className="text-lg mb-8 opacity-90 leading-relaxed max-w-2xl mx-auto">
+            {t("cta.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)]"
+              variant="outline"
+              className="border-white text-white hover:bg-white/10"
+              asChild
             >
-              Get Started Today
+              <Link href="/sign-up">{t("cta.getStarted")}</Link>
             </Button>
             <Button
               size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white/10"
+              className="bg-white text-[var(--color-secondary)] hover:bg-white/90"
+              asChild
             >
-              Learn More About Safety
+              <Link href="/help">{t("cta.learnMore")}</Link>
             </Button>
           </div>
         </div>

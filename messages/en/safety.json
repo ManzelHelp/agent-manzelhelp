@@ -1,0 +1,131 @@
+{
+  "safety": {
+    "metadata": {
+      "title": "Safety & Trust - ManzelHelp",
+      "description": "Learn about safety measures on ManzelHelp platform. Important: ManzelHelp is a platform connecting users and taskers. Users and taskers are fully responsible for their interactions."
+    },
+    "hero": {
+      "title": "Safety & Trust",
+      "description": "ManzelHelp is a platform that connects customers with taskers. We provide tools and features to help you make informed decisions, but all users and taskers are fully responsible for their interactions and transactions.",
+      "reportIssue": "Report an Issue",
+      "learnMore": "Learn More"
+    },
+    "platformDisclaimer": {
+      "title": "Important Platform Disclaimer",
+      "description": "ManzelHelp is a technology platform that facilitates connections between customers and taskers. We do not provide insurance, protection, or guarantee services.",
+      "points": [
+        "ManzelHelp is a platform only - we connect users, we do not provide services",
+        "Users and taskers are fully responsible for their interactions",
+        "We do not provide insurance or protection coverage",
+        "All transactions are between users and taskers directly",
+        "Users should verify taskers and taskers should verify customers before engaging",
+        "Any disputes must be resolved directly between the parties involved"
+      ]
+    },
+    "safetyFeatures": {
+      "title": "How We Help You Stay Safe",
+      "subtitle": "Tools and features to help you make informed decisions",
+      "verification": {
+        "title": "Identity Verification",
+        "description": "Taskers can verify their identity through our platform",
+        "details": [
+          "Identity document verification",
+          "Profile verification",
+          "Contact information verification"
+        ]
+      },
+      "reviews": {
+        "title": "Community Reviews",
+        "description": "Read reviews from other users to make informed decisions",
+        "details": [
+          "Customer reviews and ratings",
+          "Service quality feedback",
+          "Response time information"
+        ]
+      },
+      "communication": {
+        "title": "Secure Communication",
+        "description": "Communicate through our platform messaging system",
+        "details": [
+          "In-platform messaging",
+          "Service details documentation",
+          "Transaction records"
+        ]
+      },
+      "support": {
+        "title": "Platform Support",
+        "description": "Our support team helps with platform-related questions",
+        "details": [
+          "Platform usage assistance",
+          "Technical support",
+          "Account management help"
+        ]
+      }
+    },
+    "verificationProcess": {
+      "title": "Tasker Verification Process",
+      "description": "Taskers can verify their profiles through our platform (verification does not guarantee service quality or provide insurance)",
+      "steps": {
+        "identity": {
+          "title": "Identity Verification",
+          "description": "Submit government-issued ID (CIN) for verification"
+        },
+        "profile": {
+          "title": "Profile Completion",
+          "description": "Complete your profile with accurate information"
+        },
+        "skills": {
+          "title": "Skills Information",
+          "description": "Provide information about your skills and experience"
+        },
+        "contact": {
+          "title": "Contact Verification",
+          "description": "Verify your phone number and email address"
+        }
+      }
+    },
+    "safetyTips": {
+      "title": "Safety Tips",
+      "forCustomers": {
+        "title": "For Customers",
+        "tips": [
+          "Always communicate through our platform before meeting",
+          "Verify tasker identity and read reviews carefully",
+          "Meet in public places for initial consultations when possible",
+          "Keep valuable items secure during service",
+          "Report any concerns through our platform immediately",
+          "Ensure you have proper insurance coverage for your property if needed"
+        ]
+      },
+      "forTaskers": {
+        "title": "For Taskers",
+        "tips": [
+          "Verify customer identity and service requirements",
+          "Meet in public places for initial consultations when possible",
+          "Inform someone about your work schedule and location",
+          "Trust your instincts - if something feels wrong, do not proceed",
+          "Keep emergency contacts readily available",
+          "Document your work with photos when appropriate",
+          "Ensure you have proper insurance coverage for your work if needed"
+        ]
+      }
+    },
+    "legalDisclaimer": {
+      "title": "Legal Disclaimer",
+      "description": "Important information about platform liability and user responsibility",
+      "content": "ManzelHelp is a technology platform that facilitates connections between customers seeking services and taskers providing services. ManzelHelp does not provide, guarantee, or insure any services. All services are provided directly by taskers to customers. Users and taskers are solely responsible for their interactions, transactions, and any disputes that may arise. ManzelHelp is not liable for any damages, losses, or injuries that may occur as a result of using the platform. Users are advised to obtain appropriate insurance coverage and to comply with all applicable Moroccan laws and regulations."
+    },
+    "contact": {
+      "title": "Need Help?",
+      "description": "Contact our support team for platform-related questions",
+      "reportIssue": "Report an Issue",
+      "contactSupport": "Contact Support"
+    },
+    "cta": {
+      "title": "Use the Platform Responsibly",
+      "description": "ManzelHelp provides tools to help you connect safely. Always verify users, read reviews, and use your best judgment when engaging with others on the platform.",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More"
+    }
+  }
+}

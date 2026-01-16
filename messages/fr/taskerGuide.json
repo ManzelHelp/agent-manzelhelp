@@ -1,0 +1,150 @@
+{
+  "taskerGuide": {
+    "metadata": {
+      "title": "Guide de Démarrage pour les Assistants - ManzelHelp",
+      "description": "Guide complet pour les nouveaux assistants sur ManzelHelp. Apprenez comment configurer votre profil, trouver des clients et commencer à gagner de l'argent au Maroc."
+    },
+    "hero": {
+      "title": "Commencer en tant qu'Assistant",
+      "description": "Votre guide complet pour devenir un assistant réussi sur ManzelHelp. Apprenez comment configurer votre profil, trouver des clients et commencer à gagner de l'argent au Maroc.",
+      "startJourney": "Commencer Votre Voyage",
+      "downloadGuide": "Télécharger le Guide"
+    },
+    "gettingStarted": {
+      "title": "Votre Voyage vers le Succès",
+      "description": "Suivez ces étapes pour devenir un assistant réussi sur notre plateforme",
+      "steps": {
+        "createAccount": {
+          "title": "Créer Votre Compte",
+          "description": "Inscrivez-vous avec votre e-mail et vos informations de base",
+          "details": [
+            "Choisissez un mot de passe fort",
+            "Vérifiez votre adresse e-mail",
+            "Complétez la configuration de votre profil",
+            "Sélectionnez vos catégories de services"
+          ]
+        },
+        "verification": {
+          "title": "Compléter la Vérification",
+          "description": "Passez par notre processus de vérification pour construire la confiance",
+          "details": [
+            "Soumettre une pièce d'identité gouvernementale (CIN)",
+            "Compléter les informations du profil",
+            "Vérifier vos informations de contact",
+            "Ajouter vos compétences et votre expérience"
+          ]
+        },
+        "buildProfile": {
+          "title": "Construire Votre Profil",
+          "description": "Créez un profil attrayant qui se démarque",
+          "details": [
+            "Ajoutez des photos professionnelles",
+            "Rédigez des descriptions convaincantes en arabe et en français",
+            "Définissez des prix compétitifs en MAD",
+            "Définissez votre zone de service au Maroc"
+          ]
+        },
+        "startEarning": {
+          "title": "Commencer à Gagner",
+          "description": "Commencez à accepter des emplois et à construire votre réputation",
+          "details": [
+            "Répondez rapidement aux demandes d'emploi",
+            "Offrez un excellent service",
+            "Collectez des avis positifs",
+            "Construisez une clientèle récurrente"
+          ]
+        }
+      }
+    },
+    "successTips": {
+      "title": "Conseils pour Réussir",
+      "beResponsive": {
+        "title": "Soyez Réactif",
+        "description": "Répondez aux messages dans les 2 heures pour augmenter vos chances d'être embauché"
+      },
+      "maintainQuality": {
+        "title": "Maintenez la Qualité",
+        "description": "Offrez constamment un excellent service pour construire une solide réputation"
+      },
+      "buildRelationships": {
+        "title": "Construisez des Relations",
+        "description": "Concentrez-vous sur la construction de relations à long terme avec des clients récurrents"
+      },
+      "stayActive": {
+        "title": "Restez Actif",
+        "description": "Mettez régulièrement à jour votre disponibilité et répondez aux nouvelles opportunités"
+      }
+    },
+    "earningPotential": {
+      "title": "Potentiel de Gains",
+      "description": "Découvrez combien vous pouvez gagner avec différents services (basé sur 40 heures/semaine). Les prix sont en MAD et varient selon l'expérience et l'emplacement au Maroc.",
+      "perHour": "par heure",
+      "monthlyPotential": "potentiel mensuel",
+      "services": {
+        "cleaning": {
+          "name": "Services de Nettoyage",
+          "description": "Services de nettoyage réguliers et en profondeur",
+          "hourlyRate": "15-25 MAD",
+          "monthlyPotential": "2,400-4,000 MAD"
+        },
+        "handyman": {
+          "name": "Travaux de Bricolage",
+          "description": "Assemblage de meubles, réparations et maintenance",
+          "hourlyRate": "20-40 MAD",
+          "monthlyPotential": "3,200-6,400 MAD"
+        },
+        "petcare": {
+          "name": "Soins aux Animaux",
+          "description": "Promenade de chiens, garde d'animaux et toilettage",
+          "hourlyRate": "12-20 MAD",
+          "monthlyPotential": "1,920-3,200 MAD"
+        },
+        "tutoring": {
+          "name": "Tutorat",
+          "description": "Soutien académique et développement de compétences",
+          "hourlyRate": "20-40 MAD",
+          "monthlyPotential": "3,200-6,400 MAD"
+        }
+      }
+    },
+    "requirements": {
+      "title": "Exigences pour Commencer",
+      "basic": {
+        "title": "Exigences de Base",
+        "items": [
+          "Avoir au moins 18 ans",
+          "Avoir une pièce d'identité gouvernementale marocaine valide (CIN)",
+          "Compléter la vérification du profil",
+          "Avoir des compétences et une expérience pertinentes"
+        ]
+      },
+      "whatYouNeed": {
+        "title": "Ce dont Vous Aurez Besoin",
+        "items": [
+          "Smartphone avec appareil photo",
+          "Transport fiable",
+          "Compte bancaire pour les paiements (paiements en espèces à la livraison)",
+          "Références professionnelles (optionnel mais recommandé)"
+        ]
+      }
+    },
+    "importantNotes": {
+      "title": "Notes Importantes",
+      "description": "Veuillez lire ces points importants avant de commencer",
+      "points": [
+        "ManzelHelp est une plateforme uniquement - vous êtes responsable de vos services",
+        "Les paiements se font en espèces à la livraison",
+        "Vous devez vous conformer à toutes les lois et réglementations marocaines applicables",
+        "Vous êtes responsable d'obtenir les licences ou permis nécessaires",
+        "Vous devriez avoir une couverture d'assurance appropriée pour votre travail si nécessaire",
+        "Tous les litiges doivent être résolus directement entre vous et le client"
+      ]
+    },
+    "cta": {
+      "title": "Prêt à Commencer à Gagner ?",
+      "description": "Rejoignez des milliers d'assistants réussis qui gagnent déjà de l'argent en faisant ce qu'ils aiment au Maroc. Commencez votre voyage aujourd'hui !",
+      "becomeTasker": "Devenir un Assistant",
+      "learnMore": "En Savoir Plus"
+    }
+  }
+}

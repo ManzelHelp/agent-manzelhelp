@@ -27,6 +27,8 @@
     "city": "Stadt",
     "region": "Region",
     "postalCode": "Postleitzahl",
+    "step": "Schritt",
+    "note": "Hinweis",
     "enterStreetAddress": "Straßenadresse eingeben",
     "enterCity": "Stadt eingeben",
     "enterRegion": "Region eingeben",
