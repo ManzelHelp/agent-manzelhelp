@@ -57,7 +57,12 @@ function SignUpForm() {
             title: t("pages.signUp.signUpSuccessful"),
             description: t("pages.signUp.checkEmailVerification"),
           });
-          router.replace("/wait-for-confirmation");
+          // Redirect directly to verify-otp with email and userRole params
+          const params = new URLSearchParams({
+            email: rawData.email,
+            userRole: rawData.userRole,
+          });
+          router.replace(`/verify-otp?${params.toString()}`);
         } else {
           const errorMessage = result.errorMessage;
           

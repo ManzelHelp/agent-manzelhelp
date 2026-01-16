@@ -1,7 +1,7 @@
 "use server";
 
 import { handleError } from "@/lib/utils";
-import { createClient } from "@/supabase/server";
+import { createClient, createServiceRoleClient } from "@/supabase/server";
 import { headers } from "next/headers";
 import { signupSchema, loginSchema } from "@/lib/schemas/auth";
 
@@ -72,7 +72,7 @@ export const signUpAction = async (email: string, password: string, userRole: st
       }
     }
 
-    const emailRedirectTo = `${origin}/${locale}/confirm?userRole=${userRole}`;
+    const emailRedirectTo = `${origin}/${locale}/verify-otp?email=${encodeURIComponent(email.toLowerCase().trim())}&userRole=${userRole}`;
     const normalizedRole = userRole === "tasker" ? "tasker" : "customer";
 
     const { data, error } = await supabase.auth.signUp({
@@ -80,7 +80,11 @@ export const signUpAction = async (email: string, password: string, userRole: st
       password,
       options: {
         emailRedirectTo,
-        data: { userRole: normalizedRole, role: normalizedRole },
+        data: { 
+          userRole: normalizedRole, 
+          role: normalizedRole,
+          locale: locale,
+        },
       },
     });
     
@@ -134,6 +138,176 @@ export const signUpAction = async (email: string, password: string, userRole: st
     return { success: true, errorMessage: null, user: null };
   } catch (error) {
     return { success: false, ...handleError(error), user: null };
+  }
+};
+
+/**
+ * Verify OTP code for email confirmation
+ */
+export const verifyOTPAction = async (email: string, token: string) => {
+  try {
+    const supabase = await createClient();
+    
+    // Verify OTP with Supabase
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.toLowerCase().trim(),
+      token: token.trim(),
+      type: 'signup',
+    });
+
+    if (error) {
+      // Determine error type for UI handling
+      let errorType: 'invalid' | 'expired' | 'rate_limit' | 'other' = 'other';
+      
+      if (error.message?.includes('expired') || error.message?.includes('expir')) {
+        errorType = 'expired';
+      } else if (error.message?.includes('invalid') || error.message?.includes('Invalid')) {
+        errorType = 'invalid';
+      } else if (error.message?.includes('rate') || error.message?.includes('limit')) {
+        errorType = 'rate_limit';
+      }
+
+      return {
+        success: false,
+        errorMessage: error.message,
+        errorType,
+        user: null,
+      };
+    }
+
+    if (!data.session || !data.user) {
+      return {
+        success: false,
+        errorMessage: "Verification failed. Please try again.",
+        errorType: 'other' as const,
+        user: null,
+      };
+    }
+
+    // Get user role from metadata
+    const userRole = data.user.user_metadata?.userRole || data.user.user_metadata?.role || 'customer';
+    const locale = data.user.user_metadata?.locale || 'fr';
+
+    // Create user record in database if it doesn't exist
+    const serviceClient = createServiceRoleClient();
+    if (serviceClient) {
+      const { data: existingUser } = await serviceClient
+        .from("users")
+        .select("id")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (!existingUser) {
+        const validRole: "customer" | "tasker" = userRole === "tasker" ? "tasker" : "customer";
+        
+        const { error: insertError } = await serviceClient.from("users").insert([
+          {
+            id: data.user.id,
+            email: data.user.email,
+            role: validRole,
+            email_verified: true,
+            is_active: true,
+            preferred_language: locale,
+            verification_status: "pending",
+            wallet_balance: 0,
+          },
+        ]);
+
+        if (insertError) {
+          console.error("Failed to create user record:", insertError);
+          return {
+            success: false,
+            errorMessage: "Account verification succeeded but profile creation failed. Please contact support.",
+            errorType: 'other' as const,
+            user: null,
+          };
+        }
+
+        // Create related records (user_stats)
+        await createUserRecordsAction(data.user.id);
+      }
+    }
+
+    // Get user profile
+    const { data: profile } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", data.user.id)
+      .single();
+
+    return {
+      success: true,
+      errorMessage: null,
+      errorType: null,
+      user: profile ? JSON.parse(JSON.stringify(profile)) : null,
+      userRole: profile?.role || userRole,
+    };
+  } catch (error) {
+    console.error("Error in verifyOTPAction:", error);
+    return {
+      success: false,
+      errorMessage: error instanceof Error ? error.message : "An unexpected error occurred",
+      errorType: 'other' as const,
+      user: null,
+    };
+  }
+};
+
+/**
+ * Resend OTP code for email confirmation
+ */
+export const resendOTPAction = async (email: string) => {
+  try {
+    const supabase = await createClient();
+    const headersList = await headers();
+    const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    
+    // Get locale from accept-language header
+    const acceptLanguage = headersList.get("accept-language");
+    let locale = "fr";
+    
+    if (acceptLanguage) {
+      const preferredLocale = acceptLanguage.split(",")[0]?.split("-")[0]?.toLowerCase();
+      if (preferredLocale && ["fr", "en", "de", "ar"].includes(preferredLocale)) {
+        locale = preferredLocale;
+      }
+    }
+
+    // Resend OTP
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.toLowerCase().trim(),
+      options: {
+        emailRedirectTo: `${origin}/${locale}/verify-otp?email=${encodeURIComponent(email.toLowerCase().trim())}`,
+      },
+    });
+
+    if (error) {
+      let errorType: 'rate_limit' | 'other' = 'other';
+      
+      if (error.message?.includes('rate') || error.message?.includes('limit') || error.message?.includes('too many')) {
+        errorType = 'rate_limit';
+      }
+
+      return {
+        success: false,
+        errorMessage: error.message,
+        errorType,
+      };
+    }
+
+    return {
+      success: true,
+      errorMessage: null,
+      errorType: null,
+    };
+  } catch (error) {
+    console.error("Error in resendOTPAction:", error);
+    return {
+      success: false,
+      errorMessage: error instanceof Error ? error.message : "An unexpected error occurred",
+      errorType: 'other' as const,
+    };
   }
 };
 
