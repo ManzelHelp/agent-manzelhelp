@@ -229,14 +229,14 @@ export default function TaskerBookingDetailPage({
   }, [booking, t]);
 
   const getCustomerEmail = useCallback(() => {
-    if (!booking) return "N/A";
-    return booking.customer_email || "N/A";
-  }, [booking]);
+    if (!booking) return t("addressNotSpecified"); // Or another key like "notProvided"
+    return booking.customer_email || t("addressNotSpecified");
+  }, [booking, t]);
 
   const getCustomerPhone = useCallback(() => {
-    if (!booking) return "N/A";
-    return booking.customer_phone || "N/A";
-  }, [booking]);
+    if (!booking) return t("addressNotSpecified");
+    return booking.customer_phone || t("addressNotSpecified");
+  }, [booking, t]);
 
   // Check if contact info should be shown (booking accepted, in_progress, completed, or started)
   const shouldShowContactInfo = useCallback(() => {
@@ -465,8 +465,8 @@ export default function TaskerBookingDetailPage({
                     </h2>
                     <p className="text-slate-600 dark:text-slate-400 text-lg mobile-text-base">
                       {booking.category_name
-                        ? `${booking.category_name} service`
-                        : "Professional service"}
+                        ? t("categoryService", { category: booking.category_name })
+                        : t("professionalService")}
                     </p>
                   </div>
                 </div>
@@ -548,7 +548,7 @@ export default function TaskerBookingDetailPage({
                         </div>
                         <div>
                           <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                            Email
+                            {t("email")}
                           </p>
                           <p className="text-slate-900 dark:text-white font-semibold">
                             {getCustomerEmail()}
@@ -564,7 +564,7 @@ export default function TaskerBookingDetailPage({
                         </div>
                         <div>
                           <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                            Phone
+                            {t("phone")}
                           </p>
                           <p className="text-slate-900 dark:text-white font-semibold">
                             {getCustomerPhone()}
@@ -714,7 +714,7 @@ export default function TaskerBookingDetailPage({
                         {t("payment")}
                       </p>
                       <p className="text-lg font-bold text-slate-900 dark:text-white capitalize">
-                        {booking.payment_method}
+                        {booking.payment_method ? t(`paymentMethods.${booking.payment_method.toLowerCase()}`) : t("paymentMethods.cash")}
                       </p>
                     </div>
                   </div>
@@ -817,12 +817,12 @@ export default function TaskerBookingDetailPage({
             {booking.status === "accepted" && (
               <div className="space-y-4">
                 <Button
-                  onClick={() => handleStatusAction("confirm")}
+                  onClick={() => handleStatusAction("start")}
                   disabled={isUpdating}
                   className="w-full h-16 text-xl font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <CheckCircle className="h-6 w-6 mr-3" />
-                  {t("actions.confirmBooking")}
+                  <Play className="h-6 w-6 mr-3" />
+                  {t("actions.startTask")}
                 </Button>
                 <Button
                   onClick={() => handleStatusAction("cancel")}
@@ -871,20 +871,43 @@ export default function TaskerBookingDetailPage({
               </div>
             )}
 
-            {(booking.status === "completed" ||
-              booking.status === "cancelled") && (
+            {booking.status === "completed" && !booking.customer_confirmed_at && (
+              <div className="text-center py-8 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border-2 border-dashed border-blue-200 dark:border-blue-800">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center animate-pulse">
+                  <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">
+                  {t("awaitingCustomerConfirmation")}
+                </h3>
+                <p className="text-blue-700 dark:text-blue-300">
+                  {t("awaitingCustomerConfirmationDescription")}
+                </p>
+              </div>
+            )}
+
+            {booking.status === "completed" && booking.customer_confirmed_at && (
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                  {booking.status === "completed" ? (
-                    <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-                  ) : (
-                    <X className="h-8 w-8 text-red-600 dark:text-red-400" />
-                  )}
+                <div className="w-16 h-16 mx-auto mb-4 bg-emerald-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <p className="text-slate-600 dark:text-slate-400 text-lg">
-                  {booking.status === "completed"
-                    ? t("completed")
-                    : t("cancelled")}
+                  {t("completed")}
+                </p>
+                {booking.customer_confirmed_at && (
+                  <p className="text-sm text-slate-500 mt-2">
+                    {t("confirmedOn")} {formatDate(booking.customer_confirmed_at)}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {booking.status === "cancelled" && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                  <X className="h-8 w-8 text-red-600 dark:text-red-400" />
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-lg">
+                  {t("cancelled")}
                 </p>
               </div>
             )}

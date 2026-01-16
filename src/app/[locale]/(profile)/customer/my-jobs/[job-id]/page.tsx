@@ -31,12 +31,23 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { getAllCategoryHierarchies } from "@/lib/categories";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
   getJobById,
   getJobApplications,
   assignTaskerToJob,
   updateJob,
   confirmJobCompletion,
   createJob,
+  cancelAssignedJobByCustomer,
   JobApplicationWithDetails,
 } from "@/actions/jobs";
 import { checkReviewExists } from "@/actions/reviews";
@@ -51,7 +62,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import type { ServiceCategory, Service } from "@/types/supabase";
+import { useTranslations } from "next-intl";
 
 interface JobDetailsData {
   id: string;
@@ -103,6 +114,8 @@ export default function JobDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
+  const t = useTranslations("jobDetails");
+  const tCommon = useTranslations("common");
   const [data, setData] = useState<JobDetailsData | null>(null);
   const [applications, setApplications] = useState<JobApplicationWithDetails[]>(
     []
@@ -131,6 +144,10 @@ export default function JobDetailPage() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState<string>("tasker_no_show");
+  const [cancelDetails, setCancelDetails] = useState<string>("");
+  const [isCancellingJob, setIsCancellingJob] = useState(false);
 
   useEffect(() => {
     const fetchJobData = async () => {
@@ -194,6 +211,10 @@ export default function JobDetailPage() {
         if (jobData.customer_confirmed_at) {
           const reviewCheck = await checkReviewExists(jobData.id, undefined);
           setReviewExists(reviewCheck.exists);
+          // Automatically show review form if not reviewed yet
+          if (!reviewCheck.exists) {
+            setShowReviewForm(true);
+          }
         }
 
         // Find category for the current service
@@ -278,7 +299,7 @@ export default function JobDetailPage() {
       if (firstError) {
         toast({
           variant: "destructive",
-          title: "Erreur de validation",
+          title: t("errors.validationError"),
           description: firstError,
         });
       }
@@ -298,8 +319,8 @@ export default function JobDetailPage() {
         setFormErrors({});
         toast({
           variant: "success",
-          title: "Succès",
-          description: "Job mis à jour avec succès!",
+          title: tCommon("complete"),
+          description: t("success.jobUpdated"),
         });
         // If we're on the /edit route, redirect to the details page
         if (pathname?.endsWith('/edit')) {
@@ -308,17 +329,17 @@ export default function JobDetailPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: result.error || "Échec de la mise à jour du job",
+          title: tCommon("error"),
+          description: result.error || t("errors.updateFailed"),
         });
-        setError(result.error || "Failed to update job");
+        setError(result.error || t("errors.updateFailed"));
       }
     } catch (err) {
       console.error("Error updating job:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to update job. Please try again.";
+      const errorMessage = err instanceof Error ? err.message : t("errors.updateFailed");
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: tCommon("error"),
         description: errorMessage,
       });
       setError(errorMessage);
@@ -352,6 +373,11 @@ export default function JobDetailPage() {
       router.push(`/customer/my-jobs/${data?.id}`);
     }
   };
+
+  const canCancelAssignedJob =
+    !!data &&
+    data.status === "assigned" &&
+    !data.started_at;
 
   // Filter services by selected category
   const filteredServices = React.useMemo(() => {
@@ -532,10 +558,10 @@ export default function JobDetailPage() {
             <BackButton className="p-2 h-10 w-10 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]" />
             <div>
               <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                Job Details
+                {t("pageTitle")}
               </h1>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Manage your job post
+                {t("manageJobPost")}
               </p>
             </div>
           </div>
@@ -549,16 +575,16 @@ export default function JobDetailPage() {
                     size="sm"
                   >
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit
+                    {t("actions.edit")}
                   </Button>
                 )}
-                {data.status === "completed" && (
+                {(data.status === "completed" || data.status === "cancelled") && (
                   <Button
                     onClick={async () => {
                       try {
                         // Clone job by creating a new job with the same data
                         const result = await createJob({
-                          title: `${data.title} (Copy)`,
+                          title: `${data.title} (${tCommon("copy")})`,
                           description: data.description || "",
                           service_id: data.service_id,
                           preferred_date: new Date().toISOString().split('T')[0], // Today's date
@@ -577,23 +603,23 @@ export default function JobDetailPage() {
                         if (result.success && result.jobId) {
                           toast({
                             variant: "success",
-                            title: "Succès",
-                            description: "Job cloné avec succès!",
+                            title: tCommon("complete"),
+                            description: t("success.jobCloned"),
                           });
                           router.push(`/customer/my-jobs/${result.jobId}`);
                         } else {
                           toast({
                             variant: "destructive",
-                            title: "Erreur",
-                            description: result.error || "Échec du clonage du job",
+                            title: tCommon("error"),
+                            description: result.error || t("errors.cloneFailed"),
                           });
                         }
                       } catch (error) {
                         console.error("Error cloning job:", error);
                         toast({
                           variant: "destructive",
-                          title: "Erreur",
-                          description: "Échec du clonage du job",
+                          title: tCommon("error"),
+                          description: t("errors.cloneFailed"),
                         });
                       }
                     }}
@@ -601,7 +627,17 @@ export default function JobDetailPage() {
                     size="sm"
                   >
                     <Copy className="h-4 w-4 mr-2" />
-                    Clone
+                    {t("actions.clone")}
+                  </Button>
+                )}
+                {canCancelAssignedJob && (
+                  <Button
+                    onClick={() => setIsCancelDialogOpen(true)}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    {t("cancelJob.button", { default: "Cancel job" })}
                   </Button>
                 )}
               </>
@@ -613,7 +649,7 @@ export default function JobDetailPage() {
                   size="sm"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Save
+                  {t("actions.save")}
                 </Button>
                 <Button
                   onClick={handleCancel}
@@ -622,12 +658,136 @@ export default function JobDetailPage() {
                   className="border-[var(--color-border)]"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Cancel
+                  {t("actions.cancel")}
                 </Button>
               </>
             )}
           </div>
         </div>
+
+        {/* Cancel Job Dialog */}
+        <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{t("cancelJob.title", { default: "Cancel job" })}</DialogTitle>
+              <DialogDescription>
+                {t("cancelJob.description", {
+                  default:
+                    "Tell us why you want to cancel. This will unassign the tasker and mark the job as cancelled so you can clone/repost it.",
+                })}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>{t("cancelJob.reasonLabel", { default: "Reason" })}</Label>
+                <RadioGroup value={cancelReason} onValueChange={setCancelReason} className="gap-3">
+                  <label className="flex items-center gap-2">
+                    <RadioGroupItem value="tasker_no_show" />
+                    <span className="text-sm">
+                      {t("cancelJob.reasons.tasker_no_show", {
+                        default: "Tasker did not show up",
+                      })}
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <RadioGroupItem value="schedule_change" />
+                    <span className="text-sm">
+                      {t("cancelJob.reasons.schedule_change", {
+                        default: "Schedule changed",
+                      })}
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <RadioGroupItem value="found_other_tasker" />
+                    <span className="text-sm">
+                      {t("cancelJob.reasons.found_other_tasker", {
+                        default: "I found another tasker",
+                      })}
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <RadioGroupItem value="other" />
+                    <span className="text-sm">
+                      {t("cancelJob.reasons.other", { default: "Other" })}
+                    </span>
+                  </label>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t("cancelJob.detailsLabel", { default: "Details (optional)" })}</Label>
+                <Textarea
+                  value={cancelDetails}
+                  onChange={(e) => setCancelDetails(e.target.value)}
+                  placeholder={t("cancelJob.detailsPlaceholder", {
+                    default: "Add more context (optional)",
+                  })}
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCancelDialogOpen(false)}
+                  disabled={isCancellingJob}
+                >
+                  {t("cancelJob.cancel", { default: "Back" })}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    if (!data) return;
+                    setIsCancellingJob(true);
+                    try {
+                      const result = await cancelAssignedJobByCustomer(
+                        data.id,
+                        cancelReason,
+                        cancelDetails
+                      );
+
+                      if (result.success) {
+                        toast({
+                          variant: "success",
+                          title: tCommon("complete"),
+                          description: t("cancelJob.success", {
+                            default: "Job cancelled successfully.",
+                          }),
+                        });
+                        setIsCancelDialogOpen(false);
+                        setCancelDetails("");
+
+                        const updated = await getJobById(data.id);
+                        if (updated) setData(updated);
+                      } else {
+                        toast({
+                          variant: "destructive",
+                          title: tCommon("error"),
+                          description: result.error || t("cancelJob.error", { default: "Failed to cancel job." }),
+                        });
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      toast({
+                        variant: "destructive",
+                        title: tCommon("error"),
+                        description: t("cancelJob.error", { default: "Failed to cancel job." }),
+                      });
+                    } finally {
+                      setIsCancellingJob(false);
+                    }
+                  }}
+                  disabled={isCancellingJob}
+                >
+                  {isCancellingJob
+                    ? t("cancelJob.cancelling", { default: "Cancelling..." })
+                    : t("cancelJob.confirm", { default: "Cancel job" })}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <div className="space-y-8">
           {/* Main Job Details */}
@@ -644,13 +804,13 @@ export default function JobDetailPage() {
                         <EyeOff className="h-5 w-5 text-[var(--color-text-secondary)]" />
                       )}
                       <span className="font-medium text-[var(--color-text-primary)]">
-                        Job Status
+                        {t("jobStatus")}
                       </span>
                     </div>
                   </div>
                   <Badge className={getStatusColor(data.status)}>
                     {getStatusIcon(data.status)}
-                    <span className="ml-1">{getStatusLabel(data.status)}</span>
+                    <span className="ml-1">{t(`status.${data.status}`)}</span>
                   </Badge>
                 </div>
               </CardContent>
@@ -679,7 +839,7 @@ export default function JobDetailPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Titre du job *
+                        {t("jobTitle")} *
                       </label>
                       <input
                         type="text"
@@ -708,7 +868,7 @@ export default function JobDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Catégorie *
+                          {t("category")} *
                         </label>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -721,9 +881,10 @@ export default function JobDetailPage() {
                               }`}
                             >
                               {editForm.categoryId
-                                ? categories.find((c) => c.id === editForm.categoryId)?.name_en ||
-                                  "Sélectionner une catégorie"
-                                : "Sélectionner une catégorie"}
+                                ? categories.find((c) => c.id === editForm.categoryId)?.[`name_${params.locale}` as keyof ServiceCategory] ||
+                                  categories.find((c) => c.id === editForm.categoryId)?.name_en ||
+                                  t("selectCategory")
+                                : t("selectCategory")}
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -742,7 +903,7 @@ export default function JobDetailPage() {
                                   }
                                 }}
                               >
-                                {category.name_en}
+                                {category[`name_${params.locale}` as keyof ServiceCategory] || category.name_en}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -751,7 +912,7 @@ export default function JobDetailPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Service *
+                          {t("service")} *
                         </label>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -765,9 +926,10 @@ export default function JobDetailPage() {
                               disabled={!editForm.categoryId}
                             >
                               {editForm.service_id
-                                ? filteredServices.find((s) => s.id === editForm.service_id)?.name_en ||
-                                  "Sélectionner un service"
-                                : "Sélectionner un service"}
+                                ? filteredServices.find((s) => s.id === editForm.service_id)?.[`name_${params.locale}` as keyof Service] ||
+                                  filteredServices.find((s) => s.id === editForm.service_id)?.name_en ||
+                                  t("selectService")
+                                : t("selectService")}
                               <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -782,7 +944,7 @@ export default function JobDetailPage() {
                                   }
                                 }}
                               >
-                                {service.name_en}
+                                {service[`name_${params.locale}` as keyof Service] || service.name_en}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -798,7 +960,7 @@ export default function JobDetailPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Description *
+                        {t("description")} *
                       </label>
                       <textarea
                         value={editForm.description}
@@ -836,9 +998,9 @@ export default function JobDetailPage() {
                             ? "text-orange-500"
                             : "text-[var(--color-text-secondary)]"
                         }`}>
-                          {editForm.description.length} / 80 caractères minimum
+                          {t("minCharactersRequired", { count: 80 })}
                           {editForm.description.length > 0 && editForm.description.length < 80 && (
-                            <span className="ml-1">({80 - editForm.description.length} restants)</span>
+                            <span className="ml-1">({80 - editForm.description.length} {tCommon("remaining")})</span>
                           )}
                         </p>
                       </div>
@@ -847,7 +1009,7 @@ export default function JobDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Budget (MAD) *
+                          {t("budgetMAD")} *
                         </label>
                         <input
                           type="number"
@@ -880,7 +1042,7 @@ export default function JobDetailPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Durée estimée (heures) *
+                          {t("estimatedDurationHours")} *
                         </label>
                         <input
                           type="number"
@@ -914,7 +1076,7 @@ export default function JobDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Date préférée *
+                          {t("preferredDate")} *
                         </label>
                         <input
                           type="date"
@@ -945,7 +1107,7 @@ export default function JobDetailPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                          Heure préférée
+                          {t("preferredTimeLabel")}
                         </label>
                         <div className="flex gap-2">
                           <input
@@ -976,7 +1138,7 @@ export default function JobDetailPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                        Exigences
+                        {t("requirements")}
                       </label>
                       <textarea
                         value={editForm.requirements}
@@ -1008,7 +1170,7 @@ export default function JobDetailPage() {
                         htmlFor="is_flexible"
                         className="text-sm text-[var(--color-text-primary)]"
                       >
-                        Flexible with timing
+                        {t("flexibleTimingLabel")}
                       </label>
                     </div>
                   </div>
@@ -1023,7 +1185,7 @@ export default function JobDetailPage() {
                         <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
                           <Calendar className="h-4 w-4" />
                           <span className="text-sm">
-                            Posted on {formatDate(data.created_at)}
+                            {t("postedOn", { date: formatDate(data.created_at) })}
                           </span>
                         </div>
                       </div>
@@ -1039,7 +1201,7 @@ export default function JobDetailPage() {
                         {data.estimated_duration && (
                           <div className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
                             <Clock className="h-4 w-4" />
-                            <span>{data.estimated_duration}h estimated</span>
+                            <span>{t("estimated", { count: data.estimated_duration })}</span>
                           </div>
                         )}
                       </div>
@@ -1052,10 +1214,10 @@ export default function JobDetailPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                          {category?.name_en || "Category"}
+                          {category?.[`name_${params.locale}` as keyof ServiceCategory] || category?.name_en || t("category")}
                         </p>
                         <p className="text-sm text-[var(--color-text-secondary)]">
-                          {service?.name_en || data.service_name_en || "Service"}
+                          {service?.[`name_${params.locale}` as keyof Service] || service?.name_en || data.service_name_en || t("service")}
                         </p>
                       </div>
                     </div>
@@ -1063,10 +1225,10 @@ export default function JobDetailPage() {
                     {/* Description */}
                     <div>
                       <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
-                        Description
+                        {t("description")}
                       </h3>
                       <p className="text-[var(--color-text-secondary)] leading-relaxed">
-                        {data.description || "No description available"}
+                        {data.description || t("noDescription")}
                       </p>
                     </div>
 
@@ -1074,7 +1236,7 @@ export default function JobDetailPage() {
                     {data.requirements && (
                       <div>
                         <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
-                          Requirements
+                          {t("requirements")}
                         </h3>
                         <p className="text-[var(--color-text-secondary)] leading-relaxed">
                           {data.requirements}
@@ -1089,7 +1251,7 @@ export default function JobDetailPage() {
                           <Calendar className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Preferred Date
+                              {t("preferredDate")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {formatDate(data.preferred_date)}
@@ -1103,7 +1265,7 @@ export default function JobDetailPage() {
                           <Clock className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Preferred Time
+                              {t("preferredTime")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {formatTime(data.preferred_time_start)}
@@ -1119,10 +1281,10 @@ export default function JobDetailPage() {
                           <CheckCircle className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Flexible Timing
+                              {t("flexibleTiming")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
-                              Open to schedule adjustments
+                              {t("openToScheduleAdjustments")}
                             </p>
                           </div>
                         </div>
@@ -1133,7 +1295,7 @@ export default function JobDetailPage() {
                           <MapPin className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Location
+                              {t("location")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {data.street_address && (
@@ -1141,7 +1303,7 @@ export default function JobDetailPage() {
                               )}
                               {data.city && data.region
                                 ? `${data.city}, ${data.region}`
-                                : data.city || data.region || "Location not specified"}
+                                : data.city || data.region || t("locationNotSpecified")}
                             </p>
                           </div>
                         </div>
@@ -1152,10 +1314,13 @@ export default function JobDetailPage() {
                           <Users className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Applications Limit
+                              {t("applicationsLimit")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
-                              {data.current_applications || data.application_count || 0} / {data.max_applications} applications
+                              {t("applicationsCount", { 
+                                current: data.current_applications || data.application_count || 0,
+                                max: data.max_applications
+                              })}
                             </p>
                           </div>
                         </div>
@@ -1166,7 +1331,7 @@ export default function JobDetailPage() {
                           <DollarSign className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Final Price
+                              {t("finalPrice")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {data.currency || "MAD"} {data.final_price}
@@ -1180,7 +1345,7 @@ export default function JobDetailPage() {
                           <Play className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Started At
+                              {t("startedAt")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {format(new Date(data.started_at), "PPP 'at' p")}
@@ -1194,7 +1359,7 @@ export default function JobDetailPage() {
                           <CheckCircle className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Completed At
+                              {t("completedAt")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {format(new Date(data.completed_at), "PPP 'at' p")}
@@ -1208,7 +1373,7 @@ export default function JobDetailPage() {
                           <Calendar className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Last Updated
+                              {t("lastUpdated")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {format(new Date(data.updated_at), "PPP 'at' p")}
@@ -1222,12 +1387,12 @@ export default function JobDetailPage() {
                           <Star className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                              Promoted Job
+                              {t("promotedJob")}
                             </p>
                             <p className="text-sm text-[var(--color-text-secondary)]">
                               {data.promotion_expires_at
-                                ? `Expires: ${format(new Date(data.promotion_expires_at), "PPP")}`
-                                : "This job is promoted"}
+                                ? t("expires", { date: format(new Date(data.promotion_expires_at), "PPP") })
+                                : t("thisJobIsPromoted")}
                             </p>
                           </div>
                         </div>
@@ -1238,7 +1403,7 @@ export default function JobDetailPage() {
                     {data.images && Array.isArray(data.images) && data.images.length > 0 && (
                       <div>
                         <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">
-                          Images ({data.images.length})
+                          {t("imagesCount", { count: data.images.length })}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                           {data.images.map((image, index) => (
@@ -1272,7 +1437,7 @@ export default function JobDetailPage() {
                   <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  Applications ({applications.length})
+                  {t("applicationsCountTitle", { count: applications.length })}
                 </h2>
               </div>
               <div className="p-8">
@@ -1301,7 +1466,7 @@ export default function JobDetailPage() {
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-2">
                             <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                              MAD {application.proposed_price}
+                              {application.currency || "MAD"} {application.proposed_price}
                             </span>
                           </div>
                           {application.estimated_duration && (
@@ -1328,12 +1493,12 @@ export default function JobDetailPage() {
                           {isAssigning === application.tasker_id ? (
                             <>
                               <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                              Assigning...
+                              {t("assigning")}
                             </>
                           ) : (
                             <>
                               <UserCheck className="h-5 w-5 mr-2" />
-                              Assign Tasker
+                              {t("assignTasker")}
                             </>
                           )}
                         </Button>
@@ -1352,7 +1517,7 @@ export default function JobDetailPage() {
                   <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                     <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
-                  Assigned Tasker
+                  {t("assignedTasker")}
                 </h2>
               </div>
               <div className="p-8">
@@ -1366,7 +1531,7 @@ export default function JobDetailPage() {
                       {data.assigned_tasker_last_name}
                     </h3>
                     <p className="text-slate-600 dark:text-slate-400 text-lg">
-                      Assigned to this job
+                      {t("assignedToThisJob")}
                     </p>
                   </div>
                 </div>
@@ -1384,16 +1549,16 @@ export default function JobDetailPage() {
                   <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
                     <CheckCircle className="h-5 w-5 text-white" />
                   </div>
-                  Job Completed - Awaiting Your Confirmation
+                  {t("jobCompletedAwaitingConfirmation")}
                 </h2>
               </div>
               <div className="p-8 space-y-4">
                 <p className="text-slate-700 dark:text-slate-300 text-lg">
-                  The tasker has marked this job as completed. Please review the work and confirm completion.
+                  {t("jobCompletedAwaitingConfirmationDesc")}
                 </p>
                 {data.completed_at && (
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Completed on: {format(new Date(data.completed_at), "PPP 'at' p")}
+                    {t("completedOn", { date: format(new Date(data.completed_at), "PPP 'at' p") })}
                   </p>
                 )}
                 <Button
@@ -1403,14 +1568,16 @@ export default function JobDetailPage() {
                     try {
                       const result = await confirmJobCompletion(data.id);
                       if (result.success) {
+                        // Trigger review form automatically
+                        setShowReviewForm(true);
                         // Refresh the page to show updated status
                         window.location.reload();
                       } else {
-                        setError(result.error || "Failed to confirm job completion");
+                        setError(result.error || t("errors.confirmationFailed"));
                       }
                     } catch (err) {
                       console.error("Error confirming job:", err);
-                      setError("Failed to confirm job completion");
+                      setError(t("errors.confirmationFailed"));
                     } finally {
                       setIsConfirming(false);
                     }
@@ -1422,12 +1589,12 @@ export default function JobDetailPage() {
                   {isConfirming ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Confirming...
+                      {t("confirming")}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="h-5 w-5 mr-2" />
-                      Confirm Job Completion
+                      {t("confirmJobCompletion")}
                     </>
                   )}
                 </Button>
@@ -1445,16 +1612,16 @@ export default function JobDetailPage() {
                   <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
                     <CheckCircle className="h-5 w-5 text-white" />
                   </div>
-                  Job Confirmed
+                  {t("confirmation.jobConfirmed")}
                 </h2>
               </div>
               <div className="p-8">
                 <p className="text-slate-700 dark:text-slate-300 text-lg mb-4">
-                  You have confirmed that this job has been completed successfully.
+                  {t("confirmation.jobConfirmedDescription")}
                 </p>
                 {data.customer_confirmed_at && (
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                    Confirmed on: {format(new Date(data.customer_confirmed_at), "PPP 'at' p")}
+                    {t("confirmation.confirmedOn", { date: format(new Date(data.customer_confirmed_at), "PPP 'at' p") })}
                   </p>
                 )}
                 {!reviewExists && !showReviewForm && (
@@ -1463,12 +1630,12 @@ export default function JobDetailPage() {
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                   >
                     <Star className="h-5 w-5 mr-2" />
-                    Leave a Review
+                    {t("leaveReview")}
                   </Button>
                 )}
                 {reviewExists && (
                   <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                    ✓ You have already left a review for this job
+                    {t("confirmation.reviewAlreadyLeft")}
                   </p>
                 )}
               </div>
@@ -1483,7 +1650,7 @@ export default function JobDetailPage() {
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                     <Star className="h-5 w-5 text-white" />
                   </div>
-                  Leave a Review
+                  {t("leaveReview")}
                 </h2>
               </div>
               <div className="p-8">

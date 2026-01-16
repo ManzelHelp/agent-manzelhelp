@@ -4,32 +4,26 @@
     "loading": "Loading booking details...",
     "notFound": "Booking not found",
     "backToBookings": "Back to Bookings",
-
     "waitingForTasker": "Waiting for the tasker to respond to your booking request.",
     "taskerAccepted": "Great! The tasker has accepted your booking request.",
     "bookingConfirmed": "Your booking is confirmed! The tasker will start the service at the scheduled time.",
     "taskerWorking": "The tasker is currently working on your service.",
-
     "unauthorizedAccess": "Unauthorized access",
     "pleaseWait": "Please wait while we fetch your booking details...",
     "bookingNotFound": "The booking you're looking for doesn't exist or you don't have permission to view it.",
-
     "success": {
       "statusUpdated": "Booking status updated successfully",
       "copiedToClipboard": "Booking ID copied to clipboard",
       "linkCopied": "Link copied to clipboard",
       "confirmed": "Booking confirmed successfully"
     },
-
     "errors": {
       "updateFailed": "Failed to update booking status",
       "unexpectedError": "An unexpected error occurred",
       "taskerInfoNotAvailable": "Tasker information not available",
       "confirmFailed": "Failed to confirm booking completion"
     },
-
     "service": "Service",
-
     "status": {
       "pending": "Pending",
       "accepted": "Accepted",
@@ -39,7 +33,6 @@
       "cancelled": "Cancelled",
       "unknown": "Unknown"
     },
-
     "statusDescriptions": {
       "pending": "Waiting for response",
       "accepted": "Booking has been accepted",
@@ -49,13 +42,11 @@
       "cancelled": "Booking has been cancelled",
       "unknown": "Status unknown"
     },
-
     "bookingType": {
       "instant": "Instant",
       "scheduled": "Scheduled",
       "recurring": "Recurring"
     },
-
     "sections": {
       "customerInfo": "Customer Information",
       "taskerInfo": "Tasker Information",
@@ -66,7 +57,6 @@
       "actions": "Actions",
       "timeline": "Booking Timeline"
     },
-
     "customer": "Customer",
     "tasker": "Tasker",
     "agreedPrice": "Agreed Price",
@@ -76,11 +66,16 @@
     "time": "Time",
     "type": "Type",
     "payment": "Payment",
-
+    "email": "Email",
+    "phone": "Phone",
+    "paymentMethods": {
+      "wallet": "Wallet",
+      "credit_card": "Credit Card",
+      "cash": "Cash"
+    },
     "addressNotSpecified": "Address not specified",
     "noRequirements": "No specific requirements provided.",
     "timeNotSpecified": "Time not specified",
-
     "actions": {
       "acceptRequest": "Accept Request",
       "declineRequest": "Decline Request",
@@ -96,7 +91,6 @@
       "share": "Share",
       "leaveReview": "Leave a Review"
     },
-
     "timeline": {
       "bookingCreated": "Booking Created",
       "bookingAccepted": "Booking Accepted",
@@ -104,13 +98,23 @@
       "taskStarted": "Task Started",
       "taskCompleted": "Task Completed"
     },
-
     "completed": "This booking has been completed successfully.",
     "cancelled": "This booking has been cancelled.",
-
+    "awaitingCustomerConfirmation": "Awaiting Customer Confirmation",
+    "awaitingCustomerConfirmationDescription": "You have finished the task. We are waiting for the customer to confirm completion to finalize the process.",
+    "bookingCompletedAwaitingConfirmation": "Booking Completed - Awaiting Your Confirmation",
+    "taskerMarkedCompletedDescription": "The tasker has marked this booking as completed. Please review the work and confirm completion.",
+    "confirmBookingCompletion": "Confirm Booking Completion",
+    "confirming": "Confirming...",
+    "bookingConfirmedSuccess": "Booking confirmed successfully",
+    "leaveReview": "Leave a Review",
+    "alreadyLeftReview": "You have already left a review for this booking",
+    "confirmedOn": "Confirmed on:",
+    "completedOn": "Completed on:",
+    "professionalService": "Professional service",
+    "categoryService": "{category} service",
     "messagingComingSoon": "Messaging feature coming soon!",
     "phoneNotAvailable": "Phone number not available",
-
     "cancellation": {
       "title": "Cancel Booking",
       "description": "Please tell us why you're canceling this booking",
@@ -133,7 +137,6 @@
         "customCommentRequired": "Please provide a custom comment"
       }
     },
-
     "confirmations": {
       "accept": {
         "title": "Accept Booking Request",

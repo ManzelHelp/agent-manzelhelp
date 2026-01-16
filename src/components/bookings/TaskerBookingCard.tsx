@@ -66,6 +66,7 @@ export function TaskerBookingCard({
   actionButton,
 }: TaskerBookingCardProps) {
   const t = useTranslations("taskerBookings");
+  const tCommon = useTranslations("common");
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t("labels.flexible");
     return formatDateShort(dateString);
@@ -108,7 +109,7 @@ export function TaskerBookingCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 line-clamp-2">
-              {booking.service_title || "Service Booking"}
+              {booking.service_title || t("labels.serviceBooking")}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {booking.booking_type === "instant"
@@ -246,7 +247,7 @@ export function TaskerBookingCard({
               {isUpdating ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  <span>Processing...</span>
+                  <span>{tCommon("processing")}</span>
                 </div>
               ) : (
                 actionButton.text

@@ -29,8 +29,17 @@ export const receiptFileSchema = z
     }
   )
   .refine(
-    (file) => file.size <= 5 * 1024 * 1024, // 5MB
+    (file) => {
+      // PDFs are uploaded as-is and must respect the hard 5MB server limit.
+      if (file.type === "application/pdf") return file.size <= 5 * 1024 * 1024;
+
+      // Images are compressed client-side before upload.
+      // We allow larger originals here to enable compression, but the final file
+      // must still be <= 5MB (enforced in the upload flow).
+      return file.size <= 20 * 1024 * 1024; // 20MB original max
+    },
     {
-      message: "La taille du fichier ne peut pas dépasser 5 MB",
+      message:
+        "Fichier trop volumineux. PDF: 5MB max. Image: 20MB max (compressée avant envoi).",
     }
   );

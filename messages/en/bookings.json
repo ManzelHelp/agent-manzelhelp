@@ -34,6 +34,37 @@
         "description": "You have no cancelled bookings."
       }
     },
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "success": "Success",
+    "error": "Error",
+    "bookingStatusUpdated": "Booking status updated successfully",
+    "failedToUpdateBookingStatus": "Failed to update booking status",
+    "unexpectedError": "An unexpected error occurred",
+    "loadingMore": "Loading more...",
+    "loadMore": "Load More",
+    "actions": {
+      "acceptRequest": "Accept Request",
+      "confirmBooking": "Confirm Booking",
+      "startTask": "Start Task",
+      "completeTask": "Complete Task"
+    },
+    "dialogs": {
+      "accept": {
+        "title": "Accept Booking Request",
+        "description": "Are you sure you want to accept this booking request from {customerName}?"
+      },
+      "confirm": {
+        "title": "Confirm Booking",
+        "description": "Are you sure you want to confirm this booking with {customerName}?"
+      },
+      "start": {
+        "title": "Start Task",
+        "description": "Are you ready to start the task for {customerName}?"
+      },
+      "complete": {
+        "title": "Complete Task",
+        "description": "Are you sure you want to mark this task as completed for {customerName}?"
+      }
+    }
   }
 }

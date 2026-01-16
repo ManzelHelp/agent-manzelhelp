@@ -173,7 +173,7 @@ export const CustomerBookingCard = React.memo<CustomerBookingCardProps>(
                 )}
               </div>
               {booking.customer_requirements && (
-                <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2">
+                <p className="text-sm text-color-text-secondary mobile-leading line-clamp-2 break-words whitespace-pre-wrap">
                   {booking.customer_requirements.length > 100
                     ? `${booking.customer_requirements.substring(0, 100)}...`
                     : booking.customer_requirements}

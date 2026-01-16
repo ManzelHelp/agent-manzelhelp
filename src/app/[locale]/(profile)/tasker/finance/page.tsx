@@ -108,7 +108,6 @@ export default function TaskerFinancePage() {
   >("week");
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const t = useTranslations("finance");
   const locale = useLocale();
@@ -123,12 +122,12 @@ export default function TaskerFinancePage() {
         setCurrentOffset(0);
       }
       
-      const offset = offsetOverride !== undefined ? offsetOverride : (append ? transactions.length : 0);
+      const offset = offsetOverride !== undefined ? offsetOverride : (append ? currentOffset : 0);
       const [earnings, performance, transactionHistory, chart] =
         await Promise.all([
           getEarningsData(),
           getPerformanceMetrics(),
-          getTransactionHistory(10, offset),
+          getTransactionHistory(5, offset),
           getChartData(selectedPeriod),
         ]);
 
@@ -157,52 +156,11 @@ export default function TaskerFinancePage() {
     }
   }, [selectedPeriod]);
 
-  // Lazy loading avec Intersection Observer
-  useEffect(() => {
-    if (!hasMore || isLoadingMore || loading || transactions.length === 0) return;
-
-    const loadMore = async () => {
-      const currentOffsetValue = transactions.length;
-      setIsLoadingMore(true);
-      try {
-        const result = await getTransactionHistory(10, currentOffsetValue);
-        if (result.transactions.length > 0) {
-          setTransactions((prev) => [...prev, ...result.transactions]);
-          setCurrentOffset(currentOffsetValue + result.transactions.length);
-        }
-        setHasMore(result.hasMore);
-      } catch (error) {
-        console.error("Error loading more transactions:", error);
-        toast({
-          variant: "destructive",
-          title: t("errors.error", { default: "Error" }),
-          description: t("errors.loadMoreFailed", { default: "Failed to load more transactions" }),
-        });
-      } finally {
-        setIsLoadingMore(false);
-      }
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget && hasMore) {
-      observer.observe(currentTarget);
+  const loadMoreTransactions = useCallback(() => {
+    if (!isLoadingMore && hasMore && !loading) {
+      fetchFinanceData(true, currentOffset);
     }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
-  }, [hasMore, isLoadingMore, loading, transactions.length]);
+  }, [isLoadingMore, hasMore, loading, fetchFinanceData, currentOffset]);
 
   // Fetch data on component mount only (no auto-refresh to avoid multiple calls)
   useEffect(() => {
@@ -239,6 +197,24 @@ export default function TaskerFinancePage() {
     }).format(amount);
   };
 
+  const formatSignedCurrency = (amount: number, currency: string = "MAD") => {
+    const localeMap: Record<string, string> = {
+      en: "en-US",
+      fr: "fr-FR",
+      de: "de-DE",
+      ar: "ar-MA",
+    };
+    const numberLocale = localeMap[locale] || "en-US";
+
+    return new Intl.NumberFormat(numberLocale, {
+      style: "currency",
+      currency,
+      signDisplay: "always",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "N/A";
     return formatDateShort(dateString);
@@ -269,6 +245,10 @@ export default function TaskerFinancePage() {
         return <Clock className="h-4 w-4 text-yellow-500" />;
       case "failed":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case "fee_deducted":
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case "wallet_credit":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
@@ -281,6 +261,8 @@ export default function TaskerFinancePage() {
         "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
       failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
       refunded: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+      fee_deducted: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+      wallet_credit: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
     };
 
     return (
@@ -289,9 +271,24 @@ export default function TaskerFinancePage() {
           variants[status as keyof typeof variants] || variants.pending
         }
       >
-        {status}
+        {status === "fee_deducted"
+          ? t("transactionStatus.feeDeducted", { default: "Fee deducted" })
+          : status === "wallet_credit"
+          ? t("transactionStatus.walletCredited", { default: "Wallet credited" })
+          : status === "paid"
+          ? t("transactionStatus.paymentCompleted", { default: "Payment completed" })
+          : status === "pending"
+          ? t("transactionStatus.paymentPending", { default: "Payment pending" })
+          : status}
       </Badge>
     );
+  };
+
+  const getDisplayStatusKey = (transaction: Transaction) => {
+    if (transaction.transactionType === "platform_fee") return "fee_deducted";
+    if (transaction.paymentMethod === "wallet" && transaction.transactionType === "refund")
+      return "wallet_credit";
+    return transaction.paymentStatus;
   };
 
   const handleChartPeriodChange = async (period: "day" | "week" | "month") => {
@@ -618,6 +615,12 @@ export default function TaskerFinancePage() {
             ) : (
               <div className="space-y-3 sm:space-y-4">
                 {transactions.map((transaction) => (
+                  (() => {
+                    const displayStatus = getDisplayStatusKey(transaction);
+                    const amountColor =
+                      transaction.netAmount < 0 ? "text-red-500" : "text-green-500";
+
+                    return (
                   <div
                     key={transaction.id}
                     onClick={() => handleTransactionClick(transaction)}
@@ -625,7 +628,7 @@ export default function TaskerFinancePage() {
                   >
                     <div className="space-y-2 sm:space-y-1 flex-1">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(transaction.paymentStatus)}
+                        {getStatusIcon(displayStatus)}
                         <h3 className="font-semibold text-sm sm:text-base group-hover:text-primary transition-colors">
                           {transaction.serviceTitle || t("transactionHistory.servicePayment", { default: "Service Payment" })}
                         </h3>
@@ -644,31 +647,40 @@ export default function TaskerFinancePage() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:flex-col sm:items-end sm:text-right sm:space-y-2">
-                      <p className="text-lg sm:text-xl font-bold">
-                        {formatCurrency(
-                          transaction.netAmount,
-                          transaction.currency
-                        )}
+                      <p className={`text-lg sm:text-xl font-bold ${amountColor}`}>
+                        {formatSignedCurrency(transaction.netAmount, transaction.currency)}
                       </p>
                       <div className="flex items-center gap-2">
-                        {getStatusBadge(transaction.paymentStatus)}
+                        {getStatusBadge(displayStatus)}
                         <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>
                   </div>
+                    );
+                  })()
                 ))}
-                
-                {/* Lazy Loading Trigger */}
+
+                {/* Load More Button */}
                 {hasMore && (
-                  <div ref={observerTarget} className="flex justify-center py-4">
-                    {isLoadingMore ? (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        <span className="text-sm">Loading more transactions...</span>
-                      </div>
-                    ) : (
-                      <div className="h-1 w-full" /> // Invisible trigger for intersection observer
-                    )}
+                  <div className="flex justify-center py-4">
+                    <Button
+                      onClick={loadMoreTransactions}
+                      disabled={isLoadingMore}
+                      variant="outline"
+                      className="mobile-button"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          {t("actions.loading", { default: "Loading..." })}
+                        </>
+                      ) : (
+                        <>
+                          <ArrowDown className="h-4 w-4 mr-2" />
+                          {t("actions.loadMore", { default: "Load More" })}
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
               </div>

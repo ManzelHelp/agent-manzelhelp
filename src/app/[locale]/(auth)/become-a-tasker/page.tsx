@@ -49,7 +49,7 @@ export default function BecomeATaskerPage() {
     });
 
     if (!validation.success) {
-      toast({ variant: "destructive", title: "Profil incomplet", description: validation.error.issues[0].message });
+      toast({ variant: "destructive", title: t("pages.becomeTasker.incompleteProfile"), description: validation.error.issues[0].message });
       setIsSubmitting(false);
       return;
     }
@@ -58,7 +58,7 @@ export default function BecomeATaskerPage() {
       const result = await becomeTaskerAction(formData);
       if (result.success && result.user) {
         setUser(result.user);
-        toast({ variant: "success", title: "Félicitations !", description: t("pages.becomeTasker.congratulations") });
+        toast({ variant: "success", title: t("pages.becomeTasker.congratulationsTitle"), description: t("pages.becomeTasker.congratulations") });
         router.push("/tasker/dashboard");
       } else {
         toast({ variant: "destructive", description: result.errorMessage });
@@ -81,18 +81,18 @@ export default function BecomeATaskerPage() {
              </CardHeader>
              <CardContent className="space-y-6">
                 <div className="space-y-2">
-                   <Label className="dark:text-slate-200">Biographie professionnelle (min 50 caractères)</Label>
+                   <Label className="dark:text-slate-200">{t("pages.becomeTasker.professionalBio")}</Label>
                    <textarea 
                       className="w-full h-40 p-4 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500" 
                       value={formData.bio}
                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                      placeholder="Décrivez vos compétences..."
+                      placeholder={t("pages.becomeTasker.bioPlaceholder")}
                    />
-                   <p className="text-xs text-slate-500">{formData.bio.length}/500 caractères</p>
+                   <p className="text-xs text-slate-500">{t("pages.becomeTasker.bioHint", { count: formData.bio.length })}</p>
                 </div>
                 {/* Autres sections simplifiées pour l'exemple */}
                 <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl transition-all">
-                   {isSubmitting ? <Loader2 className="animate-spin" /> : "Devenir Assistant"}
+                   {isSubmitting ? <Loader2 className="animate-spin" /> : t("pages.becomeTasker.becomeTasker")}
                 </Button>
              </CardContent>
           </Card>

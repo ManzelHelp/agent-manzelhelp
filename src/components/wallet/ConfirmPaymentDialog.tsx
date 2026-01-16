@@ -57,39 +57,153 @@ export function ConfirmPaymentDialog({
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const isCanvasTypeSupported = (mimeType: string) => {
+    try {
+      const canvas = document.createElement("canvas");
+      const dataUrl = canvas.toDataURL(mimeType);
+      return dataUrl.startsWith(`data:${mimeType}`);
+    } catch {
+      return false;
+    }
+  };
 
-    // Validate with Zod
-    const validation = receiptFileSchema.safeParse(file);
-    if (!validation.success) {
-      const errorMessage = validation.error.issues[0]?.message || "Fichier invalide";
+  const fileToDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("read_failed"));
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.readAsDataURL(file);
+    });
+
+  const loadImageElement = (file: File) =>
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("image_load_failed"));
+      };
+      img.src = url;
+    });
+
+  const compressReceiptImage = async (file: File): Promise<File> => {
+    // Keep the original if not an image
+    if (!file.type.startsWith("image/")) return file;
+
+    const img = await loadImageElement(file);
+
+    const pickOutputType = () => {
+      // Prefer WebP when supported; fallback to JPEG for compatibility.
+      if (isCanvasTypeSupported("image/webp")) return "image/webp";
+      return "image/jpeg";
+    };
+
+    const outputType = pickOutputType();
+
+    const attempts = [
+      { maxDim: 1600, quality: 0.78 },
+      { maxDim: 1200, quality: 0.72 },
+      { maxDim: 900, quality: 0.68 },
+    ];
+
+    for (const attempt of attempts) {
+      const { maxDim, quality } = attempt;
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const targetW = Math.max(1, Math.round(img.width * scale));
+      const targetH = Math.max(1, Math.round(img.height * scale));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = targetW;
+      canvas.height = targetH;
+
+      const ctx = canvas.getContext("2d", { alpha: false });
+      if (!ctx) break;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, outputType, quality);
+      });
+
+      if (!blob) continue;
+
+      const ext = outputType === "image/webp" ? "webp" : "jpg";
+      const compressed = new File([blob], `receipt.${ext}`, {
+        type: outputType,
+        lastModified: Date.now(),
+      });
+
+      // Server enforces 5MB max; keep trying until we are <= 5MB.
+      if (compressed.size <= 5 * 1024 * 1024) return compressed;
+    }
+
+    // If we cannot get under 5MB, return the original (and we'll show an error).
+    return file;
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+
+    // Validate type + "original max size" (images can be bigger than 5MB; they get compressed)
+    const initialValidation = receiptFileSchema.safeParse(rawFile);
+    if (!initialValidation.success) {
+      const errorMessage =
+        initialValidation.error.issues[0]?.message || "Fichier invalide";
       setFileError(errorMessage);
       toast({
         variant: "destructive",
         title: "Erreur de validation",
         description: errorMessage,
       });
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
-    setFileError(null);
-    setReceiptFile(file);
+    try {
+      const finalFile = rawFile.type.startsWith("image/")
+        ? await compressReceiptImage(rawFile)
+        : rawFile;
 
-    // Create preview for images
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setReceiptPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setReceiptPreview(null);
+      // Hard limit that matches server + storage expectations
+      if (finalFile.size > 5 * 1024 * 1024) {
+        const errorMessage =
+          "L'image est trop volumineuse après compression. Veuillez choisir une image plus petite.";
+        setFileError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: errorMessage,
+        });
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
+      setFileError(null);
+      setReceiptFile(finalFile);
+
+      if (finalFile.type.startsWith("image/")) {
+        setReceiptPreview(await fileToDataUrl(finalFile));
+      } else {
+        setReceiptPreview(null);
+      }
+    } catch (err) {
+      console.error("Error processing receipt file:", err);
+      const errorMessage =
+        "Impossible de traiter l'image. Veuillez réessayer avec une autre image.";
+      setFileError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: errorMessage,
+      });
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 

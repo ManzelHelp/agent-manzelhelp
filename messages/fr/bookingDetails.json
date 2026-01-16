@@ -4,32 +4,26 @@
     "loading": "Chargement des détails de la réservation...",
     "notFound": "Réservation non trouvée",
     "backToBookings": "Retour aux réservations",
-
     "waitingForTasker": "En attente de la réponse de l’assistant à votre demande de réservation.",
     "taskerAccepted": "Excellent ! L’assistant a accepté votre demande de réservation.",
     "bookingConfirmed": "Votre réservation est confirmée ! L’assistant commencera le service à l’heure prévue.",
     "taskerWorking": "L’assistant travaille actuellement sur votre service.",
-
     "unauthorizedAccess": "Accès non autorisé",
     "pleaseWait": "Veuillez patienter pendant que nous récupérons les détails de votre réservation...",
     "bookingNotFound": "La réservation que vous recherchez n’existe pas ou vous n’avez pas l’autorisation de la consulter.",
-
     "success": {
       "statusUpdated": "Statut de la réservation mis à jour avec succès",
       "copiedToClipboard": "Identifiant de réservation copié dans le presse-papiers",
       "linkCopied": "Lien copié dans le presse-papiers",
       "confirmed": "Réservation confirmée avec succès"
     },
-
     "errors": {
       "updateFailed": "Échec de la mise à jour du statut de la réservation",
       "unexpectedError": "Une erreur inattendue s’est produite",
       "taskerInfoNotAvailable": "Les informations de l’assistant ne sont pas disponibles",
       "confirmFailed": "Échec de la confirmation de fin de réservation"
     },
-
     "service": "Service",
-
     "status": {
       "pending": "En attente",
       "accepted": "Acceptée",
@@ -39,7 +33,6 @@
       "cancelled": "Annulée",
       "unknown": "Inconnu"
     },
-
     "statusDescriptions": {
       "pending": "En attente de réponse",
       "accepted": "La réservation a été acceptée",
@@ -49,13 +42,11 @@
       "cancelled": "La réservation a été annulée",
       "unknown": "Statut inconnu"
     },
-
     "bookingType": {
       "instant": "Instantanée",
       "scheduled": "Programmée",
       "recurring": "Récurrente"
     },
-
     "sections": {
       "customerInfo": "Informations du client",
       "taskerInfo": "Informations de l’assistant",
@@ -66,7 +57,6 @@
       "actions": "Actions",
       "timeline": "Chronologie de la réservation"
     },
-
     "customer": "Client",
     "tasker": "Assistant",
     "agreedPrice": "Prix convenu",
@@ -76,11 +66,16 @@
     "time": "Heure",
     "type": "Type",
     "payment": "Paiement",
-
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "paymentMethods": {
+      "wallet": "Portefeuille",
+      "credit_card": "Carte de crédit",
+      "cash": "Espèces"
+    },
     "addressNotSpecified": "Adresse non spécifiée",
     "noRequirements": "Aucune exigence spécifique fournie.",
     "timeNotSpecified": "Heure non spécifiée",
-
     "actions": {
       "acceptRequest": "Accepter la demande",
       "declineRequest": "Refuser la demande",
@@ -96,7 +91,6 @@
       "share": "Partager",
       "leaveReview": "Laisser un avis"
     },
-
     "timeline": {
       "bookingCreated": "Réservation créée",
       "bookingAccepted": "Réservation acceptée",
@@ -104,13 +98,23 @@
       "taskStarted": "Tâche commencée",
       "taskCompleted": "Tâche terminée"
     },
-
     "completed": "Cette réservation a été terminée avec succès.",
     "cancelled": "Cette réservation a été annulée.",
-
+    "awaitingCustomerConfirmation": "En attente de confirmation du client",
+    "awaitingCustomerConfirmationDescription": "Vous avez terminé la tâche. Nous attendons la confirmation du client pour finaliser le processus.",
+    "bookingCompletedAwaitingConfirmation": "Réservation terminée - En attente de votre confirmation",
+    "taskerMarkedCompletedDescription": "L’assistant a marqué cette réservation comme terminée. Veuillez vérifier le travail et confirmer la fin.",
+    "confirmBookingCompletion": "Confirmer la fin de la réservation",
+    "confirming": "Confirmation en cours...",
+    "bookingConfirmedSuccess": "Réservation confirmée avec succès",
+    "leaveReview": "Laisser un avis",
+    "alreadyLeftReview": "Vous avez déjà laissé un avis pour cette réservation",
+    "confirmedOn": "Confirmé le :",
+    "completedOn": "Terminé le :",
+    "professionalService": "Service professionnel",
+    "categoryService": "Service de {category}",
     "messagingComingSoon": "La messagerie sera bientôt disponible !",
     "phoneNotAvailable": "Numéro de téléphone non disponible",
-
     "cancellation": {
       "title": "Annuler la réservation",
       "description": "Veuillez nous indiquer la raison de l’annulation de cette réservation",
@@ -133,7 +137,6 @@
         "customCommentRequired": "Veuillez fournir un commentaire personnalisé"
       }
     },
-
     "confirmations": {
       "accept": {
         "title": "Accepter la demande de réservation",

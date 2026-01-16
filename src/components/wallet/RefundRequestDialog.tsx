@@ -84,8 +84,6 @@ export function RefundRequestDialog({
       const validation = refundRequestSchema.safeParse({ amount: numValue });
       if (!validation.success) {
         setAmountError(validation.error.issues[0]?.message || null);
-      } else if (walletBalance !== null && numValue > walletBalance) {
-        setAmountError(t("errors.insufficientBalance"));
       } else {
         setAmountError(null);
       }
@@ -105,17 +103,6 @@ export function RefundRequestDialog({
       toast({
         variant: "destructive",
         title: "Erreur de validation",
-        description: errorMessage,
-      });
-      return;
-    }
-
-    if (walletBalance !== null && amount > walletBalance) {
-      const errorMessage = t("errors.insufficientBalance");
-      setAmountError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
         description: errorMessage,
       });
       return;
@@ -180,9 +167,7 @@ export function RefundRequestDialog({
   };
 
   const currentAmount = selectedAmount || parseFloat(customAmount) || 0;
-  const isAmountValid =
-    currentAmount > 0 &&
-    (walletBalance === null || currentAmount <= walletBalance);
+  const isAmountValid = currentAmount > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -231,10 +216,7 @@ export function RefundRequestDialog({
                       selectedAmount === amount ? "default" : "outline"
                     }
                     onClick={() => handleAmountSelect(amount)}
-                    disabled={
-                      isCreating ||
-                      (walletBalance !== null && amount > walletBalance)
-                    }
+                    disabled={isCreating}
                     className="h-12"
                   >
                     {amount} MAD
@@ -259,7 +241,7 @@ export function RefundRequestDialog({
                 onChange={(e) => handleCustomAmountChange(e.target.value)}
                 disabled={isCreating}
                 min="1"
-                max={walletBalance || undefined}
+                max="10000"
                 className={cn(
                   "h-12",
                   amountError ? "!border-red-500 !border-2 focus-visible:!border-red-500 focus-visible:!ring-red-500/50" : ""

@@ -187,20 +187,6 @@ export async function createWalletRefundRequest(
       };
     }
 
-    // Vérifier que le tasker a suffisamment de fonds
-    const walletBalance = parseFloat(userData.wallet_balance || "0");
-    if (walletBalance < amount) {
-      const errorMessage = await getErrorTranslationForUser(
-        user.id,
-        "walletRefunds",
-        "insufficientBalance"
-      );
-      return {
-        success: false,
-        error: errorMessage,
-      };
-    }
-
     // Vérifier s'il y a déjà une demande en attente
     const { data: pendingRequest } = await supabase
       .from("wallet_refund_requests")
@@ -941,19 +927,7 @@ export async function approveRefundRequest(
     }
 
     const currentBalance = parseFloat(tasker.wallet_balance || "0");
-    const newBalance = currentBalance - request.amount;
-
-    if (newBalance < 0) {
-      const errorMessage = await getErrorTranslationForUser(
-        user.id,
-        "walletRefunds",
-        "walletBalanceWouldBeNegative"
-      );
-      return {
-        success: false,
-        error: errorMessage,
-      };
-    }
+    const newBalance = currentBalance + request.amount; // AJOUT de fonds au lieu de soustraction
 
     // Mettre à jour le wallet
     const { error: walletUpdateError } = await supabase
@@ -979,9 +953,9 @@ export async function approveRefundRequest(
       .from("wallet_transactions")
       .insert({
         user_id: request.tasker_id,
-        amount: -request.amount, // Montant négatif pour un retrait
-        type: "withdrawal",
-        notes: `Wallet refund approved. Reference: ${request.reference_code}`,
+        amount: request.amount, // Montant positif pour un dépôt
+        type: "deposit",
+        notes: `Wallet deposit approved. Reference: ${request.reference_code}`,
       });
 
     if (transactionError) {

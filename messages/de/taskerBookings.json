@@ -22,7 +22,18 @@
       "bookedOn": "Gebucht am",
       "flexible": "Flexibel",
       "addressNotSpecified": "Adresse nicht angegeben",
-      "noRequirements": "Keine spezifischen Anforderungen angegeben"
+      "noRequirements": "Keine spezifischen Anforderungen angegeben",
+      "viewBooking": "Buchung anzeigen",
+      "serviceBooking": "Servicebuchung",
+      "service": "Dienstleistung",
+      "customer": "Kunde"
+    },
+    "messages": {
+      "initialBookingMessage": "Hallo! Ich möchte die Buchung für \"{serviceTitle}\" besprechen."
+    },
+    "errors": {
+      "customerInfoUnavailable": "Kundeninformationen nicht verfügbar",
+      "failedToOpenConversation": "Gespräch konnte nicht geöffnet werden"
     },
     "bookingTypes": {
       "instant": "Sofortbuchung",

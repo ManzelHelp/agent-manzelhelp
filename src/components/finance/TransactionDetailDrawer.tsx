@@ -27,6 +27,7 @@ import {
 import type { Transaction } from "@/actions/finance";
 import { formatDateShort, formatCurrency as formatCurrencyUtil } from "@/lib/date-utils";
 import { useTranslations, useLocale } from "next-intl";
+import { createClient } from "@/supabase/client";
 
 interface TransactionDetailDrawerProps {
   transaction: Transaction | null;
@@ -44,6 +45,57 @@ export function TransactionDetailDrawer({
   const t = useTranslations("finance.walletRefund.transactionDetail");
   const tFinance = useTranslations("finance");
   const locale = useLocale();
+  const [relatedInfo, setRelatedInfo] = React.useState<{
+    jobTitle?: string | null;
+    serviceTitle?: string | null;
+  }>({});
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadRelated() {
+      try {
+        const supabase = createClient();
+
+        const [jobRes, bookingRes] = await Promise.all([
+          transaction.jobId
+            ? supabase.from("jobs").select("id, title").eq("id", transaction.jobId).maybeSingle()
+            : Promise.resolve({ data: null, error: null } as any),
+          transaction.bookingId
+            ? supabase
+                .from("service_bookings")
+                .select("id, tasker_service_id, tasker_services(title)")
+                .eq("id", transaction.bookingId)
+                .maybeSingle()
+            : Promise.resolve({ data: null, error: null } as any),
+        ]);
+
+        if (cancelled) return;
+
+        const jobTitle = jobRes?.data?.title ? String(jobRes.data.title) : null;
+
+        let serviceTitle: string | null = null;
+        const booking: any = bookingRes?.data;
+        if (booking) {
+          serviceTitle = Array.isArray(booking.tasker_services)
+            ? booking.tasker_services[0]?.title
+            : booking.tasker_services?.title || null;
+        }
+
+        setRelatedInfo({ jobTitle, serviceTitle });
+      } catch {
+        if (!cancelled) setRelatedInfo({});
+      }
+    }
+
+    if (isOpen) {
+      loadRelated();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, transaction.bookingId, transaction.jobId]);
 
   const formatCurrency = (amount: number, currency: string = "MAD") => {
     return formatCurrencyUtil(amount, currency, locale);
@@ -192,24 +244,32 @@ export function TransactionDetailDrawer({
           </div>
 
           {/* Service/Job Information */}
-          {transaction.serviceTitle && (
+          {(transaction.relatedTitle || relatedInfo.jobTitle || relatedInfo.serviceTitle || transaction.bookingId || transaction.jobId) && (
             <>
               <Separator />
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   <DollarSign className="h-5 w-5" />
-                  {t("serviceInformation", { default: "Service Information" })}
+                  {t("serviceInformation", { default: "Service / Job Information" })}
                 </h3>
                 <div className="space-y-2">
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t("serviceTitle", { default: "Service Title" })}</p>
-                    <p className="font-medium">{transaction.serviceTitle}</p>
+                    <p className="text-sm text-muted-foreground">{t("serviceTitle", { default: "Title" })}</p>
+                    <p className="font-medium">
+                      {relatedInfo.jobTitle ||
+                        relatedInfo.serviceTitle ||
+                        transaction.relatedTitle ||
+                        transaction.serviceTitle ||
+                        "—"}
+                    </p>
                   </div>
                   {transaction.bookingStatus && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">{t("bookingStatus", { default: "Booking Status" })}</p>
                       <Badge variant="outline" className="capitalize">
-                        {tFinance(`status.${transaction.bookingStatus}`, { default: transaction.bookingStatus })}
+                        {tFinance(`bookingStatuses.${transaction.bookingStatus}`, {
+                          default: transaction.bookingStatus,
+                        })}
                       </Badge>
                     </div>
                   )}
@@ -217,6 +277,12 @@ export function TransactionDetailDrawer({
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">{t("bookingId", { default: "Booking ID" })}</p>
                       <p className="font-mono text-sm">{transaction.bookingId}</p>
+                    </div>
+                  )}
+                  {transaction.jobId && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">{t("jobId", { default: "Job ID" })}</p>
+                      <p className="font-mono text-sm">{transaction.jobId}</p>
                     </div>
                   )}
                 </div>

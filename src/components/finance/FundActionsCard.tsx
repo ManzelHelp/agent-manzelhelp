@@ -52,11 +52,11 @@ export function FundActionsCard({ onViewHistory }: FundActionsCardProps) {
     {
       id: "request-refund",
       icon: <ArrowDown className="h-5 w-5" />,
-      title: t("walletRefund.requestRefund", { default: "Request Refund" }),
-      description: t("walletRefund.withdrawFromWallet", { default: "Withdraw from wallet" }),
+      title: t("walletRefund.requestRefund", { default: "Add Funds" }),
+      description: t("walletRefund.withdrawFromWallet", { default: "Add funds to wallet" }),
       onClick: () => setRefundDialogOpen(true),
       variant: "default" as const,
-      disabled: !walletBalance || walletBalance <= 0,
+      disabled: loading,
     },
     {
       id: "view-refunds",
@@ -116,7 +116,8 @@ export function FundActionsCard({ onViewHistory }: FundActionsCardProps) {
     return new Intl.NumberFormat(numberLocale, {
       style: "currency",
       currency: currency,
-      minimumFractionDigits: 2,
+      // Don't force trailing decimals (e.g. show 1100 instead of 1100.00)
+      minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(amount);
   };

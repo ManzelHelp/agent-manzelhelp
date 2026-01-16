@@ -25,7 +25,11 @@
     "notifications": "Notifications",
     "tasker": "Tasker",
     "customer": "Customer",
+    "admin": "Admin",
     "contactSupport": "Contact Support",
+    "navigation": "Navigation",
+    "quickActions": "Other options",
+    "clientActions": "As a client",
     "postJob": "Post a Job",
     "postService": "Post a Service"
   }

@@ -121,12 +121,22 @@ export function formatDateTimeShort(
  */
 export function formatCurrency(amount: number, currency: string = "MAD", locale: string = "en"): string {
   const numberLocale = getLocaleString(locale);
-  return new Intl.NumberFormat(numberLocale, {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  
+  // Robust currency code handling
+  const cleanCurrency = (currency || "MAD").trim().toUpperCase().substring(0, 3);
+  
+  try {
+    return new Intl.NumberFormat(numberLocale, {
+      style: "currency",
+      currency: cleanCurrency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount || 0);
+  } catch (error) {
+    console.error("Error formatting currency:", error, "Value:", amount, "Currency:", cleanCurrency);
+    // Fallback formatting
+    return `${(amount || 0).toFixed(2)} ${cleanCurrency}`;
+  }
 }
 
 /**

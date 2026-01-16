@@ -376,7 +376,7 @@ export default function PersonalInfoSection({
               {t("role", { default: "Rôle" })}
             </Label>
             <p className="text-sm font-medium text-[var(--color-text-primary)]">
-              {user?.role === "tasker" ? "Tasker" : user?.role === "customer" ? "Client" : "Non défini"}
+              {user?.role ? t(`roleNames.${user.role}`, { default: user.role }) : tCommon("notProvided")}
             </p>
           </div>
         </div>

@@ -76,6 +76,29 @@ function JobCard({
     }
   };
 
+  const getStatusLabel = (status?: string | null) => {
+    switch (status) {
+      case "active":
+        return t("status.active");
+      case "under_review":
+        return t("status.under_review");
+      case "assigned":
+        return t("status.assigned");
+      case "in_progress":
+        return t("status.in_progress");
+      case "completed":
+        return t("status.completed");
+      case "cancelled":
+        return t("status.cancelled");
+      case "disputed":
+        return t("status.disputed");
+      case "draft":
+        return t("status.draft");
+      default:
+        return t("status.unknown");
+    }
+  };
+
   return (
     <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm">
       <div className="p-4 border-b border-[var(--color-border)]">
@@ -88,9 +111,15 @@ function JobCard({
               <Badge className={getStatusColor(job.status)}>
                 <span className="flex items-center gap-1">
                   {getStatusIcon(job.status)}
-                  {t(`status.${job.status || "unknown"}`)}
+                  {getStatusLabel(job.status)}
                 </span>
               </Badge>
+              {(job.application_count || 0) > 0 && (
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                  <Users className="h-3.5 w-3.5 mr-1" />
+                  {job.application_count}
+                </Badge>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-text-secondary)]">
               {(job.city || job.region || job.street_address) && (
@@ -98,7 +127,7 @@ function JobCard({
                   <MapPin className="h-3 w-3" />
                   {job.city && job.region
                     ? `${job.city}, ${job.region}`
-                    : job.street_address || "Location not specified"}
+                    : job.street_address || t("jobCard.locationNotSpecified")}
                 </span>
               )}
               {job.customer_budget && (
@@ -124,7 +153,7 @@ function JobCard({
             <ArrowRight className="h-3 w-3" />
           </Link>
           <div className="flex gap-2">
-            {job.status === "completed" && (
+            {(job.status === "completed" || job.status === "cancelled") && (
               <JobCloneButton job={job} />
             )}
             {job.status !== "completed" && (

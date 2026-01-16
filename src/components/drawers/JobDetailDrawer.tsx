@@ -301,7 +301,7 @@ export function JobDetailDrawer({
                     {t("jobDescription")}
                   </h3>
                   <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words overflow-hidden">
                       {jobData.description || t("noDescription")}
                     </p>
                   </div>

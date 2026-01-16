@@ -113,7 +113,7 @@ async function JobCard({
   const getStatusLabel = (status?: string | null) => {
     switch (status) {
       case "active":
-        return t("status.open");
+        return t("status.active");
       case "under_review":
         return t("status.under_review");
       case "assigned":

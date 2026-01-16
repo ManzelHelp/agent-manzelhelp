@@ -30,7 +30,9 @@
       "flexible": "Flexibel",
       "notSpecified": "Nicht angegeben",
       "jobCompletedMessage": "Dieser Job wurde abgeschlossen. Ihre Bewerbung ist nicht mehr relevant.",
-      "jobCancelledMessage": "Dieser Job wurde storniert. Ihre Bewerbung ist nicht mehr relevant."
+      "jobCancelledMessage": "Dieser Job wurde storniert. Ihre Bewerbung ist nicht mehr relevant.",
+      "jobApplication": "Job-Bewerbung",
+      "noDescription": "Keine Beschreibung verfügbar"
     },
     "actions": {
       "viewDetails": "Details anzeigen",

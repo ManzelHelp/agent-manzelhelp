@@ -7,6 +7,7 @@
     "saveAddress": "Save Address",
     "cancel": "Cancel",
     "close": "Close",
+    "processing": "Processing...",
     "menu": "Menu",
     "navigation": "Navigation",
     "edit": "Edit",
@@ -54,6 +55,12 @@
     "getStartedNow": "Get Started Now",
     "delete": "Delete",
     "error": "Error",
-    "cash": "Cash", "escrow": "Escrow"
+    "success": "Success",
+    "copy": "Copy",
+    "cash": "Cash", 
+    "escrow": "Escrow",
+    "next": "Next",
+    "previous": "Previous",
+    "contactSupport": "Contact Support"
   }
 }

@@ -59,12 +59,15 @@
       "cloneError": "Failed to clone job"
     },
     "status": {
+      "active": "Open",
       "open": "Open",
       "under_review": "Under Review",
       "assigned": "Assigned",
       "in_progress": "In Progress",
       "completed": "Completed",
       "cancelled": "Cancelled",
+      "disputed": "Disputed",
+      "draft": "Draft",
       "unknown": "Unknown"
     },
     "actions": {

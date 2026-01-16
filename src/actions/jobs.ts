@@ -371,6 +371,122 @@ export async function updateJobStatus(
   }
 }
 
+export async function cancelAssignedJobByCustomer(
+  jobId: string,
+  reason: string,
+  details?: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      const errorMessage = await getErrorTranslationForUser(
+        undefined,
+        "jobs",
+        "notAuthenticated"
+      );
+      return { success: false, error: errorMessage };
+    }
+
+    const { data: existingJob, error: fetchError } = await supabase
+      .from("jobs")
+      .select("customer_id, status, assigned_tasker_id, started_at, title")
+      .eq("id", jobId)
+      .single();
+
+    if (fetchError || !existingJob) {
+      const errorMessage = await getErrorTranslationForUser(
+        user.id,
+        "jobs",
+        "jobNotFound"
+      );
+      return { success: false, error: errorMessage };
+    }
+
+    if (existingJob.customer_id !== user.id) {
+      const errorMessage = await getErrorTranslationForUser(
+        user.id,
+        "jobs",
+        "unauthorized"
+      );
+      return { success: false, error: errorMessage };
+    }
+
+    // Only allow cancelling an assigned job that hasn't started yet
+    if (existingJob.status !== "assigned" || !existingJob.assigned_tasker_id) {
+      return {
+        success: false,
+        error: "Only assigned jobs can be cancelled.",
+      };
+    }
+
+    if (existingJob.started_at) {
+      return {
+        success: false,
+        error: "You cannot cancel a job that has already started.",
+      };
+    }
+
+    const reasonText = details?.trim()
+      ? `${reason} - ${details.trim()}`
+      : reason;
+
+    // Try to store cancellation metadata if columns exist; fallback safely if not.
+    try {
+      const { error: updateError } = await supabase
+        .from("jobs")
+        .update({
+          status: "cancelled",
+          assigned_tasker_id: null,
+          cancelled_at: new Date().toISOString(),
+          cancelled_by: user.id,
+          cancellation_reason: reasonText,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq("id", jobId)
+        .eq("customer_id", user.id);
+
+      if (updateError) throw updateError;
+    } catch (err: any) {
+      // Fallback if cancellation_* columns don't exist in DB yet
+      const { error: updateError2 } = await supabase
+        .from("jobs")
+        .update({
+          status: "cancelled",
+          assigned_tasker_id: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", jobId)
+        .eq("customer_id", user.id);
+
+      if (updateError2) {
+        return {
+          success: false,
+          error: `Failed to cancel job: ${updateError2.message}`,
+        };
+      }
+    }
+
+    revalidatePath("/customer/my-jobs");
+    revalidatePath(`/customer/my-jobs/${jobId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in cancelAssignedJobByCustomer:", error);
+    const errorMessage = await getErrorTranslationForUser(
+      undefined,
+      "general",
+      "unexpected"
+    );
+    return { success: false, error: errorMessage };
+  }
+}
+
 export async function deleteJob(
   jobId: string,
   customerId: string
@@ -478,7 +594,7 @@ export async function assignTaskerToJob(
 
     const { data: existingJob, error: fetchError } = await supabase
       .from("jobs")
-      .select("customer_id, status")
+      .select("customer_id, status, customer_budget, final_price, currency, title")
       .eq("id", jobId)
       .single();
 
@@ -525,6 +641,126 @@ export async function assignTaskerToJob(
         success: false,
         error: `Failed to assign tasker: ${error.message}`,
       };
+    }
+
+    // Execute transaction immediately on assignment (cash payment assumed).
+    // Also deduct platform fee from tasker's wallet and notify tasker.
+    const expectedAmount = Number(
+      existingJob.final_price || existingJob.customer_budget || 0
+    );
+    const platformFee = expectedAmount * 0.1;
+    const nowIso = new Date().toISOString();
+
+    if (expectedAmount > 0) {
+      // Ensure tasker has enough wallet to cover the platform fee
+      const { data: taskerUser } = await supabase
+        .from("users")
+        .select("wallet_balance, preferred_language")
+        .eq("id", taskerId)
+        .maybeSingle();
+
+      const taskerWalletBalance = Number(taskerUser?.wallet_balance || 0);
+      if (taskerWalletBalance < platformFee) {
+        const lang = taskerUser?.preferred_language || "en";
+        const msg =
+          lang === "ar"
+            ? `لا يمكن تعيين هذه الوظيفة لأن رصيد محفظتك غير كافٍ لتغطية رسوم المنصة (${platformFee.toFixed(
+                2
+              )} د.م).`
+            : lang === "fr"
+            ? `Impossible d'assigner ce job : votre solde portefeuille est insuffisant pour couvrir les frais (${platformFee.toFixed(
+                2
+              )} MAD).`
+            : lang === "de"
+            ? `Job kann nicht zugewiesen werden: Dein Wallet-Guthaben reicht nicht für die Gebühren (${platformFee.toFixed(
+                2
+              )} MAD).`
+            : `Cannot assign job: your wallet balance is insufficient to cover the platform fee (${platformFee.toFixed(
+                2
+              )} MAD).`;
+        return { success: false, error: msg };
+      }
+
+      // Upsert-like: update latest tx if exists, otherwise insert
+      const { data: existingTx } = await supabase
+        .from("transactions")
+        .select("id, payment_status")
+        .eq("job_id", jobId)
+        .in("transaction_type", ["job_payment"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingTx?.id) {
+        await supabase
+          .from("transactions")
+          .update({
+            amount: expectedAmount,
+            platform_fee: platformFee,
+            payment_status: "paid",
+            processed_at: nowIso,
+            updated_at: nowIso,
+          })
+          .eq("id", existingTx.id);
+      } else {
+        await supabase.from("transactions").insert({
+          job_id: jobId,
+          booking_id: null,
+          payer_id: user.id,
+          payee_id: taskerId,
+          transaction_type: "job_payment",
+          amount: expectedAmount,
+          platform_fee: platformFee,
+          payment_status: "paid",
+          payment_method: "cash",
+          processed_at: nowIso,
+        });
+      }
+
+      // Deduct fee once (idempotent)
+      const { data: existingFeeLedger } = await supabase
+        .from("wallet_transactions")
+        .select("id")
+        .eq("user_id", taskerId)
+        .eq("type", "fee_deduction")
+        .eq("related_job_id", jobId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!existingFeeLedger && platformFee > 0) {
+        const newBalance = taskerWalletBalance - platformFee;
+        const serviceSupabase = createServiceRoleClient();
+        const clientToUse = serviceSupabase || supabase;
+
+        await clientToUse
+          .from("users")
+          .update({ wallet_balance: newBalance })
+          .eq("id", taskerId);
+
+        await clientToUse.from("wallet_transactions").insert({
+          user_id: taskerId,
+          amount: -platformFee,
+          type: "fee_deduction",
+          related_job_id: jobId,
+          notes: "Platform fee (10%) deducted on job assignment.",
+        });
+      }
+
+      const jobTitle = String(existingJob.title || "Job");
+      const n = await getNotificationTranslationsForUser(taskerId, "payment_confirmed", {
+        amount: expectedAmount,
+        currency: String(existingJob.currency || "MAD"),
+        jobTitle,
+      });
+      await supabase.from("notifications").insert({
+        user_id: taskerId,
+        type: "payment_confirmed",
+        title: n.title,
+        message: n.message,
+        related_job_id: jobId,
+        is_read: false,
+      });
     }
 
     revalidatePath("/customer/my-jobs");
@@ -832,22 +1068,20 @@ export async function updateJob(
 // SEUL CHANGEMENT : Introduction du schéma Zod pour createJob
 // -------------------------------------------------------------
 const createJobServerSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-  // z.coerce permet de gérer les cas où un string "1" est envoyé pour un number
+  title: z.coerce.string().min(1, "Title is required"),
+  description: z.coerce.string().min(1, "Description is required"),
   service_id: z.coerce.number().min(1, "Service ID is required"),
-  preferred_date: z.string().min(1, "Preferred date is required"),
-  preferred_time_start: z.string().optional(),
-  preferred_time_end: z.string().optional(),
-  is_flexible: z.boolean().optional(),
-  estimated_duration: z.coerce.number().optional(),
+  preferred_date: z.coerce.string().min(1, "Preferred date is required"),
+  preferred_time_start: z.coerce.string().optional().nullable(),
+  preferred_time_end: z.coerce.string().optional().nullable(),
+  is_flexible: z.any().transform((v) => !!v).optional(),
+  estimated_duration: z.coerce.number().optional().nullable(),
   customer_budget: z.coerce.number().positive("Budget must be positive"),
-  currency: z.string().optional(),
-  // z.coerce.string() permet de gérer l'ID adresse (string ou number dans le form)
+  currency: z.coerce.string().optional().default("MAD"),
   address_id: z.coerce.string().min(1, "Address ID is required"),
-  max_applications: z.coerce.number().optional(),
-  requirements: z.string().optional(),
-  images: z.array(z.string()).optional(),
+  max_applications: z.coerce.number().optional().nullable(),
+  requirements: z.coerce.string().optional().nullable(),
+  images: z.any().transform((v) => Array.isArray(v) ? v.map(String) : []).optional(),
 });
 
 export async function createJob(
@@ -1065,6 +1299,103 @@ export async function acceptJobApplication(
       return { success: false, error: errorMessage };
     }
 
+    // Execute transaction immediately on assignment (cash payment assumed) + deduct fee once + notify tasker
+    const expectedAmount = Number(application.proposed_price || 0);
+    const platformFee = expectedAmount * 0.1;
+    const nowIso = new Date().toISOString();
+
+    if (expectedAmount > 0) {
+      const { data: taskerUser } = await supabase
+        .from("users")
+        .select("wallet_balance")
+        .eq("id", application.tasker_id)
+        .maybeSingle();
+
+      const taskerWalletBalance = Number(taskerUser?.wallet_balance || 0);
+      if (taskerWalletBalance < platformFee) {
+        return { success: false, error: "Tasker wallet balance is insufficient to cover platform fee" };
+      }
+
+      const { data: existingTx } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("job_id", application.job_id)
+        .in("transaction_type", ["job_payment"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingTx?.id) {
+        await supabase
+          .from("transactions")
+          .update({
+            amount: expectedAmount,
+            platform_fee: platformFee,
+            payment_status: "paid",
+            processed_at: nowIso,
+            updated_at: nowIso,
+          })
+          .eq("id", existingTx.id);
+      } else {
+        await supabase.from("transactions").insert({
+          job_id: application.job_id,
+          booking_id: null,
+          payer_id: application.job.customer_id,
+          payee_id: application.tasker_id,
+          transaction_type: "job_payment",
+          amount: expectedAmount,
+          platform_fee: platformFee,
+          payment_status: "paid",
+          payment_method: "cash",
+          processed_at: nowIso,
+        });
+      }
+
+      const { data: existingFeeLedger } = await supabase
+        .from("wallet_transactions")
+        .select("id")
+        .eq("user_id", application.tasker_id)
+        .eq("type", "fee_deduction")
+        .eq("related_job_id", application.job_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!existingFeeLedger && platformFee > 0) {
+        const newBalance = taskerWalletBalance - platformFee;
+        const serviceSupabase = createServiceRoleClient();
+        const clientToUse = serviceSupabase || supabase;
+
+        await clientToUse
+          .from("users")
+          .update({ wallet_balance: newBalance })
+          .eq("id", application.tasker_id);
+
+        await clientToUse.from("wallet_transactions").insert({
+          user_id: application.tasker_id,
+          amount: -platformFee,
+          type: "fee_deduction",
+          related_job_id: application.job_id,
+          notes: "Platform fee (10%) deducted on job assignment.",
+        });
+      }
+
+      const jobTitle = String(application.job.title || "Job");
+      const n = await getNotificationTranslationsForUser(application.tasker_id, "payment_confirmed", {
+        amount: expectedAmount,
+        currency: "MAD",
+        jobTitle,
+      });
+      await supabase.from("notifications").insert({
+        user_id: application.tasker_id,
+        type: "payment_confirmed",
+        title: n.title,
+        message: n.message,
+        related_job_id: application.job_id,
+        is_read: false,
+      });
+    }
+
     const { error: rejectOthersError } = await supabase
       .from("job_applications")
       .update({
@@ -1076,39 +1407,6 @@ export async function acceptJobApplication(
 
     if (rejectOthersError) {
       console.error("Error rejecting other applications:", rejectOthersError);
-    }
-
-    const jobTitle = (application.job as any)?.title || "the job";
-    const notificationTranslations = await getNotificationTranslationsForUser(
-      application.tasker_id,
-      "application_accepted",
-      { jobTitle }
-    );
-    const { error: notificationError } = await supabase
-      .from("notifications")
-      .insert({
-        user_id: application.tasker_id,
-        type: "application_accepted",
-        title: notificationTranslations.title,
-        message: notificationTranslations.message,
-        related_job_id: application.job_id,
-        is_read: false,
-      });
-
-    if (notificationError) {
-      console.error("Error creating notification (application_accepted):", {
-        message: notificationError.message,
-        code: notificationError.code,
-        details: notificationError.details,
-        hint: notificationError.hint,
-        taskerId: application.tasker_id,
-        jobId: application.job_id,
-      });
-    } else {
-      console.log("Notification created successfully (application_accepted):", {
-        taskerId: application.tasker_id,
-        jobId: application.job_id,
-      });
     }
 
     revalidatePath(`/customer/my-jobs/${application.job_id}/applications`);
@@ -1224,14 +1522,34 @@ export async function createJobApplication(
       return { success: false, error: errorMessage };
     }
 
-    const { data: dbUser, error: dbUserError } = await supabase
+    const { data: userData, error: dbUserError } = await supabase
       .from("users")
-      .select("id")
+      .select("id, wallet_balance, preferred_language")
       .eq("id", user.id)
       .maybeSingle();
 
+    if (dbUserError) {
+      console.error("Error fetching user data:", dbUserError);
+      return { success: false, error: "Error verifying your account" };
+    }
+
+    const walletBalance = Number(userData?.wallet_balance || 0);
+    const platformFeeRate = 0.1; // 10%
+    const estimatedFee = applicationData.proposed_price * platformFeeRate;
+
+    if (walletBalance < estimatedFee) {
+      const lang = userData?.preferred_language || "en";
+      const errorMessage = lang === 'ar' 
+        ? `رصيد محفظتك (${walletBalance} درهم) غير كافٍ لتغطية رسوم المنصة المقدرة لهذا الطلب (${estimatedFee} درهم). يرجى شحن محفظتك.`
+        : lang === 'fr'
+        ? `Votre solde (${walletBalance} MAD) est insuffisant pour couvrir les frais de plateforme estimés (${estimatedFee} MAD). Veuillez recharger votre portefeuille.`
+        : `Your wallet balance (${walletBalance} MAD) is insufficient to cover the estimated platform fees (${estimatedFee} MAD). Please top up your wallet.`;
+      
+      return { success: false, error: errorMessage };
+    }
+
     let dbUserByEmail = null;
-    if ((dbUserError || !dbUser) && user.email) {
+    if (!userData && user.email) {
       const { data: emailUser } = await supabase
         .from("users")
         .select("id, email")
@@ -1248,7 +1566,7 @@ export async function createJobApplication(
       }
     }
 
-    if (dbUserError || (!dbUser && !dbUserByEmail)) {
+    if (!userData && !dbUserByEmail) {
       console.log("User not found in users table, creating...", {
         userId: user.id,
         email: user.email,
@@ -1478,41 +1796,6 @@ export async function createJobApplication(
       console.error("Error updating job application count:", updateCountError);
     }
 
-    if (job.customer_id) {
-      const jobTitle = job.title || "your job";
-      const notificationTranslations = await getNotificationTranslationsForUser(
-        job.customer_id,
-        "application_received",
-        { jobTitle }
-      );
-      const { error: notificationError } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: job.customer_id,
-          type: "application_received",
-          title: notificationTranslations.title,
-          message: notificationTranslations.message,
-          related_job_id: applicationData.job_id,
-          is_read: false,
-        });
-
-      if (notificationError) {
-        console.error("Error creating notification (application_received):", {
-          message: notificationError.message,
-          code: notificationError.code,
-          details: notificationError.details,
-          hint: notificationError.hint,
-          customerId: job.customer_id,
-          jobId: applicationData.job_id,
-        });
-      } else {
-        console.log("Notification created successfully (application_received):", {
-          customerId: job.customer_id,
-          jobId: applicationData.job_id,
-        });
-      }
-    }
-
     revalidatePath(`/job-offer/${applicationData.job_id}`);
     revalidatePath("/tasker/my-jobs");
     revalidatePath("/customer/my-jobs");
@@ -1569,6 +1852,24 @@ export async function startJob(
         success: false,
         error: `Job must be in 'assigned' status to start. Current status: ${job.status}`,
       };
+    }
+
+    const { data: userData } = await supabase
+      .from("users")
+      .select("wallet_balance, preferred_language")
+      .eq("id", taskerId)
+      .single();
+
+    const walletBalance = Number(userData?.wallet_balance || 0);
+    if (walletBalance < 10) {
+      const lang = userData?.preferred_language || "en";
+      const errorMessage = lang === 'ar'
+        ? "لا يمكنك بدء العمل لأن رصيد محفظتك أقل من 10 دراهم. يرجى شحن محفظتك لتتمكن من العمل."
+        : lang === 'fr'
+        ? "Vous ne pouvez pas commencer le travail car votre solde est inférieur à 10 MAD. Veuillez recharger votre portefeuille pour pouvoir travailler."
+        : "You cannot start the job because your wallet balance is less than 10 MAD. Please top up your wallet to be able to work.";
+      
+      return { success: false, error: errorMessage };
     }
 
     const { error: updateError } = await supabase
@@ -1892,6 +2193,24 @@ export async function confirmJobCompletion(
     console.log("✅ Job confirmed: customer_confirmed_at set");
 
     if (taskerId && finalPrice > 0) {
+      // Payment is executed at assignment time; avoid double charge on confirmation.
+      const { data: alreadyPaid } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("job_id", jobId)
+        .eq("payment_status", "paid")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (alreadyPaid?.id) {
+        revalidatePath("/customer/my-jobs");
+        revalidatePath(`/customer/my-jobs/${jobId}`);
+        revalidatePath("/tasker/my-jobs");
+        revalidatePath(`/tasker/my-jobs/${jobId}`);
+        return { success: true };
+      }
+
       const platformFeeRate = 0.1;
       const totalAmount = finalPrice;
       const platformFee = totalAmount * platformFeeRate;
@@ -1907,32 +2226,53 @@ export async function confirmJobCompletion(
         currentWalletBalance: taskerWalletBalance,
       });
 
-      console.log("💳 Attempting to create transaction:", {
-        job_id: jobId,
-        booking_id: null,
-        payer_id: customerId,
-        payee_id: taskerId,
-        transaction_type: "job_payment",
-        amount: totalAmount,
-        platform_fee: platformFee,
-        payment_status: "paid",
-      });
-
-      const { data: transaction, error: transactionError } = await supabase
+      // Settle transaction: update the pending one created at assignment time (or create if missing)
+      const { data: existingTx, error: existingTxError } = await supabase
         .from("transactions")
-        .insert({
-          job_id: jobId,
-          booking_id: null,
-          payer_id: customerId,
-          payee_id: taskerId,
-          transaction_type: "job_payment",
-          amount: totalAmount,
-          platform_fee: platformFee,
-          payment_status: "paid",
-          processed_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
+        .select("id")
+        .eq("job_id", jobId)
+        .in("transaction_type", ["job_payment"])
+        .order("created_at", { ascending: false })
+        .maybeSingle();
+
+      let transaction: any = null;
+      let transactionError: any = null;
+
+      if (!existingTxError && existingTx?.id) {
+        const res = await supabase
+          .from("transactions")
+          .update({
+            amount: totalAmount,
+            platform_fee: platformFee,
+            payment_status: "paid",
+            processed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingTx.id)
+          .select()
+          .single();
+        transaction = res.data;
+        transactionError = res.error;
+      } else {
+        const res = await supabase
+          .from("transactions")
+          .insert({
+            job_id: jobId,
+            booking_id: null,
+            payer_id: customerId,
+            payee_id: taskerId,
+            transaction_type: "job_payment",
+            amount: totalAmount,
+            platform_fee: platformFee,
+            payment_status: "paid",
+            payment_method: "cash",
+            processed_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+        transaction = res.data;
+        transactionError = res.error;
+      }
 
       if (transactionError) {
         console.error(
@@ -2274,61 +2614,6 @@ export async function confirmJobCompletion(
           );
         }
       }
-
-      const customerPaymentTranslations = await getNotificationTranslationsForUser(
-        customerId,
-        "payment_received",
-        { amount: totalAmount, currency, jobTitle }
-      );
-      const { error: customerPaymentNotificationError } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: customerId,
-          type: "payment_received",
-          title: customerPaymentTranslations.title,
-          message: customerPaymentTranslations.message,
-          related_job_id: jobId,
-          is_read: false,
-        });
-      if (customerPaymentNotificationError) {
-        console.error(
-          "Error creating customer payment notification:",
-          customerPaymentNotificationError
-        );
-      }
-
-      const taskerLocale = await getUserLocale(taskerId);
-      const taskerConfirmedTitle = await getTranslatedString(
-        taskerLocale,
-        "notifications.titles.jobConfirmedByCustomer",
-        {}
-      );
-      const taskerConfirmedMessage = await getTranslatedString(
-        taskerLocale,
-        "notifications.messages.jobConfirmedByCustomer",
-        { jobTitle }
-      );
-      const { error: taskerNotificationError } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: taskerId,
-          type: "job_completed",
-          title: taskerConfirmedTitle,
-          message: taskerConfirmedMessage,
-          related_job_id: jobId,
-          is_read: false,
-        });
-      if (taskerNotificationError) {
-        console.error(
-          "Error creating tasker notification:",
-          taskerNotificationError
-        );
-      }
-    } else {
-      console.warn("⚠️ Payment processing skipped:", {
-        hasTaskerId: !!taskerId,
-        hasFinalPrice: !!finalPrice,
-      });
     }
 
     revalidatePath("/customer/my-jobs");

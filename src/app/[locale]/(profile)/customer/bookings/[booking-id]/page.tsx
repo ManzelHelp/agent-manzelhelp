@@ -113,6 +113,10 @@ export default function CustomerBookingDetailPage({
       if (bookingData.customer_confirmed_at) {
         const reviewCheck = await checkReviewExists(undefined, bookingData.id);
         setReviewExists(reviewCheck.exists);
+        // Automatically show review form if not reviewed yet
+        if (!reviewCheck.exists) {
+          setShowReviewForm(true);
+        }
       }
     } catch (error) {
       console.error("Error fetching booking:", error);
@@ -169,6 +173,14 @@ export default function CustomerBookingDetailPage({
             description: t("statusDescriptions.in_progress"),
           };
         case "completed":
+          if (!booking?.customer_confirmed_at) {
+            return {
+              label: t("bookingCompletedAwaitingConfirmation"),
+              color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+              icon: Clock,
+              description: t("taskerMarkedCompletedDescription"),
+            };
+          }
           return {
             label: t("status.completed"),
             color:
@@ -254,14 +266,14 @@ export default function CustomerBookingDetailPage({
   }, [booking, t]);
 
   const getTaskerEmail = useCallback(() => {
-    if (!booking) return "N/A";
-    return booking.tasker_email || "N/A";
-  }, [booking]);
+    if (!booking) return t("addressNotSpecified");
+    return booking.tasker_email || t("addressNotSpecified");
+  }, [booking, t]);
 
   const getTaskerPhone = useCallback(() => {
-    if (!booking) return "N/A";
-    return booking.tasker_phone || "N/A";
-  }, [booking]);
+    if (!booking) return t("addressNotSpecified");
+    return booking.tasker_phone || t("addressNotSpecified");
+  }, [booking, t]);
 
   // Check if contact info should be shown (booking accepted, in_progress, completed, or started)
   const shouldShowContactInfo = useCallback(() => {
@@ -507,8 +519,8 @@ export default function CustomerBookingDetailPage({
                     </h2>
                     <p className="text-[var(--color-text-secondary)] text-sm sm:text-base lg:text-lg mobile-text-base truncate">
                       {booking.category_name
-                        ? `${booking.category_name} service`
-                        : "Professional service"}
+                        ? t("categoryService", { category: booking.category_name })
+                        : t("professionalService")}
                     </p>
                   </div>
                 </div>
@@ -602,7 +614,7 @@ export default function CustomerBookingDetailPage({
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
-                            Email
+                            {t("email")}
                           </p>
                           <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
                             {getTaskerEmail()}
@@ -618,7 +630,7 @@ export default function CustomerBookingDetailPage({
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
-                            Phone
+                            {t("phone")}
                           </p>
                           <p className="text-slate-900 dark:text-white font-semibold text-sm sm:text-base truncate">
                             {getTaskerPhone()}
@@ -771,7 +783,7 @@ export default function CustomerBookingDetailPage({
                         {t("payment")}
                       </p>
                       <p className="text-lg font-bold text-slate-900 dark:text-white capitalize">
-                        {booking.payment_method}
+                        {booking.payment_method ? t(`paymentMethods.${booking.payment_method.toLowerCase()}`) : t("paymentMethods.cash")}
                       </p>
                     </div>
                   </div>
@@ -831,7 +843,7 @@ export default function CustomerBookingDetailPage({
 
             <div className="p-8">
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-600/50">
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg break-words whitespace-pre-wrap">
                   {booking.customer_requirements || t("noRequirements")}
                 </p>
               </div>
@@ -923,7 +935,73 @@ export default function CustomerBookingDetailPage({
               </div>
             )}
 
-            {(booking.status === "completed" ||
+            {booking.status === "completed" && !booking.customer_confirmed_at && (
+              <div className="text-center py-10 bg-amber-50 dark:bg-amber-900/20 rounded-3xl border-2 border-dashed border-amber-200 dark:border-amber-800 shadow-inner">
+                <div className="w-20 h-20 mx-auto mb-6 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center animate-pulse">
+                  <Clock className="h-10 w-10 text-amber-600 dark:text-amber-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-3">
+                  {t("bookingCompletedAwaitingConfirmation")}
+                </h3>
+                <p className="text-amber-700 dark:text-amber-300 mb-8 max-w-md mx-auto text-lg">
+                  {t("taskerMarkedCompletedDescription")}
+                </p>
+                <Button
+                  onClick={async () => {
+                    if (!booking.id) return;
+                    setIsConfirming(true);
+                    try {
+                      const result = await confirmBookingCompletion(booking.id);
+                      if (result.success) {
+                        const updatedBooking = await getBookingById(bookingId);
+                        if (updatedBooking) {
+                          setBooking(updatedBooking);
+                        }
+                        // Trigger review form automatically
+                        setShowReviewForm(true);
+                        
+                        toast({
+                          variant: "success",
+                          title: t("success.confirmed"),
+                          description: t("bookingConfirmedSuccess"),
+                        });
+                      } else {
+                        toast({
+                          variant: "destructive",
+                          title: "Erreur",
+                          description: result.error || t("errors.confirmFailed"),
+                        });
+                      }
+                    } catch (err) {
+                      console.error("Error confirming booking:", err);
+                      toast({
+                        variant: "destructive",
+                        title: "Erreur",
+                        description: t("errors.confirmFailed"),
+                      });
+                    } finally {
+                      setIsConfirming(false);
+                    }
+                  }}
+                  disabled={isConfirming}
+                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 h-16 px-10 text-xl font-bold"
+                >
+                  {isConfirming ? (
+                    <>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                      {t("confirming")}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-6 w-6 mr-3" />
+                      {t("confirmBookingCompletion")}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {((booking.status === "completed" && booking.customer_confirmed_at) ||
               booking.status === "cancelled") && (
               <div className="text-center py-8">
                 <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
@@ -938,6 +1016,11 @@ export default function CustomerBookingDetailPage({
                     ? t("completed")
                     : t("cancelled")}
                 </p>
+                {booking.status === "completed" && booking.customer_confirmed_at && (
+                  <p className="text-sm text-slate-500 mt-2">
+                    {t("confirmedOn")} {formatDate(booking.customer_confirmed_at)}
+                  </p>
+                )}
               </div>
             )}
 
@@ -1097,8 +1180,11 @@ export default function CustomerBookingDetailPage({
                     <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
                       <CheckCircle className="h-4 w-4 text-white" />
                     </div>
+                    {booking.customer_confirmed_at && (
+                      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-0.5 h-8 bg-slate-200 dark:bg-slate-600"></div>
+                    )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 pb-8">
                     <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-6 border border-emerald-200/50 dark:border-slate-600/50">
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                         {t("timeline.taskCompleted")}
@@ -1110,86 +1196,31 @@ export default function CustomerBookingDetailPage({
                   </div>
                 </div>
               )}
+
+              {/* Timeline Item - Customer Confirmed */}
+              {booking.customer_confirmed_at && (
+                <div className="flex items-start gap-6">
+                  <div className="relative">
+                    <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                      <CheckCircle className="h-4 w-4 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl p-6 border border-emerald-300 dark:border-emerald-800">
+                      <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-100 mb-2">
+                        {t("timeline.customerConfirmed")}
+                      </h3>
+                      <p className="text-emerald-700 dark:text-emerald-300">
+                        {formatDate(booking.customer_confirmed_at)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Booking Completion Confirmation Section */}
-      {booking.status === "completed" && 
-       booking.completed_at && 
-       !booking.customer_confirmed_at && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-3xl shadow-2xl border-2 border-blue-200 dark:border-blue-700 overflow-hidden mt-8">
-          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 px-8 py-6 border-b border-blue-200 dark:border-blue-700">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-white" />
-              </div>
-              Booking Completed - Awaiting Your Confirmation
-            </h2>
-          </div>
-          <div className="p-8 space-y-4">
-            <p className="text-slate-700 dark:text-slate-300 text-lg">
-              The tasker has marked this booking as completed. Please review the work and confirm completion.
-            </p>
-            {booking.completed_at && (
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Completed on: {formatDate(booking.completed_at)}
-              </p>
-            )}
-            <Button
-              onClick={async () => {
-                if (!booking.id) return;
-                setIsConfirming(true);
-                try {
-                  const result = await confirmBookingCompletion(booking.id);
-                  if (result.success) {
-                    const updatedBooking = await getBookingById(bookingId);
-                    if (updatedBooking) {
-                      setBooking(updatedBooking);
-                    }
-                    toast({
-                      variant: "success",
-                      title: "Succès",
-                      description: "Booking confirmed successfully",
-                    });
-                  } else {
-                    toast({
-                      variant: "destructive",
-                      title: "Erreur",
-                      description: result.error || "Failed to confirm booking completion",
-                    });
-                  }
-                } catch (err) {
-                  console.error("Error confirming booking:", err);
-                  toast({
-                    variant: "destructive",
-                    title: "Erreur",
-                    description: "Failed to confirm booking completion",
-                  });
-                } finally {
-                  setIsConfirming(false);
-                }
-              }}
-              disabled={isConfirming}
-              className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              size="lg"
-            >
-              {isConfirming ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Confirming...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Confirm Booking Completion
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Booking Confirmed Section */}
       {booking.status === "completed" && 
@@ -1201,16 +1232,16 @@ export default function CustomerBookingDetailPage({
               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
                 <CheckCircle className="h-5 w-5 text-white" />
               </div>
-              Booking Confirmed
+              {t("status.confirmed")}
             </h2>
           </div>
           <div className="p-8">
             <p className="text-slate-700 dark:text-slate-300 text-lg mb-4">
-              You have confirmed that this booking has been completed successfully. Payment has been processed.
+              {t("completed")}
             </p>
             {booking.customer_confirmed_at && (
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Confirmed on: {formatDate(booking.customer_confirmed_at)}
+                {t("confirmedOn")} {formatDate(booking.customer_confirmed_at)}
               </p>
             )}
             {!reviewExists && !showReviewForm && (
@@ -1219,12 +1250,12 @@ export default function CustomerBookingDetailPage({
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
               >
                 <Star className="h-5 w-5 mr-2" />
-                Leave a Review
+                {t("leaveReview")}
               </Button>
             )}
             {reviewExists && (
               <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                ✓ You have already left a review for this booking
+                ✓ {t("alreadyLeftReview")}
               </p>
             )}
           </div>
@@ -1239,7 +1270,7 @@ export default function CustomerBookingDetailPage({
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                 <Star className="h-5 w-5 text-white" />
               </div>
-              Leave a Review
+              {t("leaveReview")}
             </h2>
           </div>
           <div className="p-8">

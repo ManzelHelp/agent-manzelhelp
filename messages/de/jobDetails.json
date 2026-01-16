@@ -1,6 +1,6 @@
 {
   "jobDetails": {
-    "jobDetails": "Jobdetails",
+    "pageTitle": "Jobdetails",
     "manageJobPost": "Jobanzeige verwalten",
     "jobStatus": "Jobstatus",
     "completed": "Abgeschlossen",
@@ -10,6 +10,14 @@
     "preferredTime": "Bevorzugte Uhrzeit",
     "location": "Ort",
     "locationNotSpecified": "Ort nicht angegeben",
+    "jobTitle": "Jobtitel",
+    "selectCategory": "Kategorie auswählen",
+    "selectService": "Dienstleistung auswählen",
+    "minCharactersRequired": "Mindestens {count} Zeichen",
+    "budgetMAD": "Budget (MAD)",
+    "estimatedDurationHours": "Geschätzte Dauer (Stunden)",
+    "preferredTimeLabel": "Bevorzugte Zeit",
+    "flexibleTimingLabel": "Flexibel bei der Zeitplanung",
     "customerInformation": "Kundeninformationen",
     "jobPostedByCustomer": "Job vom Kunden veröffentlicht",
     "jobProgress": "Jobfortschritt",
@@ -20,25 +28,102 @@
     "requirements": "Anforderungen",
     "flexibleTiming": "Flexible Zeitplanung",
     "openToScheduleAdjustments": "Offen für Zeitplananpassungen",
-    "actions": {
+    "estimated": "{count} Std. geschätzt",
+    "applicationsCount": "{current} / {max} Bewerbungen",
+    "applicationsCountTitle": "Bewerbungen ({count})",
+    "finalPrice": "Endpreis",
+    "promotedJob": "Gepushter Job",
+    "expires": "Läuft ab am: {date}",
+    "thisJobIsPromoted": "Dieser Job wird hervorgehoben",
+    "imagesCount": "Bilder ({count})",
+    "assigning": "Zuweisung...",
+    "assignTasker": "Helfer zuweisen",
+    "jobCompletedAwaitingConfirmation": "Job abgeschlossen - Warten auf Ihre Bestätigung",
+    "jobCompletedAwaitingConfirmationDesc": "Der Helfer hat diesen Job als abgeschlossen markiert. Bitte überprüfen Sie die Arbeit und bestätigen Sie den Abschluss.",
+    "completedOn": "Abgeschlossen am {date}",
+    "confirming": "Bestätigung...",
+    "confirmJobCompletion": "Abschluss bestätigen",
+    "leaveReview": "Bewertung abgeben",
+    "category": "Kategorie",
+    "service": "Dienstleistung",
+    "thisJob": "diesen Job",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "assignedTasker": "Zugewiesener Helfer",
+    "assignedToThisJob": "Diesem Job zugewiesen",
+    "confirmation": {
+      "jobConfirmed": "Job bestätigt",
+      "jobConfirmedDescription": "Sie haben bestätigt, dass dieser Job erfolgreich abgeschlossen wurde.",
+      "confirmedOn": "Bestätigt am {date}",
+      "reviewAlreadyLeft": "✓ Sie haben bereits eine Bewertung für diesen Job abgegeben"
+    },
+    "jobActions": {
       "startJob": "Job starten",
       "completeJob": "Job abschließen",
       "jobStarted": "Job erfolgreich gestartet",
       "jobCompleted": "Job abgeschlossen",
       "waitingConfirmation": "Warten auf Kundenbestätigung",
       "jobConfirmed": "Job bestätigt",
-      "customerConfirmed": "Vom Kunden bestätigt am {date}"
+      "customerConfirmed": "Vom Kunden bestätigt am {date}",
+      "edit": "Bearbeiten",
+      "clone": "Klonen",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "errors": {
+      "cloneFailed": "Klonen des Jobs fehlgeschlagen",
+      "confirmationFailed": "Bestätigung des Jobabschlusses fehlgeschlagen",
+      "validationError": "Validierungsfehler",
+      "updateFailed": "Job-Update fehlgeschlagen"
+    },
+    "success": {
+      "jobCloned": "Job erfolgreich geklont!",
+      "jobUpdated": "Job erfolgreich aktualisiert!",
+      "jobDeleted": "Jobanzeige erfolgreich gelöscht"
+    },
+    "deleteDialog": {
+      "title": "Jobanzeige löschen",
+      "description": "Sind Sie sicher, dass Sie \"{title}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden. Wenn Bewerbungen vorliegen oder ein Helfer zugewiesen wurde, können Sie diesen Job nicht löschen.",
+      "cancel": "Abbrechen",
+      "delete": "Job löschen",
+      "deleting": "Löschen...",
+      "error": "Löschen des Jobs fehlgeschlagen"
     },
     "status": {
       "active": "Offen",
       "under_review": "In Prüfung",
+      "underReview": "In Prüfung",
       "assigned": "Zugewiesen",
       "in_progress": "In Bearbeitung",
+      "inProgress": "In Bearbeitung",
       "completed": "Abgeschlossen",
       "cancelled": "Storniert",
-      "unknown": "Unbekannt",
-      "underReview": "In Prüfung",
-      "inProgress": "In Bearbeitung"
+      "unknown": "Unbekannt"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "clone": "Klonen",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "cancelJob": {
+      "button": "Job stornieren",
+      "title": "Job stornieren",
+      "description": "Bitte wählen Sie einen Grund. Der Job wird als storniert markiert, damit Sie ihn klonen/neu veröffentlichen können.",
+      "reasonLabel": "Grund",
+      "detailsLabel": "Details (optional)",
+      "detailsPlaceholder": "Mehr Kontext hinzufügen (optional)",
+      "reasons": {
+        "tasker_no_show": "Der Helfer ist nicht erschienen",
+        "schedule_change": "Termin hat sich geändert",
+        "found_other_tasker": "Ich habe einen anderen Helfer gefunden",
+        "other": "Sonstiges"
+      },
+      "cancel": "Zurück",
+      "confirm": "Job stornieren",
+      "cancelling": "Storniere...",
+      "success": "Job wurde erfolgreich storniert.",
+      "error": "Job konnte nicht storniert werden."
+    }
     }
   }
 }

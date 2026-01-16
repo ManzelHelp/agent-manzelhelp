@@ -4,32 +4,26 @@
     "loading": "جاري تحميل تفاصيل الحجز...",
     "notFound": "الحجز غير موجود",
     "backToBookings": "العودة إلى حجوزاتي",
-
     "waitingForTasker": "في انتظار رد مقدم الخدمة على طلب الحجز الخاص بك.",
     "taskerAccepted": "رائع! قبل مقدم الخدمة طلب الحجز الخاص بك.",
     "bookingConfirmed": "تم تأكيد الحجز! سيبدأ مقدم الخدمة العمل في الوقت المحدد.",
     "taskerWorking": "مقدم الخدمة يعمل حالياً على خدمتك.",
-
     "unauthorizedAccess": "وصول غير مصرح به",
     "pleaseWait": "يرجى الانتظار بينما نقوم بجلب تفاصيل حجزك...",
     "bookingNotFound": "الحجز الذي تبحث عنه غير موجود أو ليس لديك صلاحية لعرضه.",
-
     "success": {
       "statusUpdated": "تم تحديث حالة الحجز بنجاح",
       "copiedToClipboard": "تم نسخ رقم الحجز",
       "linkCopied": "تم نسخ الرابط",
       "confirmed": "تم تأكيد الحجز بنجاح"
     },
-
     "errors": {
       "updateFailed": "تعذر تحديث حالة الحجز",
       "unexpectedError": "حدث خطأ غير متوقع",
       "taskerInfoNotAvailable": "معلومات مقدم الخدمة غير متوفرة",
       "confirmFailed": "فشل في تأكيد إتمام الحجز"
     },
-
     "service": "الخدمة",
-
     "status": {
       "pending": "معلق",
       "accepted": "مقبول",
@@ -39,7 +33,6 @@
       "cancelled": "ملغي",
       "unknown": "غير معروف"
     },
-
     "statusDescriptions": {
       "pending": "في انتظار الرد",
       "accepted": "تم قبول الحجز",
@@ -49,13 +42,11 @@
       "cancelled": "تم إلغاء الحجز",
       "unknown": "حالة غير معروفة"
     },
-
     "bookingType": {
       "instant": "حجز فوري",
       "scheduled": "موعد محدد",
       "recurring": "متكرر"
     },
-
     "sections": {
       "customerInfo": "معلومات الزبون",
       "taskerInfo": "معلومات مقدم الخدمة",
@@ -66,7 +57,6 @@
       "actions": "الإجراءات",
       "timeline": "سجل الحجز"
     },
-
     "customer": "الزبون",
     "tasker": "مقدم الخدمة",
     "agreedPrice": "السعر المتفق عليه",
@@ -76,11 +66,16 @@
     "time": "الوقت",
     "type": "النوع",
     "payment": "الدفع",
-
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "paymentMethods": {
+      "wallet": "المحفظة",
+      "credit_card": "بطاقة الائتمان",
+      "cash": "نقداً"
+    },
     "addressNotSpecified": "العنوان غير محدد",
     "noRequirements": "لا توجد متطلبات خاصة.",
     "timeNotSpecified": "الوقت غير محدد",
-
     "actions": {
       "acceptRequest": "قبول الطلب",
       "declineRequest": "رفض الطلب",
@@ -96,7 +91,6 @@
       "share": "مشاركة",
       "leaveReview": "ترك تقييم"
     },
-
     "timeline": {
       "bookingCreated": "تم إنشاء الحجز",
       "bookingAccepted": "تم قبول الحجز",
@@ -104,13 +98,27 @@
       "taskStarted": "بدأت الخدمة",
       "taskCompleted": "انتهت الخدمة"
     },
-
     "completed": "تم إتمام هذا الحجز بنجاح.",
     "cancelled": "تم إلغاء هذا الحجز.",
-
+    "awaitingCustomerConfirmation": "بانتظار تأكيد الزبون",
+    "awaitingCustomerConfirmationDescription": "لقد أنهيت المهمة. نحن بانتظار تأكيد الزبون لإتمام العملية نهائياً.",
+    "bookingCompletedAwaitingConfirmation": "أكمل مقدم الخدمة المهمة - بانتظار تأكيدك",
+    "taskerMarkedCompletedDescription": "أنهى مقدم الخدمة العمل المطلوب. يُرجى مراجعة الخدمة وتأكيد الاستلام لتقييم تجربتك.",
+    "confirmBookingCompletion": "تأكيد",
+    "leaveReview": "ترك تقييم",
+    "jobActions": {
+      "waitingConfirmation": "في انتظار تأكيد العميل",
+      "customerConfirmed": "قام العميل بتأكيد إتمام الحجز. يُرجى مراجعة العمل والموافقة على الإنهاء."
+    },
+    "confirming": "جاري التأكيد...",
+    "bookingConfirmedSuccess": "تم تأكيد الحجز بنجاح",
+    "alreadyLeftReview": "لقد قمت بالفعل بترك تقييم لهذا الحجز",
+    "confirmedOn": "تم التأكيد في:",
+    "completedOn": "اكتمل في:",
+    "professionalService": "خدمة احترافية",
+    "categoryService": "خدمة {category}",
     "messagingComingSoon": "ميزة المراسلة ستتوفر قريباً!",
     "phoneNotAvailable": "رقم الهاتف غير متوفر",
-
     "cancellation": {
       "title": "إلغاء الحجز",
       "description": "يرجى توضيح سبب إلغاء هذا الحجز",
@@ -133,7 +141,6 @@
         "customCommentRequired": "يرجى إدخال تعليق توضيحي"
       }
     },
-
     "confirmations": {
       "accept": {
         "title": "قبول طلب الحجز",

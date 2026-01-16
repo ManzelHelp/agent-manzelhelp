@@ -49,12 +49,15 @@
       "deleteJobBtn": "حذف الوظيفة"
     },
     "status": {
+      "active": "مفتوحة",
       "open": "مفتوحة",
       "under_review": "قيد المراجعة",
       "assigned": "مُسندة",
       "in_progress": "قيد التنفيذ",
       "completed": "مكتملة",
       "cancelled": "ملغاة",
+      "disputed": "متنازع عليها",
+      "draft": "مسودة",
       "unknown": "غير معروفة"
     },
     "completion": {

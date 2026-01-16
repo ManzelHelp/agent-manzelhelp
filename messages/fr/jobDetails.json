@@ -1,6 +1,6 @@
 {
   "jobDetails": {
-    "jobDetails": "Détails de l'Emploi",
+    "pageTitle": "Détails de l'Emploi",
     "manageJobPost": "Gérez votre offre d'emploi",
     "jobStatus": "Statut de l'Emploi",
     "completed": "Terminé",
@@ -10,6 +10,14 @@
     "preferredTime": "Heure Prévue",
     "location": "Localisation",
     "locationNotSpecified": "Localisation non spécifiée",
+    "jobTitle": "Titre du job",
+    "selectCategory": "Sélectionner une catégorie",
+    "selectService": "Sélectionner un service",
+    "minCharactersRequired": "{count} caractères minimum",
+    "budgetMAD": "Budget (MAD)",
+    "estimatedDurationHours": "Durée estimée (heures)",
+    "preferredTimeLabel": "Heure préférée",
+    "flexibleTimingLabel": "Flexible avec le timing",
     "customerInformation": "Informations Client",
     "jobPostedByCustomer": "Emploi publié par ce client",
     "jobProgress": "Progression de l'Emploi",
@@ -20,23 +28,97 @@
     "requirements": "Exigences",
     "flexibleTiming": "Horaires flexibles",
     "openToScheduleAdjustments": "Ouvert aux ajustements d'horaire",
+    "estimated": "{count}h estimées",
+    "applicationsCount": "{current} / {max} candidatures",
+    "applicationsCountTitle": "Candidatures ({count})",
+    "finalPrice": "Prix Final",
+    "promotedJob": "Emploi Boosté",
+    "expires": "Expire le : {date}",
+    "thisJobIsPromoted": "Cet emploi est mis en avant",
+    "imagesCount": "Images ({count})",
+    "assigning": "Assignation...",
+    "assignTasker": "Assigner un Assistant",
+    "jobCompletedAwaitingConfirmation": "Emploi Terminé - En attente de votre confirmation",
+    "jobCompletedAwaitingConfirmationDesc": "L'assistant a marqué cet emploi comme terminé. Veuillez vérifier le travail et confirmer l'achèvement.",
+    "completedOn": "Terminé le {date}",
+    "confirming": "Confirmation...",
+    "confirmJobCompletion": "Confirmer l'Achèvement",
+    "leaveReview": "Laisser un Avis",
+    "category": "Catégorie",
+    "service": "Service",
+    "thisJob": "cette offre",
+    "lastUpdated": "Dernière Mise à Jour",
+    "assignedTasker": "Assistant Assigné",
+    "assignedToThisJob": "Assigné à cet emploi",
+    "confirmation": {
+      "jobConfirmed": "Emploi Confirmé",
+      "jobConfirmedDescription": "Vous avez confirmé que cet emploi a été complété avec succès.",
+      "confirmedOn": "Confirmé le {date}",
+      "reviewAlreadyLeft": "✓ Vous avez déjà laissé un avis pour cet emploi"
+    },
     "actions": {
       "startJob": "Démarrer l'Emploi",
+      "starting": "Démarrage...",
       "completeJob": "Terminer l'Emploi",
+      "completing": "Finalisation...",
       "jobStarted": "Emploi démarré avec succès",
       "jobCompleted": "Emploi Terminé",
       "waitingConfirmation": "En attente de confirmation du client",
       "jobConfirmed": "Emploi Confirmé",
-      "customerConfirmed": "Confirmé par le client le {date}"
+      "customerConfirmed": "Confirmé par le client le {date}",
+      "edit": "Modifier",
+      "clone": "Cloner",
+      "save": "Enregistrer",
+      "cancel": "Annuler"
+    },
+    "errors": {
+      "cloneFailed": "Échec du clonage du job",
+      "confirmationFailed": "Échec de la confirmation de l'achèvement",
+      "validationError": "Erreur de validation",
+      "updateFailed": "Échec de la mise à jour du job"
+    },
+    "success": {
+      "jobCloned": "Job cloné avec succès!",
+      "jobUpdated": "Job mis à jour avec succès!",
+      "jobDeleted": "Offre d'emploi supprimée avec succès"
+    },
+    "deleteDialog": {
+      "title": "Supprimer l'offre d'emploi",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{title}\" ? Cette action est irréversible. S'il y a des candidatures ou si un assistant a été assigné, vous ne pourrez pas supprimer cette offre.",
+      "cancel": "Annuler",
+      "delete": "Supprimer l'offre",
+      "deleting": "Suppression...",
+      "error": "Échec de la suppression de l'offre"
     },
     "status": {
       "active": "Ouvert",
+      "under_review": "En Révision",
       "underReview": "En Révision",
       "assigned": "Assigné",
+      "in_progress": "En Cours",
       "inProgress": "En Cours",
       "completed": "Terminé",
       "cancelled": "Annulé",
       "unknown": "Inconnu"
+    },
+    "cancelJob": {
+      "button": "Annuler l'emploi",
+      "title": "Annuler l'emploi",
+      "description": "Indiquez pourquoi vous annulez. L'emploi sera marqué comme annulé afin que vous puissiez le cloner / le republier.",
+      "reasonLabel": "Raison",
+      "detailsLabel": "Détails (optionnel)",
+      "detailsPlaceholder": "Ajouter plus de contexte (optionnel)",
+      "reasons": {
+        "tasker_no_show": "L'assistant ne s'est pas présenté",
+        "schedule_change": "Changement d'horaire",
+        "found_other_tasker": "J'ai trouvé un autre assistant",
+        "other": "Autre"
+      },
+      "cancel": "Retour",
+      "confirm": "Annuler l'emploi",
+      "cancelling": "Annulation...",
+      "success": "Emploi annulé avec succès.",
+      "error": "Échec de l'annulation de l'emploi."
     }
   }
 }

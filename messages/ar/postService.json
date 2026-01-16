@@ -33,13 +33,15 @@
       "hourlyRate": "السعر بالساعة",
       "hourlyRatePlaceholder": "أدخل سعرك بالساعة",
       "minimumBooking": "الحد الأدنى لساعات الحجز",
-      "minimumBookingPlaceholder": "الحد الأدنى لساعات الحجز",
+      "minimumBookingPlaceholder": "أدخل الساعات",
       "estimatedDuration": "المدة المقدرة (بالساعات)",
-      "durationPlaceholder": "كم تستغرق هذه الخدمة عادة؟",
+      "durationPlaceholder": "أدخل الساعات",
       "extras": "خدمات إضافية",
       "addExtra": "إضافة خدمة إضافية",
       "extraName": "اسم الخدمة",
-      "extraPrice": "السعر",
+      "extraNamePlaceholder": "مثلاً: تنظيف عميق، توفير المواد",
+      "extraPrice": "السعر (درهم)",
+      "extraPricePlaceholder": "السعر",
       "removeExtra": "إزالة"
     },
     "review": {
@@ -48,7 +50,16 @@
       "serviceOverview": "نظرة عامة على الخدمة",
       "pricingDetails": "تفاصيل التسعير",
       "publishService": "نشر الخدمة",
-      "publishingService": "جاري نشر الخدمة..."
+      "publishingService": "جاري نشر الخدمة...",
+      "aboutYou": "معلومات عنك",
+      "bio": "السيرة الذاتية",
+      "noBio": "لم يتم تعيين سيرة ذاتية.",
+      "experienceLevel": "مستوى الخبرة",
+      "titleLabel": "العنوان",
+      "categoryLabel": "الفئة",
+      "serviceLabel": "الخدمة",
+      "locationLabel": "الموقع",
+      "descriptionLabel": "الوصف"
     },
     "success": {
       "servicePosted": "تم نشر الخدمة بنجاح!",
@@ -92,28 +103,41 @@
       "noAvailability": "لم يتم تعيين التوفر. يرجى إضافة ساعات عملك في ملفك الشخصي أولاً.",
       "addWorkingHours": "إضافة ساعات العمل",
       "noAddresses": "لم يتم العثور على عناوين. يرجى إضافة عنوان في ملفك الشخصي أولاً.",
-      "addAddress": "إضافة عنوان"
+      "addAddress": "إضافة عنوان",
+      "notSpecified": "غير محدد",
+      "hours": "ساعات"
     },
     "step2": {
       "title": "التسعير والسياسات",
       "description": "حدد أسعارك وسياسات الحجز",
       "pricingModel": "نموذج التسعير",
       "fixedPrice": "سعر ثابت",
+      "fixedPriceDesc": "سعر واحد للمهمة بأكملها",
       "hourlyRate": "سعر بالساعة",
+      "hourlyRateDesc": "رسوم لكل ساعة عمل",
       "perItem": "لكل عنصر",
-      "fixedPriceLabel": "سعر ثابت (€)",
-      "hourlyRateLabel": "سعر بالساعة (€)",
-      "perItemLabel": "السعر لكل عنصر (€)",
+      "perItemDesc": "السعر لكل وحدة/عنصر",
+      "fixedPriceLabel": "سعر ثابت (درهم)",
+      "hourlyRateLabel": "سعر بالساعة (درهم)",
+      "perItemLabel": "السعر لكل عنصر (درهم)",
       "fixedPriceReview": "سعر ثابت:",
       "hourlyRateReview": "سعر بالساعة:",
-      "perItemReview": "السعر لكل عنصر:"
+      "perItemReview": "السعر لكل عنصر:",
+      "minBookingLabel": "الحد الأدنى للحجز (ساعات) - اختياري",
+      "minBookingHint": "اتركه فارغاً إذا لم يكن هناك حد أدنى للوقت",
+      "estimatedDurationLabel": "المدة المقدرة (ساعات) - اختياري",
+      "estimatedDurationHint": "كم من الوقت تتوقع أن تستغرق هذه الخدمة عادةً؟"
     },
     "tips": {
-      "title": "نصائح لعرض خدمة رائع",
-      "tip1": "كن محددًا بشأن ما تقدمه وخبرتك",
-      "tip2": "حدد أسعارًا تنافسية بناءً على أسعار السوق",
-      "tip3": "قم بتضمين أوصاف واضحة لما هو مدرج",
+      "title": "نصائح للنجاح",
+      "tip1": "كن محددًا بشأن ما تقدمه وما هو مدرج",
+      "tip2": "حدد تسعيراً تنافسياً وعادلاً بناءً على خبرتك",
+      "tip3": "أضف صورة ملف شخصي احترافية لبناء الثقة",
       "tip4": "أضف خدمات إضافية لزيادة إمكاناتك في الكسب"
+    },
+    "help": {
+      "title": "هل تحتاج مساعدة؟",
+      "description": "فريق الدعم لدينا هنا لمساعدتك في إنشاء قائمة الخدمات المثالية."
     }
   }
 }

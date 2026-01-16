@@ -59,7 +59,7 @@ import {
   getServices,
   type CreateServiceData,
 } from "@/actions/services";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ContactSupportDialog } from "@/components/ContactSupportDialog";
 import { BackButton } from "@/components/ui/BackButton";
 import type {
@@ -107,6 +107,8 @@ export default function CreateOfferPage() {
   const { user } = useUserStore();
   const { toast } = useToast();
   const t = useTranslations("postService");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const [showContactDialog, setShowContactDialog] = useState(false);
 
   const STEPS = [
@@ -679,7 +681,7 @@ export default function CreateOfferPage() {
                             }));
                           },
                         })}
-                        placeholder="e.g., Professional House Cleaning Service"
+                        placeholder={t("basicInfo.titlePlaceholder")}
                         className={cn(
                           "h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]",
                           step1Form.formState.errors.title
@@ -718,7 +720,7 @@ export default function CreateOfferPage() {
                             }));
                           },
                         })}
-                        placeholder="Describe what you'll do, what's included, and any special expertise you have..."
+                        placeholder={t("basicInfo.descriptionPlaceholder")}
                         rows={4}
                         className={cn(
                           "w-full min-h-[120px] px-4 py-3 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] resize-y",
@@ -764,6 +766,9 @@ export default function CreateOfferPage() {
                                   ? categories.find(
                                       (c) =>
                                         c.id === step1Form.watch("categoryId")
+                                    )?.[`name_${locale}` as keyof ServiceCategory] || categories.find(
+                                      (c) =>
+                                        c.id === step1Form.watch("categoryId")
                                     )?.name_en || t("step1.selectCategory")
                                   : t("step1.selectCategory")}
                               </span>
@@ -781,16 +786,16 @@ export default function CreateOfferPage() {
                                     ...prev,
                                     basicInfo: {
                                       ...prev.basicInfo,
-                                      categoryId: category.id,
-                                      serviceId: 0,
-                                    },
-                                  }));
-                                }}
-                                className="cursor-pointer"
-                              >
-                                {category.name_en}
-                              </DropdownMenuItem>
-                            ))}
+                                    categoryId: category.id,
+                                    serviceId: 0,
+                                  },
+                                }));
+                              }}
+                              className="cursor-pointer"
+                            >
+                              {category[`name_${locale}` as keyof ServiceCategory] || category.name_en}
+                            </DropdownMenuItem>
+                          ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
                         {step1Form.formState.errors.categoryId && (
@@ -827,6 +832,9 @@ export default function CreateOfferPage() {
                                   ? services.find(
                                       (s) =>
                                         s.id === step1Form.watch("serviceId")
+                                    )?.[`name_${locale}` as keyof Service] || services.find(
+                                      (s) =>
+                                        s.id === step1Form.watch("serviceId")
                                     )?.name_en || t("step1.selectService")
                                   : t("step1.selectService")}
                               </span>
@@ -843,15 +851,15 @@ export default function CreateOfferPage() {
                                     ...prev,
                                     basicInfo: {
                                       ...prev.basicInfo,
-                                      serviceId: service.id,
-                                    },
-                                  }));
-                                }}
-                                className="cursor-pointer"
-                              >
-                                {service.name_en}
-                              </DropdownMenuItem>
-                            ))}
+                                    serviceId: service.id,
+                                  },
+                                }));
+                              }}
+                              className="cursor-pointer"
+                            >
+                              {service[`name_${locale}` as keyof Service] || service.name_en}
+                            </DropdownMenuItem>
+                          ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
                         {step1Form.formState.errors.serviceId && (
@@ -1091,16 +1099,14 @@ export default function CreateOfferPage() {
                                 }}
                                 className="w-4 h-4 text-[var(--color-secondary)]"
                               />
-                              <div>
+                              <div className="mx-2">
                                 <div className="font-semibold capitalize text-[var(--color-text-primary)]">
                                   {type === "fixed" ? t("step2.fixedPrice") : type === "hourly" ? t("step2.hourlyRate") : t("step2.perItem")}
                                 </div>
                                 <div className="text-sm text-[var(--color-text-secondary)] mt-1">
-                                  {type === "fixed" &&
-                                    "One price for the entire job"}
-                                  {type === "hourly" &&
-                                    "Charge per hour worked"}
-                                  {type === "per_item" && "Price per unit/item"}
+                                  {type === "fixed" && t("step2.fixedPriceDesc")}
+                                  {type === "hourly" && t("step2.hourlyRateDesc")}
+                                  {type === "per_item" && t("step2.perItemDesc")}
                                 </div>
                               </div>
                             </div>
@@ -1256,7 +1262,7 @@ export default function CreateOfferPage() {
                           className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
                         >
                           <Clock className="h-4 w-4 text-[var(--color-secondary)]" />
-                          Minimum Booking (hours) - Optional
+                          {t("step2.minBookingLabel")}
                         </Label>
                         <Input
                           id="minimumBooking"
@@ -1277,7 +1283,7 @@ export default function CreateOfferPage() {
                               }));
                             },
                           })}
-                          placeholder="e.g., 1.0 (optional)"
+                          placeholder={t("pricing.minimumBookingPlaceholder")}
                           className={cn(
                             "h-12 text-base border-2 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]",
                             step2Form.formState.errors.minimumBookingHours
@@ -1292,7 +1298,7 @@ export default function CreateOfferPage() {
                           </p>
                         )}
                         <p className="text-sm text-muted-foreground">
-                          Leave empty if no minimum booking time required
+                          {t("step2.minBookingHint")}
                         </p>
                       </div>
                     </div>
@@ -1300,7 +1306,7 @@ export default function CreateOfferPage() {
                     {/* Estimated Duration */}
                     <div className="space-y-2">
                       <Label htmlFor="estimatedDuration">
-                        Estimated Duration (hours) - Optional
+                        {t("step2.estimatedDurationLabel")}
                       </Label>
                       <Input
                         id="estimatedDuration"
@@ -1319,19 +1325,18 @@ export default function CreateOfferPage() {
                             },
                           }))
                         }
-                        placeholder="e.g., 2.0 (optional)"
+                        placeholder={t("pricing.durationPlaceholder")}
                         className="max-w-xs"
                       />
                       <p className="text-sm text-muted-foreground">
-                        How long do you expect this service typically takes?
-                        (optional)
+                        {t("step2.estimatedDurationHint")}
                       </p>
                     </div>
 
                     {/* Extras/Add-ons */}
                     <div className="space-y-4">
                       <Label className="text-base font-semibold text-[var(--color-primary)]">
-                        Extras/Add-ons
+                        {t("pricing.extras")}
                       </Label>
                       <div className="space-y-2">
                         <div className="flex gap-2">
@@ -1343,7 +1348,7 @@ export default function CreateOfferPage() {
                                 name: e.target.value,
                               }))
                             }
-                            placeholder="e.g., Deep cleaning, Supply materials"
+                            placeholder={t("pricing.extraNamePlaceholder")}
                             className="flex-1"
                           />
                           <Input
@@ -1357,7 +1362,7 @@ export default function CreateOfferPage() {
                                 price: parseFloat(e.target.value) || 0,
                               }))
                             }
-                            placeholder="Price (€)"
+                            placeholder={t("pricing.extraPricePlaceholder")}
                             className="w-32"
                           />
                           <Button
@@ -1381,7 +1386,7 @@ export default function CreateOfferPage() {
                                     {extra.name}
                                   </span>
                                   <span className="text-muted-foreground ml-2">
-                                    +€{extra.price}
+                                    +{extra.price} MAD
                                   </span>
                                 </div>
                                 <Button
@@ -1406,32 +1411,34 @@ export default function CreateOfferPage() {
                 <>
                   <CardHeader>
                     <CardTitle className="text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
-                      Review Your Offer
+                      {t("review.title")}
                     </CardTitle>
                     <CardDescription className="text-[var(--color-text-secondary)]">
-                      Please review all details before publishing your service
+                      {t("review.description")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Service Overview */}
                     <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
                       <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                        Service Overview
+                        {t("review.serviceOverview")}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-muted-foreground">Title:</span>
+                          <span className="text-muted-foreground">{t("basicInfo.title")}:</span>
                           <p className="font-medium">
                             {formData.basicInfo.title}
                           </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">
-                            Category:
+                            {t("basicInfo.category")}:
                           </span>
                           <p className="font-medium">
                             {
                               categories.find(
+                                (c) => c.id === formData.basicInfo.categoryId
+                              )?.[`name_${locale}` as keyof ServiceCategory] || categories.find(
                                 (c) => c.id === formData.basicInfo.categoryId
                               )?.name_en
                             }
@@ -1439,11 +1446,13 @@ export default function CreateOfferPage() {
                         </div>
                         <div>
                           <span className="text-muted-foreground">
-                            Service:
+                            {t("basicInfo.service")}:
                           </span>
                           <p className="font-medium">
                             {
                               services.find(
+                                (s) => s.id === formData.basicInfo.serviceId
+                              )?.[`name_${locale}` as keyof Service] || services.find(
                                 (s) => s.id === formData.basicInfo.serviceId
                               )?.name_en
                             }
@@ -1451,7 +1460,7 @@ export default function CreateOfferPage() {
                         </div>
                         <div>
                           <span className="text-muted-foreground">
-                            Location:
+                            {t("basicInfo.location")}:
                           </span>
                           <p className="font-medium">
                             {addresses.find(
@@ -1471,14 +1480,14 @@ export default function CreateOfferPage() {
                                       formData.basicInfo.selectedAddressId
                                   )?.region
                                 }`
-                              : "Not specified"}
+                              : t("step1.notSpecified")}
                           </p>
                         </div>
                       </div>
 
                       <div className="mt-4">
                         <span className="text-muted-foreground">
-                          Description:
+                          {t("basicInfo.description")}:
                         </span>
                         <p className="mt-1">{formData.basicInfo.description}</p>
                       </div>
@@ -1487,15 +1496,15 @@ export default function CreateOfferPage() {
                     {/* Pricing Overview */}
                     <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
                       <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                        Pricing Details
+                        {t("review.pricingDetails")}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">
-                            Pricing Model:
+                            {t("step2.pricingModel")}:
                           </span>
                           <p className="font-medium capitalize">
-                            {formData.pricing.pricingType}
+                            {formData.pricing.pricingType === "fixed" ? t("step2.fixedPrice") : formData.pricing.pricingType === "hourly" ? t("step2.hourlyRate") : t("step2.perItem")}
                           </p>
                         </div>
                         <div>
@@ -1507,38 +1516,37 @@ export default function CreateOfferPage() {
                               : t("step2.perItemReview")}
                           </span>
                           <p className="font-medium">
-                            €
                             {formData.pricing.pricingType === "fixed" ||
                             formData.pricing.pricingType === "per_item"
                               ? formData.pricing.basePrice
-                              : formData.pricing.hourlyRate}
+                              : formData.pricing.hourlyRate} MAD
                           </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">
-                            Minimum Booking:
+                            {t("step2.minBookingLabel")}:
                           </span>
                           <p className="font-medium">
                             {formData.pricing.minimumBookingHours
-                              ? `${formData.pricing.minimumBookingHours} hours`
-                              : "Not specified"}
+                              ? `${formData.pricing.minimumBookingHours} ${t("step1.hours")}`
+                              : t("step1.notSpecified")}
                           </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">
-                            Estimated Duration:
+                            {t("step2.estimatedDurationLabel")}:
                           </span>
                           <p className="font-medium">
                             {formData.pricing.estimatedDuration
-                              ? `${formData.pricing.estimatedDuration} hours`
-                              : "Not specified"}
+                              ? `${formData.pricing.estimatedDuration} ${t("step1.hours")}`
+                              : t("step1.notSpecified")}
                           </p>
                         </div>
                       </div>
 
                       {formData.pricing.extras.length > 0 && (
                         <div className="mt-4">
-                          <span className="text-muted-foreground">Extras:</span>
+                          <span className="text-muted-foreground">{t("pricing.extras")}:</span>
                           <div className="mt-2 space-y-1">
                             {formData.pricing.extras.map((extra, index) => (
                               <div
@@ -1547,7 +1555,7 @@ export default function CreateOfferPage() {
                               >
                                 <span>{extra.name}</span>
                                 <span className="font-medium">
-                                  +€{extra.price}
+                                  +{extra.price} MAD
                                 </span>
                               </div>
                             ))}
@@ -1560,7 +1568,7 @@ export default function CreateOfferPage() {
                     {availability && availability.length > 0 && (
                       <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
                         <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                          Availability
+                          {t("step1.yourWorkingHours")}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           {availability
@@ -1568,7 +1576,7 @@ export default function CreateOfferPage() {
                             .map((slot) => (
                               <div key={slot.day} className="text-sm">
                                 <div className="font-medium capitalize">
-                                  {slot.day}
+                                  {tCommon(slot.day)}
                                 </div>
                                 <div className="text-muted-foreground">
                                   {slot.startTime} - {slot.endTime}
@@ -1581,20 +1589,20 @@ export default function CreateOfferPage() {
                     {taskerProfile && (
                       <div className="border rounded-lg p-6 bg-[var(--color-surface)] shadow-md">
                         <h3 className="font-semibold text-lg mb-4 text-[var(--color-primary)]">
-                          About You
+                          {t("review.aboutYou")}
                         </h3>
                         <div className="mb-2">
-                          <span className="text-muted-foreground">Bio:</span>
+                          <span className="text-muted-foreground">{t("review.bio")}:</span>
                           <p className="font-medium">
-                            {taskerProfile.bio || "No bio set."}
+                            {taskerProfile.bio || t("review.noBio")}
                           </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">
-                            Experience Level:
+                            {t("review.experienceLevel")}:
                           </span>
                           <p className="font-medium capitalize">
-                            {taskerProfile.experience_level || "Not specified"}
+                            {taskerProfile.experience_level || t("step1.notSpecified")}
                           </p>
                         </div>
                       </div>
@@ -1612,7 +1620,7 @@ export default function CreateOfferPage() {
                   className="flex-1 sm:flex-none bg-[var(--color-surface)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Previous
+                  {tCommon("previous")}
                 </Button>
 
                 {currentStep < STEPS.length ? (
@@ -1621,7 +1629,7 @@ export default function CreateOfferPage() {
                     disabled={loading}
                     className="flex-1 sm:flex-none bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white hover:from-[var(--color-primary-dark)] hover:to-[var(--color-secondary-dark)] focus:ring-2 focus:ring-[var(--color-secondary)] rounded-xl py-3 px-6 text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
                   >
-                    Next
+                    {tCommon("next")}
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 ) : (
@@ -1635,7 +1643,7 @@ export default function CreateOfferPage() {
                     ) : (
                       <Sparkles className="h-4 w-4" />
                     )}
-                    Publish Service
+                    {t("review.publishService")}
                   </Button>
                 )}
               </CardFooter>
@@ -1650,7 +1658,7 @@ export default function CreateOfferPage() {
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-[var(--color-secondary)]" />
-                    Tips for Success
+                    {t("tips.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -1659,7 +1667,7 @@ export default function CreateOfferPage() {
                       <span className="text-white text-xs font-bold">1</span>
                     </div>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                      Be specific about what you offer and what's included
+                      {t("tips.tip1")}
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1667,7 +1675,7 @@ export default function CreateOfferPage() {
                       <span className="text-white text-xs font-bold">2</span>
                     </div>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                      Set competitive but fair pricing based on your experience
+                      {t("tips.tip2")}
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1675,7 +1683,7 @@ export default function CreateOfferPage() {
                       <span className="text-white text-xs font-bold">3</span>
                     </div>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                      Add a professional profile photo to build trust
+                      {t("tips.tip3")}
                     </p>
                   </div>
                 </CardContent>
@@ -1686,13 +1694,12 @@ export default function CreateOfferPage() {
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
                     <Shield className="h-5 w-5 text-[var(--color-secondary)]" />
-                    Need Help?
+                    {t("help.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                    Our support team is here to help you create the perfect
-                    service listing.
+                    {t("help.description")}
                   </p>
                   <Button
                     variant="outline"
@@ -1700,7 +1707,7 @@ export default function CreateOfferPage() {
                     className="w-full border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)] hover:text-white"
                     onClick={() => setShowContactDialog(true)}
                   >
-                    Contact Support
+                    {tCommon("contactSupport")}
                   </Button>
                 </CardContent>
               </Card>

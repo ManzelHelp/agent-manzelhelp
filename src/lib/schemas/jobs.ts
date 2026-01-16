@@ -3,22 +3,35 @@ import { z } from "zod";
 
 export const jobFormSchema = z.object({
   jobDetails: z.object({
-    title: z.string().min(1, "required"), // Les messages seront gérés par la traduction côté client
-    description: z.string().min(1, "required").min(80, "La description doit contenir au moins 80 caractères"),
-    categoryId: z.number().min(1, "required"),
-    serviceId: z.number().min(1, "required"),
-    selectedAddressId: z.string().min(1, "required"),
-    requirements: z.string().optional(),
-    images: z.array(z.string()), 
+    // Be permissive with input types coming from forms (string/number) then validate
+    title: z.any().transform((v) => String(v)).pipe(z.string().min(1, "required")),
+    description: z
+      .any()
+      .transform((v) => String(v))
+      .pipe(
+        z
+          .string()
+          .min(1, "required")
+          .min(80, "La description doit contenir au moins 80 caractères")
+      ),
+    categoryId: z.coerce.number().int().min(1, "required"),
+    serviceId: z.coerce.number().int().min(1, "required"),
+    selectedAddressId: z.coerce.string().min(1, "required"),
+    requirements: z.any().transform((v) => (v ? String(v) : "")).optional(),
+    images: z.any().transform((v) => Array.isArray(v) ? v.map(String) : []), 
     }),
   scheduleBudget: z.object({
-    preferredDate: z.string().min(1, "required"),
-    preferredTimeStart: z.string().optional(),
-    preferredTimeEnd: z.string().optional(),
-    isFlexible: z.boolean().default(false),
+    preferredDate: z.any().transform((v) => String(v)).pipe(z.string().min(1, "required")),
+    preferredTimeStart: z.any().transform((v) => (v ? String(v) : "")).optional(),
+    preferredTimeEnd: z.any().transform((v) => (v ? String(v) : "")).optional(),
+    isFlexible: z
+      .any()
+      .transform((v) => v === true || v === "true" || v === "on" || v === 1 || v === "1")
+      .pipe(z.boolean())
+      .default(false),
     estimatedDuration: z.coerce.number().positive("must_be_positive"),
     customerBudget: z.coerce.number().positive("must_be_positive"),
-    currency: z.string().default("MAD"),
+    currency: z.coerce.string().default("MAD"),
     maxApplications: z.coerce.number().int().min(1, "min_1"),
   }),
 });
@@ -27,16 +40,16 @@ export type JobFormSchema = z.infer<typeof jobFormSchema>;
 
 // Schema for updating a job
 export const updateJobSchema = z.object({
-  title: z.string().min(1, "Le titre est requis").min(3, "Le titre doit contenir au moins 3 caractères"),
-  description: z.string().min(1, "La description est requise").min(80, "La description doit contenir au moins 80 caractères"),
+  title: z.coerce.string().min(1, "Le titre est requis").min(3, "Le titre doit contenir au moins 3 caractères"),
+  description: z.coerce.string().min(1, "La description est requise").min(80, "La description doit contenir au moins 80 caractères"),
   service_id: z.coerce.number().min(1, "Le service est requis"),
   customer_budget: z.coerce.number().positive("Le budget doit être positif").min(1, "Le budget doit être au moins 1"),
   estimated_duration: z.coerce.number().positive("La durée estimée doit être positive").min(1, "La durée doit être au moins 1 heure"),
-  preferred_date: z.string().min(1, "La date préférée est requise"),
-  preferred_time_start: z.string().optional().nullable(),
-  preferred_time_end: z.string().optional().nullable(),
+  preferred_date: z.coerce.string().min(1, "La date préférée est requise"),
+  preferred_time_start: z.coerce.string().optional().nullable(),
+  preferred_time_end: z.coerce.string().optional().nullable(),
   is_flexible: z.boolean(),
-  requirements: z.string().optional().nullable(),
+  requirements: z.coerce.string().optional().nullable(),
 });
 
 export type UpdateJobSchema = z.infer<typeof updateJobSchema>;

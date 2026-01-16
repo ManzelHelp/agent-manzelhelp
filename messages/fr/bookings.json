@@ -41,6 +41,37 @@
         "description": "Vous n'avez pas de réservations annulées."
       }
     },
-    "tryAgain": "Réessayer"
+    "tryAgain": "Réessayer",
+    "success": "Succès",
+    "error": "Erreur",
+    "bookingStatusUpdated": "Statut de la réservation mis à jour avec succès",
+    "failedToUpdateBookingStatus": "Échec de la mise à jour du statut de la réservation",
+    "unexpectedError": "Une erreur inattendue s'est produite",
+    "loadingMore": "Chargement de plus...",
+    "loadMore": "Charger plus",
+    "actions": {
+      "acceptRequest": "Accepter la demande",
+      "confirmBooking": "Confirmer la réservation",
+      "startTask": "Démarrer la tâche",
+      "completeTask": "Terminer la tâche"
+    },
+    "dialogs": {
+      "accept": {
+        "title": "Accepter la demande de réservation",
+        "description": "Êtes-vous sûr de vouloir accepter cette demande de réservation de {customerName} ?"
+      },
+      "confirm": {
+        "title": "Confirmer la réservation",
+        "description": "Êtes-vous sûr de vouloir confirmer cette réservation avec {customerName} ?"
+      },
+      "start": {
+        "title": "Démarrer la tâche",
+        "description": "Êtes-vous prêt à démarrer la tâche pour {customerName} ?"
+      },
+      "complete": {
+        "title": "Terminer la tâche",
+        "description": "Êtes-vous sûr de vouloir marquer cette tâche comme terminée pour {customerName} ?"
+      }
+    }
   }
 }

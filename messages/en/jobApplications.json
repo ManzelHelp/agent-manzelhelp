@@ -30,7 +30,9 @@
       "flexible": "Flexible",
       "notSpecified": "Not specified",
       "jobCompletedMessage": "This job has been completed. Your application is no longer relevant.",
-      "jobCancelledMessage": "This job has been cancelled. Your application is no longer relevant."
+      "jobCancelledMessage": "This job has been cancelled. Your application is no longer relevant.",
+      "jobApplication": "Job Application",
+      "noDescription": "No description available"
     },
     "actions": {
       "viewDetails": "View Details",

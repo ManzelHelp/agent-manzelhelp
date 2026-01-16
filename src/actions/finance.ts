@@ -35,7 +35,9 @@ export interface Transaction {
   createdAt: string;
   processedAt: string | null;
   bookingId: string | null;
+  jobId: string | null;
   serviceTitle: string | null;
+  relatedTitle: string | null;
   bookingStatus: BookingStatus | null;
   paymentMethod: string | null;
   currency: string;
@@ -401,36 +403,50 @@ export async function getTransactionHistory(
   }
 
   try {
-    // Get total count for pagination
-    const { count: totalCount } = await supabase
-      .from("transactions")
-      .select("*", { count: "exact", head: true })
-      .eq("payee_id", user.id);
+    // Get total count for pagination (transactions + wallet ledger)
+    const [{ count: totalCount }, { count: walletCount }] = await Promise.all([
+      supabase
+        .from("transactions")
+        .select("*", { count: "exact", head: true })
+        .eq("payee_id", user.id),
+      supabase
+        .from("wallet_transactions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .in("type", ["deposit", "fee_deduction"]),
+    ]);
 
-    // Fetch transactions and bookings/jobs separately to avoid serialization issues
-    const [transactionsResult, bookingsResult] = await Promise.all([
+    // IMPORTANT:
+    // We merge two independent sources (transactions + wallet_transactions).
+    // If we apply range(offset, offset+limit-1) to both, we can return up to 2x limit.
+    // To guarantee EXACTLY `limit` items per page, fetch enough from both sources
+    // up to (offset + limit), then slice after merging/sorting.
+    const fetchCount = offset + limit;
+
+    // Fetch transactions + wallet ledger in parallel
+    const [transactionsResult, walletTxResult] = await Promise.all([
       // Get transactions (tasker is payee) - include both booking_id and job_id
       supabase
         .from("transactions")
         .select("id, amount, platform_fee, transaction_type, payment_status, payment_method, created_at, processed_at, booking_id, job_id")
         .eq("payee_id", user.id)
         .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1),
+        .range(0, Math.max(0, fetchCount - 1)),
 
-      // Get bookings for fallback - no nested relations
       supabase
-        .from("service_bookings")
-        .select("id, agreed_price, currency, status, payment_method, created_at, completed_at, tasker_service_id")
-        .eq("tasker_id", user.id)
+        .from("wallet_transactions")
+        .select("id, amount, type, created_at, related_job_id, related_booking_id, notes")
+        .eq("user_id", user.id)
+        .in("type", ["deposit", "fee_deduction"])
         .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1),
+        .range(0, Math.max(0, fetchCount - 1)),
     ]);
 
     const transactions = transactionsResult.data || [];
-    const bookings = bookingsResult.data || [];
+    const walletTx = walletTxResult.data || [];
 
-    // If transactions exist, fetch service titles and job titles separately and join manually
-    if (transactions.length > 0) {
+    // If we have any records, enrich titles and build the merged list
+    if (transactions.length > 0 || walletTx.length > 0) {
       // Get unique booking IDs and job IDs from transactions
       const bookingIds = transactions
         .map((t) => t.booking_id)
@@ -440,20 +456,31 @@ export async function getTransactionHistory(
         .map((t) => t.job_id)
         .filter((id): id is string => id !== null && id !== undefined);
 
+      const walletBookingIds = walletTx
+        .map((t: any) => t.related_booking_id)
+        .filter((id: any): id is string => id !== null && id !== undefined);
+      const walletJobIds = walletTx
+        .map((t: any) => t.related_job_id)
+        .filter((id: any): id is string => id !== null && id !== undefined);
+
+      const allBookingIds = Array.from(new Set([...bookingIds, ...walletBookingIds]));
+      const allJobIds = Array.from(new Set([...jobIds, ...walletJobIds]));
+
       console.log("[getTransactionHistory] Extracted IDs:", {
         totalTransactions: transactions.length,
-        bookingIds: bookingIds.length,
-        jobIds: jobIds.length,
-        jobIdsList: jobIds,
+        totalWalletTx: walletTx.length,
+        bookingIds: allBookingIds.length,
+        jobIds: allJobIds.length,
+        jobIdsList: allJobIds,
       });
 
       // Fetch bookings with service titles
       let bookingsMap = new Map<string, { status: string; serviceTitle: string; paymentMethod: string }>();
-      if (bookingIds.length > 0) {
+      if (allBookingIds.length > 0) {
         const { data: bookingsData, error: bookingsError } = await supabase
           .from("service_bookings")
           .select("id, status, payment_method, tasker_service_id, tasker_services(title)")
-          .in("id", bookingIds);
+          .in("id", allBookingIds);
 
         if (!bookingsError && bookingsData) {
           bookingsData.forEach((booking: any) => {
@@ -471,11 +498,11 @@ export async function getTransactionHistory(
 
       // Fetch jobs with titles
       let jobsMap = new Map<string, { title: string; status: string; paymentMethod: string }>();
-      if (jobIds.length > 0) {
+      if (allJobIds.length > 0) {
         const { data: jobsData, error: jobsError } = await supabase
           .from("jobs")
           .select("id, title, status, currency")
-          .in("id", jobIds);
+          .in("id", allJobIds);
 
         if (!jobsError && jobsData) {
           jobsData.forEach((job: any) => {
@@ -488,8 +515,8 @@ export async function getTransactionHistory(
         }
       }
 
-      // Map transactions to return format
-      const mappedTransactions = transactions.map((transaction: any) => {
+      // Map transactions to return format (payments only). Platform fee is displayed from wallet_transactions only.
+      const mappedTransactions: Transaction[] = transactions.map((transaction: any) => {
         const amount = typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : (transaction.amount || 0);
         const fee = typeof transaction.platform_fee === 'string' ? parseFloat(transaction.platform_fee) : (transaction.platform_fee || 0);
         
@@ -520,24 +547,82 @@ export async function getTransactionHistory(
           createdAt: transaction.created_at ? new Date(transaction.created_at).toISOString() : new Date().toISOString(),
           processedAt: transaction.processed_at ? new Date(transaction.processed_at).toISOString() : null,
           bookingId: transaction.booking_id ? String(transaction.booking_id) : null,
+          jobId: transaction.job_id ? String(transaction.job_id) : null,
           serviceTitle: serviceTitle,
+          relatedTitle: serviceTitle,
           bookingStatus: bookingStatus,
           currency: "MAD",
         };
       });
 
-      const total = Number(totalCount) || 0;
+      // Map wallet ledger entries (deposits + fee deductions)
+      const mappedWalletTx: Transaction[] = walletTx.map((t: any) => {
+        const rawAmount = typeof t.amount === "string" ? parseFloat(t.amount) : Number(t.amount || 0);
+        const kind = String(t.type || "");
+
+        const bookingId = t.related_booking_id ? String(t.related_booking_id) : null;
+        const relatedJobId = t.related_job_id ? String(t.related_job_id) : null;
+
+        const relatedTitle =
+          (bookingId && bookingsMap.has(bookingId) ? bookingsMap.get(bookingId)!.serviceTitle : null) ||
+          (relatedJobId && jobsMap.has(relatedJobId) ? jobsMap.get(relatedJobId)!.title : null) ||
+          null;
+
+        let serviceTitle: string | null =
+          kind === "fee_deduction"
+            ? "Platform fee"
+            : kind === "deposit"
+              ? "Wallet"
+              : (relatedTitle ?? "Wallet");
+        let bookingStatus: BookingStatus | null = null;
+
+        if (bookingId && bookingsMap.has(bookingId)) {
+          bookingStatus = bookingsMap.get(bookingId)!.status as BookingStatus;
+        }
+
+        const signed = kind === "fee_deduction" ? -Math.abs(rawAmount) : Math.abs(rawAmount);
+
+        return {
+          id: String(t.id),
+          amount: Math.abs(rawAmount),
+          netAmount: signed,
+          platformFee: 0,
+          transactionType: kind === "fee_deduction" ? "platform_fee" : "refund",
+          paymentStatus: "paid",
+          paymentMethod: "wallet",
+          createdAt: t.created_at ? new Date(t.created_at).toISOString() : new Date().toISOString(),
+          processedAt: null,
+          bookingId,
+          jobId: relatedJobId,
+          serviceTitle,
+          relatedTitle,
+          bookingStatus,
+          currency: "MAD",
+        };
+      });
+
+      // De-dupe by id (protect against legacy duplicates) and sort newest first
+      const merged = Array.from(
+        new Map([...mappedTransactions, ...mappedWalletTx].map((tx) => [tx.id, tx])).values()
+      ).sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+
+      const total = (Number(totalCount) || 0) + (Number(walletCount) || 0);
       const hasMore = (offset + limit) < total;
 
+      // Final page slice (EXACTLY limit items)
+      const page = merged.slice(offset, offset + limit);
+
       return {
-        transactions: mappedTransactions,
+        transactions: page,
         hasMore,
         total,
       };
     }
 
     // If no transactions, return empty array
-    const total = Number(totalCount) || 0;
+    const total = (Number(totalCount) || 0) + (Number(walletCount) || 0);
     const hasMore = (offset + limit) < total;
     return {
       transactions: [],

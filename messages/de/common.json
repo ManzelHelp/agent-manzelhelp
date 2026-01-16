@@ -7,6 +7,7 @@
     "saveAddress": "Adresse speichern",
     "cancel": "Abbrechen",
     "close": "Schließen",
+    "processing": "Wird verarbeitet...",
     "menu": "Menü",
     "navigation": "Navigation",
     "edit": "Bearbeiten",
@@ -48,6 +49,8 @@
     "getStartedNow": "Jetzt Loslegen",
     "delete": "Löschen",
     "error": "Fehler",
+    "success": "Erfolg",
+    "copy": "Kopie",
     "languages": {
       "en": "Englisch",
       "de": "Deutsch",
@@ -55,6 +58,9 @@
       "ar": "Arabisch"
     },
     "cash": "Barzahlung",
-    "escrow": "Treuhand"
+    "escrow": "Treuhand",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "contactSupport": "Support kontaktieren"
   }
 }

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
 import { deleteJob } from "@/actions/jobs";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -24,11 +26,13 @@ interface JobDeleteButtonProps {
 export default function JobDeleteButton({
   jobId,
   customerId,
-  jobTitle = "this job",
+  jobTitle,
 }: JobDeleteButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
+  const t = useTranslations("jobDetails");
+  const { toast } = useToast();
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -37,15 +41,24 @@ export default function JobDeleteButton({
 
       if (result.success) {
         setIsDialogOpen(false);
+        toast({
+          variant: "success",
+          description: t("success.jobDeleted"),
+        });
         router.refresh();
       } else {
         console.error("Failed to delete job:", result.error);
-        // You could add a toast notification here
-        alert(result.error || "Failed to delete job");
+        toast({
+          variant: "destructive",
+          description: result.error || t("deleteDialog.error"),
+        });
       }
     } catch (error) {
       console.error("Error deleting job:", error);
-      alert("An unexpected error occurred while deleting the job");
+      toast({
+        variant: "destructive",
+        description: t("deleteDialog.error"),
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -58,7 +71,7 @@ export default function JobDeleteButton({
           size="sm"
           variant="outline"
           className="border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white transition-all duration-200 min-h-[44px] min-w-[44px] p-2"
-          title="Delete job"
+          title={t("jobCard.deleteJobBtn")}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -66,12 +79,10 @@ export default function JobDeleteButton({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-[var(--color-text-primary)]">
-            Delete Job Post
+            {t("deleteDialog.title")}
           </DialogTitle>
           <DialogDescription className="text-[var(--color-text-secondary)]">
-            Are you sure you want to delete "{jobTitle}"? This action cannot be
-            undone. If there are any applications or if a tasker has been
-            assigned, you won't be able to delete this job.
+            {t("deleteDialog.description", { title: jobTitle || t("thisJob") })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
@@ -81,7 +92,7 @@ export default function JobDeleteButton({
             disabled={isDeleting}
             className="border-[var(--color-border)]"
           >
-            Cancel
+            {t("deleteDialog.cancel")}
           </Button>
           <Button
             variant="destructive"
@@ -92,12 +103,12 @@ export default function JobDeleteButton({
             {isDeleting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Deleting...
+                {t("deleteDialog.deleting")}
               </>
             ) : (
               <>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Job
+                {t("deleteDialog.delete")}
               </>
             )}
           </Button>

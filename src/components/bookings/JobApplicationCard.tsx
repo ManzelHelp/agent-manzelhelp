@@ -65,6 +65,7 @@ export function JobApplicationCard({
   actionButton,
 }: JobApplicationCardProps) {
   const t = useTranslations("jobApplications");
+  const tCommon = useTranslations("common");
   const [imageError, setImageError] = useState(false);
   const formatDate = (dateString: string | null) => {
     if (!dateString) return t("labels.flexible");
@@ -94,20 +95,23 @@ export function JobApplicationCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 line-clamp-2">
-              {application.job_title || "Job Application"}
+              {application.job_title || t("labels.jobApplication")}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
-              {application.job_description || "No description available"}
+              {application.job_description || t("labels.noDescription")}
             </p>
           </div>
           <div className="flex flex-col items-end space-y-2 flex-shrink-0">
             <Badge className={getStatusColor(displayStatus)}>
               {t(`status.${displayStatus}`)}
             </Badge>
-            {/* Only show job status if job is still active/relevant */}
+            {/* Only show job status if application is still pending OR if job is in a later state like completed/cancelled */}
             {application.job_status && 
-             application.job_status !== "completed" && 
-             application.job_status !== "cancelled" && (
+             (displayStatus === "pending" || 
+              application.job_status === "completed" || 
+              application.job_status === "cancelled" ||
+              application.job_status === "in_progress" ||
+              application.job_status === "disputed") && (
               <Badge className={getJobStatusColor(application.job_status)}>
                 {t(`jobStatus.${application.job_status}`)}
               </Badge>
@@ -229,7 +233,7 @@ export function JobApplicationCard({
               {isUpdating ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  <span>Processing...</span>
+                  <span>{tCommon("processing")}</span>
                 </div>
               ) : (
                 actionButton.text

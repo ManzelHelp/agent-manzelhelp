@@ -1,6 +1,6 @@
 {
   "jobDetails": {
-    "jobDetails": "Job Details",
+    "pageTitle": "Job Details",
     "manageJobPost": "Manage your job post",
     "jobStatus": "Job Status",
     "completed": "Completed",
@@ -10,6 +10,14 @@
     "preferredTime": "Preferred Time",
     "location": "Location",
     "locationNotSpecified": "Location not specified",
+    "jobTitle": "Job Title",
+    "selectCategory": "Select a category",
+    "selectService": "Select a service",
+    "minCharactersRequired": "{count} characters minimum",
+    "budgetMAD": "Budget (MAD)",
+    "estimatedDurationHours": "Estimated Duration (hours)",
+    "preferredTimeLabel": "Preferred Time",
+    "flexibleTimingLabel": "Flexible with timing",
     "customerInformation": "Customer Information",
     "jobPostedByCustomer": "Job posted by this customer",
     "jobProgress": "Job Progress",
@@ -20,20 +28,97 @@
     "requirements": "Requirements",
     "flexibleTiming": "Flexible Timing",
     "openToScheduleAdjustments": "Open to schedule adjustments",
+    "estimated": "{count}h estimated",
+    "applicationsCount": "{current} / {max} applications",
+    "applicationsCountTitle": "Applications ({count})",
+    "finalPrice": "Final Price",
+    "promotedJob": "Promoted Job",
+    "expires": "Expires: {date}",
+    "thisJobIsPromoted": "This job is promoted",
+    "imagesCount": "Images ({count})",
+    "assigning": "Assigning...",
+    "assignTasker": "Assign Tasker",
+    "jobCompletedAwaitingConfirmation": "Job Completed - Awaiting Your Confirmation",
+    "jobCompletedAwaitingConfirmationDesc": "The tasker has marked this job as completed. Please review the work and confirm completion.",
+    "completedOn": "Completed on {date}",
+    "confirming": "Confirming...",
+    "confirmJobCompletion": "Confirm Job Completion",
+    "leaveReview": "Leave a Review",
+    "category": "Category",
+    "service": "Service",
+    "thisJob": "this job",
+    "lastUpdated": "Last Updated",
+    "assignedTasker": "Assigned Tasker",
+    "assignedToThisJob": "Assigned to this job",
+    "confirmation": {
+      "jobConfirmed": "Job Confirmed",
+      "jobConfirmedDescription": "You have confirmed that this job has been completed successfully.",
+      "confirmedOn": "Confirmed on {date}",
+      "reviewAlreadyLeft": "✓ You have already left a review for this job"
+    },
     "actions": {
+      "startJob": "Start Job",
+      "starting": "Starting...",
+      "completeJob": "Complete Job",
+      "completing": "Completing...",
+      "jobStarted": "Job started successfully",
       "jobCompleted": "Job Completed",
       "waitingConfirmation": "Waiting for customer confirmation",
       "jobConfirmed": "Job Confirmed",
-      "customerConfirmed": "Confirmed by customer on {date}"
+      "customerConfirmed": "Confirmed by customer on {date}",
+      "edit": "Edit",
+      "clone": "Clone",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "cloneFailed": "Failed to clone job",
+      "confirmationFailed": "Failed to confirm job completion",
+      "validationError": "Validation Error",
+      "updateFailed": "Failed to update job"
+    },
+    "success": {
+      "jobCloned": "Job cloned successfully!",
+      "jobUpdated": "Job updated successfully!",
+      "jobDeleted": "Job deleted successfully"
+    },
+    "deleteDialog": {
+      "title": "Delete Job Post",
+      "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone. If there are any applications or if a tasker has been assigned, you won't be able to delete this job.",
+      "cancel": "Cancel",
+      "delete": "Delete Job",
+      "deleting": "Deleting...",
+      "error": "Failed to delete job"
     },
     "status": {
       "active": "Open",
+      "under_review": "Under Review",
       "underReview": "Under Review",
       "assigned": "Assigned",
+      "in_progress": "In Progress",
       "inProgress": "In Progress",
       "completed": "Completed",
       "cancelled": "Cancelled",
       "unknown": "Unknown"
+    },
+    "cancelJob": {
+      "button": "Cancel job",
+      "title": "Cancel job",
+      "description": "Tell us why you want to cancel. The job will be marked as cancelled so you can clone/repost it.",
+      "reasonLabel": "Reason",
+      "detailsLabel": "Details (optional)",
+      "detailsPlaceholder": "Add more context (optional)",
+      "reasons": {
+        "tasker_no_show": "Tasker did not show up",
+        "schedule_change": "Schedule changed",
+        "found_other_tasker": "I found another tasker",
+        "other": "Other"
+      },
+      "cancel": "Back",
+      "confirm": "Cancel job",
+      "cancelling": "Cancelling...",
+      "success": "Job cancelled successfully.",
+      "error": "Failed to cancel job."
     }
   }
 }

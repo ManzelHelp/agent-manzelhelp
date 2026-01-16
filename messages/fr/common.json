@@ -7,6 +7,7 @@
     "saveAddress": "Enregistrer l'adresse",
     "cancel": "Annuler",
     "close": "Fermer",
+    "processing": "Traitement en cours...",
     "menu": "Menu",
     "navigation": "Navigation",
     "edit": "Modifier",
@@ -54,7 +55,12 @@
     "getStartedNow": "Commencer Maintenant",
     "delete": "Supprimer",
     "error": "Erreur",
+    "success": "Succès",
+    "copy": "Copie",
     "cash": "Espèces", 
-    "escrow": "Séquestre"
+    "escrow": "Séquestre",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "contactSupport": "Contacter le support"
   }
 }

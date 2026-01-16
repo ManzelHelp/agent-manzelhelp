@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useRouter } from "@/i18n/navigation";
+import { createClient } from "@/supabase/client";
 
 // Notification type icons mapping
 const getNotificationIcon = (type: NotificationType) => {
@@ -205,6 +206,8 @@ export default function CustomerNotificationsPage() {
   const router = useRouter();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [jobTitles, setJobTitles] = useState<Record<string, string>>({});
+  const [bookingTitles, setBookingTitles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -223,6 +226,154 @@ export default function CustomerNotificationsPage() {
   const [total, setTotal] = useState(0);
   const [totalRead, setTotalRead] = useState(0);
   const [totalUnread, setTotalUnread] = useState(0);
+
+  // Fetch related titles (jobs + booking service titles) to render translated messages
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTitles() {
+      try {
+        const supabase = createClient();
+
+        const jobIds = Array.from(
+          new Set(
+            notifications
+              .map((n) => n.related_job_id)
+              .filter((id): id is string => !!id)
+              .filter((id) => !jobTitles[id])
+          )
+        );
+
+        const bookingIds = Array.from(
+          new Set(
+            notifications
+              .map((n) => n.related_booking_id)
+              .filter((id): id is string => !!id)
+              .filter((id) => !bookingTitles[id])
+          )
+        );
+
+        if (jobIds.length > 0) {
+          const { data } = await supabase.from("jobs").select("id, title").in("id", jobIds);
+          if (!cancelled && data) {
+            setJobTitles((prev) => {
+              const next = { ...prev };
+              data.forEach((j: any) => {
+                if (j?.id) next[String(j.id)] = String(j.title || "");
+              });
+              return next;
+            });
+          }
+        }
+
+        if (bookingIds.length > 0) {
+          const { data } = await supabase
+            .from("service_bookings")
+            .select("id, tasker_services(title)")
+            .in("id", bookingIds);
+
+          if (!cancelled && data) {
+            setBookingTitles((prev) => {
+              const next = { ...prev };
+              data.forEach((b: any) => {
+                const title = Array.isArray(b?.tasker_services)
+                  ? b.tasker_services[0]?.title
+                  : b?.tasker_services?.title;
+                if (b?.id && title) next[String(b.id)] = String(title);
+              });
+              return next;
+            });
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (notifications.length > 0) loadTitles();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [notifications, jobTitles, bookingTitles]);
+
+  const getDisplayText = useCallback(
+    (notification: Notification) => {
+      const jobTitle = notification.related_job_id ? jobTitles[notification.related_job_id] : undefined;
+      const bookingTitle = notification.related_booking_id ? bookingTitles[notification.related_booking_id] : undefined;
+
+      switch (notification.type) {
+        case "wallet_refund_verifying":
+          return {
+            title: t("titles.refundRequestUnderReview"),
+            message: notification.message || t("messages.refundRequestUnderReview", { referenceCode: "", amount: "" }),
+          };
+        case "wallet_refund_approved":
+          return {
+            title: t("titles.refundRequestApproved"),
+            message: notification.message || t("messages.refundRequestApproved", { referenceCode: "", amount: "" }),
+          };
+        case "wallet_refund_rejected":
+          return {
+            title: t("titles.refundRequestRejected"),
+            message: notification.message || t("messages.refundRequestRejected", { referenceCode: "", amount: "", reason: "" }),
+          };
+        case "job_started":
+          return {
+            title: t("titles.jobStarted"),
+            message: t("messages.jobStarted", { jobTitle: jobTitle || "" }),
+          };
+        case "job_completed":
+          return {
+            title: t("titles.jobCompleted"),
+            message: t("messages.jobCompleted", { jobTitle: jobTitle || "" }),
+          };
+        case "application_received":
+          return {
+            title: t("titles.newApplicationReceived"),
+            message: t("messages.newApplicationReceived", { jobTitle: jobTitle || "" }),
+          };
+        case "application_accepted":
+          return {
+            title: t("titles.applicationAccepted"),
+            message: t("messages.applicationAccepted", { jobTitle: jobTitle || "" }),
+          };
+        case "booking_created":
+          return {
+            title: t("titles.bookingCreated"),
+            message: bookingTitle ? `${t("messages.bookingCreated")} "${bookingTitle}".` : t("messages.bookingCreated"),
+          };
+        case "booking_accepted":
+          return {
+            title: t("titles.bookingAccepted"),
+            message: bookingTitle ? `${t("messages.bookingAccepted")} "${bookingTitle}".` : t("messages.bookingAccepted"),
+          };
+        case "booking_confirmed":
+          return {
+            title: t("titles.bookingConfirmed"),
+            message: bookingTitle ? `${t("messages.bookingConfirmed")} "${bookingTitle}".` : t("messages.bookingConfirmed"),
+          };
+        case "booking_cancelled":
+          return {
+            title: t("titles.bookingCancelled"),
+            message: bookingTitle ? `${t("messages.bookingCancelled")} "${bookingTitle}".` : t("messages.bookingCancelled"),
+          };
+        case "booking_completed":
+          return {
+            title: t("titles.bookingCompleted"),
+            message: bookingTitle ? `${t("messages.bookingCompleted")} "${bookingTitle}".` : t("messages.bookingCompleted"),
+          };
+        default: {
+          const safeTitle = notification.title || t("titles.general");
+          const safeMessage = (notification.message || t("messages.general"))
+            .replaceAll("{jobTitle}", jobTitle || "")
+            .replaceAll("{bookingTitle}", bookingTitle || "");
+          return { title: safeTitle, message: safeMessage };
+        }
+      }
+    },
+    [jobTitles, bookingTitles, t]
+  );
 
   // Function to get redirect URL based on notification type and related fields
   const getNotificationRedirectUrl = useCallback((notification: Notification): string | null => {
@@ -1184,7 +1335,7 @@ export default function CustomerNotificationsPage() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h3 className="font-semibold text-foreground mobile-text-base mobile-text-optimized leading-tight">
-                                      {notification.title}
+                                      {getDisplayText(notification).title}
                                     </h3>
                                     {!notification.is_read && (
                                       <Badge
@@ -1205,7 +1356,7 @@ export default function CustomerNotificationsPage() {
                                     </Badge>
                                   </div>
                                   <p className="text-sm text-muted-foreground mobile-leading leading-relaxed">
-                                    {notification.message}
+                                    {getDisplayText(notification).message}
                                   </p>
                                 </div>
                               </div>

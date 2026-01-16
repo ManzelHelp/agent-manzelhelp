@@ -292,6 +292,11 @@
     "close": "إغلاق",
     "yourBasicProfileInformation": "معلومات ملفك الشخصي الأساسية",
     "role": "الدور",
+    "roleNames": {
+      "customer": "عميل",
+      "tasker": "مساعد",
+      "admin": "مدير"
+    },
     "edit": "تعديل",
     "editPersonalInformation": "تعديل المعلومات الشخصية",
     "updatePersonalInformation": "تحديث معلوماتك الشخصية وصورة ملفك",

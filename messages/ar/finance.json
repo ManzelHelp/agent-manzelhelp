@@ -49,6 +49,12 @@
       "card": "بطاقة",
       "wallet": "محفظة"
     },
+    "transactionStatus": {
+      "feeDeducted": "تم خصم الرسوم",
+      "walletCredited": "تم إضافة المبلغ للمحفظة",
+      "paymentCompleted": "تم الدفع",
+      "paymentPending": "الدفع قيد الانتظار"
+    },
     "chartPeriod": "فترة الرسم البياني",
     "refresh": "تحديث",
     "today": "اليوم",

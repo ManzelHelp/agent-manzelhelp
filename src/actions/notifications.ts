@@ -48,7 +48,8 @@ export async function getNotifications(
       let baseCountQuery = supabase
         .from("notifications")
         .select("id, is_read", { count: "exact", head: false })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .lte("created_at", new Date().toISOString()); // Only count notifications that are not in the future
 
       if (filters?.type) {
         baseCountQuery = baseCountQuery.eq("type", filters.type);
@@ -88,7 +89,8 @@ export async function getNotifications(
     let query = supabase
       .from("notifications")
       .select("*")
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .lte("created_at", new Date().toISOString()); // Only show notifications that are not in the future
 
     // Apply filters
     if (filters?.is_read !== undefined) {
@@ -394,7 +396,8 @@ export async function getNotificationStats(userId: string): Promise<{
     const { count: total, error: totalError } = await supabase
       .from("notifications")
       .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .lte("created_at", new Date().toISOString());
 
     if (totalError) {
       console.error("Error counting total notifications:", totalError);
@@ -406,7 +409,8 @@ export async function getNotificationStats(userId: string): Promise<{
       .from("notifications")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
-      .eq("is_read", false);
+      .eq("is_read", false)
+      .lte("created_at", new Date().toISOString());
 
     if (unreadError) {
       console.error("Error counting unread notifications:", unreadError);

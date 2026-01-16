@@ -25,7 +25,11 @@
     "notifications": "الإشعارات",
     "tasker": "المساعد",
     "customer": "العميل",
+    "admin": "المدير",
     "contactSupport": "اتصل بالدعم",
+    "navigation": "الملاحة",
+    "quickActions": "خيارات أخرى",
+    "clientActions": "كعميل",
     "postJob": "نشر وظيفة",
     "postService": "نشر خدمة"
   }

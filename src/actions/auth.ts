@@ -522,3 +522,39 @@ export const createUserRecordsAction = async (userId: string) => {
     return { success: false, ...handleError(error) };
   }
 };
+
+/**
+ * Persist user's preferred language (used by DB triggers for notifications)
+ */
+export const setPreferredLanguageAction = async (locale: string) => {
+  try {
+    const normalized = String(locale || "").toLowerCase();
+    if (!["fr", "en", "de", "ar"].includes(normalized)) {
+      return { success: false, errorMessage: "Unsupported locale" };
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, errorMessage: "Authentication required" };
+    }
+
+    const { error } = await supabase
+      .from("users")
+      .update({ preferred_language: normalized, updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Error updating preferred_language:", error);
+      return { success: false, errorMessage: error.message };
+    }
+
+    return { success: true, errorMessage: null };
+  } catch (error) {
+    return { success: false, ...handleError(error) };
+  }
+};

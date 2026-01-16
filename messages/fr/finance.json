@@ -49,6 +49,12 @@
       "card": "Carte",
       "wallet": "Portefeuille"
     },
+    "transactionStatus": {
+      "feeDeducted": "Frais déduits",
+      "walletCredited": "Portefeuille crédité",
+      "paymentCompleted": "Paiement effectué",
+      "paymentPending": "Paiement en attente"
+    },
     "chartPeriod": "Période du Graphique",
     "refresh": "Actualiser",
     "today": "Aujourd'hui",
@@ -101,8 +107,8 @@
       "success": "Transactions exportées avec succès"
     },
     "walletRefund": {
-      "title": "Demander un Remboursement du Portefeuille",
-      "description": "Demander un remboursement depuis votre solde de portefeuille",
+      "title": "Ajouter des Fonds au Portefeuille",
+      "description": "Demander l'ajout de fonds à votre solde de portefeuille",
       "amount": "Montant",
       "selectAmount": "Sélectionner le Montant",
       "customAmount": "Montant Personnalisé",
@@ -137,9 +143,9 @@
       },
       "waitingForAdmin": "En attente de l'activation du fond par l'administrateur",
       "requests": {
-        "title": "Mes Demandes de Remboursement",
-        "noRequests": "Aucune demande de remboursement pour le moment",
-        "noRequestsDescription": "Vos demandes de remboursement apparaîtront ici",
+        "title": "Mes Demandes d'Ajout de Fonds",
+        "noRequests": "Aucune demande pour le moment",
+        "noRequestsDescription": "Vos demandes d'ajout de fonds apparaîtront ici",
         "amount": "Montant",
         "referenceCode": "Code de Référence",
         "createdAt": "Créé le",
@@ -148,12 +154,12 @@
         "actions": "Actions"
       },
       "errors": {
-        "insufficientBalance": "Solde de portefeuille insuffisant",
+        "insufficientBalance": "Solde insuffisant",
         "invalidAmount": "Montant invalide",
         "minAmount": "Le montant minimum est de {min} MAD",
         "maxAmount": "Le montant maximum est de {max} MAD",
-        "pendingRequestExists": "Vous avez déjà une demande de remboursement en attente",
-        "createFailed": "Échec de la création de la demande de remboursement",
+        "pendingRequestExists": "Vous avez déjà une demande d'ajout de fonds en attente",
+        "createFailed": "Échec de la création de la demande",
         "uploadFailed": "Échec du téléversement du reçu",
         "confirmFailed": "Échec de la confirmation du paiement",
         "fileSizeExceeded": "La taille du fichier doit être inférieure à 5 Mo",
@@ -162,18 +168,18 @@
         "whatsappNotConfigured": "Numéro de téléphone WhatsApp admin non configuré. Contactez le support directement."
       },
       "success": {
-        "requestCreated": "Demande de remboursement créée avec succès",
+        "requestCreated": "Demande créée avec succès",
         "paymentConfirmed": "Paiement confirmé avec succès",
         "redirectingWhatsApp": "Redirection vers WhatsApp..."
       },
       "whatsapp": {
-        "message": "Bonjour, j'ai effectué le virement bancaire pour la demande de remboursement {referenceCode}. Montant : {amount} MAD. Veuillez trouver le reçu en pièce jointe."
+        "message": "Bonjour, j'ai effectué le virement bancaire pour la demande d'ajout de fonds {referenceCode}. Montant : {amount} MAD. Veuillez trouver le reçu en pièce jointe."
       },
       "fundActions": "Actions de Fonds",
-      "manageFunds": "Gérez votre portefeuille et vos demandes de remboursement",
+      "manageFunds": "Gérez votre portefeuille et vos demandes d'ajout de fonds",
       "currentBalance": "Solde Actuel",
-      "requestRefund": "Demander un Remboursement",
-      "withdrawFromWallet": "Retirer du portefeuille",
+      "requestRefund": "Ajouter des Fonds",
+      "withdrawFromWallet": "Ajouter des fonds au portefeuille",
       "viewBalance": "Voir le Portefeuille",
       "viewRefunds": "Mes Demandes",
       "viewHistory": "Voir l'historique",
@@ -184,20 +190,20 @@
       "pendingRequests": "{count} demandes en attente",
       "pending": "en attente",
       "waitingForActivation": "En attente de l'activation du fond par l'administrateur",
-      "refundRequestHistory": "Historique des Remboursements",
+      "refundRequestHistory": "Historique des Fonds",
       "allRefundRequests": "Historique complet",
       "close": "Fermer",
       "adminNotes": "Notes de l'administrateur",
       "viewAllRequests": "Voir Toutes les Demandes",
       "refundHistory": {
-        "title": "Historique des Remboursements",
-        "description": "Consultez toutes vos demandes de remboursement"
+        "title": "Historique des Demandes de Fonds",
+        "description": "Consultez toutes vos demandes d'ajout de fonds"
       },
       "pendingRequestsDrawer": {
-        "title": "Demandes de Remboursement en Attente",
-        "description": "Vos demandes de remboursement actives en cours",
+        "title": "Demandes de Fonds en Attente",
+        "description": "Vos demandes d'ajout de fonds actives en cours",
         "noPending": "Aucune demande en attente",
-        "noPendingDescription": "Toutes vos demandes de remboursement ont été traitées"
+        "noPendingDescription": "Toutes vos demandes ont été traitées"
       },
       "transactionDetail": {
         "title": "Détails de la Transaction",

@@ -10,12 +10,34 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { setPreferredLanguageAction } from "@/actions/auth";
 
 const languages = [
-  { code: "en", short: "EN", name: "English" },
-  { code: "de", short: "DE", name: "Deutsch" },
-  { code: "fr", short: "FR", name: "Français" },
-  { code: "ar", short: "AR", name: "العربية" },
+  {
+    code: "en",
+    short: "EN",
+    name: "English",
+    flag: "https://flagcdn.com/w40/gb.png",
+  },
+  {
+    code: "de",
+    short: "DE",
+    name: "Deutsch",
+    flag: "https://flagcdn.com/w40/de.png",
+  },
+  {
+    code: "fr",
+    short: "FR",
+    name: "Français",
+    flag: "https://flagcdn.com/w40/fr.png",
+  },
+  {
+    code: "ar",
+    short: "AR",
+    name: "العربية",
+    flag: "https://flagcdn.com/w40/ma.png",
+  },
 ];
 
 export default function LanguageDropDown({
@@ -36,6 +58,8 @@ export default function LanguageDropDown({
 
   const handleChange = (locale: string) => {
     if (locale !== currentLocale) {
+      // Persist on profile so DB triggers send notifications in the selected language
+      void setPreferredLanguageAction(locale);
       router.push(pathname, { locale });
     }
   };
@@ -47,8 +71,9 @@ export default function LanguageDropDown({
   // qui ressemble exactement au vrai bouton pour éviter le saut visuel.
   if (!mounted) {
     return (
-      <Button variant="ghost" size="sm" className={className} disabled>
-        <span className="font-semibold">{currentLang.short}</span>
+      <Button variant="ghost" size="sm" className={cn("flex items-center", className)} disabled>
+        <div className="mr-2 w-6 h-4 bg-muted animate-pulse rounded" />
+        <span className="font-semibold text-sm">{currentLang.short}</span>
       </Button>
     );
   }
@@ -59,20 +84,38 @@ export default function LanguageDropDown({
         <Button
           variant="ghost"
           size="sm"
-          className={className}
+          className={cn("flex items-center", className)}
           aria-label="Change language"
         >
-          <span className="font-semibold">{currentLang.short}</span>
+          <img
+            src={currentLang.flag}
+            alt={currentLang.name}
+            className="mr-2 w-6 h-4 object-cover rounded shadow-sm border border-border/50"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <span className="font-semibold text-sm">{currentLang.short}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-48 p-1">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => handleChange(lang.code)}
-            className={lang.code === currentLocale ? "font-bold" : ""}
+            className={cn(
+              "flex items-center gap-3 cursor-pointer py-2.5 px-3 rounded-md transition-colors",
+              lang.code === currentLocale ? "bg-accent text-accent-foreground font-bold" : "hover:bg-accent/50"
+            )}
           >
-            {lang.name}
+            <div className="relative w-6 h-4 shrink-0">
+              <img
+                src={lang.flag}
+                alt={lang.name}
+                className="w-full h-full object-cover rounded shadow-sm border border-border/50"
+              />
+            </div>
+            <span className="flex-1 text-sm font-medium">{lang.name}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

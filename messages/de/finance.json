@@ -49,6 +49,12 @@
       "card": "Karte",
       "wallet": "Geldbörse"
     },
+    "transactionStatus": {
+      "feeDeducted": "Gebühr abgezogen",
+      "walletCredited": "Wallet gutgeschrieben",
+      "paymentCompleted": "Zahlung abgeschlossen",
+      "paymentPending": "Zahlung ausstehend"
+    },
     "chartPeriod": "Diagramm-Zeitraum",
     "refresh": "Aktualisieren",
     "today": "Heute",

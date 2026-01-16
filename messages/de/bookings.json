@@ -41,6 +41,37 @@
         "description": "Sie haben keine stornierten Buchungen."
       }
     },
-    "tryAgain": "Erneut versuchen"
+    "tryAgain": "Erneut versuchen",
+    "success": "Erfolg",
+    "error": "Fehler",
+    "bookingStatusUpdated": "Buchungsstatus erfolgreich aktualisiert",
+    "failedToUpdateBookingStatus": "Fehler beim Aktualisieren des Buchungsstatus",
+    "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
+    "loadingMore": "Mehr laden...",
+    "loadMore": "Mehr laden",
+    "actions": {
+      "acceptRequest": "Anfrage annehmen",
+      "confirmBooking": "Buchung bestätigen",
+      "startTask": "Aufgabe starten",
+      "completeTask": "Aufgabe abschließen"
+    },
+    "dialogs": {
+      "accept": {
+        "title": "Buchungsanfrage annehmen",
+        "description": "Sind Sie sicher, dass Sie diese Buchungsanfrage von {customerName} annehmen möchten?"
+      },
+      "confirm": {
+        "title": "Buchung bestätigen",
+        "description": "Sind Sie sicher, dass Sie diese Buchung mit {customerName} bestätigen möchten?"
+      },
+      "start": {
+        "title": "Aufgabe starten",
+        "description": "Sind Sie bereit, die Aufgabe für {customerName} zu starten?"
+      },
+      "complete": {
+        "title": "Aufgabe abschließen",
+        "description": "Sind Sie sicher, dass Sie diese Aufgabe für {customerName} als abgeschlossen markieren möchten?"
+      }
+    }
   }
 }

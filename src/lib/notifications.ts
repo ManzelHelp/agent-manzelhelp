@@ -17,6 +17,8 @@ export type NotificationType =
   | "booking_cancelled"
   | "booking_completed"
   | "booking_reminder"
+  | "review_reminder"
+  | "job_review_reminder"
   | "service_created"
   | "service_updated"
   | "payment_confirmed"
@@ -87,7 +89,11 @@ export async function getNotificationTranslations(
     case "payment_confirmed":
     case "payment_pending":
       titleKey = "notifications.titles.paymentProcessed";
-      messageKey = "notifications.messages.paymentProcessed";
+      // Use booking-specific template when we have a bookingTitle but no jobTitle
+      messageKey =
+        params?.bookingTitle && !params?.jobTitle
+          ? "notifications.messages.bookingPaymentProcessed"
+          : "notifications.messages.paymentProcessed";
       break;
     case "message_received":
       titleKey = "notifications.titles.newMessage";
@@ -116,6 +122,14 @@ export async function getNotificationTranslations(
     case "booking_reminder":
       titleKey = "notifications.titles.bookingReminder";
       messageKey = "notifications.messages.bookingReminder";
+      break;
+    case "review_reminder":
+      titleKey = "notifications.titles.reviewReminder";
+      messageKey = "notifications.messages.reviewReminder";
+      break;
+    case "job_review_reminder":
+      titleKey = "notifications.titles.reviewReminder";
+      messageKey = "notifications.messages.jobReviewReminder";
       break;
     case "service_created":
       titleKey = "notifications.titles.serviceCreated";

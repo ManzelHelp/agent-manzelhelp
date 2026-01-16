@@ -592,6 +592,7 @@ export const markMessagesAsReadAction = async (
 ): Promise<{
   success: boolean;
   errorMessage: string | null;
+  updatedCount: number;
 }> => {
   try {
     const supabase = await createClient();
@@ -664,7 +665,11 @@ export const markMessagesAsReadAction = async (
     revalidatePath("/tasker/messages");
     revalidatePath("/customer/messages");
 
-    return { success: true, errorMessage: null };
+    return { 
+      success: true, 
+      errorMessage: null, 
+      updatedCount: updatedMessages?.length || 0 
+    };
   } catch (error) {
     console.error("Error marking messages as read:", error);
     return { success: false, ...handleError(error) };
@@ -870,7 +875,9 @@ export const createConversationAction = async (
       };
     }
 
-    // Check if conversation already exists (service-specific if serviceId provided)
+    // Check if conversation already exists
+    // We use maybeSingle() to avoid errors when no conversation is found
+    // The idx_conversations_unique_pair constraint usually prevents multiple rows for the same pair
     let existingConversationQuery = supabase
       .from("conversations")
       .select("*")
@@ -878,26 +885,55 @@ export const createConversationAction = async (
         `and(participant1_id.eq.${user.id},participant2_id.eq.${otherParticipantId}),and(participant1_id.eq.${otherParticipantId},participant2_id.eq.${user.id})`
       );
 
-    // If serviceId is provided, check for service-specific conversation
-    if (serviceId) {
-      existingConversationQuery = existingConversationQuery.eq(
-        "service_id",
-        serviceId
-      );
+    // Try to find a specific match first if serviceId or bookingId is provided
+    let existingConversation = null;
+    
+    if (serviceId || bookingId) {
+      let specificQuery = supabase
+        .from("conversations")
+        .select("*")
+        .or(
+          `and(participant1_id.eq.${user.id},participant2_id.eq.${otherParticipantId}),and(participant1_id.eq.${otherParticipantId},participant2_id.eq.${user.id})`
+        );
+
+      if (serviceId) {
+        specificQuery = specificQuery.eq("service_id", serviceId);
+      }
+      if (bookingId) {
+        specificQuery = specificQuery.eq("booking_id", bookingId);
+      }
+
+      const { data: specificMatch } = await specificQuery.maybeSingle();
+      if (specificMatch) {
+        existingConversation = specificMatch;
+      }
     }
 
-    // If bookingId is provided, check for booking-specific conversation
-    if (bookingId) {
-      existingConversationQuery = existingConversationQuery.eq(
-        "booking_id",
-        bookingId
-      );
+    // If no specific match, try finding ANY conversation between these two participants
+    if (!existingConversation) {
+      const { data: generalMatch } = await existingConversationQuery.maybeSingle();
+      if (generalMatch) {
+        existingConversation = generalMatch;
+        
+        // Update the conversation to link it to the current booking/service if it's not linked yet
+        // This provides context for the chat without creating a duplicate row
+        if (bookingId && !existingConversation.booking_id) {
+          await supabase
+            .from("conversations")
+            .update({ booking_id: bookingId, last_message_at: new Date().toISOString() })
+            .eq("id", existingConversation.id);
+          existingConversation.booking_id = bookingId;
+        } else if (serviceId && !existingConversation.service_id) {
+          await supabase
+            .from("conversations")
+            .update({ service_id: serviceId, last_message_at: new Date().toISOString() })
+            .eq("id", existingConversation.id);
+          existingConversation.service_id = serviceId;
+        }
+      }
     }
 
-    const { data: existingConversation, error: checkError } =
-      await existingConversationQuery.single();
-
-    if (existingConversation && !checkError) {
+    if (existingConversation) {
       // If initial message is provided and conversation exists, send the message
       if (initialMessage && initialMessage.trim()) {
         const { error: messageError } = await supabase.from("messages").insert({
@@ -911,6 +947,12 @@ export const createConversationAction = async (
         if (messageError) {
           console.error("Error sending initial message:", messageError);
         }
+        
+        // Update last_message_at
+        await supabase
+          .from("conversations")
+          .update({ last_message_at: new Date().toISOString() })
+          .eq("id", existingConversation.id);
       }
 
       // Return existing conversation with updated participant info
@@ -1001,6 +1043,29 @@ export const createConversationAction = async (
         otherUserExists: !!otherUser,
       });
       
+      // Check if it's a unique constraint violation (conversation already exists)
+      if (conversationError.code === "23505") {
+        const { data: existingOne } = await supabase
+          .from("conversations")
+          .select(`
+            *,
+            participant1:users!conversations_participant1_id_fkey(first_name, last_name, avatar_url),
+            participant2:users!conversations_participant2_id_fkey(first_name, last_name, avatar_url)
+          `)
+          .or(
+            `and(participant1_id.eq.${user.id},participant2_id.eq.${otherParticipantId}),and(participant1_id.eq.${otherParticipantId},participant2_id.eq.${user.id})`
+          )
+          .maybeSingle();
+
+        if (existingOne) {
+          const otherParticipant = existingOne.participant1_id === user.id ? existingOne.participant2 : existingOne.participant1;
+          return {
+            conversation: { ...existingOne, other_participant: otherParticipant },
+            errorMessage: null
+          };
+        }
+      }
+
       // Check if it's a foreign key constraint error
       if (conversationError.code === "23503") {
         if (conversationError.message.includes("participant1_id")) {

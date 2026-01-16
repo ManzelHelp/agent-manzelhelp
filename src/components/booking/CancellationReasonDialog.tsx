@@ -138,7 +138,7 @@ export function CancellationReasonDialog({
                     htmlFor={reason}
                     className="flex-1 cursor-pointer font-normal leading-tight"
                   >
-                    {t(`reasons.${reason}`) || reason.replace(/_/g, " ")}
+                    {t.has(`reasons.${reason}`) ? t(`reasons.${reason}`) : reason.replace(/_/g, " ")}
                   </Label>
                 </div>
               ))}
@@ -175,7 +175,7 @@ export function CancellationReasonDialog({
                 <p className="text-sm text-red-600 dark:text-red-400">{formErrors.customComment}</p>
               )}
               {!formErrors.customComment && customComment.length > 0 && (
-                <p className="text-xs text-gray-500">{customComment.length}/500 caractères</p>
+                <p className="text-xs text-gray-500">{customComment.length}/500</p>
               )}
             </div>
           )}

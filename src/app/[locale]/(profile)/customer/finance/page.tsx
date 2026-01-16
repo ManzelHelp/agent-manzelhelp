@@ -121,7 +121,7 @@ export default function CustomerFinancePage() {
           selectedPeriod === "month" || selectedPeriod === "year" ? selectedMonth : undefined,
           selectedPeriod === "year" ? selectedYear : undefined
         ),
-        getCustomerTransactionHistory(10, offset),
+        getCustomerTransactionHistory(5, offset),
       ]);
 
       setFinanceSummary(summary);

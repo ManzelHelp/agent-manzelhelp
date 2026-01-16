@@ -48,43 +48,43 @@ interface ConfirmationDialogState {
 }
 
 // Utility functions moved outside component to avoid re-creation
-const getActionButton = (booking: BookingWithDetails) => {
+const getActionButton = (booking: BookingWithDetails, t: ReturnType<typeof useTranslations>) => {
   const { status } = booking;
 
   const actionConfig = {
     pending: {
-      text: "Accept Request",
+      text: t("actions.acceptRequest"),
       variant: "default" as const,
       action: "accept",
       className: "bg-green-600 text-white hover:bg-green-700",
     },
     accepted: {
-      text: "Confirm Booking",
+      text: t("actions.startTask"),
       variant: "default" as const,
-      action: "confirm",
+      action: "start",
       className: "bg-green-600 text-white hover:bg-green-700",
     },
     confirmed: {
-      text: "Start Task",
+      text: t("actions.startTask"),
       variant: "default" as const,
       action: "start",
       className: "bg-green-600 text-white hover:bg-green-700",
     },
     in_progress: {
-      text: "Complete Task",
+      text: t("actions.completeTask"),
       variant: "default" as const,
       action: "complete",
       className: "bg-green-600 text-white hover:bg-green-700",
     },
     completed: {
-      text: "Completed",
+      text: t("emptyStates.completed.title"),
       variant: "default" as const,
       action: "none",
       className:
         "bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/50",
     },
     cancelled: {
-      text: "Cancelled",
+      text: t("emptyStates.cancelled.title"),
       variant: "default" as const,
       action: "none",
       className:
@@ -109,15 +109,16 @@ const getActionButton = (booking: BookingWithDetails) => {
   return actionConfig[status] || actionConfig.completed;
 };
 
-const getCustomerName = (booking: BookingWithDetails) => {
+const getCustomerName = (booking: BookingWithDetails, t: ReturnType<typeof useTranslations>) => {
   const firstName = booking.customer_first_name || "";
   const lastName = booking.customer_last_name || "";
-  return `${firstName} ${lastName}`.trim() || "Customer";
+  return `${firstName} ${lastName}`.trim() || t("unknown", { default: "Customer" });
 };
 
 export default function BookingsPage() {
   const { user } = useUserStore();
   const t = useTranslations("bookings");
+  const tCommon = useTranslations("common");
   const { toast } = useToast();
   // Note: "booked-taskers" tab is hidden from UI but code is kept for future use
   const [activeTab, setActiveTab] = useState<TaskerBookingTab>("my-bookings");
@@ -400,52 +401,48 @@ export default function BookingsPage() {
         | TaskerBookingWithDetails
         | TaskerJobApplicationWithDetails
     ) => {
-      // Only handle actions for my bookings (BookingWithDetails)
-      if (
-        activeTab !== "my-bookings" ||
-        !("status" in item && "customer_first_name" in item)
-      ) {
+      // Only handle actions for my bookings tab
+      if (activeTab !== "my-bookings") {
         return;
       }
 
       const booking = item as BookingWithDetails;
-      const actionButton = getActionButton(booking);
+      // Basic check to ensure we have a booking object
+      if (!booking.id || !booking.status) {
+        return;
+      }
+
+      const actionButton = getActionButton(booking, t);
 
       if (actionButton.action === "none") {
         return;
       }
 
+      const customerName = getCustomerName(booking, tCommon);
+
       const actionConfig = {
         accept: {
-          title: "Accept Booking Request",
-          description: `Are you sure you want to accept this booking request from ${getCustomerName(
-            booking
-          )}?`,
-          confirmText: "Accept Request",
+          title: t("dialogs.accept.title"),
+          description: t("dialogs.accept.description", { customerName }),
+          confirmText: t("actions.acceptRequest"),
           variant: "default" as const,
         },
         confirm: {
-          title: "Confirm Booking",
-          description: `Are you sure you want to confirm this booking with ${getCustomerName(
-            booking
-          )}?`,
-          confirmText: "Confirm Booking",
+          title: t("dialogs.confirm.title"),
+          description: t("dialogs.confirm.description", { customerName }),
+          confirmText: t("actions.confirmBooking"),
           variant: "default" as const,
         },
         start: {
-          title: "Start Task",
-          description: `Are you ready to start the task for ${getCustomerName(
-            booking
-          )}?`,
-          confirmText: "Start Task",
+          title: t("dialogs.start.title"),
+          description: t("dialogs.start.description", { customerName }),
+          confirmText: t("actions.startTask"),
           variant: "default" as const,
         },
         complete: {
-          title: "Complete Task",
-          description: `Are you sure you want to mark this task as completed for ${getCustomerName(
-            booking
-          )}?`,
-          confirmText: "Complete Task",
+          title: t("dialogs.complete.title"),
+          description: t("dialogs.complete.description", { customerName }),
+          confirmText: t("actions.completeTask"),
           variant: "default" as const,
         },
       };
@@ -599,7 +596,7 @@ export default function BookingsPage() {
           <div className="absolute top-0 left-0 right-0 z-10 flex justify-center animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-b-lg shadow-lg flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-sm font-medium">Loading...</span>
+              <span className="text-sm font-medium">{tCommon("processing")}</span>
             </div>
           </div>
         )}
@@ -638,7 +635,7 @@ export default function BookingsPage() {
           {currentData.map((item, index) => {
             if (activeTab === "my-bookings") {
               const booking = item as BookingWithDetails;
-              const actionButton = getActionButton(booking);
+              const actionButton = getActionButton(booking, t);
               return (
                 <div
                   key={booking.id}
@@ -693,7 +690,7 @@ export default function BookingsPage() {
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50">
                 <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-400">
                   <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm font-medium">Loading more...</span>
+                  <span className="text-sm font-medium">{t("loadingMore")}</span>
                 </div>
               </div>
             </div>
@@ -736,11 +733,11 @@ export default function BookingsPage() {
                   {isLoadingMore ? (
                     <>
                       <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-3"></div>
-                      Loading more...
+                      {t("loadingMore")}
                     </>
                   ) : (
                     <>
-                      <span>Load More</span>
+                      <span>{t("loadMore", { default: "Load More" })}</span>
                       <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
                     </>
                   )}

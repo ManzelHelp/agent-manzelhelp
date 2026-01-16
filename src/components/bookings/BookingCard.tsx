@@ -44,17 +44,17 @@ const formatDuration = (minutes: number | null) => {
   }
 };
 
-const getCustomerName = (booking: BookingWithDetails) => {
+const getCustomerName = (booking: BookingWithDetails, t: ReturnType<typeof useTranslations>) => {
   const firstName = booking.customer_first_name || "";
   const lastName = booking.customer_last_name || "";
-  return `${firstName} ${lastName}`.trim() || "Customer";
+  return `${firstName} ${lastName}`.trim() || t("labels.customer", { default: "Customer" });
 };
 
-const getLocation = (booking: BookingWithDetails) => {
+const getLocation = (booking: BookingWithDetails, t: ReturnType<typeof useTranslations>) => {
   const parts = [booking.street_address, booking.city, booking.region].filter(
     Boolean
   );
-  return parts.join(", ") || "Location not specified";
+  return parts.join(", ") || t("labels.addressNotSpecified", { default: "Location not specified" });
 };
 
 export const BookingCard = React.memo<BookingCardProps>(
@@ -63,47 +63,60 @@ export const BookingCard = React.memo<BookingCardProps>(
     const t = useTranslations("taskerBookings");
     const locale = useLocale();
     const [isOpeningMessage, setIsOpeningMessage] = useState(false);
-    const customerName = getCustomerName(booking);
-    const location = getLocation(booking);
+    const customerName = getCustomerName(booking, t);
+    const location = getLocation(booking, t);
 
     const formatCurrency = (amount: number, currency: string) => {
-      return formatCurrencyUtil(amount, currency, locale);
+      try {
+        return formatCurrencyUtil(amount, currency, locale);
+      } catch (e) {
+        return `${amount} ${currency}`;
+      }
     };
 
     const formatDate = (dateString: string | null) => {
-      if (!dateString) return t("labels.flexible");
-      return formatDateShort(dateString, locale);
+      try {
+        if (!dateString) return t("labels.flexible");
+        return formatDateShort(dateString, locale);
+      } catch (e) {
+        return "N/A";
+      }
     };
 
     const formatTime = (timeString: string | null) => {
-      if (!timeString) return "";
-      return formatTimeShort(timeString, locale);
+      try {
+        if (!timeString) return "";
+        return formatTimeShort(timeString, locale);
+      } catch (e) {
+        return "";
+      }
     };
 
     const handleMessageClick = async () => {
       if (!booking.customer_id) {
-        toast.error("Customer information not available");
+        toast.error(t("errors.customerInfoUnavailable", { default: "Customer information not available" }));
         return;
       }
 
       try {
         setIsOpeningMessage(true);
+        const initialMessage = t("messages.initialBookingMessage", { serviceTitle: booking.service_title || t("labels.service") });
         const result = await createConversationAction(
           booking.customer_id,
           undefined, // jobId
           undefined, // serviceId
           booking.id, // bookingId
-          `Hello! I'd like to discuss the booking for "${booking.service_title || "service"}".` // initialMessage
+          initialMessage
         );
 
         if (result.conversation) {
           router.push(`/tasker/messages/${result.conversation.id}`);
         } else {
-          toast.error(result.errorMessage || "Failed to open conversation");
+          toast.error(result.errorMessage || t("errors.failedToOpenConversation", { default: "Failed to open conversation" }));
         }
       } catch (error) {
         console.error("Error opening conversation:", error);
-        toast.error("Failed to open conversation");
+        toast.error(t("errors.failedToOpenConversation", { default: "Failed to open conversation" }));
       } finally {
         setIsOpeningMessage(false);
       }
@@ -117,7 +130,7 @@ export const BookingCard = React.memo<BookingCardProps>(
             <div className="space-y-3 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-semibold text-color-text-primary text-base mobile-text-base">
-                  {booking.service_title || "Service"}
+                  {booking.service_title || t("labels.service")}
                 </h3>
                 <Badge
                   className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -190,7 +203,7 @@ export const BookingCard = React.memo<BookingCardProps>(
                 onClick={() => router.push(`/tasker/bookings/${booking.id}`)}
                 className="w-full sm:w-auto touch-target mobile-focus border-color-primary text-color-primary hover:bg-color-primary/10"
               >
-                View Booking
+                {t("labels.viewBooking")}
               </Button>
 
               <div className="flex gap-2 w-full sm:w-auto">

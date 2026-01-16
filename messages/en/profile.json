@@ -292,6 +292,11 @@
     "close": "Close",
     "yourBasicProfileInformation": "Your basic profile information",
     "role": "Role",
+    "roleNames": {
+      "customer": "Customer",
+      "tasker": "Tasker",
+      "admin": "Admin"
+    },
     "edit": "Edit",
     "editPersonalInformation": "Edit Personal Information",
     "updatePersonalInformation": "Update your personal information and profile photo",

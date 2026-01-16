@@ -30,12 +30,14 @@
       "flexible": "مرن",
       "notSpecified": "غير محدد",
       "jobCompletedMessage": "تم إكمال هذه الوظيفة. طلبك لم يعد ذا صلة.",
-      "jobCancelledMessage": "تم إلغاء هذه الوظيفة. طلبك لم يعد ذا صلة."
+      "jobCancelledMessage": "تم إلغاء هذه الوظيفة. طلبك لم يعد ذا صلة.",
+      "jobApplication": "طلب وظيفة",
+      "noDescription": "لا يوجد وصف متاح"
     },
     "actions": {
-      "viewDetails": "View Details",
-      "withdrawApplication": "Withdraw Application",
-      "contactCustomer": "Contact Customer"
+      "viewDetails": "عرض التفاصيل",
+      "withdrawApplication": "سحب الطلب",
+      "contactCustomer": "اتصل بالعميل"
     }
   }
 }

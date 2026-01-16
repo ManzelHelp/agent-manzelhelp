@@ -46,11 +46,12 @@ function DarkModeToggle() {
       size="icon"
       aria-label="Toggle theme"
       onClick={handleToggle}
+      className="h-8 w-8 hover:bg-background transition-colors shrink-0"
     >
       {currentTheme === "dark" ? (
-        <Moon className="size-5" />
+        <Moon className="h-4 w-4 text-blue-400 fill-blue-400" />
       ) : (
-        <Sun className="size-5" />
+        <Sun className="h-4 w-4 text-yellow-500 fill-yellow-500" />
       )}
     </Button>
   );

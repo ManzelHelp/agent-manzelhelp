@@ -169,7 +169,7 @@ export default function PostJobPage() {
         if (addressesResult.addresses.length > 0) {
           const firstAddressId = addressesResult.addresses[0].id;
           if (firstAddressId) {
-            form.setValue("jobDetails.selectedAddressId", firstAddressId);
+            form.setValue("jobDetails.selectedAddressId", String(firstAddressId));
           }
         }
       }
@@ -603,20 +603,20 @@ export default function PostJobPage() {
     <CardContent className="p-6 space-y-6">
       <div className="bg-[var(--color-surface)] border rounded-xl p-4">
         <h4 className="font-bold text-lg mb-2">{formData.jobDetails?.title}</h4>
-        <p className="text-sm text-gray-500 mb-3">
+        <div className="text-sm text-gray-500 mb-3">
           {/* Description – rien n'est affiché si vide */}
-{formData.jobDetails?.description?.trim() && (
-  <div 
-    className={`
-      text-sm text-gray-700 mb-4
-      whitespace-pre-wrap break-words
-      leading-relaxed
-    `}
-  >
-    {formData.jobDetails.description}
-  </div>
-)}
-        </p>
+          {formData.jobDetails?.description?.trim() && (
+            <div 
+              className={`
+                text-sm text-gray-700 mb-4
+                whitespace-pre-wrap break-words
+                leading-relaxed
+              `}
+            >
+              {formData.jobDetails.description}
+            </div>
+          )}
+        </div>
         <div className="flex gap-2">
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
             {categories.find(c => c.id === formData.jobDetails?.categoryId)?.[`name_${locale}` as keyof ServiceCategory] ?? categories.find(c => c.id === formData.jobDetails.categoryId)?.name_en}

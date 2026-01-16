@@ -294,6 +294,11 @@
     "close": "Fermer",
     "yourBasicProfileInformation": "Vos informations de profil de base",
     "role": "Rôle",
+    "roleNames": {
+      "customer": "Client",
+      "tasker": "Assistant",
+      "admin": "Administrateur"
+    },
     "edit": "Modifier",
     "editPersonalInformation": "Modifier les informations personnelles",
     "updatePersonalInformation": "Mettez à jour vos informations personnelles et votre photo de profil",

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ interface ConfirmationDialogProps {
     | "ghost"
     | "link";
   isLoading?: boolean;
+  loadingText?: string;
 }
 
 const getVariantStyles = (variant: string) => {
@@ -81,10 +83,12 @@ export function ConfirmationDialog({
   title,
   description,
   confirmText,
-  cancelText = "Cancel",
+  cancelText,
   variant = "default",
   isLoading = false,
+  loadingText,
 }: ConfirmationDialogProps) {
+  const t = useTranslations("common");
   const variantStyles = getVariantStyles(variant);
   const IconComponent = variantStyles.icon;
 
@@ -109,14 +113,14 @@ export function ConfirmationDialog({
             disabled={isLoading}
             className="w-full sm:w-auto border-color-border text-color-text-secondary hover:bg-color-accent-light"
           >
-            {cancelText}
+            {cancelText || t("cancel")}
           </Button>
           <Button
             onClick={onConfirm}
             disabled={isLoading}
             className={`w-full sm:w-auto ${variantStyles.buttonColor} touch-target mobile-focus`}
           >
-            {isLoading ? "Processing..." : confirmText}
+            {isLoading ? (loadingText || t("processing")) : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

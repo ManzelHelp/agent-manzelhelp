@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/hooks/use-toast"; // Changement
+import { useTranslations } from "next-intl";
 import { bioExperienceSchema } from "@/lib/schemas/profile"; // Changement
 import { createTaskerProfileAction, hasTaskerCompletedProfileAction } from "@/actions/auth";
 import { uploadIDDocumentsAction } from "@/actions/file-uploads";
@@ -17,6 +18,8 @@ export default function FinishSignUpPage() {
   const router = useRouter();
   const { user, setUser } = useUserStore();
   const { toast } = useToast();
+  const t = useTranslations("toasts");
+  const tProfile = useTranslations("profile");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [idDocuments, setIdDocuments] = useState<any>({});
   
@@ -35,7 +38,7 @@ export default function FinishSignUpPage() {
     if (!validation.success) {
       toast({
         variant: "destructive",
-        title: "Champs manquants",
+        title: t("missingFields"),
         description: validation.error.issues[0].message,
       });
       setIsSubmitting(false);
@@ -44,7 +47,11 @@ export default function FinishSignUpPage() {
 
     // 2. Validation Documents ID
     if (!idDocuments.front || !idDocuments.back) {
-      toast({ variant: "destructive", title: "ID Manquante", description: "Veuillez uploader les deux faces de votre pièce d'identité." });
+      toast({ 
+        variant: "destructive", 
+        title: t("missingFields"), 
+        description: t("pleaseUploadBothSides") 
+      });
       setIsSubmitting(false);
       return;
     }
@@ -63,11 +70,19 @@ export default function FinishSignUpPage() {
       });
 
       if (result.success) {
-        toast({ variant: "success", title: "Bienvenue !", description: "Votre compte Assistant est maintenant actif." });
+        toast({ 
+          variant: "success", 
+          title: t("welcome"), 
+          description: t("taskerAccountActive") 
+        });
         router.replace("/tasker/dashboard");
       }
     } catch (error) {
-      toast({ variant: "destructive", title: "Erreur", description: "Une erreur est survenue lors de la création du profil." });
+      toast({ 
+        variant: "destructive", 
+        title: t("error"), 
+        description: t("errorCreatingProfile") 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -79,22 +94,22 @@ export default function FinishSignUpPage() {
         <Card className="shadow-2xl border-0 bg-white/95">
           <CardHeader className="text-center">
              <Sparkles className="mx-auto text-orange-500 mb-2" />
-             <CardTitle className="text-3xl font-bold">Complétez votre profil Assistant</CardTitle>
+             <CardTitle className="text-3xl font-bold">{tProfile("completion.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
-             <div className="space-y-3">
-                <Label>Décrivez votre expérience (min 50 caractères)</Label>
-                <textarea 
-                  className="w-full p-4 border rounded-xl h-40 focus:ring-2 focus:ring-orange-500 transition-all"
-                  placeholder="Ex: J'ai 5 ans d'expérience dans le nettoyage..."
-                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                />
-                <p className="text-xs text-slate-400">Caractères : {formData.bio.length} / 500</p>
-             </div>
+                 <div className="space-y-3">
+                    <Label>{tProfile("sections.bio.biography")}</Label>
+                    <textarea 
+                      className="w-full p-4 border rounded-xl h-40 focus:ring-2 focus:ring-orange-500 transition-all"
+                      placeholder={tProfile("bioPlaceholder")}
+                      onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                    />
+                    <p className="text-xs text-slate-400">{tProfile("bioHint", { count: formData.bio.length })}</p>
+                 </div>
 
              {/* Bouton de soumission stylisé */}
              <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg rounded-xl">
-                {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : "Valider mon profil"}
+                {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : tProfile("actions.save")}
              </Button>
           </CardContent>
         </Card>

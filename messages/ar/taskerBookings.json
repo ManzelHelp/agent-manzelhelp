@@ -13,26 +13,37 @@
       "cancelled": "ملغي"
     },
     "labels": {
-      "serviceProvider": "Service Provider",
-      "agreedPrice": "Agreed Price",
-      "duration": "Duration",
-      "date": "Date",
-      "location": "Location",
-      "requirements": "Requirements",
-      "bookedOn": "Booked on",
-      "flexible": "Flexible",
-      "addressNotSpecified": "Address not specified",
-      "noRequirements": "No specific requirements provided"
+      "serviceProvider": "مزود الخدمة",
+      "agreedPrice": "السعر المتفق عليه",
+      "duration": "المدة",
+      "date": "التاريخ",
+      "location": "الموقع",
+      "requirements": "المتطلبات",
+      "bookedOn": "تم الحجز في",
+      "flexible": "مرن",
+      "addressNotSpecified": "العنوان غير محدد",
+      "noRequirements": "لا توجد متطلبات محددة مقدمة",
+      "viewBooking": "عرض الحجز",
+      "serviceBooking": "حجز خدمة",
+      "service": "الخدمة",
+      "customer": "الزبون"
+    },
+    "messages": {
+      "initialBookingMessage": "مرحباً! أود مناقشة الحجز لـ \"{serviceTitle}\"."
+    },
+    "errors": {
+      "customerInfoUnavailable": "معلومات العميل غير متوفرة",
+      "failedToOpenConversation": "فشل فتح المحادثة"
     },
     "bookingTypes": {
-      "instant": "Instant Booking",
-      "scheduled": "Scheduled Booking",
-      "recurring": "Recurring Booking"
+      "instant": "حجز فوري",
+      "scheduled": "حجز مجدول",
+      "recurring": "حجز متكرر"
     },
     "actions": {
-      "viewDetails": "View Details",
-      "contactTasker": "Contact Tasker",
-      "cancelBooking": "Cancel Booking"
+      "viewDetails": "عرض التفاصيل",
+      "contactTasker": "اتصل بالمساعد",
+      "cancelBooking": "إلغاء الحجز"
     }
   }
 }

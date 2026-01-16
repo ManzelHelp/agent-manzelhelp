@@ -100,14 +100,21 @@ export default function ChatPage() {
           setConversation(fetchedConversation);
           setHasMore(moreAvailable || false);
 
-          if (fetchedMessages.length > 0 && user?.id) {
-            const { success } = await markMessagesAsReadAction(chatId);
-            if (success) {
+          // Only mark as read if there are unread messages from the other participant
+          const hasUnreadFromOther = fetchedMessages.some(m => !m.is_read && m.sender_id !== user?.id);
+
+          if (hasUnreadFromOther && user?.id) {
+            const { success, updatedCount } = await markMessagesAsReadAction(chatId);
+            if (success && updatedCount > 0) {
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('messagesMarkedAsRead', { 
                   detail: { conversationId: chatId } 
                 }));
               }
+              // Update local state to show messages as read
+              setMessages(prev => prev.map(m => 
+                m.sender_id !== user.id ? { ...m, is_read: true } : m
+              ));
               router.refresh();
             }
           }
@@ -255,7 +262,11 @@ export default function ChatPage() {
     return groups;
   };
 
-  useEffect(() => { fetchMessages(); }, [fetchMessages]);
+  useEffect(() => { 
+    fetchMessages(); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId]); // Only refetch when conversation ID changes
+  
   useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
   if (isLoading) {

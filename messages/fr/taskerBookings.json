@@ -22,7 +22,18 @@
       "bookedOn": "Réservé le",
       "flexible": "Flexible",
       "addressNotSpecified": "Adresse non spécifiée",
-      "noRequirements": "Aucune exigence spécifique fournie"
+      "noRequirements": "Aucune exigence spécifique fournie",
+      "viewBooking": "Voir la réservation",
+      "serviceBooking": "Réservation de service",
+      "service": "Service",
+      "customer": "Client"
+    },
+    "messages": {
+      "initialBookingMessage": "Bonjour ! J'aimerais discuter de la réservation pour \"{serviceTitle}\"."
+    },
+    "errors": {
+      "customerInfoUnavailable": "Informations client non disponibles",
+      "failedToOpenConversation": "Échec de l'ouverture de la conversation"
     },
     "bookingTypes": {
       "instant": "Réservation instantanée",

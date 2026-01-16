@@ -4,6 +4,7 @@ import { createClient, createServiceRoleClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import { BookingStatus } from "@/types/supabase";
 import { getErrorTranslationForUser } from "@/lib/errors";
+import { getUserLocale, getTranslatedString } from "@/lib/i18n-server";
 import { createBookingSchema } from "@/lib/schemas/bookings"; // AJOUT ZOD
 import type { JobApplicationWithDetails } from "@/actions/jobs";
 
@@ -206,70 +207,156 @@ export async function createServiceBooking(bookingData: CreateBookingData) {
 // --- RESTE DU CODE D'ORIGINE STRICTEMENT IDENTIQUE ---
 
 export async function getTaskerBookings(limit: number = 10, offset: number = 0, includeTotal: boolean = true) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  const { data, error, count } = await supabase.from("service_bookings").select("*, customer:users!service_bookings_customer_id_fkey(*), tasker:users!service_bookings_tasker_id_fkey(*), tasker_service:tasker_services(*), address:addresses(*)", { count: "exact" }).eq("tasker_id", user.id).range(offset, offset + limit - 1);
-  return { bookings: data || [], total: count || 0, hasMore: (data?.length || 0) >= limit };
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    
+    const { data, error, count } = await supabase
+      .from("service_bookings")
+      .select("*, customer:users!service_bookings_customer_id_fkey(*), tasker:users!service_bookings_tasker_id_fkey(*), tasker_service:tasker_services(*), address:addresses(*)", { count: "exact" })
+      .eq("tasker_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error("Error fetching tasker bookings:", error);
+      return { bookings: [], total: 0, hasMore: false, error: error.message };
+    }
+
+    const flattenedBookings = (data || []).map(booking => {
+      // Handle potential array results from Supabase joins
+      const getSingle = (val: any) => Array.isArray(val) ? val[0] : val;
+      
+      const address = getSingle((booking as any).address);
+      const customer = getSingle((booking as any).customer);
+      const tasker = getSingle((booking as any).tasker);
+      const taskerService = getSingle((booking as any).tasker_service);
+
+      return {
+        ...booking,
+        street_address: address?.street_address || null,
+        city: address?.city || null,
+        region: address?.region || null,
+        address: address || null,
+        customer_first_name: customer?.first_name || null,
+        customer_last_name: customer?.last_name || null,
+        customer_avatar: customer?.avatar_url || null,
+        customer_email: customer?.email || null,
+        customer_phone: customer?.phone || null,
+        tasker_first_name: tasker?.first_name || null,
+        tasker_last_name: tasker?.last_name || null,
+        tasker_avatar: tasker?.avatar_url || null,
+        tasker_email: tasker?.email || null,
+        tasker_phone: tasker?.phone || null,
+        service_title: taskerService?.title || null,
+        category_name: null,
+      } as BookingWithDetails;
+    });
+
+    return { bookings: flattenedBookings, total: count || 0, hasMore: (data?.length || 0) >= limit };
+  } catch (error: any) {
+    console.error("Exception in getTaskerBookings:", error);
+    return { bookings: [], total: 0, hasMore: false, error: error.message };
+  }
 }
 
 export async function getBookingById(bookingId: string): Promise<BookingWithDetails | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("service_bookings")
-    .select(`
-      *,
-      customer:users!service_bookings_customer_id_fkey(*),
-      tasker:users!service_bookings_tasker_id_fkey(*),
-      tasker_service:tasker_services(*),
-      address:addresses(*)
-    `)
-    .eq("id", bookingId)
-    .single();
-  
-  if (error || !data) {
-    console.error("Error fetching booking:", error);
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("service_bookings")
+      .select(`
+        *,
+        customer:users!service_bookings_customer_id_fkey(*),
+        tasker:users!service_bookings_tasker_id_fkey(*),
+        tasker_service:tasker_services(*),
+        address:addresses(*)
+      `)
+      .eq("id", bookingId)
+      .single();
+    
+    if (error || !data) {
+      console.error("Error fetching booking:", error);
+      return null;
+    }
+
+    const getSingle = (val: any) => Array.isArray(val) ? val[0] : val;
+    const address = getSingle((data as any).address);
+    const customer = getSingle((data as any).customer);
+    const tasker = getSingle((data as any).tasker);
+    const taskerService = getSingle((data as any).tasker_service);
+
+    return {
+      ...data,
+      street_address: address?.street_address || null,
+      city: address?.city || null,
+      region: address?.region || null,
+      address: address || null,
+      customer_first_name: customer?.first_name || null,
+      customer_last_name: customer?.last_name || null,
+      customer_avatar: customer?.avatar_url || null,
+      customer_email: customer?.email || null,
+      customer_phone: customer?.phone || null,
+      tasker_first_name: tasker?.first_name || null,
+      tasker_last_name: tasker?.last_name || null,
+      tasker_avatar: tasker?.avatar_url || null,
+      tasker_email: tasker?.email || null,
+      tasker_phone: tasker?.phone || null,
+      service_title: taskerService?.title || null,
+      category_name: null,
+    } as BookingWithDetails;
+  } catch (error) {
+    console.error("Exception in getBookingById:", error);
     return null;
   }
-
-  // Transformer les données pour correspondre à BookingWithDetails
-  const address = (data as any).address;
-  const customer = (data as any).customer;
-  const tasker = (data as any).tasker;
-  const taskerService = (data as any).tasker_service;
-
-  return {
-    ...data,
-    // Extraire les champs de l'adresse pour faciliter l'accès
-    street_address: address?.street_address || null,
-    city: address?.city || null,
-    region: address?.region || null,
-    // Garder l'objet address complet aussi
-    address: address || null,
-    // Extraire les infos du customer
-    customer_first_name: customer?.first_name || null,
-    customer_last_name: customer?.last_name || null,
-    customer_avatar: customer?.avatar_url || null,
-    customer_email: customer?.email || null,
-    customer_phone: customer?.phone || null,
-    // Extraire les infos du tasker
-    tasker_first_name: tasker?.first_name || null,
-    tasker_last_name: tasker?.last_name || null,
-    tasker_avatar: tasker?.avatar_url || null,
-    tasker_email: tasker?.email || null,
-    tasker_phone: tasker?.phone || null,
-    // Extraire les infos du service
-    service_title: taskerService?.title || null,
-    category_name: null, // À récupérer si nécessaire
-  } as BookingWithDetails;
 }
 
 export async function getCustomerBookings(limit: number = 10, offset: number = 0, includeTotal: boolean = false) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
-  const { data, count } = await supabase.from("service_bookings").select("*, tasker:users!service_bookings_tasker_id_fkey(*), tasker_service:tasker_services(*), address:addresses(*)", { count: "exact" }).eq("customer_id", user.id).range(offset, offset + limit - 1);
-  return { bookings: data || [], total: count || 0, hasMore: (data?.length || 0) >= limit };
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    
+    const { data, error, count } = await supabase
+      .from("service_bookings")
+      .select("*, tasker:users!service_bookings_tasker_id_fkey(*), tasker_service:tasker_services(*), address:addresses(*)", { count: "exact" })
+      .eq("customer_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error("Error fetching customer bookings:", error);
+      return { bookings: [], total: 0, hasMore: false, error: error.message };
+    }
+
+    const flattenedBookings = (data || []).map(booking => {
+      const getSingle = (val: any) => Array.isArray(val) ? val[0] : val;
+      const address = getSingle((booking as any).address);
+      const tasker = getSingle((booking as any).tasker);
+      const taskerService = getSingle((booking as any).tasker_service);
+
+      return {
+        ...booking,
+        street_address: address?.street_address || null,
+        city: address?.city || null,
+        region: address?.region || null,
+        address: address || null,
+        tasker_first_name: tasker?.first_name || null,
+        tasker_last_name: tasker?.last_name || null,
+        tasker_avatar: tasker?.avatar_url || null,
+        tasker_email: tasker?.email || null,
+        tasker_phone: tasker?.phone || null,
+        service_title: taskerService?.title || null,
+        category_name: null,
+      } as BookingWithDetails;
+    });
+
+    return { bookings: flattenedBookings, total: count || 0, hasMore: (data?.length || 0) >= limit };
+  } catch (error: any) {
+    console.error("Exception in getCustomerBookings:", error);
+    return { bookings: [], total: 0, hasMore: false, error: error.message };
+  }
 }
 
 // FONCTIONS POUR ÉVITER LES BUILD ERRORS
@@ -314,20 +401,22 @@ export async function getTaskerJobApplications(limit: number = 10, offset: numbe
     const job = app.job || {};
     const customer = job.customer || {};
     
-    // If job is completed and this application's tasker is the assigned tasker, mark as accepted
+    // If job is assigned/in_progress/completed and this application's tasker is the assigned tasker, mark as accepted
     const isAssignedTasker = job.assigned_tasker_id === app.tasker_id;
     let effectiveStatus = app.status;
     
-    // If job is completed and this tasker was assigned, the application should be accepted
-    if (job.status === "completed" && isAssignedTasker && (!app.status || app.status === "pending")) {
-      effectiveStatus = "accepted";
-    }
-    // If job is completed/cancelled and this tasker was NOT assigned, the application should be rejected
-    else if (
-      (job.status === "completed" || job.status === "cancelled") &&
-      !isAssignedTasker &&
-      (!app.status || app.status === "pending")
-    ) {
+    // If job has an assigned tasker (assigned, in_progress, completed)
+    const jobHasTasker = !!job.assigned_tasker_id;
+    
+    if (jobHasTasker) {
+      if (isAssignedTasker) {
+        // If this tasker IS the assigned one, they are accepted
+        effectiveStatus = "accepted";
+      } else {
+        // If this tasker is NOT the assigned one, they are effectively rejected
+        effectiveStatus = "rejected";
+      }
+    } else if (job.status === "cancelled") {
       effectiveStatus = "rejected";
     }
     
@@ -342,7 +431,7 @@ export async function getTaskerJobApplications(limit: number = 10, offset: numbe
       customer_first_name: customer.first_name || null,
       customer_last_name: customer.last_name || null,
       customer_avatar: customer.avatar_url || null,
-      // Override status if job is completed/cancelled
+      // Override status if job is assigned/completed/cancelled
       status: effectiveStatus || app.status,
     };
   });
@@ -356,8 +445,184 @@ export async function getTaskerJobApplications(limit: number = 10, offset: numbe
 
 export async function updateBookingStatus(bookingId: string, status: BookingStatus) {
   const supabase = await createClient();
-  const { error } = await supabase.from("service_bookings").update({ status }).eq("id", bookingId);
-  if (!error) revalidatePath("/tasker/bookings");
+  
+  // 1. Get authenticated user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { success: false, error: "Authentication required" };
+
+  // 2. Fetch booking to verify ownership and get tasker_id
+  const { data: booking, error: bookingError } = await supabase
+    .from("service_bookings")
+    .select("id, tasker_id, customer_id, tasker_service_id, agreed_price, currency, payment_method, status")
+    .eq("id", bookingId)
+    .single();
+
+  if (bookingError || !booking) return { success: false, error: "Booking not found" };
+
+  // Only the assigned tasker can change booking status in tasker flows
+  if (booking.tasker_id !== user.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // 3. Check wallet balance if trying to accept or start
+  if (["accepted", "in_progress"].includes(status)) {
+    const { data: userData } = await supabase
+      .from("users")
+      .select("wallet_balance, preferred_language")
+      .eq("id", user.id)
+      .single();
+
+    const walletBalance = Number(userData?.wallet_balance || 0);
+    if (walletBalance < 10) {
+      const lang = userData?.preferred_language || "en";
+      const errorMessage = lang === 'ar'
+        ? "لا يمكنك قبول أو بدء العمل لأن رصيد محفظتك أقل من 10 دراهم. يرجى شحن محفظتك."
+        : lang === 'fr'
+        ? "Vous ne pouvez pas accepter ou commencer le travail car votre solde est inférieur à 10 MAD. Veuillez recharger votre portefeuille."
+        : "You cannot accept or start the job because your wallet balance is less than 10 MAD. Please top up your wallet.";
+      
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  // Execute transaction immediately when the tasker accepts the booking (cash payment assumed)
+  if (status === "accepted" && booking.status === "pending") {
+    const expectedAmount = Number(booking.agreed_price || 0);
+    const platformFee = expectedAmount * 0.1;
+    const nowIso = new Date().toISOString();
+
+    if (expectedAmount > 0) {
+      // Deduct fee from tasker's wallet once (idempotent)
+      const { data: taskerUser } = await supabase
+        .from("users")
+        .select("wallet_balance")
+        .eq("id", booking.tasker_id)
+        .maybeSingle();
+
+      const taskerWalletBalance = Number(taskerUser?.wallet_balance || 0);
+      if (taskerWalletBalance < platformFee) {
+        return { success: false, error: "Tasker wallet balance is insufficient to cover platform fee" };
+      }
+
+      const { data: existingTx } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .in("transaction_type", ["booking_payment", "service_payment", "cash_payment"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingTx?.id) {
+        await supabase
+          .from("transactions")
+          .update({
+            amount: expectedAmount,
+            platform_fee: platformFee,
+            payment_status: "paid",
+            processed_at: nowIso,
+            updated_at: nowIso,
+          })
+          .eq("id", existingTx.id);
+      } else {
+        await supabase.from("transactions").insert({
+          job_id: null,
+          booking_id: booking.id,
+          payer_id: booking.customer_id,
+          payee_id: booking.tasker_id,
+          transaction_type: "booking_payment",
+          amount: expectedAmount,
+          platform_fee: platformFee,
+          payment_status: "paid",
+          payment_method: booking.payment_method || "cash",
+          processed_at: nowIso,
+        });
+      }
+
+      const { data: existingFeeLedger } = await supabase
+        .from("wallet_transactions")
+        .select("id")
+        .eq("user_id", booking.tasker_id)
+        .eq("type", "fee_deduction")
+        .eq("related_booking_id", booking.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!existingFeeLedger && platformFee > 0) {
+        const newBalance = taskerWalletBalance - platformFee;
+        const serviceSupabase = createServiceRoleClient();
+        const clientToUse = serviceSupabase || supabase;
+
+        await clientToUse
+          .from("users")
+          .update({ wallet_balance: newBalance })
+          .eq("id", booking.tasker_id);
+
+        await clientToUse.from("wallet_transactions").insert({
+          user_id: booking.tasker_id,
+          amount: -platformFee,
+          type: "fee_deduction",
+          related_booking_id: booking.id,
+          notes: "Platform fee (10%) deducted on booking acceptance.",
+        });
+      }
+
+      // Notify tasker
+      const { getNotificationTranslationsForUser } = await import("@/lib/notifications");
+      let bookingTitle = "Booking";
+      if (booking.tasker_service_id) {
+        const { data: svc } = await supabase
+          .from("tasker_services")
+          .select("title")
+          .eq("id", booking.tasker_service_id)
+          .maybeSingle();
+        if (svc?.title) bookingTitle = String(svc.title);
+      }
+      const n = await getNotificationTranslationsForUser(booking.tasker_id, "payment_confirmed", {
+        amount: expectedAmount,
+        currency: String(booking.currency || "MAD"),
+        bookingTitle,
+      });
+      await supabase.from("notifications").insert({
+        user_id: booking.tasker_id,
+        type: "payment_confirmed",
+        title: n.title,
+        message: n.message,
+        related_booking_id: booking.id,
+        is_read: false,
+      });
+    }
+  }
+
+  const updates: any = { 
+    status,
+    updated_at: new Date().toISOString()
+  };
+
+  // Add timestamps based on status
+  if (status === "accepted") {
+    updates.accepted_at = new Date().toISOString();
+  } else if (status === "confirmed") {
+    updates.confirmed_at = new Date().toISOString();
+  } else if (status === "in_progress") {
+    updates.started_at = new Date().toISOString();
+  } else if (status === "completed") {
+    updates.completed_at = new Date().toISOString();
+  }
+
+  const { error } = await supabase
+    .from("service_bookings")
+    .update(updates)
+    .eq("id", bookingId);
+
+  if (!error) {
+    revalidatePath("/tasker/bookings");
+    revalidatePath(`/tasker/bookings/${bookingId}`);
+    revalidatePath("/customer/bookings");
+    revalidatePath(`/customer/bookings/${bookingId}`);
+  }
+  
   return { success: !error, error: error?.message };
 }
 
@@ -411,7 +676,72 @@ export async function cancelCustomerBooking(bookingId: string, reason?: string) 
 
 export async function confirmBookingCompletion(bookingId: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from("service_bookings").update({ customer_confirmed_at: new Date().toISOString() }).eq("id", bookingId);
-  if (!error) revalidatePath("/customer/bookings");
-  return { success: !error, error: error?.message };
+  
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return { success: false, error: "Authentication required" };
+
+    const { data: booking, error: fetchError } = await supabase
+      .from("service_bookings")
+      .select("id, tasker_id, customer_id, customer_confirmed_at, agreed_price, payment_method")
+      .eq("id", bookingId)
+      .single();
+
+    if (fetchError || !booking) return { success: false, error: "Booking not found" };
+    if (booking.customer_id !== user.id) return { success: false, error: "Unauthorized" };
+    if (booking.customer_confirmed_at) return { success: false, error: "This booking has already been confirmed" };
+
+    const nowIso = new Date().toISOString();
+
+    const { error: updateBookingError } = await supabase
+      .from("service_bookings")
+      .update({
+        customer_confirmed_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq("id", bookingId);
+
+    if (updateBookingError) throw updateBookingError;
+
+    // Payment is executed at acceptance time; avoid double charge on confirmation.
+    // We keep this as a safety net ONLY if the transaction doesn't exist yet.
+    const totalAmount = Number((booking as any).agreed_price || 0);
+    const platformFee = totalAmount * 0.1;
+
+    if (booking.tasker_id && totalAmount > 0) {
+      const { data: existingPaidTx } = await supabase
+        .from("transactions")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .eq("payment_status", "paid")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!existingPaidTx?.id) {
+        await supabase.from("transactions").insert({
+          job_id: null,
+          booking_id: booking.id,
+          payer_id: booking.customer_id,
+          payee_id: booking.tasker_id,
+          transaction_type: "booking_payment",
+          amount: totalAmount,
+          platform_fee: platformFee,
+          payment_status: "paid",
+          payment_method: booking.payment_method || "cash",
+          processed_at: nowIso,
+        });
+      }
+    }
+
+    revalidatePath("/customer/bookings");
+    revalidatePath(`/customer/bookings/${bookingId}`);
+    revalidatePath("/tasker/bookings");
+    revalidatePath(`/tasker/bookings/${bookingId}`);
+
+    return { success: true, error: null };
+  } catch (error: any) {
+    console.error("Error confirming booking completion:", error);
+    return { success: false, error: error?.message || "Failed to confirm booking" };
+  }
 }

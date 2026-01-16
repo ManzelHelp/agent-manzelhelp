@@ -49,6 +49,12 @@
       "card": "Card",
       "wallet": "Wallet"
     },
+    "transactionStatus": {
+      "feeDeducted": "Fee deducted",
+      "walletCredited": "Wallet credited",
+      "paymentCompleted": "Payment completed",
+      "paymentPending": "Payment pending"
+    },
     "chartPeriod": "Chart Period",
     "refresh": "Refresh",
     "today": "Today",
@@ -101,8 +107,8 @@
       "success": "Transactions exported successfully"
     },
     "walletRefund": {
-      "title": "Request Wallet Refund",
-      "description": "Request a refund from your wallet balance",
+      "title": "Add Funds to Wallet",
+      "description": "Request to add funds to your wallet balance",
       "amount": "Amount",
       "selectAmount": "Select Amount",
       "customAmount": "Custom Amount",
@@ -137,9 +143,9 @@
       },
       "waitingForAdmin": "Waiting for admin to activate the fund",
       "requests": {
-        "title": "My Refund Requests",
-        "noRequests": "No refund requests yet",
-        "noRequestsDescription": "Your refund requests will appear here",
+        "title": "My Fund Requests",
+        "noRequests": "No requests yet",
+        "noRequestsDescription": "Your fund addition requests will appear here",
         "amount": "Amount",
         "referenceCode": "Reference Code",
         "createdAt": "Created",
@@ -148,12 +154,12 @@
         "actions": "Actions"
       },
       "errors": {
-        "insufficientBalance": "Insufficient wallet balance",
+        "insufficientBalance": "Insufficient balance",
         "invalidAmount": "Invalid amount",
         "minAmount": "Minimum amount is {min} MAD",
         "maxAmount": "Maximum amount is {max} MAD",
-        "pendingRequestExists": "You already have a pending refund request",
-        "createFailed": "Failed to create refund request",
+        "pendingRequestExists": "You already have a pending fund request",
+        "createFailed": "Failed to create fund request",
         "uploadFailed": "Failed to upload receipt",
         "fileSizeExceeded": "File size must be less than 5MB",
         "whatsappOpenFailed": "Unable to open WhatsApp. Please allow popups or copy the link manually.",
@@ -162,20 +168,20 @@
         "confirmFailed": "Failed to confirm payment"
       },
       "success": {
-        "requestCreated": "Refund request created successfully",
+        "requestCreated": "Fund request created successfully",
         "paymentConfirmed": "Payment confirmed successfully",
         "redirectingWhatsApp": "Redirecting to WhatsApp..."
       },
       "whatsapp": {
-        "message": "Hello, I have completed the bank transfer for refund request {referenceCode}. Amount: {amount} MAD. Please find the receipt attached."
+        "message": "Hello, I have completed the bank transfer for fund request {referenceCode}. Amount: {amount} MAD. Please find the receipt attached."
       },
       "fundActions": "Fund Actions",
-      "manageFunds": "Manage your wallet and refund requests",
+      "manageFunds": "Manage your wallet and fund requests",
       "currentBalance": "Current Balance",
-      "requestRefund": "Request Refund",
-      "withdrawFromWallet": "Withdraw from wallet",
+      "requestRefund": "Add Funds",
+      "withdrawFromWallet": "Add funds to wallet",
       "viewBalance": "View Wallet",
-      "viewRefunds": "My Refund Requests",
+      "viewRefunds": "My Fund Requests",
       "viewHistory": "View history",
       "viewPendingRequests": "View pending requests",
       "transactionHistory": "Transaction History",
@@ -184,20 +190,20 @@
       "pendingRequests": "{count} requests pending",
       "pending": "pending",
       "waitingForActivation": "Waiting for admin to activate the fund",
-      "refundRequestHistory": "Refund Request History",
+      "refundRequestHistory": "Fund Request History",
       "allRefundRequests": "Complete history",
       "close": "Close",
       "adminNotes": "Admin Notes",
       "viewAllRequests": "View All Requests",
       "refundHistory": {
-        "title": "Refund Request History",
-        "description": "View all your refund requests"
+        "title": "Fund Request History",
+        "description": "View all your fund addition requests"
       },
       "pendingRequestsDrawer": {
-        "title": "Pending Refund Requests",
-        "description": "Your active refund requests in progress",
+        "title": "Pending Fund Requests",
+        "description": "Your active fund addition requests in progress",
         "noPending": "No pending requests",
-        "noPendingDescription": "All your refund requests have been processed"
+        "noPendingDescription": "All your requests have been processed"
       },
       "transactionDetail": {
         "title": "Transaction Details",

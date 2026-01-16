@@ -34,6 +34,37 @@
         "description": "ليس لديك حجوزات ملغاة."
       }
     },
-    "tryAgain": "حاول مرة أخرى"
+    "tryAgain": "حاول مرة أخرى",
+    "success": "نجاح",
+    "error": "خطأ",
+    "bookingStatusUpdated": "تم تحديث حالة الحجز بنجاح",
+    "failedToUpdateBookingStatus": "فشل تحديث حالة الحجز",
+    "unexpectedError": "حدث خطأ غير متوقع",
+    "loadingMore": "جاري تحميل المزيد...",
+    "loadMore": "تحميل المزيد",
+    "actions": {
+      "acceptRequest": "قبل الطلب",
+      "confirmBooking": "تأكيد الحجز",
+      "startTask": "بدء المهمة",
+      "completeTask": "إكمال المهمة"
+    },
+    "dialogs": {
+      "accept": {
+        "title": "قبول طلب الحجز",
+        "description": "هل أنت متأكد أنك تريد قبول طلب الحجز هذا من {customerName}؟"
+      },
+      "confirm": {
+        "title": "تأكيد الحجز",
+        "description": "هل أنت متأكد أنك تريد تأكيد هذا الحجز مع {customerName}؟"
+      },
+      "start": {
+        "title": "بدء المهمة",
+        "description": "هل أنت مستعد لبدء المهمة لـ {customerName}؟"
+      },
+      "complete": {
+        "title": "إكمال المهمة",
+        "description": "هل أنت متأكد أنك تريد تحديد هذه المهمة كمكتملة لـ {customerName}؟"
+      }
+    }
   }
 }

@@ -296,6 +296,11 @@
     "close": "Schließen",
     "yourBasicProfileInformation": "Ihre grundlegenden Profilinformationen",
     "role": "Rolle",
+    "roleNames": {
+      "customer": "Kunde",
+      "tasker": "Tasker",
+      "admin": "Administrator"
+    },
     "edit": "Bearbeiten",
     "editPersonalInformation": "Persönliche Informationen Bearbeiten",
     "updatePersonalInformation": "Aktualisieren Sie Ihre persönlichen Informationen und Ihr Profilbild",

@@ -62,7 +62,9 @@ export default async function LocaleLayout({
           <SessionSync />
           <LogoutListener />
           <Header />
-          {children}
+          <main className="pt-[57px] md:pt-[73px]">
+            {children}
+          </main>
           <Toaster />
         </NextIntlClientProvider>
       </ThemeProvider>

@@ -10,12 +10,12 @@
     "assignedTasker": "المساعد المكلف",
     "assignedToThisJob": "مكلف بهذه الوظيفة",
     "confirmation": {
-      "jobConfirmed": "تم تأكيد الوظيفة",
-      "jobConfirmedDescription": "لقد قمت بتأكيد إتمام هذه الوظيفة بنجاح.",
+      "jobConfirmed": "تم تأكيد العمل",
+      "jobConfirmedDescription": "قام العميل بتأكيد إتمام العمل. يُرجى مراجعة المهمة والموافقة على الإنهاء.",
       "confirmedOn": "تم التأكيد في {date}",
-      "reviewAlreadyLeft": "✓ لقد قمت بترك تقييم لهذه الوظيفة"
+      "reviewAlreadyLeft": "✓ لقد قمت بترك تقييم لهذا العمل"
     },
-    "jobDetails": "تفاصيل الوظيفة",
+    "pageTitle": "تفاصيل الوظيفة",
     "manageJobPost": "إدارة إعلان الوظيفة",
     "jobStatus": "حالة الوظيفة",
     "completed": "مكتملة",
@@ -24,6 +24,14 @@
     "preferredTime": "الوقت المفضل",
     "location": "الموقع",
     "locationNotSpecified": "الموقع غير محدد",
+    "jobTitle": "عنوان الوظيفة",
+    "selectCategory": "اختر فئة",
+    "selectService": "اختر خدمة",
+    "minCharactersRequired": "{count} حروف على الأقل",
+    "budgetMAD": "الميزانية (درهم)",
+    "estimatedDurationHours": "المدة التقديرية (بالساعات)",
+    "preferredTimeLabel": "الوقت المفضل",
+    "flexibleTimingLabel": "مرن في التوقيت",
     "customerInformation": "معلومات العميل",
     "jobPostedByCustomer": "تم نشر هذه الوظيفة من قبل العميل",
     "jobProgress": "تقدم الوظيفة",
@@ -36,14 +44,57 @@
     "openToScheduleAdjustments": "منفتح على تعديل المواعيد",
     "minCharacters": "حروف على الأقل",
     "remaining": "متبقي {remaining} حروف",
+    "estimated": "{count} ساعة تقديرية",
+    "applicationsCount": "{current} / {max} طلبات",
+    "applicationsCountTitle": "الطلبات ({count})",
+    "finalPrice": "السعر النهائي",
+    "promotedJob": "وظيفة مميزة",
+    "expires": "تنتهي في: {date}",
+    "thisJobIsPromoted": "هذه الوظيفة مميزة",
+    "imagesCount": "الصور ({count})",
+    "assigning": "جاري التكليف...",
+    "assignTasker": "تكليف مساعد",
+    "jobCompletedAwaitingConfirmation": "أكمل المساعد المهمة - بانتظار تأكيدك",
+    "jobCompletedAwaitingConfirmationDesc": "أنهى المساعد العمل المطلوب. يُرجى مراجعة الخدمة وتأكيد الإتمام لترك تقييمك.",
+    "completedOn": "اكتملت في {date}",
+    "confirming": "جاري التأكيد...",
+    "confirmJobCompletion": "تأكيد",
+    "leaveReview": "ترك تقييم",
+    "service": "الخدمة",
+    "thisJob": "هذه الوظيفة",
     "actions": {
       "startJob": "بدء العمل",
+      "starting": "جاري البدء...",
       "completeJob": "إكمال العمل",
+      "completing": "جاري الإكمال...",
       "jobStarted": "تم بدء العمل بنجاح",
       "jobCompleted": "تم إكمال العمل",
       "waitingConfirmation": "في انتظار تأكيد العميل",
       "jobConfirmed": "تم تأكيد العمل",
-      "customerConfirmed": "تم تأكيد العميل في {date}"
+      "customerConfirmed": "تم تأكيد العميل في {date}",
+      "edit": "تعديل",
+      "clone": "نسخ",
+      "save": "حفظ",
+      "cancel": "إلغاء"
+    },
+    "errors": {
+      "cloneFailed": "فشل نسخ الوظيفة",
+      "confirmationFailed": "فشل تأكيد إتمام الوظيفة",
+      "validationError": "خطأ في التحقق",
+      "updateFailed": "فشل تحديث الوظيفة"
+    },
+    "success": {
+      "jobCloned": "تم نسخ الوظيفة بنجاح!",
+      "jobUpdated": "تم تحديث الوظيفة بنجاح!",
+      "jobDeleted": "تم حذف الوظيفة بنجاح"
+    },
+    "deleteDialog": {
+      "title": "حذف إعلان الوظيفة",
+      "description": "هل أنت متأكد أنك تريد حذف \"{title}\"؟ لا يمكن التراجع عن هذا الإجراء. إذا كان هناك أي طلبات أو إذا تم تعيين مساعد، فلن تتمكن من حذف هذه الوظيفة.",
+      "cancel": "إلغاء",
+      "delete": "حذف الوظيفة",
+      "deleting": "جاري الحذف...",
+      "error": "فشل حذف الوظيفة"
     },
     "status": {
       "active": "مفتوحة",
@@ -55,6 +106,25 @@
       "unknown": "غير معروفة",
       "underReview": "قيد المراجعة",
       "inProgress": "قيد التنفيذ"
+    },
+    "cancelJob": {
+      "button": "إلغاء الوظيفة",
+      "title": "إلغاء الوظيفة",
+      "description": "اختر سبب الإلغاء. سيتم وضع الوظيفة كـ \"ملغاة\" لتتمكن من نسخها/إعادة نشرها.",
+      "reasonLabel": "السبب",
+      "detailsLabel": "تفاصيل (اختياري)",
+      "detailsPlaceholder": "أضف المزيد من التفاصيل (اختياري)",
+      "reasons": {
+        "tasker_no_show": "المساعد لم يحضر",
+        "schedule_change": "تغيّر الموعد",
+        "found_other_tasker": "وجدت مساعداً آخر",
+        "other": "سبب آخر"
+      },
+      "cancel": "رجوع",
+      "confirm": "إلغاء الوظيفة",
+      "cancelling": "جاري الإلغاء...",
+      "success": "تم إلغاء الوظيفة بنجاح.",
+      "error": "فشل إلغاء الوظيفة."
     }
   }
 }

@@ -22,7 +22,18 @@
       "bookedOn": "Booked on",
       "flexible": "Flexible",
       "addressNotSpecified": "Address not specified",
-      "noRequirements": "No specific requirements provided"
+      "noRequirements": "No specific requirements provided",
+      "viewBooking": "View Booking",
+      "serviceBooking": "Service Booking",
+      "service": "Service",
+      "customer": "Customer"
+    },
+    "messages": {
+      "initialBookingMessage": "Hello! I'd like to discuss the booking for \"{serviceTitle}\"."
+    },
+    "errors": {
+      "customerInfoUnavailable": "Customer information not available",
+      "failedToOpenConversation": "Failed to open conversation"
     },
     "bookingTypes": {
       "instant": "Instant Booking",

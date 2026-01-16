@@ -115,7 +115,7 @@ async function JobCard({
   const getStatusLabel = (status?: string | null) => {
     switch (status) {
       case "active":
-        return t("status.open");
+        return t("status.active");
       case "under_review":
         return t("status.under_review");
       case "assigned":
@@ -126,6 +126,10 @@ async function JobCard({
         return t("status.completed");
       case "cancelled":
         return t("status.cancelled");
+      case "disputed":
+        return t("status.disputed");
+      case "draft":
+        return t("status.draft");
       default:
         return t("status.unknown");
     }
@@ -245,6 +249,12 @@ async function JobCard({
               {getStatusIcon(job.status)}
               <span className="ml-1">{getStatusLabel(job.status)}</span>
             </Badge>
+            {(job.application_count || 0) > 0 && (
+              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                <Users className="h-3.5 w-3.5 mr-1" />
+                {job.application_count}
+              </Badge>
+            )}
             {job.is_promoted && (
               <Badge className="bg-[var(--color-secondary)] text-white">
                 {t("jobCard.promoted")}

@@ -7,6 +7,7 @@
     "saveAddress": "حفظ العنوان",
     "cancel": "إلغاء",
     "close": "إغلاق",
+    "processing": "جاري المعالجة...",
     "menu": "القائمة",
     "navigation": "التنقل",
     "edit": "تعديل",
@@ -54,7 +55,12 @@
     "getStartedNow": "ابدأ الآن",
     "delete": "حذف",
     "error": "خطأ",
+    "success": "نجاح",
+    "copy": "نسخة",
     "cash": "نقداً", 
-    "escrow": "ضمان"
+    "escrow": "ضمان",
+    "next": "التالي",
+    "previous": "السابق",
+    "contactSupport": "اتصل بالدعم"
   }
 }

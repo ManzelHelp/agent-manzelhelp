@@ -59,12 +59,15 @@
       "cloneError": "Échec du clonage de l'emploi"
     },
     "status": {
+      "active": "Ouvert",
       "open": "Ouvert",
       "under_review": "En Révision",
       "assigned": "Assigné",
       "in_progress": "En Cours",
       "completed": "Terminé",
       "cancelled": "Annulé",
+      "disputed": "En Litige",
+      "draft": "Brouillon",
       "unknown": "Inconnu"
     },
     "actions": {

@@ -30,7 +30,9 @@
       "flexible": "Flexible",
       "notSpecified": "Non spécifié",
       "jobCompletedMessage": "Ce job a été terminé. Votre candidature n'est plus pertinente.",
-      "jobCancelledMessage": "Ce job a été annulé. Votre candidature n'est plus pertinente."
+      "jobCancelledMessage": "Ce job a été annulé. Votre candidature n'est plus pertinente.",
+      "jobApplication": "Candidature",
+      "noDescription": "Pas de description disponible"
     },
     "actions": {
       "viewDetails": "Voir les détails",

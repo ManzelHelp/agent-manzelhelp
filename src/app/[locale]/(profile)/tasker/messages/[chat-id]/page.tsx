@@ -112,26 +112,19 @@ export default function ChatPage() {
           setHasMore(moreAvailable || false);
 
           // Mark messages as read (only messages from other participants)
-          if (fetchedMessages.length > 0 && user?.id) {
+          const hasUnreadFromOther = fetchedMessages.some(m => !m.is_read && m.sender_id !== user?.id);
+
+          if (hasUnreadFromOther && user?.id) {
             console.log("Marking messages as read for conversation:", chatId, "User:", user.id);
-            const { success, errorMessage } = await markMessagesAsReadAction(chatId);
-            console.log("Mark as read result:", { success, errorMessage });
-            if (success) {
-              // Small delay to ensure database update is complete
-              await new Promise(resolve => setTimeout(resolve, 200));
-              // Refetch messages to get updated read status from database
-              const { messages: refreshedMessages } = await getMessagesAction(chatId, 10, 0);
-              if (refreshedMessages) {
-                setMessages(refreshedMessages);
-                setCurrentOffset(refreshedMessages.length);
-              } else {
-                // Fallback: Update local state if refetch fails
-                setMessages((prevMessages) =>
-                  prevMessages.map((msg) =>
-                    msg.sender_id !== user.id ? { ...msg, is_read: true } : msg
-                  )
-                );
-              }
+            const { success, updatedCount, errorMessage } = await markMessagesAsReadAction(chatId);
+            console.log("Mark as read result:", { success, updatedCount, errorMessage });
+            
+            if (success && updatedCount > 0) {
+              // Update local state immediately to show messages as read
+              setMessages(prev => prev.map(m => 
+                m.sender_id !== user.id ? { ...m, is_read: true } : m
+              ));
+
               // Dispatch event to refresh conversations list immediately
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('messagesMarkedAsRead', { 
@@ -140,7 +133,7 @@ export default function ChatPage() {
               }
               // Force refresh of the router to update the conversation list
               router.refresh();
-            } else {
+            } else if (!success) {
               console.error("Failed to mark messages as read:", errorMessage);
             }
           }
@@ -462,7 +455,8 @@ export default function ChatPage() {
 
   useEffect(() => {
     fetchMessages();
-  }, [fetchMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId]); // Only refetch when conversation ID changes
 
   useEffect(() => {
     scrollToBottom();

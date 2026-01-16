@@ -3,6 +3,7 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import DarkModeButton from "./buttons/DarkModeButton";
 import LanguageDropDown from "./buttons/LanguageDropDown";
 import ProfileDropDown from "./buttons/ProfileDropDown";
@@ -18,6 +19,12 @@ import {
   Bell,
   Briefcase,
   Wrench,
+  MessageSquare,
+  Calendar,
+  Wallet,
+  Star,
+  Search,
+  PlusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LogOutButton from "./buttons/LogOutButton";
@@ -39,7 +46,7 @@ function Header() {
   }, []);
 
   return (
-    <header className="w-full max-w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm sticky top-0 z-50 overflow-x-hidden">
+    <header className="w-full max-w-full bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-sm fixed top-0 left-0 right-0 z-50 overflow-x-hidden">
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 md:py-4 w-full">
         {/* Logo Section - Left */}
         <div className="flex items-center">
@@ -76,32 +83,15 @@ function Header() {
         </div>
 
         {/* Desktop Navigation - Right */}
-        <div className="hidden lg:flex items-center justify-end space-x-8 flex-1 px-8">
-          {/* Services - Always visible to all users */}
-          <Link
-            href="/search/services"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
-          >
-            {t("services")}
-            <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-          </Link>
-          {/* Jobs - Always visible to all users */}
-          <Link
-            href="/search/jobs"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
-          >
-            {t("jobs")}
-            <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-          </Link>
-          
-          {/* Customer navigation (visible to customers AND taskers) */}
-          {isCustomer && (
+        <div className="hidden lg:flex items-center justify-end space-x-6 flex-1 px-4">
+          {/* Priorité Client : Messages (4), Bookings (5) */}
+          {user && user.role === "customer" && (
             <>
               <Link
-                href="/customer/post-job"
+                href="/customer/messages"
                 className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
               >
-                {t("postJob")}
+                {t("messages")}
                 <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
               <Link
@@ -111,31 +101,24 @@ function Header() {
                 {t("bookings")}
                 <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
+            </>
+          )}
+
+          {/* Priorité Tasker : Finance (4), Messages (5), Bookings (6), Reviews (7) */}
+          {isTasker && (
+            <>
               <Link
-                href="/customer/finance"
+                href="/tasker/finance"
                 className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
               >
                 {t("finance")}
                 <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
               <Link
-                href="/customer/messages"
+                href="/tasker/messages"
                 className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
               >
                 {t("messages")}
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-              </Link>
-            </>
-          )}
-          
-          {/* Tasker navigation (visible ONLY to taskers) */}
-          {isTasker && (
-            <>
-              <Link
-                href="/tasker/post-service"
-                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
-              >
-                {t("postService")}
                 <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
               <Link
@@ -143,13 +126,6 @@ function Header() {
                 className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
               >
                 {t("bookings")}
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-              </Link>
-              <Link
-                href="/tasker/finance"
-                className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all duration-200 font-medium relative group"
-              >
-                {t("finance")}
                 <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-[var(--color-primary)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
               </Link>
               <Link
@@ -161,7 +137,7 @@ function Header() {
               </Link>
             </>
           )}
-          
+
           {!user && (
             <div className="flex items-center space-x-4">
               <Button
@@ -190,23 +166,44 @@ function Header() {
           <div className="hidden lg:flex items-center space-x-3">
             {user ? (
               <>
-                {/* My Jobs Button - Always visible for all users */}
-                <Button
-                  asChild
-                  variant="default"
-                  size="sm"
-                  className="font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
-                >
-                  <Link href={`/${user.role}/my-jobs`}>{t("myJobs")}</Link>
-                </Button>
-                {/* Customer buttons (visible to customers AND taskers) */}
-                {isCustomer && (
+                {/* Ordre Tasker : Rechercher Jobs (1), My Jobs (2), Post Service (3) */}
+                {user.role === "tasker" && (
                   <>
                     <Button
                       asChild
                       variant="default"
                       size="sm"
-                      className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      className="font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                    >
+                      <Link href="/search/jobs">{t("jobs")}</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="default"
+                      size="sm"
+                      className="font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+                    >
+                      <Link href="/tasker/my-jobs">{t("myJobs")}</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="default"
+                      size="sm"
+                      className="font-medium bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm hover:shadow-md transition-all duration-200"
+                    >
+                      <Link href="/tasker/post-service">{t("postService")}</Link>
+                    </Button>
+                  </>
+                )}
+
+                {/* Ordre Client : Parcourir Services (1), Post Job (2), My Jobs (3) */}
+                {user.role === "customer" && (
+                  <>
+                    <Button
+                      asChild
+                      variant="default"
+                      size="sm"
+                      className="font-medium bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       <Link href="/search/services">{t("browseServices")}</Link>
                     </Button>
@@ -214,30 +211,17 @@ function Header() {
                       asChild
                       variant="default"
                       size="sm"
-                      className="font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      className="font-medium bg-slate-400 hover:bg-slate-500 text-white shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       <Link href="/customer/post-job">{t("postJob")}</Link>
                     </Button>
-                  </>
-                )}
-                {/* Tasker buttons (visible ONLY to taskers) */}
-                {isTasker && (
-                  <>
                     <Button
                       asChild
                       variant="default"
                       size="sm"
-                      className="font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      className="font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
                     >
-                      <Link href="/tasker/my-services">{t("myServices")}</Link>
-                    </Button>
-                    <Button
-                      asChild
-                      variant="default"
-                      size="sm"
-                      className="font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
-                    >
-                      <Link href="/tasker/post-service">{t("postService")}</Link>
+                      <Link href="/customer/my-jobs">{t("myJobs")}</Link>
                     </Button>
                   </>
                 )}
@@ -264,11 +248,13 @@ function Header() {
             )}
           </div>
 
-          {/* Language & Theme Toggles */}
-          <div className="flex items-center space-x-2">
-            <LanguageDropDown />
-            <DarkModeButton />
-          </div>
+          {/* Language & Theme Toggles - Only visible when NOT logged in (moved to profile dropdown when logged in) */}
+          {!user && (
+            <div className="flex items-center space-x-2">
+              <LanguageDropDown />
+              <DarkModeButton />
+            </div>
+          )}
 
           {/* Notification Icon - Only for authenticated users */}
           {user && (
@@ -315,189 +301,41 @@ function Header() {
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="px-4 py-6 space-y-6">
-          {/* User Profile Section - Only show if logged in */}
+        <div className="px-4 py-6 space-y-8">
+          {/* User Section (Authenticated) */}
           {user && (
-            <div className="mb-6 pb-6 border-b border-[var(--color-border)]">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[var(--color-primary-foreground)]">
-                  <UserIcon className="h-5 w-5" />
+            <>
+              {/* 1️⃣ Identité utilisateur */}
+              <div className="flex items-center gap-3 border-b border-[var(--color-border)] pb-6">
+                <div className="h-12 w-12 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[var(--color-primary-foreground)] text-lg font-bold">
+                  {user.email?.[0].toUpperCase()}
                 </div>
-                <div>
-                  <div className="font-medium">{user.email}</div>
-                  <div className="text-sm text-muted-foreground capitalize">
-                    {user.role}
+                <div className="min-w-0">
+                  <div className="font-semibold truncate text-[var(--color-text-primary)]">
+                    {user.email}
+                  </div>
+                  <div className="text-xs text-muted-foreground capitalize bg-muted px-2 py-0.5 rounded-full inline-block mt-1">
+                    {user.role ? t(user.role as "tasker" | "customer") : ""}
                   </div>
                 </div>
               </div>
-              <div className="space-y-3">
-                <Link
-                  href={`/${user.role}/profile`}
-                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <UserIcon className="h-4 w-4" />
-                  {t("profile")}
-                </Link>
-                <Link
-                  href={`/${user.role}/dashboard`}
-                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  {t("dashboard")}
-                </Link>
-                <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)]">
-                  <Link
-                    href={`/${user.role}/notifications`}
-                    className="flex items-center gap-2 hover:text-[var(--color-primary)] transition-colors duration-200"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Bell className="h-4 w-4" />
-                    {t("notifications")}
-                  </Link>
-                  <NotificationIcon asButton className="ml-auto" />
-                </div>
-                <Link
-                  href={`/${user.role}/settings`}
-                  className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Settings className="h-4 w-4" />
-                  {t("settings")}
-                </Link>
-              </div>
-            </div>
-          )}
 
-          {/* Mobile Navigation Links */}
-          <div className="space-y-4">
-            {/* Services and Jobs - Always visible to all users */}
-            <Link
-              href="/search/services"
-              className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t("services")}
-            </Link>
-            <Link
-              href="/search/jobs"
-              className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t("jobs")}
-            </Link>
-            
-            {/* Customer navigation (visible to customers AND taskers) */}
-            {isCustomer && (
-              <>
-                <Link
-                  href="/customer/post-job"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("postJob")}
-                </Link>
-                <Link
-                  href="/customer/bookings"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("bookings")}
-                </Link>
-                <Link
-                  href="/customer/finance"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("finance")}
-                </Link>
-                <Link
-                  href="/customer/messages"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("messages")}
-                </Link>
-              </>
-            )}
-            
-            {/* Tasker navigation (visible ONLY to taskers) */}
-            {isTasker && (
-              <>
-                <Link
-                  href="/tasker/post-service"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("postService")}
-                </Link>
-                <Link
-                  href="/tasker/bookings"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("bookings")}
-                </Link>
-                <Link
-                  href="/tasker/finance"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("finance")}
-                </Link>
-                <Link
-                  href="/tasker/reviews"
-                  className="block py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t("reviews")}
-                </Link>
-              </>
-            )}
-            
-            {!user && (
+              {/* 2️⃣ 🔥 Actions principales (Buttons) */}
               <div className="space-y-3">
-                <Button
-                  asChild
-                  variant="default"
-                  className="w-full justify-center font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Link href="/find-a-helper">{t("find_service")}</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="default"
-                  className="w-full justify-center font-medium bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Link href="/become-a-helper">{t("post_service")}</Link>
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Auth Section */}
-          <div className="pt-4 border-t border-[var(--color-border)]">
-            {user ? (
-              <>
-                {/* My Jobs Button - Always visible for all users */}
-                <Button
-                  asChild
-                  variant="default"
-                  className="w-full justify-center font-medium mb-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Link href={`/${user.role}/my-jobs`}>{t("myJobs")}</Link>
-                </Button>
-                {/* Customer buttons (visible to customers AND taskers) */}
-                {isCustomer && (
+                {user.role === "customer" ? (
                   <>
                     <Button
                       asChild
                       variant="default"
-                      className="w-full justify-center font-medium mb-3 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      className="w-full justify-center font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Link href="/customer/my-jobs">{t("myJobs")}</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="default"
+                      className="w-full justify-center font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm hover:shadow-md transition-all duration-200"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <Link href="/search/services">{t("browseServices")}</Link>
@@ -505,45 +343,220 @@ function Header() {
                     <Button
                       asChild
                       variant="default"
-                      className="w-full justify-center font-medium mb-3 bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      className="w-full justify-center font-bold bg-slate-400 hover:bg-slate-500 text-white shadow-sm hover:shadow-md transition-all duration-200"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <Link href="/customer/post-job">{t("postJob")}</Link>
                     </Button>
                   </>
-                )}
-                {/* Tasker buttons (visible ONLY to taskers) */}
-                {isTasker && (
+                ) : (
                   <>
                     <Button
                       asChild
                       variant="default"
-                      className="w-full justify-center font-medium mb-3 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      className="w-full justify-center font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm hover:shadow-md transition-all duration-200"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Link href="/tasker/my-services">{t("myServices")}</Link>
+                      <Link href="/tasker/post-service" className="flex items-center gap-2">
+                        <PlusCircle className="h-5 w-5" />
+                        {t("postService")}
+                      </Link>
                     </Button>
                     <Button
                       asChild
                       variant="default"
-                      className="w-full justify-center font-medium mb-3 bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white shadow-sm hover:shadow-md transition-all duration-200"
+                      className="w-full justify-center font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Link href="/tasker/post-service">{t("postService")}</Link>
+                      <Link href="/tasker/my-jobs" className="flex items-center gap-2">
+                        <Briefcase className="h-5 w-5" />
+                        {t("myJobs")}
+                      </Link>
                     </Button>
                   </>
                 )}
-                <div className="flex items-center gap-2 py-2 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200">
-                  <LogOut className="h-4 w-4" />
+              </div>
+
+              {/* 3️⃣ Navigation métier */}
+              <div className="space-y-1">
+                <DropdownMenuLabel className="px-0 pb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+                  {user.role === "tasker" ? t("navigation") : t("clientActions")}
+                </DropdownMenuLabel>
+                {isTasker && (
+                  <Link
+                    href="/search/jobs"
+                    className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Briefcase className="h-5 w-5" />
+                    {t("jobs")}
+                  </Link>
+                )}
+                <Link
+                  href={`/${user.role}/messages`}
+                  className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  {t("messages")}
+                </Link>
+                <Link
+                  href={`/${user.role}/bookings`}
+                  className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Calendar className="h-5 w-5" />
+                  {t("bookings")}
+                </Link>
+                <Link
+                  href={`/${user.role}/finance`}
+                  className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Wallet className="h-5 w-5" />
+                  {t("finance")}
+                </Link>
+                {isTasker && (
+                  <>
+                    <Link
+                      href="/tasker/reviews"
+                      className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Star className="h-5 w-5" />
+                      {t("reviews")}
+                    </Link>
+
+                    {/* Autres options (Client actions for tasker) */}
+                    <div className="pt-4">
+                      <DropdownMenuLabel className="px-0 pb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+                        {t("quickActions")}
+                      </DropdownMenuLabel>
+                      <Link
+                        href="/search/services"
+                        className="flex items-center gap-3 py-2.5 text-base font-medium text-emerald-600 hover:text-emerald-700 transition-colors duration-200"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Search className="h-5 w-5" />
+                        {t("browseServices")}
+                      </Link>
+                      <Link
+                        href="/customer/post-job"
+                        className="flex items-center gap-3 py-2.5 text-base font-medium text-slate-600 hover:text-slate-700 transition-colors duration-200"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <PlusCircle className="h-5 w-5" />
+                        {t("postJob")}
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* 4️⃣ Navigation personnelle */}
+              <div className="space-y-1 pt-2">
+                <DropdownMenuLabel className="px-0 pb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+                  {t("profile")}
+                </DropdownMenuLabel>
+                <Link
+                  href={`/${user.role}/profile`}
+                  className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <UserIcon className="h-5 w-5" />
+                  {t("profile")}
+                </Link>
+                <Link
+                  href={`/${user.role}/dashboard`}
+                  className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LayoutDashboard className="h-5 w-5" />
+                  {t("dashboard")}
+                </Link>
+                <div className="flex items-center gap-3 py-2.5">
+                  <Link
+                    href={`/${user.role}/notifications`}
+                    className="flex items-center gap-3 flex-1 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Bell className="h-5 w-5" />
+                    {t("notifications")}
+                  </Link>
+                  <NotificationIcon asButton />
+                </div>
+              </div>
+
+              {/* 5️⃣ Paramètres & préférences */}
+              <div className="space-y-4 pt-2">
+                <Link
+                  href={`/${user.role}/settings`}
+                  className="flex items-center gap-3 py-2.5 text-base font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Settings className="h-5 w-5" />
+                  {t("settings")}
+                </Link>
+
+                <div className="flex items-center bg-muted/50 rounded-xl p-1.5 gap-1 shadow-inner border border-[var(--color-border)]">
+                  <div className="flex-[3] flex items-center justify-start overflow-hidden">
+                    <LanguageDropDown className="h-10 w-full justify-start px-3 hover:bg-background transition-all border-none shadow-none bg-transparent" />
+                  </div>
+                  <div className="w-px h-6 bg-border shrink-0 mx-1" />
+                  <div className="flex-1 flex items-center justify-center">
+                    <DarkModeButton />
+                  </div>
+                </div>
+              </div>
+
+              {/* 6️⃣ Action critique */}
+              <div className="pt-4 border-t border-[var(--color-border)]">
+                <div className="flex items-center gap-3 py-3 text-base font-bold text-red-500 hover:text-red-600 transition-colors duration-200 cursor-pointer">
+                  <LogOut className="h-5 w-5" />
                   <LogOutButton />
                 </div>
-              </>
-            ) : (
+              </div>
+            </>
+          )}
+
+          {/* Guest User Menu */}
+          {!user && (
+            <div className="space-y-6">
               <div className="space-y-3">
                 <Button
                   asChild
                   variant="default"
-                  className="w-full justify-center font-medium"
+                  className="w-full justify-center font-bold bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white h-12"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Link href="/find-a-helper">{t("find_service")}</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="default"
+                  className="w-full justify-center font-bold bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-dark)] text-white h-12"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Link href="/become-a-helper">{t("post_service")}</Link>
+                </Button>
+              </div>
+              
+              <div className="space-y-1">
+                <Link
+                  href="/search/jobs"
+                  className="flex items-center gap-3 py-3 text-lg font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Briefcase className="h-6 w-6" />
+                  {t("jobs")}
+                </Link>
+              </div>
+
+              <div className="pt-6 border-t border-[var(--color-border)] space-y-4">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full justify-center font-bold h-12"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Link href="/login">{t("login")}</Link>
@@ -551,14 +564,24 @@ function Header() {
                 <Button
                   asChild
                   variant="ghost"
-                  className="w-full justify-center font-medium"
+                  className="w-full justify-center font-bold h-12"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Link href="/sign-up">{t("sign_up")}</Link>
                 </Button>
               </div>
-            )}
-          </div>
+
+              <div className="flex items-center bg-muted/50 rounded-xl p-1.5 gap-1 shadow-inner border border-[var(--color-border)]">
+                <div className="flex-[3] flex items-center justify-start overflow-hidden">
+                  <LanguageDropDown className="h-10 w-full justify-start px-3 hover:bg-background transition-all border-none shadow-none bg-transparent" />
+                </div>
+                <div className="w-px h-6 bg-border shrink-0 mx-1" />
+                <div className="flex-1 flex items-center justify-center">
+                  <DarkModeButton />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

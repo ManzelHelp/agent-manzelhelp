@@ -9,6 +9,13 @@ import {
   Bell,
   HelpCircle,
   Loader2,
+  Briefcase,
+  Search,
+  PlusCircle,
+  MessageSquare,
+  Calendar,
+  Wallet,
+  Star,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -23,6 +30,8 @@ import { Link } from "@/i18n/navigation";
 import { useUserStore } from "@/stores/userStore";
 import { useTranslations } from "next-intl";
 import { ContactSupportDialog } from "../ContactSupportDialog";
+import DarkModeButton from "./DarkModeButton";
+import LanguageDropDown from "./LanguageDropDown";
 import { useRouter } from "@/i18n/navigation";
 import { logOutAction } from "@/actions/auth";
 import { toast } from "sonner";
@@ -76,7 +85,7 @@ function ProfileDropDown() {
         <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuLabel>{user?.role ? t(user.role as "tasker" | "customer") : ""}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user?.role ? t(user.role as any) : ""}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <Link href={`/${user?.role}/profile`} className="flex items-center">
             <Settings className="mr-2 h-4 w-4" />
@@ -92,6 +101,55 @@ function ProfileDropDown() {
             <span>{t("dashboard")}</span>
           </Link>
         </DropdownMenuItem>
+
+        {user?.role === "customer" && (
+          <DropdownMenuItem asChild>
+            <Link href="/customer/finance" className="flex items-center">
+              <Wallet className="mr-2 h-4 w-4" />
+              <span>{t("finance")}</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
+
+        {user?.role === "tasker" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+              {t("quickActions")}
+            </DropdownMenuLabel>
+
+            <DropdownMenuItem asChild>
+              <Link href="/search/services" className="flex items-center text-emerald-600 focus:text-emerald-700">
+                <Search className="mr-2 h-4 w-4" />
+                <span>{t("browseServices")}</span>
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link href="/customer/post-job" className="flex items-center text-slate-600 focus:text-slate-700">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span>{t("postJob")}</span>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        <DropdownMenuSeparator />
+
+        <div className="px-2 py-1.5">
+          <div className="flex items-center bg-muted/50 rounded-md p-1 gap-1">
+            <div className="flex-[3] flex items-center justify-start overflow-hidden">
+              <LanguageDropDown className="h-8 w-full justify-start px-2 hover:bg-background transition-colors border-none shadow-none bg-transparent" />
+            </div>
+            <div className="w-px h-4 bg-border shrink-0" />
+            <div className="flex-1 flex items-center justify-center">
+              <DarkModeButton />
+            </div>
+          </div>
+        </div>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem asChild>
           <Link
             href={`/${user?.role}/notifications` || "/customer/notifications"}
