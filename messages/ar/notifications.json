@@ -99,6 +99,8 @@
       "booking_cancelled": "ملغاة",
       "booking_completed": "مكتملة",
       "booking_reminder": "تذكير",
+      "review_reminder": "تذكير بالتقييم",
+      "job_review_reminder": "تذكير بالتقييم",
       "service_created": "خدمة",
       "service_updated": "محدثة",
       "payment_confirmed": "مؤكد",

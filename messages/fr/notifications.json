@@ -99,6 +99,8 @@
       "booking_cancelled": "Annulée",
       "booking_completed": "Terminée",
       "booking_reminder": "Rappel",
+      "review_reminder": "Rappel d’avis",
+      "job_review_reminder": "Rappel d’avis",
       "service_created": "Service",
       "service_updated": "Mis à jour",
       "payment_confirmed": "Confirmé",
@@ -135,6 +137,7 @@
       "bookingCancelled": "Réservation Annulée",
       "bookingCompleted": "Réservation Terminée",
       "bookingReminder": "Rappel de Réservation",
+      "reviewReminder": "Comment s’est passée votre expérience ?",
       "serviceCreated": "Service Créé",
       "serviceUpdated": "Service Mis à Jour",
       "general": "Notification"
@@ -167,6 +170,7 @@
       "bookingReminder": "Rappel : Vous avez une réservation à venir.",
       "bookingPaymentProcessed": "Le paiement de {amount} {currency} a été traité pour la réservation.",
       "bookingConfirmedByCustomer": "Le client a confirmé la réalisation de la réservation.",
+      "reviewReminder": "Veuillez laisser un avis{context} pour aider le prestataire à s’améliorer.",
       "serviceCreated": "Un nouveau service a été créé.",
       "serviceUpdated": "Un service a été mis à jour.",
       "general": "Vous avez une nouvelle notification."

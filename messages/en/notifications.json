@@ -99,6 +99,8 @@
       "booking_cancelled": "Cancelled",
       "booking_completed": "Completed",
       "booking_reminder": "Reminder",
+      "review_reminder": "Review Reminder",
+      "job_review_reminder": "Review Reminder",
       "service_created": "Service",
       "service_updated": "Updated",
       "payment_confirmed": "Confirmed",
@@ -135,6 +137,7 @@
       "bookingCancelled": "Booking Cancelled",
       "bookingCompleted": "Booking Completed",
       "bookingReminder": "Booking Reminder",
+      "reviewReminder": "How was your experience?",
       "serviceCreated": "Service Created",
       "serviceUpdated": "Service Updated",
       "general": "Notification"
@@ -167,6 +170,7 @@
       "bookingReminder": "Reminder: You have a booking coming up.",
       "bookingPaymentProcessed": "Payment of {amount} {currency} has been processed for booking.",
       "bookingConfirmedByCustomer": "The customer has confirmed completion of booking.",
+      "reviewReminder": "Please leave a review{context} to help the tasker improve.",
       "serviceCreated": "A new service has been created.",
       "serviceUpdated": "A service has been updated.",
       "general": "You have a new notification."

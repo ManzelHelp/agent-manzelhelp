@@ -99,6 +99,8 @@
       "booking_cancelled": "Storniert",
       "booking_completed": "Abgeschlossen",
       "booking_reminder": "Erinnerung",
+      "review_reminder": "Bewertungserinnerung",
+      "job_review_reminder": "Bewertungserinnerung",
       "service_created": "Service",
       "service_updated": "Aktualisiert",
       "payment_confirmed": "Bestätigt",
@@ -135,6 +137,7 @@
       "bookingCancelled": "Buchung Storniert",
       "bookingCompleted": "Buchung Abgeschlossen",
       "bookingReminder": "Buchungserinnerung",
+      "reviewReminder": "Wie war Ihre Erfahrung?",
       "serviceCreated": "Service Erstellt",
       "serviceUpdated": "Service Aktualisiert",
       "general": "Benachrichtigung"
@@ -167,6 +170,7 @@
       "bookingReminder": "Erinnerung: Sie haben eine bevorstehende Buchung.",
       "bookingPaymentProcessed": "Eine Zahlung von {amount} {currency} wurde für die Buchung verarbeitet.",
       "bookingConfirmedByCustomer": "Der Kunde hat die Fertigstellung der Buchung bestätigt.",
+      "reviewReminder": "Bitte hinterlassen Sie eine Bewertung{context}, um dem Tasker zu helfen, sich zu verbessern.",
       "serviceCreated": "Ein neuer Service wurde erstellt.",
       "serviceUpdated": "Ein Service wurde aktualisiert.",
       "general": "Sie haben eine neue Benachrichtigung."

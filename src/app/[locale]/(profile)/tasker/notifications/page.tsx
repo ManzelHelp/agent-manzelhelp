@@ -62,8 +62,8 @@ import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/supabase/client";
 
 // Notification type icons mapping
-const getNotificationIcon = (type: NotificationType) => {
-  const iconMap: Record<NotificationType, React.ReactNode> = {
+const getNotificationIcon = (type: string) => {
+  const iconMap: Record<string, React.ReactNode> = {
     job_created: <Briefcase className="h-4 w-4" />,
     application_received: <User className="h-4 w-4" />,
     application_accepted: <CheckCircle2 className="h-4 w-4" />,
@@ -76,6 +76,9 @@ const getNotificationIcon = (type: NotificationType) => {
     booking_cancelled: <XCircle className="h-4 w-4" />,
     booking_completed: <CheckCircle className="h-4 w-4" />,
     booking_reminder: <Clock className="h-4 w-4" />,
+    review_reminder: <Star className="h-4 w-4" />,
+    job_review_reminder: <Star className="h-4 w-4" />,
+    review_received: <Star className="h-4 w-4" />,
     service_created: <Star className="h-4 w-4" />,
     service_updated: <Settings className="h-4 w-4" />,
     payment_confirmed: <CreditCard className="h-4 w-4" />,
@@ -93,8 +96,8 @@ const getNotificationIcon = (type: NotificationType) => {
 };
 
 // Notification type colors
-const getNotificationColor = (type: NotificationType) => {
-  const colorMap: Record<NotificationType, string> = {
+const getNotificationColor = (type: string) => {
+  const colorMap: Record<string, string> = {
     job_created:
       "text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/20 dark:border-blue-800",
     application_received:
@@ -119,6 +122,12 @@ const getNotificationColor = (type: NotificationType) => {
       "text-purple-600 bg-purple-50 border-purple-200 dark:text-purple-400 dark:bg-purple-950/20 dark:border-purple-800",
     booking_reminder:
       "text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950/20 dark:border-amber-800",
+    review_reminder:
+      "text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950/20 dark:border-amber-800",
+    job_review_reminder:
+      "text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950/20 dark:border-amber-800",
+    review_received:
+      "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/20 dark:border-emerald-800",
     service_created:
       "text-pink-600 bg-pink-50 border-pink-200 dark:text-pink-400 dark:bg-pink-950/20 dark:border-pink-800",
     service_updated:
@@ -151,7 +160,7 @@ const getNotificationColor = (type: NotificationType) => {
 };
 
 // Notification type labels - now uses translations
-const getNotificationTypeLabel = (type: NotificationType, t: (key: string) => string) => {
+const getNotificationTypeLabel = (type: string, t: (key: string) => string) => {
   const translationKey = `types.${type}`;
   const translated = t(translationKey);
   // Fallback to "General" if translation not found
@@ -309,7 +318,8 @@ export default function NotificationsPage() {
       const bookingTitle = notification.related_booking_id ? bookingTitles[notification.related_booking_id] : undefined;
 
       // Prefer translated templates for consistent UI language
-      switch (notification.type) {
+      const type = String(notification.type);
+      switch (type) {
         case "wallet_refund_verifying":
           return {
             title: t("titles.refundRequestUnderReview"),
@@ -370,6 +380,18 @@ export default function NotificationsPage() {
             title: t("titles.bookingCompleted"),
             message: bookingTitle ? `${t("messages.bookingCompleted")} "${bookingTitle}".` : t("messages.bookingCompleted"),
           };
+        case "review_reminder":
+        case "job_review_reminder": {
+          const context = bookingTitle
+            ? ` "${bookingTitle}"`
+            : jobTitle
+              ? ` "${jobTitle}"`
+              : "";
+          return {
+            title: t("titles.reviewReminder"),
+            message: t("messages.reviewReminder", { context }),
+          };
+        }
         default: {
           // For payment-related notifications, keep stored message (amount/currency often embedded),
           // but still fix any leftover placeholders when possible.
